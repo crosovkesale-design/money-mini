@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Family Budget</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body{background:#0f1116;color:#e8ecf5;font:15px/1.5 -apple-system,sans-serif;
+     margin:0;padding:40px 20px;text-align:center;min-height:100vh}
+h1{font-size:24px;margin-bottom:16px}
+.box{background:#161a22;border:1px solid #242a37;border-radius:14px;
+     padding:20px;max-width:400px;margin:20px auto}
+p{color:#8a92a4;margin-bottom:12px}
+</style>
+</head>
+<body>
+<h1>Family Budget</h1>
+<div class="box">
+  <p>Каркас работает.</p>
+  <p id="who">—</p>
+</div>
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready(); tg.expand();
+  const u = tg.initDataUnsafe?.user;
+  if (u) document.getElementById("who").textContent =
+    "Привет, " + (u.first_name || "друг") + "!";
+}
+</script>
+</body>
+</html>

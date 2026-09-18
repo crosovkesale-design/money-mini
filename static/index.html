@@ -482,16 +482,37 @@ auth.signInAnonymously().then(function(cred){
   }catch(e){}
   var n=new Date();
   state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
-  if(state.mode==="family"&&state.familyCode){closeAuth();subscribeFamily();render()}
-  else if(state.mode==="local"&&state.userName){closeAuth();render()}
-  else{render()}
+  if(!state.userName){
+  var tgU=window.Telegram?.WebApp?.initDataUnsafe?.user;
+  state.userName=tgU?(tgU.first_name||"Гость"):"Гость";
+}
+if(state.mode==="family"&&state.familyCode){closeAuth();subscribeFamily()}
+render();
 }).catch(function(e){
   toast("Auth: "+e.message,"err");
   var n=new Date()
   state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
-  render();
+        render();
 });
-
+});
+$("#btn-open-family").onclick=function(){
+$("#auth-fname").value=state.userName||"";
+openAuth();
+};
+$("#btn-auth-cancel").onclick=closeAuth;
+$("#btn-copy-code").onclick=function(){
+  if(!state.familyCode)return;
+  navigator.clipboard.writeText(state.familyCode);
+  toast("Код скопирован","ok");
+};
+$("#btn-leave-family").onclick=function(){
+  if(!confirm("Выйти из семьи?"))return;
+  if(familySub){familySub.off();familySub=null}
+  state.mode="local";state.familyCode=null;state.familyName="";
+  state.records=[];state.members={};state.envelopes={};
+  saveLocal();render();toast("Вышел из семьи");
+};
+  
 var tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand()}
 

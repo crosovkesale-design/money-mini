@@ -11,39 +11,25 @@
 <body>
 
 <!-- ЭКРАН ВХОДА -->
-<div class="auth-screen" id="auth-screen">
+<div class="auth-screen hidden" id="auth-screen">
   <div class="auth-box">
-    <h1>Family Budget</h1>
-    <p class="sub">Личный или семейный учёт расходов</p>
+  <h1>Семья</h1>
+  <p class="sub">Один код — все видят одни траты</p>
 
-    <div class="auth-tabs">
-      <button class="on" data-tab="personal">Личный</button>
-      <button data-tab="family">Семейный</button>
-    </div>
+  <div class="field"><label>Ваше имя</label>
+    <input type="text" id="auth-fname" placeholder="Иван" maxlength="20"></div>
 
-    <div id="auth-personal">
-      <div class="field"><label>Как вас зовут</label>
-        <input type="text" id="auth-name" placeholder="Иван" maxlength="20"></div>
-      <button class="btn-primary" id="btn-personal">Начать</button>
-    </div>
+  <button class="btn-primary" id="btn-create" style="width:100%">Создать семью</button>
 
-    <div id="auth-family" style="display:none">
-      <div class="field"><label>Как вас зовут</label>
-        <input type="text" id="auth-fname" placeholder="Иван" maxlength="20"></div>
-      <div class="field"><label>Код семьи</label>
-        <input type="text" id="auth-code" class="code-input" placeholder="XXXXXX" maxlength="6" autocomplete="off"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" id="btn-join" style="flex:1">Войти</button>
-        <button class="btn-cancel" id="btn-create" style="flex:1">Создать</button>
-      </div>
-      <p style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5">
-        «Создать» — генерирует код. Отправь его близким.<br>
-        «Войти» — введи код, который получил от создателя.
-      </p>
-    </div>
+  <div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0">или войти по коду</div>
+
+  <div class="field"><label>Код семьи</label>
+    <input type="text" id="auth-code" class="code-input" placeholder="XXXXXX" maxlength="6" autocomplete="off"></div>
+
+  <button class="btn-cancel" id="btn-join" style="width:100%">Войти</button>
+  <button class="btn-cancel" id="btn-auth-cancel" style="width:100%;margin-top:10px">Отмена</button>
   </div>
 </div>
-
 <!-- ГЛАВНЫЙ ЭКРАН -->
 <div class="topbar">
   <div class="month-nav">

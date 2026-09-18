@@ -1,5 +1,4 @@
 <!doctype html>
-<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -11,11 +10,51 @@
 </head>
 <body>
 
+<!-- ЭКРАН ВХОДА -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-box">
+    <h1>Family Budget</h1>
+    <p class="sub">Личный или семейный учёт расходов</p>
+
+    <div class="auth-tabs">
+      <button class="on" data-tab="personal">Личный</button>
+      <button data-tab="family">Семейный</button>
+    </div>
+
+    <div id="auth-personal">
+      <div class="field"><label>Как вас зовут</label>
+        <input type="text" id="auth-name" placeholder="Иван" maxlength="20"></div>
+      <button class="btn-primary" id="btn-personal">Начать</button>
+    </div>
+
+    <div id="auth-family" style="display:none">
+      <div class="field"><label>Как вас зовут</label>
+        <input type="text" id="auth-fname" placeholder="Иван" maxlength="20"></div>
+      <div class="field"><label>Код семьи</label>
+        <input type="text" id="auth-code" class="code-input" placeholder="XXXXXX" maxlength="6" autocomplete="off"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" id="btn-join" style="flex:1">Войти</button>
+        <button class="btn-cancel" id="btn-create" style="flex:1">Создать</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5">
+        «Создать» — генерирует код. Отправь его близким.<br>
+        «Войти» — введи код, который получил от создателя.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ГЛАВНЫЙ ЭКРАН -->
 <div class="topbar">
   <div class="month-nav">
     <button id="prev">‹</button>
     <div class="label" id="mlabel">—</div>
     <button id="next">›</button>
+  </div>
+  <div class="family-badge" id="family-badge" style="display:none">
+    <span>👨‍👩‍👧</span><b id="family-name">Семья</b>
+    <span>·</span><span id="family-count">1</span>
+    <span>· код: <b id="family-code">···</b></span>
   </div>
   <div class="balance-label">Баланс месяца</div>
   <div class="balance" id="bal">0</div>
@@ -29,6 +68,7 @@
   <div class="tab on" data-v="list">📋 Записи</div>
   <div class="tab" data-v="env">💰 Конверты</div>
   <div class="tab" data-v="stats">📊 Стата</div>
+  <div class="tab" data-v="settings">⚙️</div>
 </div>
 
 <div class="view on" id="v-list"><div class="list" id="list"></div></div>
@@ -36,9 +76,49 @@
 <div class="view" id="v-stats">
   <div class="stat-block"><h3>Топ категорий за месяц</h3><div id="stats-cats"></div></div>
 </div>
+<div class="view" id="v-settings">
+  <div class="stat-block">
+    <div class="set-row"><div><div class="lbl">Всего записей</div><div class="sub" id="total-count">0</div></div></div>
+    <div class="set-row" id="row-code" style="display:none">
+      <div><div class="lbl">Код семьи</div><div class="sub" id="set-code">—</div></div>
+      <button class="btn-cancel" id="copy-code">Копировать</button>
+    </div>
+    <div class="set-row" id="row-members" style="display:none">
+      <div><div class="lbl">Участники</div><div class="members-list" id="members-list"></div></div>
+    </div>
+    <div class="set-row">
+      <div><div class="lbl">Экспорт CSV</div><div class="sub">все записи</div></div>
+      <button class="btn-cancel" id="export-btn">Скачать</button>
+    </div>
+    <div class="set-row">
+      <div><div class="lbl">Выйти</div><div class="sub">вернуться к экрану входа</div></div>
+      <button class="btn-delete" id="logout-btn">Выйти</button>
+    </div>
+  </div>
+</div>
 
 <button class="fab" id="fab">+</button>
 <div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<script>
+// ⚠️ ВСТАВЬ СВОЙ firebaseConfig ИЗ ШАГА 2
+var firebaseConfig = {
+  apiKey: "ВСТАВЬ",
+  authDomain: "ВСТАВЬ",
+  databaseURL: "ВСТАВЬ",
+  projectId: "ВСТАВЬ",
+  storageBucket: "ВСТАВЬ",
+  messagingSenderId: "ВСТАВЬ",
+  appId: "ВСТАВЬ"
+};
+firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db = firebase.database();
+</script>
 
 <script>
 (function(){
@@ -46,69 +126,35 @@
 var $=function(s){return document.querySelector(s)};
 var $$=function(s){return Array.from(document.querySelectorAll(s))};
 
-var KEY="fb_data_v1";
-var state={records:[],envelopes:{},viewMonth:null};
-
-try{
-  var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
-  if(saved.records)state.records=saved.records;
-  if(saved.envelopes)state.envelopes=saved.envelopes;
-}catch(e){}
-
-if(!state.viewMonth){
-  var n=new Date();
-  state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
-}
-
-function save(){localStorage.setItem(KEY,JSON.stringify({records:state.records,envelopes:state.envelopes}))}
-
+var state={mode:"local",userName:"",familyCode:null,familyName:"",records:[],envelopes:{},members:{},viewMonth:null,uid:null};
+var KEY="fb_data_v2";
 var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
 
 var INCOME=[
-  {id:"salary",name:"Зарплата",e:"💼"},
-  {id:"freel",name:"Фриланс",e:"💻"},
-  {id:"gift_in",name:"Подарок",e:"🎁"},
-  {id:"invest",name:"Инвестиции",e:"📈"},
-  {id:"cashback",name:"Кэшбэк",e:"💵"},
-  {id:"other_in",name:"Другое",e:"💰"}
+  {id:"salary",name:"Зарплата",e:"💼"},{id:"freel",name:"Фриланс",e:"💻"},
+  {id:"gift_in",name:"Подарок",e:"🎁"},{id:"invest",name:"Инвестиции",e:"📈"},
+  {id:"cashback",name:"Кэшбэк",e:"💵"},{id:"other_in",name:"Другое",e:"💰"}
 ];
-
 var EXPENSE=[
-  {id:"food",name:"Продукты",e:"🍔"},
-  {id:"delivery",name:"Доставка",e:"🛵"},
-  {id:"coffee",name:"Кофе/снеки",e:"☕"},
-  {id:"rent",name:"Аренда",e:"🏠"},
-  {id:"util",name:"Коммуналка",e:"💡"},
-  {id:"transp",name:"Транспорт",e:"🚌"},
-  {id:"taxi",name:"Такси",e:"🚕"},
-  {id:"fuel",name:"Бензин",e:"⛽"},
-  {id:"health",name:"Здоровье",e:"💊"},
-  {id:"doctor",name:"Врачи",e:"🏥"},
-  {id:"fun",name:"Развлечения",e:"🎮"},
-  {id:"clothes",name:"Одежда",e:"👕"},
-  {id:"kids",name:"Дети",e:"🧒"},
-  {id:"pets",name:"Животные",e:"🐕"},
-  {id:"online",name:"Онлайн-покупки",e:"🛒"},
-  {id:"subs",name:"Подписки",e:"📺"},
-  {id:"credit",name:"Кредиты",e:"💳"},
-  {id:"repair",name:"Ремонт/дом",e:"🔧"},
-  {id:"travel",name:"Путешествия",e:"✈️"},
-  {id:"edu",name:"Образование",e:"📚"},
-  {id:"beauty",name:"Красота",e:"💅"},
-  {id:"sport",name:"Спорт",e:"🏋️"},
-  {id:"gift",name:"Подарки",e:"🎀"},
-  {id:"tech",name:"Техника",e:"📱"},
-  {id:"vape",name:"Вейп/сигареты",e:"💨"},
-  {id:"party",name:"Праздники",e:"🎉"},
-  {id:"tax",name:"Налоги",e:"📋"},
-  {id:"bank",name:"Банк/комиссии",e:"🏦"},
+  {id:"food",name:"Продукты",e:"🍔"},{id:"delivery",name:"Доставка",e:"🛵"},
+  {id:"coffee",name:"Кофе/снеки",e:"☕"},{id:"rent",name:"Аренда",e:"🏠"},
+  {id:"util",name:"Коммуналка",e:"💡"},{id:"transp",name:"Транспорт",e:"🚌"},
+  {id:"taxi",name:"Такси",e:"🚕"},{id:"fuel",name:"Бензин",e:"⛽"},
+  {id:"health",name:"Здоровье",e:"💊"},{id:"doctor",name:"Врачи",e:"🏥"},
+  {id:"fun",name:"Развлечения",e:"🎮"},{id:"clothes",name:"Одежда",e:"👕"},
+  {id:"kids",name:"Дети",e:"🧒"},{id:"pets",name:"Животные",e:"🐕"},
+  {id:"online",name:"Онлайн-покупки",e:"🛒"},{id:"subs",name:"Подписки",e:"📺"},
+  {id:"credit",name:"Кредиты",e:"💳"},{id:"repair",name:"Ремонт/дом",e:"🔧"},
+  {id:"travel",name:"Путешествия",e:"✈️"},{id:"edu",name:"Образование",e:"📚"},
+  {id:"beauty",name:"Красота",e:"💅"},{id:"sport",name:"Спорт",e:"🏋️"},
+  {id:"gift",name:"Подарки",e:"🎀"},{id:"tech",name:"Техника",e:"📱"},
+  {id:"vape",name:"Вейп/сигареты",e:"💨"},{id:"party",name:"Праздники",e:"🎉"},
+  {id:"tax",name:"Налоги",e:"📋"},{id:"bank",name:"Банк/комиссии",e:"🏦"},
   {id:"other_ex",name:"Другое",e:"📦"}
 ];
-
 var ALL=INCOME.concat(EXPENSE);
 function findCat(id){return ALL.find(function(c){return c.id===id})||{id:id,name:"?",e:"❓"}}
 function fmt(n){var a=Math.abs(n);var s=a.toFixed(2).replace(/\.00$/,"");return (n<0?"-":"")+s}
-
 function toast(msg,cls){
   var el=$("#toast");el.textContent=msg;el.className="toast show "+(cls||"");
   clearTimeout(toast._t);toast._t=setTimeout(function(){el.className="toast "+(cls||"")},1800);
@@ -119,8 +165,82 @@ function shiftMonth(ym,d){
   while(m<0){m+=12;y--}while(m>11){m-=12;y++}
   return y+"-"+String(m+1).padStart(2,"0");
 }
-function recordsOfMonth(ym){return state.records.filter(function(r){return r.date.startsWith(ym)})}
+function genCode(){
+  var s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";var c="";
+  for(var i=0;i<6;i++)c+=s[Math.floor(Math.random()*s.length)];
+  return c;
+}
+function saveLocal(){localStorage.setItem(KEY,JSON.stringify({mode:state.mode,userName:state.userName,familyCode:state.familyCode,familyName:state.familyName,records:state.records,envelopes:state.envelopes}))}
+function recordsOfMonth(ym){return state.records.filter(function(r){return r.date&&r.date.startsWith(ym)})}
 
+/* ============ AUTH ============ */
+$$(".auth-tabs button").forEach(function(b){
+  b.onclick=function(){
+    $$(".auth-tabs button").forEach(function(x){x.classList.remove("on")});
+    b.classList.add("on");
+    if(b.dataset.tab==="personal"){$("#auth-personal").style.display="block";$("#auth-family").style.display="none"}
+    else{$("#auth-personal").style.display="none";$("#auth-family").style.display="block"}
+  };
+});
+
+$("#btn-personal").onclick=function(){
+  var n=$("#auth-name").value.trim();
+  if(!n){toast("Введи имя","err");return}
+  state.mode="local";state.userName=n;state.familyCode=null;
+  saveLocal();closeAuth();
+};
+
+$("#btn-create").onclick=function(){
+  var n=$("#auth-fname").value.trim();
+  if(!n){toast("Введи имя","err");return}
+  state.userName=n;state.mode="family";state.familyCode=genCode();
+  var ref=db.ref("families/"+state.familyCode);
+  ref.set({name:"Семья "+n,createdAt:Date.now()}).then(function(){
+    return ref.child("members").child(state.uid).set({name:n,joined:Date.now()});
+  }).then(function(){
+    toast("Семья создана: "+state.familyCode,"ok");
+    saveLocal();closeAuth();subscribeFamily();
+  }).catch(function(e){toast("Ошибка: "+e.message,"err")});
+};
+
+$("#btn-join").onclick=function(){
+  var n=$("#auth-fname").value.trim();
+  var c=$("#auth-code").value.trim().toUpperCase();
+  if(!n){toast("Введи имя","err");return}
+  if(c.length!==6){toast("Код из 6 знаков","err");return}
+  var ref=db.ref("families/"+c);
+  ref.once("value").then(function(snap){
+    if(!snap.exists()){toast("Семья не найдена","err");return}
+    state.userName=n;state.mode="family";state.familyCode=c;
+    state.familyName=snap.val().name||"Семья";
+    return ref.child("members").child(state.uid).set({name:n,joined:Date.now()}).then(function(){
+      toast("Присоединился","ok");saveLocal();closeAuth();subscribeFamily();
+    });
+  }).catch(function(e){toast("Ошибка: "+e.message,"err")});
+};
+
+function closeAuth(){$("#auth-screen").style.display="none"}
+function openAuth(){$("#auth-screen").style.display="flex"}
+
+/* ============ FIREBASE SYNC ============ */
+var familySub=null;
+function subscribeFamily(){
+  if(familySub){familySub.off();familySub=null}
+  if(!state.familyCode)return;
+  familySub=db.ref("families/"+state.familyCode);
+  familySub.on("value",function(snap){
+    if(!snap.exists())return;
+    var v=snap.val();
+    state.familyName=v.name||"Семья";
+    state.members=v.members||{};
+    state.envelopes=v.envelopes||{};
+    var recs=v.records||{};
+    state.records=Object.keys(recs).map(function(k){var r=recs[k];r.id=k;return r});
+    render();
+  });
+}
+
+/* ============ RENDER ============ */
 function render(){
   var ym=state.viewMonth;
   var recs=recordsOfMonth(ym);
@@ -134,78 +254,81 @@ function render(){
   $("#sum-in").textContent=fmt(inc);
   $("#sum-ex").textContent=fmt(ex);
 
+  if(state.mode==="family"&&state.familyCode){
+    $("#family-badge").style.display="inline-flex";
+    $("#family-name").textContent=state.familyName||"Семья";
+    $("#family-count").textContent=Object.keys(state.members).length;
+    $("#family-code").textContent=state.familyCode;
+    $("#row-code").style.display="flex";
+    $("#row-members").style.display="flex";
+    $("#set-code").textContent=state.familyCode;
+    var ml=$("#members-list");
+    var mem=Object.values(state.members||{});
+    ml.innerHTML=mem.length?mem.map(function(m){return '<span class="member-chip">'+m.name+'</span>'}).join(""):'<span style="color:var(--muted);font-size:12px">только вы</span>';
+  }else{
+    $("#family-badge").style.display="none";
+    $("#row-code").style.display="none";
+    $("#row-members").style.display="none";
+  }
+
   var sorted=recs.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)});
   var list=$("#list");
   if(!sorted.length){
-    list.innerHTML='<div class="empty">Записей нет<br><br>Нажми <b>+</b> чтобы добавить</div>';
+    list.innerHTML='<div class="empty">Записей нет<br><br>Нажми <b>+</b></div>';
   }else{
     list.innerHTML=sorted.map(function(r){
       var c=findCat(r.cat);
       var sign=r.type==="income"?"+":"−";
+      var by=(state.mode==="family"&&r.byName)?'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.byName+'</div>':'';
       return '<div class="rec" data-id="'+r.id+'">'
         +'<div class="ico">'+c.e+'</div>'
-        +'<div class="info">'
-        +'<div class="name">'+(r.note||c.name)+'</div>'
-        +'<div class="date">'+c.name+' · '+r.date.split("-").reverse().join(".")+'</div>'
-        +'</div>'
-        +'<div class="amt '+r.type+'">'+sign+fmt(r.amount)+'</div>'
+        +'<div class="info"><div class="name">'+(r.note||c.name)+'</div>'
+        +'<div class="date">'+c.name+' · '+r.date.split("-").reverse().join(".")+'</div></div>'
+        +'<div style="text-align:right"><div class="amt '+r.type+'">'+sign+fmt(r.amount)+'</div>'+by+'</div>'
         +'</div>';
     }).join("");
   }
   renderEnvelopes(recs);
   renderStats(recs);
+  $("#total-count").textContent=state.records.length;
 }
 
 function renderEnvelopes(recs){
   var el=$("#env-list");
   var keys=Object.keys(state.envelopes);
   if(!keys.length){
-    el.innerHTML='<div class="empty">Нет конвертов<br><br>Нажми <b>+</b> чтобы добавить бюджет по теме</div>';
+    el.innerHTML='<div class="empty">Нет конвертов<br><br>Нажми <b>+</b></div>';
     return;
   }
   var byCat={};
-  recs.filter(function(r){return r.type==="expense"}).forEach(function(r){
-    byCat[r.cat]=(byCat[r.cat]||0)+r.amount;
-  });
+  recs.filter(function(r){return r.type==="expense"}).forEach(function(r){byCat[r.cat]=(byCat[r.cat]||0)+r.amount});
   el.innerHTML=keys.map(function(catId){
-    var lim=state.envelopes[catId];
-    var spent=byCat[catId]||0;
-    var left=lim-spent;
-    var pct=lim>0?Math.min(100,spent/lim*100):0;
+    var lim=state.envelopes[catId];var spent=byCat[catId]||0;
+    var left=lim-spent;var pct=lim>0?Math.min(100,spent/lim*100):0;
     var cls=spent>lim?"over":(pct>=80?"warn":"");
     var c=findCat(catId);
-    return '<div class="env '+cls+'">'
-      +'<div class="env-head">'
+    return '<div class="env '+cls+'"><div class="env-head">'
       +'<div class="env-name"><span class="e">'+c.e+'</span>'+c.name+'</div>'
-      +'<button class="env-edit" data-cat="'+catId+'">✏️</button>'
-      +'</div>'
+      +'<button class="env-edit" data-cat="'+catId+'">✏️</button></div>'
       +'<div class="env-nums">израсходовано <b>'+fmt(spent)+'</b> из '+fmt(lim)+' · осталось <b>'+fmt(left)+'</b></div>'
-      +'<div class="env-bar"><i style="width:'+pct+'%"></i></div>'
-      +'</div>';
+      +'<div class="env-bar"><i style="width:'+pct+'%"></i></div></div>';
   }).join("");
-  el.querySelectorAll(".env-edit").forEach(function(b){
-    b.onclick=function(){editEnvelope(b.dataset.cat)};
-  });
+  el.querySelectorAll(".env-edit").forEach(function(b){b.onclick=function(){editEnvelope(b.dataset.cat)}});
 }
 
 function renderStats(recs){
   var ex=recs.filter(function(r){return r.type==="expense"});
   var total=ex.reduce(function(s,r){return s+r.amount},0);
-  var byCat={};
-  ex.forEach(function(r){byCat[r.cat]=(byCat[r.cat]||0)+r.amount});
+  var byCat={};ex.forEach(function(r){byCat[r.cat]=(byCat[r.cat]||0)+r.amount});
   var cats=Object.entries(byCat).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
   var el=$("#stats-cats");
-  if(!cats.length){
-    el.innerHTML='<div style="color:var(--muted);font-size:13px">нет расходов</div>';
-  }else{
-    el.innerHTML=cats.map(function(kv){
-      var c=findCat(kv[0]);
-      var pct=total>0?(kv[1]/total*100):0;
-      return '<div class="cat-row"><div class="ico">'+c.e+'</div>'
-        +'<div class="name">'+c.name+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
-        +'<div class="val">'+fmt(kv[1])+'</div></div>';
-    }).join("");
-  }
+  if(!cats.length){el.innerHTML='<div style="color:var(--muted);font-size:13px">нет расходов</div>';return}
+  el.innerHTML=cats.map(function(kv){
+    var c=findCat(kv[0]);var pct=total>0?(kv[1]/total*100):0;
+    return '<div class="cat-row"><div class="ico">'+c.e+'</div>'
+      +'<div class="name">'+c.name+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
+      +'<div class="val">'+fmt(kv[1])+'</div></div>';
+  }).join("");
 }
 
 $$(".tab").forEach(function(t){
@@ -216,53 +339,36 @@ $$(".tab").forEach(function(t){
     document.getElementById("v-"+t.dataset.v).classList.add("on");
   };
 });
-
 $("#prev").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,-1);render()};
 $("#next").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,+1);render()};
 
-/* ========== МОДАЛКА ЗАПИСИ ========== */
+/* ============ МОДАЛКА ЗАПИСИ ============ */
 var modal=null;
 var edit={type:"expense",cat:"food",amount:"",note:"",date:"",id:null};
-
 function today(){return new Date().toISOString().slice(0,10)}
 
 function openRecord(existing){
-  if(existing){
-    edit={type:existing.type,cat:existing.cat,amount:String(existing.amount),note:existing.note||"",date:existing.date,id:existing.id};
-  }else{
-    edit={type:"expense",cat:"food",amount:"",note:"",date:today(),id:null};
-  }
+  if(existing){edit={type:existing.type,cat:existing.cat,amount:String(existing.amount),note:existing.note||"",date:existing.date,id:existing.id}}
+  else{edit={type:"expense",cat:"food",amount:"",note:"",date:today(),id:null}}
   renderRecordModal();
 }
 
 function renderRecordModal(){
   if(modal)modal.remove();
-  modal=document.createElement("div");
-  modal.className="modal";
+  modal=document.createElement("div");modal.className="modal";
   var cats=edit.type==="income"?INCOME:EXPENSE;
-  modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(edit.id?"Изменить":"Новая запись")+'</h2>'
-    +'<div class="type-switch">'
-    +'<button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">− Расход</button>'
-    +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">+ Доход</button>'
-    +'</div>'
-    +'<div class="field"><label>Сумма</label>'
-    +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>'
+  modal.innerHTML='<div class="sheet"><h2>'+(edit.id?"Изменить":"Новая запись")+'</h2>'
+    +'<div class="type-switch"><button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">− Расход</button>'
+    +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">+ Доход</button></div>'
+    +'<div class="field"><label>Сумма</label><input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>'
     +'<div class="field"><label>Категория</label><div class="cat-grid">'
-    +cats.map(function(c){
-      return '<div class="cat '+(edit.cat===c.id?"on":"")+'" data-cat="'+c.id+'">'
-        +'<span class="e">'+c.e+'</span>'+c.name+'</div>';
-    }).join("")
+    +cats.map(function(c){return '<div class="cat '+(edit.cat===c.id?"on":"")+'" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+c.name+'</div>'}).join("")
     +'</div></div>'
-    +'<div class="field"><label>Комментарий</label>'
-    +'<input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
-    +'<div class="field"><label>Дата</label>'
-    +'<input type="date" id="m-date" value="'+edit.date+'"></div>'
-    +'<div class="row-btns">'
-    +(edit.id?'<button class="btn-delete" data-act="del">Удалить</button>':'')
+    +'<div class="field"><label>Комментарий</label><input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
+    +'<div class="field"><label>Дата</label><input type="date" id="m-date" value="'+edit.date+'"></div>'
+    +'<div class="row-btns">'+(edit.id?'<button class="btn-delete" data-act="del">Удалить</button>':'')
     +'<button class="btn-cancel" data-act="cancel">Отмена</button>'
-    +'<button class="btn-primary" data-act="save">Сохранить</button>'
-    +'</div></div>';
+    +'<button class="btn-primary" data-act="save">Сохранить</button></div></div>';
   document.body.appendChild(modal);
   attachRecordEvents();
 }
@@ -270,45 +376,38 @@ function renderRecordModal(){
 function attachRecordEvents(){
   modal.querySelectorAll(".type-switch button").forEach(function(b){
     b.onclick=function(){
-      edit.type=b.dataset.t;
-      edit.cat=(edit.type==="income"?INCOME[0].id:EXPENSE[0].id);
-      edit.amount=modal.querySelector("#m-am").value;
-      edit.note=modal.querySelector("#m-note").value;
+      edit.type=b.dataset.t;edit.cat=(edit.type==="income"?INCOME[0].id:EXPENSE[0].id);
+      edit.amount=modal.querySelector("#m-am").value;edit.note=modal.querySelector("#m-note").value;
       renderRecordModal();
     };
   });
   modal.querySelectorAll(".cat").forEach(function(c){
-    c.onclick=function(){
-      edit.cat=c.dataset.cat;
-      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
-      c.classList.add("on");
-    };
+    c.onclick=function(){edit.cat=c.dataset.cat;modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});c.classList.add("on")};
   });
   modal.querySelectorAll("[data-act]").forEach(function(b){
     b.onclick=function(){
       var act=b.dataset.act;
       if(act==="cancel"){modal.remove();modal=null;return}
       if(act==="del"){
-        state.records=state.records.filter(function(r){return r.id!==edit.id});
-        save();render();modal.remove();modal=null;toast("Удалено");return;
+        if(state.mode==="family"){db.ref("families/"+state.familyCode+"/records/"+edit.id).remove()}
+        else{state.records=state.records.filter(function(r){return r.id!==edit.id});saveLocal();render()}
+        modal.remove();modal=null;toast("Удалено");return;
       }
       if(act==="save"){
         var amt=parseFloat(modal.querySelector("#m-am").value);
         if(!amt||amt<=0){toast("Введи сумму","err");return}
         var note=modal.querySelector("#m-note").value.trim();
         var date=modal.querySelector("#m-date").value||today();
-        if(edit.id){
-          var r=state.records.find(function(x){return x.id===edit.id});
-          if(r){r.amount=amt;r.note=note;r.date=date;r.type=edit.type;r.cat=edit.cat}
+        var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,date:date,ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
+        if(state.mode==="family"){
+          var id=edit.id||(Date.now()+"-"+Math.random().toString(36).slice(2,8));
+          db.ref("families/"+state.familyCode+"/records/"+id).set(rec);
         }else{
-          state.records.push({
-            id:Date.now()+"-"+Math.random().toString(36).slice(2,8),
-            type:edit.type,cat:edit.cat,amount:amt,note:note,date:date,ts:Date.now()
-          });
+          if(edit.id){var r=state.records.find(function(x){return x.id===edit.id});if(r)Object.assign(r,rec)}
+          else{rec.id=Date.now()+"-"+Math.random().toString(36).slice(2,8);state.records.push(rec)}
+          saveLocal();render();
         }
-        save();
-        var ym=date.slice(0,7);
-        if(ym!==state.viewMonth)state.viewMonth=ym;
+        var ym=date.slice(0,7);if(ym!==state.viewMonth)state.viewMonth=ym;
         render();modal.remove();modal=null;toast("Сохранено","ok");
       }
     };
@@ -316,49 +415,39 @@ function attachRecordEvents(){
   modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
 }
 
-/* ========== МОДАЛКА КОНВЕРТА ========== */
+/* ============ КОНВЕРТЫ ============ */
 function editEnvelope(catId){
   if(modal)modal.remove();
-  modal=document.createElement("div");
-  modal.className="modal";
-  var isNew=!catId;
-  var current=catId?state.envelopes[catId]:"";
-  modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(isNew?"Новый конверт":"Изменить конверт")+'</h2>'
+  modal=document.createElement("div");modal.className="modal";
+  var isNew=!catId;var current=catId?state.envelopes[catId]:"";
+  modal.innerHTML='<div class="sheet"><h2>'+(isNew?"Новый конверт":"Изменить конверт")+'</h2>'
     +(isNew?('<div class="field"><label>Категория</label><div class="cat-grid">'
-      +EXPENSE.map(function(c){
-        return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+c.name+'</div>';
-      }).join("")+'</div></div>'):'')
-    +'<div class="field"><label>Лимит на месяц</label>'
-    +'<input type="number" inputmode="decimal" step="1" id="m-lim" class="amount-input" placeholder="0" value="'+current+'"></div>'
-    +'<div class="row-btns">'
-    +(isNew?'':'<button class="btn-delete" data-act="del">Удалить</button>')
+      +EXPENSE.map(function(c){return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+c.name+'</div>'}).join("")+'</div></div>'):'')
+    +'<div class="field"><label>Лимит на месяц</label><input type="number" inputmode="decimal" step="1" id="m-lim" class="amount-input" placeholder="0" value="'+current+'"></div>'
+    +'<div class="row-btns">'+(isNew?'':'<button class="btn-delete" data-act="del">Удалить</button>')
     +'<button class="btn-cancel" data-act="cancel">Отмена</button>'
-    +'<button class="btn-primary" data-act="save">Сохранить</button>'
-    +'</div></div>';
+    +'<button class="btn-primary" data-act="save">Сохранить</button></div></div>';
   document.body.appendChild(modal);
   var chosenCat=catId||null;
   modal.querySelectorAll(".cat").forEach(function(c){
-    c.onclick=function(){
-      chosenCat=c.dataset.cat;
-      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
-      c.classList.add("on");
-    };
+    c.onclick=function(){chosenCat=c.dataset.cat;modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});c.classList.add("on")};
   });
   modal.querySelectorAll("[data-act]").forEach(function(b){
     b.onclick=function(){
       var act=b.dataset.act;
       if(act==="cancel"){modal.remove();modal=null;return}
       if(act==="del"){
-        delete state.envelopes[catId];
-        save();render();modal.remove();modal=null;toast("Удалено");return;
+        if(state.mode==="family"){db.ref("families/"+state.familyCode+"/envelopes/"+catId).remove()}
+        else{delete state.envelopes[catId];saveLocal();render()}
+        modal.remove();modal=null;toast("Удалено");return;
       }
       if(act==="save"){
         var lim=parseFloat(modal.querySelector("#m-lim").value);
         if(!lim||lim<=0){toast("Введи лимит","err");return}
         if(!chosenCat){toast("Выбери категорию","err");return}
-        state.envelopes[chosenCat]=lim;
-        save();render();modal.remove();modal=null;toast("Сохранено","ok");
+        if(state.mode==="family"){db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim)}
+        else{state.envelopes[chosenCat]=lim;saveLocal();render()}
+        modal.remove();modal=null;toast("Сохранено","ok");
       }
     };
   });
@@ -366,21 +455,70 @@ function editEnvelope(catId){
 }
 
 $("#fab").onclick=function(){
-  if($("#v-env").classList.contains("on")){
-    editEnvelope(null);
-  }else{
-    openRecord();
-  }
+  if($("#v-env").classList.contains("on"))editEnvelope(null);
+  else openRecord();
 };
 
 $("#list").addEventListener("click",function(e){
-  var rec=e.target.closest(".rec");
-  if(!rec)return;
+  var rec=e.target.closest(".rec");if(!rec)return;
   var existing=state.records.find(function(r){return r.id===rec.dataset.id});
   if(existing)openRecord(existing);
 });
 
-render();
+/* ============ ЭКСПОРТ ============ */
+$("#export-btn").onclick=function(){
+  if(!state.records.length){toast("Нет записей","err");return}
+  var rows=[["дата","тип","категория","сумма","комментарий","кто"]];
+  state.records.slice().sort(function(a,b){return (a.date"").localeCompare(b.date"")}).forEach(function(r){
+    var c=findCat(r.cat);
+    rows.push([r.date,r.type==="income"?"доход":"расход",c.name,r.amount,r.note"",r.byName""]);
+  });
+  var csv=rows.map(function(row){return row.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",")}).join("\n");
+  var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="budget-"+today()+".csv";
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  toast("Скачано","ok");
+};
+
+$("#copy-code").onclick=function(){
+  if(!state.familyCode)return;
+  navigator.clipboard.writeText(state.familyCode);
+  toast("Код: "+state.familyCode,"ok");
+};
+
+$("#logout-btn").onclick=function(){
+  if(!confirm("Выйти?"))return;
+  if(familySub){familySub.off();familySub=null}
+  state.mode="local";state.familyCode=null;state.familyName="";
+  state.records=[];state.members={};state.envelopes={};
+  localStorage.removeItem(KEY);
+  openAuth();render();
+};
+
+/* ============ СТАРТ ============ */
+auth.signInAnonymously().then(function(cred){
+  state.uid=cred.user.uid;
+  try{
+    var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
+    if(saved.userName)state.userName=saved.userName;
+    if(saved.mode)state.mode=saved.mode;
+    if(saved.familyCode)state.familyCode=saved.familyCode;
+    if(saved.familyName)state.familyName=saved.familyName;
+    if(saved.records&&state.mode==="local")state.records=saved.records;
+    if(saved.envelopes&&state.mode==="local")state.envelopes=saved.envelopes;
+  }catch(e){}
+  var n=new Date();
+  state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
+  if(state.mode==="family"&&state.familyCode){closeAuth();subscribeFamily();render()}
+  else if(state.mode==="local"&&state.userName){closeAuth();render()}
+  else{render()}
+}).catch(function(e){
+  toast("Auth: "+e.message,"err");
+  var n=new Date()
+  state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
+  render();
+});
 
 var tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand()}

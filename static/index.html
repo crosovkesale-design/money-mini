@@ -63,26 +63,28 @@
   <div class="stat-block"><h3>Топ категорий за месяц</h3><div id="stats-cats"></div></div>
 </div>
 <div class="view" id="v-settings">
-  <div class="stat-block">
-    <div class="set-row"><div><div class="lbl">Всего записей</div><div class="sub" id="total-count">0</div></div></div>
-    <div class="set-row" id="row-code" style="display:none">
-      <div><div class="lbl">Код семьи</div><div class="sub" id="set-code">—</div></div>
-      <button class="btn-cancel" id="copy-code">Копировать</button>
-    </div>
-    <div class="set-row" id="row-members" style="display:none">
-      <div><div class="lbl">Участники</div><div class="members-list" id="members-list"></div></div>
-    </div>
-    <div class="set-row">
-      <div><div class="lbl">Экспорт CSV</div><div class="sub">все записи</div></div>
-      <button class="btn-cancel" id="export-btn">Скачать</button>
-    </div>
-    <div class="set-row">
-      <div><div class="lbl">Выйти</div><div class="sub">вернуться к экрану входа</div></div>
-      <button class="btn-delete" id="logout-btn">Выйти</button>
-    </div>
+  <div class="stat-block" id="family-block">
+  <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Семья</h3>
+  <div id="family-personal">
+    <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Сейчас личный режим</p>
+    <button class="btn-primary" id="btn-open-family" style="width:100%">Подключить семью</button>
+  </div>
+  <div id="family-active" style="display:none">
+    <div style="font-size:14px;margin-bottom:10px">Код: <b id="family-code-display" style="color:var(--blue);letter-spacing:4px">—</b></div>
+    <div class="members-list" id="members-list" style="margin-bottom:12px"></div>
+    <button class="btn-cancel" id="btn-copy-code" style="width:100%;margin-bottom:8px">Скопировать код</button>
+    <button class="btn-delete" id="btn-leave-family" style="width:100%">Выйти из семьи</button>
   </div>
 </div>
-
+<div class="stat-block">
+  <div class="set-row"><div><div class="lbl">Всего записей</div><div class="sub" id="total-count">0</div></div></div>
+  <div class="set-row">
+    <div><div class="lbl">Экспорт CSV</div><div class="sub">все записи</div></div>
+    <button class="btn-cancel" id="export-btn">Скачать</button>
+  </div>
+</div>
+</div>
+  
 <button class="fab" id="fab">+</button>
 <div class="toast" id="toast"></div>
 

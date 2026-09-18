@@ -86,3 +86,34 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue)}
 .toast.ok{border-color:var(--green);color:var(--green)}
 .toast.err{border-color:var(--red);color:var(--red)}
 
+/* ============ ЭКРАН ВХОДА ============ */
+.auth-screen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:var(--bg);
+}
+.auth-screen.hidden{display:none}
+.auth-box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px;max-width:400px;width:100%}
+.auth-box h1{font-size:22px;font-weight:900;margin-bottom:6px;letter-spacing:-.5px}
+.auth-box .sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+.auth-box .field{margin-bottom:12px}
+.auth-box .btn-primary{width:100%;padding:16px;font-size:15px;min-height:50px}
+.auth-tabs{display:flex;gap:6px;background:var(--panel2);padding:4px;border-radius:10px;margin-bottom:18px}
+.auth-tabs button{flex:1;padding:10px;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;border-radius:8px;cursor:pointer;font-size:13px}
+.auth-tabs button.on{background:var(--panel);color:var(--fg)}
+.code-input{font-size:24px;font-weight:800;letter-spacing:6px;text-align:center;text-transform:uppercase}
+
+/* семейный бейдж */
+.family-badge{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);padding:4px 10px;border-radius:999px;font-size:11px;color:var(--muted);margin-bottom:10px}
+.family-badge b{color:var(--fg);font-size:12px}
+
+/* настройки */
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border:0}
+.set-row .lbl{font-size:14px;font-weight:600}
+.set-row .sub{font-size:11px;color:var(--muted);margin-top:2px}
+.members-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.member-chip{background:var(--panel2);border:1px solid var(--line);padding:4px 10px;border-radius:999px;font-size:12px}

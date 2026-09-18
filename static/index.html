@@ -162,22 +162,6 @@ function saveLocal(){localStorage.setItem(KEY,JSON.stringify({mode:state.mode,us
 function recordsOfMonth(ym){return state.records.filter(function(r){return r.date&&r.date.startsWith(ym)})}
 
 /* ============ AUTH ============ */
-$$(".auth-tabs button").forEach(function(b){
-  b.onclick=function(){
-    $$(".auth-tabs button").forEach(function(x){x.classList.remove("on")});
-    b.classList.add("on");
-    if(b.dataset.tab==="personal"){$("#auth-personal").style.display="block";$("#auth-family").style.display="none"}
-    else{$("#auth-personal").style.display="none";$("#auth-family").style.display="block"}
-  };
-});
-
-$("#btn-personal").onclick=function(){
-  var n=$("#auth-name").value.trim();
-  if(!n){toast("Введи имя","err");return}
-  state.mode="local";state.userName=n;state.familyCode=null;
-  saveLocal();closeAuth();
-};
-
 $("#btn-create").onclick=function(){
   var n=$("#auth-fname").value.trim();
   if(!n){toast("Введи имя","err");return}

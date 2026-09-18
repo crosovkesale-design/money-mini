@@ -207,8 +207,8 @@ $("#btn-join").onclick=function(){
   }).catch(function(e){toast("Ошибка: "+e.message,"err")});
 };
 
-function closeAuth(){$("#auth-screen").style.display="none"}
-function openAuth(){$("#auth-screen").style.display="flex"}
+function closeAuth(){$("#auth-screen").classList.add("hidden")}
+function openAuth(){$("#auth-screen").classList.remove("hidden")}
 
 /* ============ FIREBASE SYNC ============ */
 var familySub=null;

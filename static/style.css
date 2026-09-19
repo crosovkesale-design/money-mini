@@ -117,3 +117,6 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue)}
 .set-row .sub{font-size:11px;color:var(--muted);margin-top:2px}
 .members-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .member-chip{background:var(--panel2);border:1px solid var(--line);padding:4px 10px;border-radius:999px;font-size:12px}
+.lang-switch{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:2px;margin-left:auto}
+.lang-btn{background:transparent;border:0;color:var(--muted);font:inherit;font-size:11px;font-weight:700;padding:5px 8px;border-radius:6px;cursor:pointer}
+.lang-btn.on{background:var(--blue);color:#fff}

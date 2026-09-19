@@ -58,7 +58,10 @@ setTimeout(function(){
 
 <div id="main-app" style="display:block">
   <div class="topbar">
-    <div class="month-nav">
+    <div class="lang-switch">
+  <button class="lang-btn on" data-lang="ru">RU</button>
+  <button class="lang-btn" data-lang="en">EN</button>
+    </div>
       <button id="prev">‹</button>
       <div class="label" id="mlabel">—</div>
       <button id="next">›</button>
@@ -603,21 +606,33 @@ $("#export-btn").onclick=function(){
 
 auth.signInAnonymously().then(function(cred){
   state.uid=cred.user.uid;
-  try{
-    var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
-    if(saved.userName)state.userName=saved.userName;
-    if(saved.mode)state.mode=saved.mode;
-    if(saved.familyCode)state.familyCode=saved.familyCode;
-    if(saved.familyName)state.familyName=saved.familyName;
-    if(saved.records&&state.mode==="local")state.records=saved.records;
-    if(saved.envelopes&&state.mode==="local")state.envelopes=saved.envelopes;
-  }catch(e){}
+  var savedUid=localStorage.getItem("budget_uid");
+  if(savedUid&&savedUid!==state.uid){
+    state.mode="local";
+    state.familyCode=null;
+    state.familyName="";
+    state.records=[];
+    state.envelopes={};
+    state.members={};
+  }else{
+    try{
+      var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
+      if(saved.mode)state.mode=saved.mode;
+      if(saved.familyCode)state.familyCode=saved.familyCode;
+      if(saved.familyName)state.familyName=saved.familyName;
+      if(saved.records&&state.mode==="local")state.records=saved.records;
+      if(saved.envelopes&&state.mode==="local")state.envelopes=saved.envelopes;
+    }catch(e){}
+  }
+  localStorage.setItem("budget_uid",state.uid);
 
   if(!state.userName){
     var tgU=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
-      ?window.Telegram.WebApp.initDataUnsafe.user:null;
-    state.userName=tgU&&tgU.first_name?tgU.first_name:"Гость";
-  }
+  ?window.Telegram.WebApp.initDataUnsafe.user:null;
+if(tgU&&tgU.first_name){
+  state.userName=tgU.first_name;
+}
+if(!state.userName)state.userName="Гость";
 
   var n=new Date();
   state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
@@ -631,6 +646,15 @@ auth.signInAnonymously().then(function(cred){
   render();
 });
 
+$$(".lang-btn").forEach(function(b){
+  b.onclick=function(){
+    $$(".lang-btn").forEach(function(x){x.classList.remove("on")});
+    b.classList.add("on");
+    state.lang=b.dataset.lang;
+    toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
+  };
+});
+  
 var tg=window.Telegram&&window.Telegram.WebApp;
 if(tg){tg.ready();tg.expand()}
 

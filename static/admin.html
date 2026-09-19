@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Family Budget</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1116;color:#e8ecf5;font:14px/1.5 -apple-system,sans-serif;padding:16px;min-height:100vh}
+.wrap{max-width:1200px;margin:0 auto}
+h1{font-size:20px;margin-bottom:14px}
+.login{background:#161a22;border:1px solid #242a37;border-radius:12px;padding:20px;max-width:400px;margin:60px auto}
+.login input{width:100%;background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:10px;padding:12px;font:inherit;margin-bottom:12px}
+.login button{width:100%;background:#4d9fff;color:#fff;border:0;border-radius:10px;padding:14px;font:inherit;font-weight:700;cursor:pointer}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:#161a22;border:1px solid #242a37;border-radius:12px;padding:14px}
+.stat .lbl{font-size:11px;color:#8a92a4;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.stat .val{font-size:22px;font-weight:900;color:#f5c451}
+.btn{background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:#4d9fff;border:0;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#161a22;border-radius:12px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #242a37}
+th{color:#8a92a4;font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+tr:last-child td{border:0}
+.tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.tag.trial{background:rgba(245,196,81,.15);color:#f5c451}
+.tag.active{background:rgba(53,208,127,.15);color:#35d07f}
+.tag.expired{background:rgba(255,85,102,.15);color:#ff5566}
+.muted{color:#8a92a4;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="login" id="login">
+  <h1>Admin</h1>
+  <input type="password" id="pass" placeholder="Пароль" autocomplete="current-password">
+  <button id="enter">Войти</button>
+</div>
+
+<div id="panel" style="display:none">
+  <div class="top">
+    <h1>Family Budget — админка</h1>
+    <div>
+      <button class="btn" id="refresh">Обновить</button>
+      <button class="btn primary" id="export">Экспорт Excel (CSV)</button>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div id="table-wrap"></div>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_wEWfU",
+  authDomain: "money-family-f9d8b.firebaseapp.com",
+  databaseURL: "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "money-family-f9d8b",
+  storageBucket: "money-family-f9d8b.firebasestorage.app",
+  messagingSenderId: "47777538709",
+  appId: "1:47777538709:web:11e5bbfb2795b59299f19c"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+var ADMIN_PASSWORD = "family2026";
+var users = [];
+
+document.getElementById("enter").onclick = function(){
+  var p = document.getElementById("pass").value;
+  if(p !== ADMIN_PASSWORD){ alert("Неверный пароль"); return; }
+  document.getElementById("login").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  load();
+};
+
+document.getElementById("refresh").onclick = load;
+
+function load(){
+  db.ref("users").once("value").then(function(snap){
+    var v = snap.val() || {};
+    users = Object.keys(v).map(function(k){
+      var u = v[k];
+      u.key = k;
+      return u;
+    });
+    render();
+  });
+}
+
+function fmtDate(ts){
+  if(!ts) return "—";
+  var d = new Date(ts);
+  return d.toLocaleDateString("ru-RU", {day:"2-digit", month:"2-digit", year:"numeric"});
+}
+
+function daysLeft(ts){
+  if(!ts) return 0;
+  var diff = ts - Date.now();
+  return Math.ceil(diff / (24*60*60*1000));
+}
+
+function statusOf(u){
+  if(u.status === "expired") return "expired";
+  if(!u.subEnd) return "expired";
+  if(u.subEnd < Date.now()) return "expired";
+  return u.tariff || "trial";
+}
+
+function render(){
+  var now = Date.now();
+  var total = users.length;
+  var active = 0, trial = 0, expired = 0;
+  users.forEach(function(u){
+    var st = statusOf(u);
+    if(st === "trial") trial++;
+    else if(st === "expired") expired++;
+    else active++;
+  });
+
+  document.getElementById("stats").innerHTML =
+    '<div class="stat"><div class="lbl">Всего</div><div class="val">'+total+'</div></div>'+
+    '<div class="stat"><div class="lbl">Платных</div><div class="val">'+active+'</div></div>'+
+    '<div class="stat"><div class="lbl">Trial</div><div class="val">'+trial+'</div></div>'+
+    '<div class="stat"><div class="lbl">Истёк</div><div class="val">'+expired+'</div></div>';
+
+  users.sort(function(a,b){ return (b.lastSeen||0) - (a.lastSeen||0); });
+
+  var html = '<table><thead><tr>'+
+    '<th>Имя</th><th>Username</th><th>TG ID</th><th>Тариф</th>'+
+    '<th>Начало</th><th>Конец</th><th>Осталось</th><th>Последний визит</th>'+
+    '</tr></thead><tbody>';
+
+  users.forEach(function(u){
+    var st = statusOf(u);
+    var dl = daysLeft(u.subEnd);
+    var dlTxt = dl > 0 ? (dl + " дн") : "истёк";
+    var stLabel = st === "trial" ? "Trial" : (st === "expired" ? "Истёк" : u.tariff);
+    html += '<tr>'+
+      '<td>'+((u.name||"—")+'</td>')+
+      '<td>'+((u.username?("@+u.username):"—")+'</td>')+
+      '<td class="muted">'+((u.tgId||u.key)+'</td>')+
+      '<td><span class="tag '+st+'">'+stLabel+'</span></td>'+
+      '<td>'+fmtDate(u.subStart)+'</td>'+
+      '<td>'+fmtDate(u.subEnd)+'</td>'+
+      '<td>'+dlTxt+'</td>'+
+      '<td class="muted">'+fmtDate(u.lastSeen)+'</td>'+
+      '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById("table-wrap").innerHTML = html;
+}
+
+document.getElementById("export").onclick = function(){
+  if(!users.length){ alert("Нет данных"); return; }
+  var rows = [["Имя","Username","TG ID","Тариф","Начало","Конец","Осталось дней","Последний визит","Первый визит","Статус"]];
+  users.forEach(function(u){
+    rows.push([
+      u.name || "",
+      u.username || "",
+      u.tgId || u.key || "",
+      u.tariff || "trial",
+      fmtDate(u.subStart),
+      fmtDate(u.subEnd),
+      daysLeft(u.subEnd),
+      fmtDate(u.lastSeen),
+      fmtDate(u.firstSeen),
+      statusOf(u)
+    ]);
+  });
+  var csv = rows.map(function(row){
+    return row.map(function(x){ return '"'+String(x).replace(/"/g,'""')+'"' }).join(",");
+  }).join("\n");
+  var blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "family-budget-users-" + new Date().toISOString().slice(0,10) + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+</script>
+</body>
+</html>

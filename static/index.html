@@ -641,6 +641,37 @@ function bootApp(){
   });
 }
 
+function saveUserProfile(){
+  var u=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
+    ?window.Telegram.WebApp.initDataUnsafe.user:null;
+  if(!u||!u.id)return;
+  var now=Date.now();
+  var ref=db.ref("users/"+tgId);
+  ref.once("value").then(function(snap){
+    if(!snap.exists()){
+      ref.set({
+        name:u.first_name||"Гость",
+        username:u.username||"",
+        tgId:tgId,
+        firstSeen:now,
+        lastSeen:now,
+        tariff:"trial",
+        subStart:now,
+        subEnd:now+30*24*60*60*1000,
+        status:"active"
+      });
+    }else{
+      ref.update({
+        name:u.first_name||"Гость",
+        username:u.username||"",
+        lastSeen:now
+      });
+    }
+  });
+}
+
+setTimeout(saveUserProfile,1500);
+  
 bootApp();
 
 var tg=window.Telegram&&window.Telegram.WebApp;

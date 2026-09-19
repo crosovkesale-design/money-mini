@@ -505,6 +505,11 @@ $("#btn-auth-cancel").onclick=closeAuth;
 $("#btn-create").onclick=function(){
   var n=$("#auth-fname").value.trim();
   if(!n){toast("Введи имя","err");return}
+  if(!state.uid){
+    toast("Подключение к Firebase... подожди 3 сек","err");
+    setTimeout(function(){$("#btn-create").click()},3000);
+    return;
+  }
   state.userName=n;state.mode="family";state.familyCode=genCode();
   var ref=db.ref("families/"+state.familyCode);
   ref.set({name:"Семья "+n,createdAt:Date.now()}).then(function(){

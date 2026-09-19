@@ -186,10 +186,16 @@ function genCode(){
   return c;
 }
 function saveLocal(){
-  localStorage.setItem(KEY,JSON.stringify({
-    mode:state.mode,familyCode:state.familyCode,
-    familyName:state.familyName,records:state.records,envelopes:state.envelopes
+  localStorage.setItem(USER_KEY,JSON.stringify({
+    mode:state.mode,records:state.records,envelopes:state.envelopes
   }));
+  if(state.familyCode){
+    localStorage.setItem(FAMILY_KEY,state.familyCode);
+    localStorage.setItem(FAMILY_KEY+"_name",state.familyName||"");
+  }else{
+    localStorage.removeItem(FAMILY_KEY);
+    localStorage.removeItem(FAMILY_KEY+"_name");
+  }
 }
 function recordsOfMonth(ym){return state.records.filter(function(r){return r.date&&r.date.startsWith(ym)})}
 function today(){return new Date().toISOString().slice(0,10)}
@@ -585,30 +591,33 @@ var storedLang=localStorage.getItem(LANG_KEY);
 if(storedLang)state.lang=storedLang;
 $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
 
+var tgUser = window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
+  ?window.Telegram.WebApp.initDataUnsafe.user:null;
+var tgId = tgUser&&tgUser.id ? String(tgUser.id) : "anon";
+
+if(tgUser&&tgUser.first_name)state.userName=tgUser.first_name;
+if(!state.userName)state.userName="Гость";
+
+var USER_KEY = "budget_data_" + tgId;
+var FAMILY_KEY = "budget_family_" + tgId;
+
 function bootApp(){
   auth.signInAnonymously().then(function(cred){
-    state.uid=cred.user.uid;
-    var savedUid=localStorage.getItem(UID_KEY);
-    if(savedUid&&savedUid!==state.uid){
-      state.mode="local";state.familyCode=null;state.familyName="";
-      state.records=[];state.envelopes={};state.members={};
-      localStorage.removeItem(KEY);
-    }else{
-      try{
-        var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
-        if(saved.mode)state.mode=saved.mode;
-        if(saved.familyCode)state.familyCode=saved.familyCode;
-        if(saved.familyName)state.familyName=saved.familyName;
-        if(saved.records&&state.mode==="local")state.records=saved.records;
-        if(saved.envelopes&&state.mode==="local")state.envelopes=saved.envelopes;
-      }catch(e){}
-    }
-    localStorage.setItem(UID_KEY,state.uid);
+    state.uid = tgId;
 
-    var tgU=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
-      ?window.Telegram.WebApp.initDataUnsafe.user:null;
-    if(tgU&&tgU.first_name)state.userName=tgU.first_name;
-    if(!state.userName)state.userName="Гость";
+    try{
+      var saved=JSON.parse(localStorage.getItem(USER_KEY)||"{}");
+      if(saved.mode)state.mode=saved.mode;
+      if(saved.records)state.records=saved.records;
+      if(saved.envelopes)state.envelopes=saved.envelopes;
+    }catch(e){}
+
+    var famCode = localStorage.getItem(FAMILY_KEY);
+    var famName = localStorage.getItem(FAMILY_KEY + "_name");
+    if(famCode && state.mode==="family"){
+      state.familyCode = famCode;
+      state.familyName = famName || "Семья";
+    }
 
     var n=new Date();
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
@@ -616,27 +625,23 @@ function bootApp(){
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
   }).catch(function(e){
-    toast("Auth: "+(e.code||e.message),"err");
+    state.uid = tgId;
+    try{
+      var saved=JSON.parse(localStorage.getItem(USER_KEY)||"{}");
+      if(saved.mode)state.mode=saved.mode;
+      if(saved.records)state.records=saved.records;
+      if(saved.envelopes)state.envelopes=saved.envelopes;
+    }catch(e){}
+    var famCode = localStorage.getItem(FAMILY_KEY);
+    if(famCode && state.mode==="family")state.familyCode = famCode;
     var n=new Date();
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
+    if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
   });
 }
 
-var tgU0=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
-  ?window.Telegram.WebApp.initDataUnsafe.user:null;
-var tgId=tgU0?String(tgU0.id):"anon";
-var savedTgId=localStorage.getItem("budget_tg_id");
-
-if(savedTgId&&savedTgId!==tgId){
-  localStorage.removeItem(KEY);
-  localStorage.removeItem(UID_KEY);
-  localStorage.setItem("budget_tg_id",tgId);
-  auth.signOut().then(bootApp).catch(bootApp);
-}else{
-  localStorage.setItem("budget_tg_id",tgId);
-  bootApp();
-}
+bootApp();
 
 var tg=window.Telegram&&window.Telegram.WebApp;
 if(tg){tg.ready();tg.expand()}

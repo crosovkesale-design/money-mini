@@ -1,13 +1,6 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <script>
-window.onerror=function(m,s,l,c){
-  var d=document.getElementById("dbg");
-  if(d)d.textContent+="\\nJS ERR: "+m+" @"+l;
-  return false;
-};
-  </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0f1116">
@@ -16,31 +9,7 @@ window.onerror=function(m,s,l,c){
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-<div id="dbg" style="background:#000;color:#0f0;padding:8px;font:11px monospace;position:fixed;top:0;left:0;right:0;z-index:99999;max-height:200px;overflow:auto"></div>
-<script>
-setTimeout(function(){
-  var d=document.getElementById("dbg");
-  var t="";
-  t+="firebase="+(typeof firebase)+"\\n";
-  if(typeof firebase!=="undefined"){
-    t+="auth method="+(typeof firebase.auth)+"\\n";
-    try{
-      var a=firebase.auth();
-      a.onAuthStateChanged(function(u){
-        document.getElementById("dbg").textContent+="\\nstate: "+(u?("OK "+u.uid.slice(0,6)):"null");
-      });
-      a.signInAnonymously().then(function(c){
-        document.getElementById("dbg").textContent+="\\nsignIn OK "+c.user.uid.slice(0,6);
-      }).catch(function(e){
-        document.getElementById("dbg").textContent+="\\nsignIn FAIL "+e.code;
-      });
-    }catch(e){t+="auth error: "+e.message+"\\n";}
-  }
-  t+="tg="+(typeof window.Telegram)+"\\n";
-  d.textContent=t;
-},2000);
-</script>
-  
+
 <div class="auth-screen hidden" id="auth-screen" style="display:none">
   <div class="auth-box">
     <h1>Семья</h1>
@@ -58,13 +27,14 @@ setTimeout(function(){
 
 <div id="main-app" style="display:block">
   <div class="topbar">
-    <div class="lang-switch">
-  <button class="lang-btn on" data-lang="ru">RU</button>
-  <button class="lang-btn" data-lang="en">EN</button>
-    </div>
+    <div class="month-nav">
       <button id="prev">‹</button>
       <div class="label" id="mlabel">—</div>
       <button id="next">›</button>
+      <div class="lang-switch">
+        <button class="lang-btn on" data-lang="ru">RU</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
     </div>
     <div class="family-badge" id="family-badge" style="display:none">
       <span>👨‍👩‍👧</span><b id="family-name">Семья</b>
@@ -118,14 +88,13 @@ setTimeout(function(){
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
 var firebaseConfig = {
-  apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_vWEvfU",
+  apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_wEWfU",
   authDomain: "money-family-f9d8b.firebaseapp.com",
   databaseURL: "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "money-family-f9d8b",
@@ -133,7 +102,6 @@ var firebaseConfig = {
   messagingSenderId: "47777538709",
   appId: "1:47777538709:web:11e5bbfb2795b59299f19c"
 };
-
 firebase.initializeApp(firebaseConfig);
 var auth = firebase.auth();
 var db = firebase.database();
@@ -145,8 +113,10 @@ var db = firebase.database();
 var $=function(s){return document.querySelector(s)};
 var $$=function(s){return Array.from(document.querySelectorAll(s))};
 
-var state={mode:"local",userName:"",familyCode:null,familyName:"",records:[],envelopes:{},members:{},viewMonth:null,uid:null};
+var state={mode:"local",userName:"",familyCode:null,familyName:"",records:[],envelopes:{},members:{},viewMonth:null,uid:null,lang:"ru"};
 var KEY="fb_data_v3";
+var UID_KEY="budget_uid";
+var LANG_KEY="budget_lang";
 var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
 
 var INCOME=[
@@ -216,7 +186,7 @@ function genCode(){
 }
 function saveLocal(){
   localStorage.setItem(KEY,JSON.stringify({
-    mode:state.mode,userName:state.userName,familyCode:state.familyCode,
+    mode:state.mode,familyCode:state.familyCode,
     familyName:state.familyName,records:state.records,envelopes:state.envelopes
   }));
 }
@@ -225,7 +195,7 @@ function today(){return new Date().toISOString().slice(0,10)}
 
 function closeAuth(){$("#auth-screen").style.display="none"}
 function openAuth(){$("#auth-screen").style.display="flex"}
-  
+
 var familySub=null;
 function subscribeFamily(){
   if(familySub){familySub.off();familySub=null}
@@ -242,7 +212,7 @@ function subscribeFamily(){
     render();
   });
 }
-
+  
 function render(){
   var ym=state.viewMonth;
   var recs=recordsOfMonth(ym);
@@ -505,8 +475,8 @@ function editEnvelope(catId){
     };
   });
   modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
-}
-
+        }
+  
 $$(".tab").forEach(function(t){
   t.onclick=function(){
     $$(".tab").forEach(function(x){x.classList.remove("on")});
@@ -531,6 +501,15 @@ $("#list").addEventListener("click",function(e){
   if(existing)openRecord(existing);
 });
 
+$$(".lang-btn").forEach(function(b){
+  b.onclick=function(){
+    state.lang=b.dataset.lang;
+    localStorage.setItem(LANG_KEY,state.lang);
+    $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
+    toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
+  };
+});
+
 $("#btn-open-family").onclick=function(){
   $("#auth-fname").value=state.userName||"";
   openAuth();
@@ -540,11 +519,7 @@ $("#btn-auth-cancel").onclick=closeAuth;
 $("#btn-create").onclick=function(){
   var n=$("#auth-fname").value.trim();
   if(!n){toast("Введи имя","err");return}
-  if(!state.uid){
-    toast("Подключение к Firebase... подожди 3 сек","err");
-    setTimeout(function(){$("#btn-create").click()},3000);
-    return;
-  }
+  if(!state.uid){toast("Подключение к Firebase... жди 3 сек","err");setTimeout(function(){$("#btn-create").click()},3000);return}
   state.userName=n;state.mode="family";state.familyCode=genCode();
   var ref=db.ref("families/"+state.familyCode);
   ref.set({name:"Семья "+n,createdAt:Date.now()}).then(function(){
@@ -560,6 +535,7 @@ $("#btn-join").onclick=function(){
   var c=$("#auth-code").value.trim().toUpperCase();
   if(!n){toast("Введи имя","err");return}
   if(c.length!==6){toast("Код из 6 знаков","err");return}
+  if(!state.uid){toast("Подключение к Firebase... жди 3 сек","err");setTimeout(function(){$("#btn-join").click()},3000);return}
   var ref=db.ref("families/"+c);
   ref.once("value").then(function(snap){
     if(!snap.exists()){toast("Семья не найдена","err");return}
@@ -604,16 +580,18 @@ $("#export-btn").onclick=function(){
   toast("Скачано","ok");
 };
 
+var storedLang=localStorage.getItem(LANG_KEY);
+if(storedLang)state.lang=storedLang;
+$$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
+
 auth.signInAnonymously().then(function(cred){
   state.uid=cred.user.uid;
-  var savedUid=localStorage.getItem("budget_uid");
+
+  var savedUid=localStorage.getItem(UID_KEY);
   if(savedUid&&savedUid!==state.uid){
-    state.mode="local";
-    state.familyCode=null;
-    state.familyName="";
-    state.records=[];
-    state.envelopes={};
-    state.members={};
+    state.mode="local";state.familyCode=null;state.familyName="";
+    state.records=[];state.envelopes={};state.members={};
+    localStorage.removeItem(KEY);
   }else{
     try{
       var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
@@ -624,15 +602,12 @@ auth.signInAnonymously().then(function(cred){
       if(saved.envelopes&&state.mode==="local")state.envelopes=saved.envelopes;
     }catch(e){}
   }
-  localStorage.setItem("budget_uid",state.uid);
+  localStorage.setItem(UID_KEY,state.uid);
 
-  if(!state.userName){
-    var tgU=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
-  ?window.Telegram.WebApp.initDataUnsafe.user:null;
-if(tgU&&tgU.first_name){
-  state.userName=tgU.first_name;
-}
-if(!state.userName)state.userName="Гость";
+  var tgU=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
+    ?window.Telegram.WebApp.initDataUnsafe.user:null;
+  if(tgU&&tgU.first_name)state.userName=tgU.first_name;
+  if(!state.userName)state.userName="Гость";
 
   var n=new Date();
   state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
@@ -640,21 +615,12 @@ if(!state.userName)state.userName="Гость";
   if(state.mode==="family"&&state.familyCode){subscribeFamily()}
   render();
 }).catch(function(e){
-  toast("Auth: "+e.message,"err");
+  toast("Auth: "+(e.code||e.message),"err");
   var n=new Date();
   state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
   render();
 });
 
-$$(".lang-btn").forEach(function(b){
-  b.onclick=function(){
-    $$(".lang-btn").forEach(function(x){x.classList.remove("on")});
-    b.classList.add("on");
-    state.lang=b.dataset.lang;
-    toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
-  };
-});
-  
 var tg=window.Telegram&&window.Telegram.WebApp;
 if(tg){tg.ready();tg.expand()}
 

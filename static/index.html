@@ -188,9 +188,9 @@ function saveLocal(){
 function recordsOfMonth(ym){return state.records.filter(function(r){return r.date&&r.date.startsWith(ym)})}
 function today(){return new Date().toISOString().slice(0,10)}
 
-function closeAuth(){$("#auth-screen").classList.add("hidden")}
-function openAuth(){$("#auth-screen").classList.remove("hidden")}
-
+function closeAuth(){$("#auth-screen").style.display="none"}
+function openAuth(){$("#auth-screen").style.display="flex"}
+  
 var familySub=null;
 function subscribeFamily(){
   if(familySub){familySub.off();familySub=null}

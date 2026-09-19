@@ -16,7 +16,31 @@ window.onerror=function(m,s,l,c){
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-
+<div id="dbg" style="background:#000;color:#0f0;padding:8px;font:11px monospace;position:fixed;top:0;left:0;right:0;z-index:99999;max-height:200px;overflow:auto"></div>
+<script>
+setTimeout(function(){
+  var d=document.getElementById("dbg");
+  var t="";
+  t+="firebase="+(typeof firebase)+"\\n";
+  if(typeof firebase!=="undefined"){
+    t+="auth method="+(typeof firebase.auth)+"\\n";
+    try{
+      var a=firebase.auth();
+      a.onAuthStateChanged(function(u){
+        document.getElementById("dbg").textContent+="\\nstate: "+(u?("OK "+u.uid.slice(0,6)):"null");
+      });
+      a.signInAnonymously().then(function(c){
+        document.getElementById("dbg").textContent+="\\nsignIn OK "+c.user.uid.slice(0,6);
+      }).catch(function(e){
+        document.getElementById("dbg").textContent+="\\nsignIn FAIL "+e.code;
+      });
+    }catch(e){t+="auth error: "+e.message+"\\n";}
+  }
+  t+="tg="+(typeof window.Telegram)+"\\n";
+  d.textContent=t;
+},2000);
+</script>
+  
 <div class="auth-screen hidden" id="auth-screen" style="display:none">
   <div class="auth-box">
     <h1>Семья</h1>

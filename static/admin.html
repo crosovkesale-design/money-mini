@@ -142,15 +142,15 @@ function render(){
     var dlTxt = dl > 0 ? (dl + " дн") : "истёк";
     var stLabel = st === "trial" ? "Trial" : (st === "expired" ? "Истёк" : u.tariff);
     html += '<tr>'+
-      '<td>'+((u.name||"—")+'</td>')+
-      '<td>'+((u.username?("@+u.username):"—")+'</td>')+
-      '<td class="muted">'+((u.tgId||u.key)+'</td>')+
-      '<td><span class="tag '+st+'">'+stLabel+'</span></td>'+
-      '<td>'+fmtDate(u.subStart)+'</td>'+
-      '<td>'+fmtDate(u.subEnd)+'</td>'+
-      '<td>'+dlTxt+'</td>'+
-      '<td class="muted">'+fmtDate(u.lastSeen)+'</td>'+
-      '</tr>';
+  '<td>'+(u.name||"—")+'</td>'+
+  '<td>'+(u.username?("@+u.username):"—")+'</td>'+
+  '<td class="muted">'+(u.tgId||u.key)+'</td>'+
+  '<td><span class="tag '+st+'">'+stLabel+'</span></td>'+
+  '<td>'+fmtDate(u.subStart)+'</td>'+
+  '<td>'+fmtDate(u.subEnd)+'</td>'+
+  '<td>'+dlTxt+'</td>'+
+  '<td class="muted">'+fmtDate(u.lastSeen)+'</td>'+
+  '</tr>';
   });
 
   html += '</tbody></table>';

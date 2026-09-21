@@ -592,11 +592,11 @@ $("#btn-leave-family").onclick=function(){
 
 $("#export-btn").onclick=function(){
   if(!state.records.length){toast("Нет записей","err");return}
-  var rows=[["дата","тип","категория","сумма","комментарий","кто"]];
-  state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){
-    var c=findCat(r.cat);
-    rows.push([r.date,r.type==="income"?"доход":"расход",c.name,r.amount,r.note||"",r.byName||""]);
-  });
+  var rows=[["дата","тип","категория","сумма","магазин","комментарий","кто"]];
+state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){
+  var c=findCat(r.cat);
+  rows.push([r.date,r.type==="income"?"доход":"расход",c.name,r.amount,r.shop||"",r.note||"",r.byName||""]);
+});
   var csv=rows.map(function(row){
     return row.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",");
   }).join("\n");

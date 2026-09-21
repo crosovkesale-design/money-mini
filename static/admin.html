@@ -1,51 +1,64 @@
 <!doctype html>
-<html><head><meta charset="utf-8">
+<html lang="ru">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin test</title>
+<title>Admin — Family Budget</title>
 <style>
-body{background:#0f1116;color:#e8ecf5;font:14px/1.5 monospace;padding:20px;margin:0}
-.box{background:#161a22;border:1px solid #242a37;border-radius:10px;padding:14px;margin-bottom:10px;word-break:break-all}
-.ok{color:#35d07f}
-.err{color:#ff5566}
-.warn{color:#f5c451}
-input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #242a37;background:#1d222d;color:#e8ecf5;margin-right:6px}
-button{background:#4d9fff;border:0;font-weight:700;cursor:pointer;color:#fff}
-</style></head>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1116;color:#e8ecf5;font:14px/1.5 -apple-system,sans-serif;padding:16px;min-height:100vh}
+.wrap{max-width:1200px;margin:0 auto}
+h1{font-size:20px;margin-bottom:14px}
+.card{background:#161a22;border:1px solid #242a37;border-radius:12px;padding:20px;max-width:400px;margin:60px auto}
+.card input{width:100%;background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:10px;padding:12px;font:inherit;margin-bottom:12px}
+.card button{width:100%;background:#4d9fff;color:#fff;border:0;border-radius:10px;padding:14px;font:inherit;font-weight:700;cursor:pointer}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:#161a22;border:1px solid #242a37;border-radius:12px;padding:14px}
+.stat .lbl{font-size:11px;color:#8a92a4;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.stat .val{font-size:22px;font-weight:900;color:#f5c451}
+.btn{background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:#4d9fff;border:0;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#161a22;border-radius:12px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #242a37}
+th{color:#8a92a4;font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+tr:last-child td{border:0}
+.tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.tag.trial{background:rgba(245,196,81,.15);color:#f5c451}
+.tag.paid{background:rgba(53,208,127,.15);color:#35d07f}
+.tag.expired{background:rgba(255,85,102,.15);color:#ff5566}
+.muted{color:#8a92a4;font-size:11px}
+.err{background:#3a1218;color:#ff5566;padding:12px;border-radius:10px;margin:12px 0;font-family:monospace;font-size:12px;word-break:break-all}
+</style>
+</head>
 <body>
+<div class="wrap">
 
-<div class="box ok" id="step1">1. HTML загрузился</div>
-<div class="box warn" id="step2">2. Жду Firebase SDK...</div>
-<div class="box warn" id="step3">3. Жду инициализацию...</div>
-<div class="box warn" id="step4">4. Проверка DB...</div>
-
-<div class="box">
-  <input type="password" id="pass" placeholder="пароль">
+<div class="card" id="login">
+  <h1>Admin</h1>
+  <input type="password" id="pass" placeholder="Пароль">
   <button id="enter">Войти</button>
+  <div class="err" id="login-err" style="display:none"></div>
 </div>
 
-<div class="box" id="result">результат...</div>
+<div id="panel" style="display:none">
+  <div class="top">
+    <h1>Family Budget — админка</h1>
+    <div>
+      <button class="btn" id="refresh">Обновить</button>
+      <button class="btn primary" id="export">Excel (CSV)</button>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="err" id="err" style="display:none"></div>
+  <div id="table-wrap"></div>
+</div>
+
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-window.onerror = function(m, s, l, c){
-  var r = document.getElementById("result");
-  if(r) r.innerHTML += '<div class="err">JS ERROR: ' + m + ' @ ' + l + ':' + c + '</div>';
-};
-
-var s2 = document.getElementById("step2");
-if(typeof firebase !== "undefined"){
-  s2.textContent = "2. Firebase SDK OK — " + typeof firebase.app;
-  s2.className = "box ok";
-}else{
-  s2.textContent = "2. Firebase SDK НЕ загрузился";
-  s2.className = "box err";
-}
-
-var s3 = document.getElementById("step3");
-var s4 = document.getElementById("step4");
-var db = null;
-
 try {
   firebase.initializeApp({
     apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_wEWfU",
@@ -56,32 +69,151 @@ try {
     messagingSenderId: "47777538709",
     appId: "1:47777538709:web:11e5bbfb2795b59299f19c"
   });
-  db = firebase.database();
-  s3.textContent = "3. Firebase инициализирован, DB доступна";
-  s3.className = "box ok";
 } catch(e) {
-  s3.textContent = "3. ОШИБКА init: " + e.message;
-  s3.className = "box err";
+  document.getElementById("login-err").style.display = "block";
+  document.getElementById("login-err").textContent = "Firebase: " + e.message;
 }
+var db = firebase.database();
 
-if(db){
-  db.ref("users").once("value").then(function(snap){
-    var v = snap.val();
-    if(v){
-      s4.textContent = "4. DB читается. Пользователей: " + Object.keys(v).length;
-    }else{
-      s4.textContent = "4. DB пустая (нет пользователей)";
-    }
-    s4.className = "box ok";
-  }).catch(function(e){
-    s4.textContent = "4. ОШИБКА чтения DB: " + e.message;
-    s4.className = "box err";
-  });
+var ADMIN_PASSWORD = "Max07kolen";
+var users = [];
+
+function showErr(id, msg){
+  var el = document.getElementById(id);
+  el.style.display = "block";
+  el.textContent = msg;
 }
 
 document.getElementById("enter").onclick = function(){
   var p = document.getElementById("pass").value;
-  document.getElementById("result").innerHTML = "Нажал с паролем: [" + p + "]<br>длина: " + p.length;
+  if(p !== ADMIN_PASSWORD){
+    showErr("login-err", "Неверный пароль");
+    return;
+  }
+  document.getElementById("login").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  load();
+};
+
+document.getElementById("refresh").onclick = load;
+
+function load(){
+  db.ref("users").once("value").then(function(snap){
+    var v = snap.val() || {};
+    users = [];
+    for(var k in v){
+      var u = v[k];
+      u.key = k;
+      users.push(u);
+    }
+    render();
+  }).catch(function(e){
+    showErr("err", "DB: " + e.message);
+  });
+}
+
+function pad(n){ return n < 10 ? "0" + n : "" + n; }
+
+function fmtDate(ts){
+  if(!ts) return "—";
+  var d = new Date(ts);
+  return pad(d.getDate()) + "." + pad(d.getMonth()+1) + "." + d.getFullYear();
+}
+
+function daysLeft(ts){
+  if(!ts) return 0;
+  return Math.ceil((ts - Date.now()) / 86400000);
+}
+
+function getStatus(u){
+  if(u.status === "expired") return "expired";
+  if(!u.subEnd) return "expired";
+  if(u.subEnd < Date.now()) return "expired";
+  if(u.tariff === "trial") return "trial";
+  return "paid";
+}
+
+function getStatusLabel(u){
+  var s = getStatus(u);
+  if(s === "trial") return "Trial";
+  if(s === "expired") return "Истёк";
+  return u.tariff || "Платный";
+}
+
+function render(){
+  var total = users.length, paid = 0, trial = 0, expired = 0;
+  users.forEach(function(u){
+    var s = getStatus(u);
+    if(s === "trial") trial++;
+    else if(s === "expired") expired++;
+    else paid++;
+  });
+
+  var statsHtml = '';
+  statsHtml += '<div class="stat"><div class="lbl">Всего</div><div class="val">' + total + '</div></div>';
+  statsHtml += '<div class="stat"><div class="lbl">Платных</div><div class="val">' + paid + '</div></div>';
+  statsHtml += '<div class="stat"><div class="lbl">Trial</div><div class="val">' + trial + '</div></div>';
+  statsHtml += '<div class="stat"><div class="lbl">Истёк</div><div class="val">' + expired + '</div></div>';
+  document.getElementById("stats").innerHTML = statsHtml;
+
+  users.sort(function(a,b){ return (b.lastSeen||0) - (a.lastSeen||0); });
+
+  var rows = '';
+  users.forEach(function(u){
+    var s = getStatus(u);
+    var lbl = getStatusLabel(u);
+    var dl = daysLeft(u.subEnd);
+    var dlTxt = dl > 0 ? (dl + " дн") : "истёк";
+    var uname = u.username ? ("@" + u.username) : "—";
+    var tgid = u.tgId || u.key || "—";
+    var name = u.name || "—";
+
+    rows += '<tr>';
+    rows += '<td>' + name + '</td>';
+    rows += '<td>' + uname + '</td>';
+    rows += '<td class="muted">' + tgid + '</td>';
+    rows += '<td><span class="tag ' + s + '">' + lbl + '</span></td>';
+    rows += '<td>' + fmtDate(u.subStart) + '</td>';
+    rows += '<td>' + fmtDate(u.subEnd) + '</td>';
+    rows += '<td>' + dlTxt + '</td>';
+    rows += '<td class="muted">' + fmtDate(u.lastSeen) + '</td>';
+    rows += '</tr>';
+  });
+
+  document.getElementById("table-wrap").innerHTML =
+    '<table><thead><tr><th>Имя</th><th>Username</th><th>TG ID</th><th>Тариф</th><th>Начало</th><th>Конец</th><th>Осталось</th><th>Визит</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+document.getElementById("export").onclick = function(){
+  if(!users.length){ alert("Нет данных"); return; }
+  var rows = [["Имя","Username","TG ID","Тариф","Начало","Конец","Осталось дней","Последний визит","Первый визит","Статус"]];
+  users.forEach(function(u){
+    rows.push([
+      u.name || "",
+      u.username || "",
+      u.tgId || u.key || "",
+      u.tariff || "trial",
+      fmtDate(u.subStart),
+      fmtDate(u.subEnd),
+      daysLeft(u.subEnd),
+      fmtDate(u.lastSeen),
+      fmtDate(u.firstSeen),
+      getStatusLabel(u)
+    ]);
+  });
+  var csv = rows.map(function(row){
+    return row.map(function(x){ return '"' + String(x).replace(/"/g,'""') + '"' }).join(",");
+  }).join("\n");
+  var blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "users-" + new Date().toISOString().slice(0,10) + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 };
 </script>
-</body></html>
+</body>
+</html>

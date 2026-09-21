@@ -322,6 +322,25 @@ function renderStats(recs){
         +'<div class="val">'+fmt(kv[1])+'</div></div>';
     }).join("");
   }
+
+  var byShop={};
+  ex.forEach(function(r){
+    if(r.shop)byShop[r.shop]=(byShop[r.shop]||0)+r.amount;
+  });
+  var shops=Object.entries(byShop).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+  var elS=$("#stats-shops");
+  if(!elS)return;
+  if(!shops.length){
+    elS.innerHTML='<div style="color:var(--muted);font-size:13px">пока не указано ни одного магазина</div>';
+  }else{
+    var totalShops=shops.reduce(function(s,kv){return s+kv[1]},0);
+    elS.innerHTML=shops.map(function(kv){
+      var pct=totalShops>0?(kv[1]/totalShops*100):0;
+      return '<div class="cat-row"><div class="ico">🏪</div>'
+        +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
+        +'<div class="val">'+fmt(kv[1])+'</div></div>';
+    }).join("");
+  }
 }
 
 var modal=null;

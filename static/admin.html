@@ -133,11 +133,23 @@ function getStatus(u){
   return "paid";
 }
 
+var TARIFF_NAMES = {
+  "trial":"Trial 30 дней",
+  "trial7":"Trial 7 дней",
+  "1month":"1 месяц",
+  "3months":"3 месяца",
+  "6months":"6 месяцев",
+  "12months":"12 месяцев (годовой)",
+  "pro1":"Pro 1 месяц",
+  "pro12":"Pro 12 месяцев",
+  "review":"Разбор финансов"
+};
+
 function getStatusLabel(u){
   var s = getStatus(u);
-  if(s === "trial") return "Trial";
   if(s === "expired") return "Истёк";
-  return u.tariff || "Платный";
+  var key = u.tariff || "trial";
+  return TARIFF_NAMES[key] || key;
 }
 
 function render(){

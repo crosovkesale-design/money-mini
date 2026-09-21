@@ -330,9 +330,9 @@ var edit={type:"expense",cat:"food",amount:"",note:"",date:"",id:null};
 function openRecord(existing){
   if(existing){
     edit={type:existing.type,cat:existing.cat,amount:String(existing.amount),
-          note:existing.note||"",date:existing.date,id:existing.id};
+          note:existing.note||"",shop:existing.shop||"",date:existing.date,id:existing.id};
   }else{
-    edit={type:"expense",cat:"food",amount:"",note:"",date:today(),id:null};
+    edit={type:"expense",cat:"food",amount:"",note:"",shop:"",date:today(),id:null};
   }
   renderRecordModal();
 }
@@ -356,8 +356,10 @@ function renderRecordModal(){
         +'<span class="e">'+c.e+'</span>'+c.name+'</div>';
     }).join("")
     +'</div></div>'
-    +'<div class="field"><label>Комментарий</label>'
-    +'<input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
+    +'<div class="field"><label>Магазин / место</label>'
++'<input type="text" id="m-shop" placeholder="Сильпо, ATB, Rozetka..." value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
++'<div class="field"><label>Комментарий</label>'
++'<input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
     +'<div class="field"><label>Дата</label>'
     +'<input type="date" id="m-date" value="'+edit.date+'"></div>'
     +'<div class="row-btns">'
@@ -403,9 +405,10 @@ function attachRecordEvents(){
         var amt=parseFloat(modal.querySelector("#m-am").value);
         if(!amt||amt<=0){toast("Введи сумму","err");return}
         var note=modal.querySelector("#m-note").value.trim();
-        var date=modal.querySelector("#m-date").value||today();
-        var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,date:date,
-                 ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
+var shop=modal.querySelector("#m-shop").value.trim();
+var date=modal.querySelector("#m-date").value||today();
+var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,shop:shop,date:date,
+         ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
         if(state.mode==="family"){
           var id=edit.id||(Date.now()+"-"+Math.random().toString(36).slice(2,8));
           db.ref("families/"+state.familyCode+"/records/"+id).set(rec);

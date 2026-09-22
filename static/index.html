@@ -349,36 +349,56 @@ var edit={type:"expense",cat:"food",amount:"",note:"",date:"",id:null};
 function openRecord(existing){
   if(existing){
     edit={type:existing.type,cat:existing.cat,amount:String(existing.amount),
-          note:existing.note||"",shop:existing.shop||"",date:existing.date,id:existing.id};
+          note:existing.note||"",shop:existing.shop||"",date:existing.date,id:existing.id,
+          items:existing.items||[]};
   }else{
-    edit={type:"expense",cat:"food",amount:"",note:"",shop:"",date:today(),id:null};
+    edit={type:"expense",cat:"food",amount:"",note:"",shop:"",
+          date:today(),id:null,items:[{name:"",price:""}]};
   }
   renderRecordModal();
 }
-
+  
 function renderRecordModal(){
   if(modal)modal.remove();
   modal=document.createElement("div");
   modal.className="modal";
   var cats=edit.type==="income"?INCOME:EXPENSE;
+  var itemsHtml="";
+  if(edit.type==="expense"){
+    itemsHtml=edit.items.map(function(it,i){
+      return '<div class="item-row" data-i="'+i+'">'
+        +'<input type="text" class="it-name" placeholder="Товар" value="'+(it.name||"").replace(/"/g,"&quot;")+'">'
+        +'<input type="number" class="it-price" inputmode="decimal" step="0.01" placeholder="Цена" value="'+(it.price||"")+'">'
+        +'<button type="button" class="it-del" data-i="'+i+'">✕</button>'
+        +'</div>';
+    }).join("");
+  }
+  var sum=0;
+  edit.items.forEach(function(it){ sum+=parseFloat(it.price)||0; });
   modal.innerHTML='<div class="sheet">'
     +'<h2>'+(edit.id?"Изменить":"Новая запись")+'</h2>'
     +'<div class="type-switch">'
     +'<button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">− Расход</button>'
     +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">+ Доход</button>'
     +'</div>'
-    +'<div class="field"><label>Сумма</label>'
-    +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>'
+    +'<div class="field"><label>Магазин / место</label>'
+    +'<input type="text" id="m-shop" placeholder="Сильпо, ATB, Rozetka..." value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
+    +(edit.type==="expense"
+      ? '<div class="field"><label>Товары в чеке</label>'
+        +'<div id="items-list">'+itemsHtml+'</div>'
+        +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">+ добавить товар</button>'
+        +'<div style="text-align:right;margin-top:12px;font-size:14px">Итого: <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
+        +'</div>'
+      : '<div class="field"><label>Сумма</label>'
+        +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>')
     +'<div class="field"><label>Категория</label><div class="cat-grid">'
     +cats.map(function(c){
       return '<div class="cat '+(edit.cat===c.id?"on":"")+'" data-cat="'+c.id+'">'
         +'<span class="e">'+c.e+'</span>'+c.name+'</div>';
     }).join("")
     +'</div></div>'
-    +'<div class="field"><label>Магазин / место</label>'
-+'<input type="text" id="m-shop" placeholder="Сильпо, ATB, Rozetka..." value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
-+'<div class="field"><label>Комментарий</label>'
-+'<input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
+    +'<div class="field"><label>Комментарий</label>'
+    +'<input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
     +'<div class="field"><label>Дата</label>'
     +'<input type="date" id="m-date" value="'+edit.date+'"></div>'
     +'<div class="row-btns">'

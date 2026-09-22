@@ -304,6 +304,32 @@ function renderEnvelopes(recs){
   });
 }
 
+  var byItem={};
+ex.forEach(function(r){
+  if(r.items&&r.items.length){
+    r.items.forEach(function(it){
+      if(it.name&&it.price>0){
+        byItem[it.name]=(byItem[it.name]||0)+it.price;
+      }
+    });
+  }
+});
+var items=Object.entries(byItem).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+var elI=$("#stats-items");
+if(elI){
+  if(!items.length){
+    elI.innerHTML='<div style="color:var(--muted);font-size:13px">товары в чеках пока не указаны</div>';
+  }else{
+    var totalItems=items.reduce(function(s,kv){return s+kv[1]},0);
+    elI.innerHTML=items.map(function(kv){
+      var pct=totalItems>0?(kv[1]/totalItems*100):0;
+      return '<div class="cat-row"><div class="ico">📦</div>'
+        +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
+        +'<div class="val">'+fmt(kv[1])+'</div></div>';
+    }).join("");
+  }
+}
+  
 function renderStats(recs){
   var ex=recs.filter(function(r){return r.type==="expense"});
   var total=ex.reduce(function(s,r){return s+r.amount},0);
@@ -411,6 +437,45 @@ function renderRecordModal(){
 }
 
 function attachRecordEvents(){
+  modal.querySelectorAll(".item-row").forEach(function(row){
+  var i=parseInt(row.dataset.i);
+  var nInput=row.querySelector(".it-name");
+  var pInput=row.querySelector(".it-price");
+  if(nInput)nInput.oninput=function(){
+    edit.items[i].name=nInput.value;
+  };
+  if(pInput)pInput.oninput=function(){
+    edit.items[i].price=pInput.value;
+    var sum=0;
+    edit.items.forEach(function(it){ sum+=parseFloat(it.price)||0; });
+    var t=modal.querySelector("#total-sum");
+    if(t)t.textContent=fmt(sum);
+  };
+});
+
+var delBtns=modal.querySelectorAll(".it-del");
+delBtns.forEach(function(b){
+  b.onclick=function(){
+    var i=parseInt(b.dataset.i);
+    edit.items.splice(i,1);
+    if(!edit.items.length)edit.items=[{name:"",price:""}];
+    renderRecordModal();
+  };
+});
+
+var addBtn=modal.querySelector("#add-item");
+if(addBtn){
+  addBtn.onclick=function(){
+    edit.items.forEach(function(it){
+      var n=modal.querySelector('.item-row[data-i="'+edit.items.indexOf(it)+'"] .it-name');
+      var p=modal.querySelector('.item-row[data-i="'+edit.items.indexOf(it)+'"] .it-price');
+      if(n)it.name=n.value;
+      if(p)it.price=p.value;
+    });
+    edit.items.push({name:"",price:""});
+    renderRecordModal();
+  };
+}
   modal.querySelectorAll(".type-switch button").forEach(function(b){
     b.onclick=function(){
       edit.type=b.dataset.t;
@@ -441,13 +506,27 @@ function attachRecordEvents(){
         modal.remove();modal=null;toast("Удалено");return;
       }
       if(act==="save"){
-        var amt=parseFloat(modal.querySelector("#m-am").value);
-        if(!amt||amt<=0){toast("Введи сумму","err");return}
+        var amt=0;
+var items=[];
+if(edit.type==="expense"){
+  edit.items.forEach(function(it){
+    var n=(it.name||"").trim();
+    var p=parseFloat(it.price)||0;
+    if(n||p>0){
+      items.push({name:n,price:p});
+      amt+=p;
+    }
+  });
+  if(!amt||amt<=0){toast("Добавь хотя бы один товар","err");return}
+}else{
+  amt=parseFloat(modal.querySelector("#m-am").value);
+  if(!amt||amt<=0){toast("Введи сумму","err");return}
+}
         var note=modal.querySelector("#m-note").value.trim();
 var shop=modal.querySelector("#m-shop").value.trim();
 var date=modal.querySelector("#m-date").value||today();
 var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,shop:shop,date:date,
-         ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
+         items:items,ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
         if(state.mode==="family"){
           var id=edit.id||(Date.now()+"-"+Math.random().toString(36).slice(2,8));
           db.ref("families/"+state.familyCode+"/records/"+id).set(rec);

@@ -159,7 +159,8 @@ var MONTHS=["январь","февраль","март","апрель","май","
     add_item:"+ добавить товар",total:"Итого",category:"Категория",
     comment:"Комментарий",comment_ph:"необязательно",date:"Дата",
     save:"Сохранить",new_env:"Новый конверт",edit_env:"Изменить конверт",
-    env_limit:"Лимит на месяц",spent:"израсходовано",of:"из",left:"осталось"
+    env_limit:"Лимит на месяц",spent:"израсходовано",of:"из",left:"осталось",
+    amount:"Сумма",delete:"Удалить"
   },
   en:{
     records:"Records",envelopes:"Envelopes",stats:"Stats",settings:"Settings",
@@ -192,7 +193,8 @@ var MONTHS=["январь","февраль","март","апрель","май","
     add_item:"+ add item",total:"Total",category:"Category",
     comment:"Comment",comment_ph:"optional",date:"Date",
     save:"Save",new_env:"New envelope",edit_env:"Edit envelope",
-    env_limit:"Monthly limit",spent:"spent",of:"of",left:"left"
+    env_limit:"Monthly limit",spent:"spent",of:"of",left:"left",
+    amount:"Amount",delete:"Delete"
   }
 };
 function t(k){return (I18N[state.lang]&&I18N[state.lang][k])||(I18N.ru[k])||k}
@@ -367,14 +369,15 @@ function render(){
   }else{
     list.innerHTML=sorted.map(function(r){
       var c=findCat(r.cat);
+      var cName=t("cat_"+c.id);
       var sign=r.type==="income"?"+":"−";
       var by=(state.mode==="family"&&r.byName)?'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.byName+'</div>':'';
       var extra=r.shop?(' · '+r.shop):'';
       var itms=(r.items&&r.items.length)?('<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.items.length+' поз.</div>'):'';
       return '<div class="rec" data-id="'+r.id+'">'
         +'<div class="ico">'+c.e+'</div>'
-        +'<div class="info"><div class="name">'+(r.note||c.name)+'</div>'
-        +'<div class="date">'+c.name+extra+' · '+r.date.split("-").reverse().join(".")+'</div>'+itms+'</div>'
+        +'<div class="info"><div class="name">'+(r.note||cName)+'</div>'
+        +'<div class="date">'+cName+extra+' · '+r.date.split("-").reverse().join(".")+'</div>'+itms+'</div>'
         +'<div style="text-align:right"><div class="amt '+r.type+'">'+sign+fmt(r.amount)+'</div>'+by+'</div>'
         +'</div>';
     }).join("");
@@ -384,36 +387,60 @@ function render(){
   $("#total-count").textContent=state.records.length;
 }
 
-function renderEnvelopes(recs){
-  var el=$("#env-list");
-  var keys=Object.keys(state.envelopes);
-  if(!keys.length){
-    el.innerHTML='<div class="empty">Нет конвертов<br><br>Нажми <b>+</b> чтобы добавить бюджет по теме</div>';
-    return;
-  }
-  var byCat={};
-  recs.filter(function(r){return r.type==="expense"}).forEach(function(r){
-    byCat[r.cat]=(byCat[r.cat]||0)+r.amount;
+function editEnvelope(catId){
+  if(modal)modal.remove();
+  modal=document.createElement("div");
+  modal.className="modal";
+  var isNew=!catId;
+  var current=catId?state.envelopes[catId]:"";
+  modal.innerHTML='<div class="sheet">'
+    +'<h2>'+(isNew?t("new_env"):t("edit_env"))+'</h2>'
+    +(isNew?('<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
+      +EXPENSE.map(function(c){
+        return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+t("cat_"+c.id)+'</div>';
+      }).join("")+'</div></div>'):'')
+    +'<div class="field"><label>'+t("env_limit")+'</label>'
+    +'<input type="number" inputmode="decimal" step="1" id="m-lim" class="amount-input" placeholder="0" value="'+current+'"></div>'
+    +'<div class="row-btns">'
+    +(isNew?'':'<button class="btn-delete" data-act="del">'+t("delete")+'</button>')
+    +'<button class="btn-cancel" data-act="cancel">'+t("cancel")+'</button>'
+    +'<button class="btn-primary" data-act="save">'+t("save")+'</button>'
+    +'</div></div>';
+  document.body.appendChild(modal);
+  var chosenCat=catId||null;
+  modal.querySelectorAll(".cat").forEach(function(c){
+    c.onclick=function(){
+      chosenCat=c.dataset.cat;
+      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
+      c.classList.add("on");
+    };
   });
-  el.innerHTML=keys.map(function(catId){
-    var lim=state.envelopes[catId];
-    var spent=byCat[catId]||0;
-    var left=lim-spent;
-    var pct=lim>0?Math.min(100,spent/lim*100):0;
-    var cls=spent>lim?"over":(pct>=80?"warn":"");
-    var c=findCat(catId);
-    return '<div class="env '+cls+'">'
-      +'<div class="env-head">'
-      +'<div class="env-name"><span class="e">'+c.e+'</span>'+c.name+'</div>'
-      +'<button class="env-edit" data-cat="'+catId+'">✏️</button>'
-      +'</div>'
-      +'<div class="env-nums">израсходовано <b>'+fmt(spent)+'</b> из '+fmt(lim)+' · осталось <b>'+fmt(left)+'</b></div>'
-      +'<div class="env-bar"><i style="width:'+pct+'%"></i></div>'
-      +'</div>';
-  }).join("");
-  el.querySelectorAll(".env-edit").forEach(function(b){
-    b.onclick=function(){editEnvelope(b.dataset.cat)};
+  modal.querySelectorAll("[data-act]").forEach(function(b){
+    b.onclick=function(){
+      var act=b.dataset.act;
+      if(act==="cancel"){modal.remove();modal=null;return}
+      if(act==="del"){
+        if(state.mode==="family"){
+          db.ref("families/"+state.familyCode+"/envelopes/"+catId).remove();
+        }else{
+          delete state.envelopes[catId];saveLocal();render();
+        }
+        modal.remove();modal=null;toast(t("deleted")||"Удалено");return;
+      }
+      if(act==="save"){
+        var lim=parseFloat(modal.querySelector("#m-lim").value);
+        if(!lim||lim<=0){toast("Введи лимит","err");return}
+        if(!chosenCat){toast("Выбери категорию","err");return}
+        if(state.mode==="family"){
+          db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim);
+        }else{
+          state.envelopes[chosenCat]=lim;saveLocal();render();
+        }
+        modal.remove();modal=null;toast("Сохранено","ok");
+      }
+    };
   });
+  modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
 }
 
 function renderStats(recs){
@@ -428,9 +455,10 @@ function renderStats(recs){
   }else{
     el.innerHTML=cats.map(function(kv){
       var c=findCat(kv[0]);
+      var cName=t("cat_"+c.id);
       var pct=total>0?(kv[1]/total*100):0;
       return '<div class="cat-row"><div class="ico">'+c.e+'</div>'
-        +'<div class="name">'+c.name+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
+        +'<div class="name">'+cName+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
         +'<div class="val">'+fmt(kv[1])+'</div></div>';
     }).join("");
   }
@@ -547,8 +575,8 @@ function renderRecordModal(){
   if(edit.type==="expense"){
     itemsHtml=edit.items.map(function(it,i){
       return '<div class="item-row" data-i="'+i+'">'
-        +'<input type="text" class="it-name" placeholder="Товар" value="'+(it.name||"").replace(/"/g,"&quot;")+'">'
-        +'<input type="number" class="it-price" inputmode="decimal" step="0.01" placeholder="Цена" value="'+(it.price||"")+'">'
+        +'<input type="text" class="it-name" placeholder="'+t("item_ph")+'" value="'+(it.name||"").replace(/"/g,"&quot;")+'">'
+        +'<input type="number" class="it-price" inputmode="decimal" step="0.01" placeholder="'+t("price_ph")+'" value="'+(it.price||"")+'">'
         +'<button type="button" class="it-del" data-i="'+i+'">✕</button>'
         +'</div>';
     }).join("");
@@ -556,35 +584,35 @@ function renderRecordModal(){
   var sum=0;
   edit.items.forEach(function(it){ sum+=parseFloat(it.price)||0; });
   modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(edit.id?"Изменить":"Новая запись")+'</h2>'
+    +'<h2>'+(edit.id?t("edit_record"):t("new_record"))+'</h2>'
     +'<div class="type-switch">'
-    +'<button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">− Расход</button>'
-    +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">+ Доход</button>'
+    +'<button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">'+t("expense_btn")+'</button>'
+    +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">'+t("income_btn")+'</button>'
     +'</div>'
-    +'<div class="field"><label>Магазин / место</label>'
-    +'<input type="text" id="m-shop" placeholder="Введите название магазина" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
+    +'<div class="field"><label>'+t("shop")+'</label>'
+    +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
     +(edit.type==="expense"
-      ? '<div class="field"><label>Товары в чеке</label>'
+      ? '<div class="field"><label>'+t("items")+'</label>'
         +'<div id="items-list">'+itemsHtml+'</div>'
-        +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">+ добавить товар</button>'
-        +'<div style="text-align:right;margin-top:12px;font-size:14px">Итого: <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
+        +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
+        +'<div style="text-align:right;margin-top:12px;font-size:14px">'+t("total")+': <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
         +'</div>'
-      : '<div class="field"><label>Сумма</label>'
+      : '<div class="field"><label>'+t("amount")+'</label>'
         +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>')
-    +'<div class="field"><label>Категория</label><div class="cat-grid">'
+    +'<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
     +cats.map(function(c){
       return '<div class="cat '+(edit.cat===c.id?"on":"")+'" data-cat="'+c.id+'">'
-        +'<span class="e">'+c.e+'</span>'+c.name+'</div>';
+        +'<span class="e">'+c.e+'</span>'+t("cat_"+c.id)+'</div>';
     }).join("")
     +'</div></div>'
-    +'<div class="field"><label>Комментарий</label>'
-    +'<input type="text" id="m-note" placeholder="необязательно" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
-    +'<div class="field"><label>Дата</label>'
+    +'<div class="field"><label>'+t("comment")+'</label>'
+    +'<input type="text" id="m-note" placeholder="'+t("comment_ph")+'" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
+    +'<div class="field"><label>'+t("date")+'</label>'
     +'<input type="date" id="m-date" value="'+edit.date+'"></div>'
     +'<div class="row-btns">'
-    +(edit.id?'<button class="btn-delete" data-act="del">Удалить</button>':'')
-    +'<button class="btn-cancel" data-act="cancel">Отмена</button>'
-    +'<button class="btn-primary" data-act="save">Сохранить</button>'
+    +(edit.id?'<button class="btn-delete" data-act="del">'+t("delete")+'</button>':'')
+    +'<button class="btn-cancel" data-act="cancel">'+t("cancel")+'</button>'
+    +'<button class="btn-primary" data-act="save">'+t("save")+'</button>'
     +'</div></div>';
   document.body.appendChild(modal);
   attachRecordEvents();

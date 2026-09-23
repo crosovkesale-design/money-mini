@@ -844,6 +844,7 @@ function bootApp(){
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
+    applyLang();
   }).catch(function(e){
     state.uid=tgId;
     try{
@@ -858,9 +859,15 @@ function bootApp(){
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
+    applyLang();
   });
 }
 
+  var storedLang0=localStorage.getItem(LANG_KEY);
+if(storedLang0)state.lang=storedLang0;
+$$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
+applyLang();
+  
 bootApp();
 
 var tg=window.Telegram&&window.Telegram.WebApp;

@@ -124,3 +124,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue)}
 .item-row .it-name{flex:1;min-height:44px;padding:10px}
 .item-row .it-price{width:90px;min-height:44px;padding:10px;text-align:right}
 .item-row .it-del{background:rgba(255,85,102,.15);color:var(--red);border:0;width:38px;height:44px;border-radius:8px;font-size:16px;cursor:pointer;flex-shrink:0}
+.item-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.item-row .it-name{flex:1;min-height:44px;padding:10px}
+.item-row .it-price{width:90px;min-height:44px;padding:10px;text-align:right}
+.item-row .it-del{background:rgba(255,85,102,.15);color:var(--red);border:0;width:38px;height:44px;border-radius:8px;font-size:16px;cursor:pointer;flex-shrink:0}

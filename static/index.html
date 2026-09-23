@@ -796,58 +796,60 @@ function renderReferrals(){
   var el=$("#ref-info");
   if(!el)return;
   if(!state.uid||state.uid==="anon"){
-    el.innerHTML='<div class="ref-empty">не удалось получить Telegram ID</div>';
-    return;
-  }
+  el.innerHTML='<div class="ref-empty">UID: '+(state.uid||"нет")+'<br>проблема с Telegram ID</div>';
+  return;
+}
+el.innerHTML='<div class="ref-empty">UID: '+state.uid+'<br>загружаю данные...</div>';
   db.ref("users/"+state.uid).once("value").then(function(snap){
-    var u=snap.val()||{};
-    var count=u.referralCount||0;
-    var coupons=u.couponsEarned||0;
-    var link="https://t.me/moneyfamilybudget_bot?start=ref_"+state.uid;
-    var nt=nextTier(count);
-    var prevTier=0;
-    for(var i=0;i<REF_TIERS.length;i++){
-      if(REF_TIERS[i]<=count)prevTier=REF_TIERS[i];
-    }
-    var progressHtml="";
-    if(nt){
-      var done=count-prevTier;
-      var need=nt-prevTier;
-      var pct=Math.min(100,Math.round(done/need*100));
-      progressHtml='<div class="ref-progress">'
-        +'<div class="lbl">До следующего купона: <b style="color:var(--fg)">'+done+' / '+need+'</b> · ещё '+(nt-count)+' чел.</div>'
-        +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
-        +'</div>';
+  var u=snap.val()||{};
+  var count=u.referralCount||0;
+  var coupons=u.couponsEarned||0;
+  var link="https://t.me/moneyfamilybudget_bot?start=ref_"+state.uid;
+  var nt=nextTier(count);
+  var prevTier=0;
+  for(var i=0;i<REF_TIERS.length;i++){
+    if(REF_TIERS[i]<=count)prevTier=REF_TIERS[i];
+  }
+  var progressHtml="";
+  if(nt){
+    var done=count-prevTier;
+    var need=nt-prevTier;
+    var pct=Math.min(100,Math.round(done/need*100));
+    progressHtml='<div class="ref-progress">'
+      +'<div class="lbl">До следующего купона: <b style="color:var(--fg)">'+done+' / '+need+'</b> · ещё '+(nt-count)+' чел.</div>'
+      +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
+      +'</div>';
+  }else{
+    progressHtml='<div class="ref-progress"><div class="lbl">Максимум ступеней — <b style="color:var(--gold)">'+count+'</b> рефералов</div></div>';
+  }
+  el.innerHTML=
+    '<div class="ref-stat">'
+    +'<div class="box"><div class="n">'+count+'</div><div class="t">Приглашено</div></div>'
+    +'<div class="box"><div class="n">'+coupons+'</div><div class="t">Купонов -10%</div></div>'
+    +'</div>'
+    +progressHtml
+    +'<div class="ref-link">'+link+'</div>'
+    +'<div class="ref-btns">'
+    +'<button class="copy" id="ref-copy">Скопировать</button>'
+    +'<button class="share" id="ref-share">Поделиться</button>'
+    +'</div>'
+    +'<div class="ref-hint">За каждого нового пользователя — прогресс к купону. Купон даёт <b>-10% на одну покупку</b>. Купоны копятся, каждый тратится один раз.</div>';
+  $("#ref-copy").onclick=function(){
+    navigator.clipboard.writeText(link);
+    toast("Ссылка скопирована","ok");
+  };
+  $("#ref-share").onclick=function(){
+    var txt="Пользуюсь Family Budget — учёт расходов для семьи. Попробуй:";
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(txt);
+    if(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.openTelegramLink){
+      window.Telegram.WebApp.openTelegramLink(shareUrl);
     }else{
-      progressHtml='<div class="ref-progress"><div class="lbl">Достигнут максимум ступеней — <b style="color:var(--gold)">'+count+'</b> рефералов</div></div>';
+      window.open(shareUrl,"_blank");
     }
-    el.innerHTML=
-      '<div class="ref-stat">'
-      +'<div class="box"><div class="n">'+count+'</div><div class="t">Приглашено</div></div>'
-      +'<div class="box"><div class="n">'+coupons+'</div><div class="t">Купонов −10%</div></div>'
-      +'</div>'
-      +progressHtml
-      +'<div class="ref-link">'+link+'</div>'
-      +'<div class="ref-btns">'
-      +'<button class="copy" id="ref-copy">Скопировать</button>'
-      +'<button class="share" id="ref-share">Поделиться</button>'
-      +'</div>'
-      +'<div class="ref-hint">За каждого нового пользователя — прогресс к купону. Купон даёт <b>−10% на одну покупку</b>. Купоны копятся, каждый тратится один раз.</div>';
-
-    $("#ref-copy").onclick=function(){
-      navigator.clipboard.writeText(link);
-      toast("Ссылка скопирована","ok");
-    };
-    $("#ref-share").onclick=function(){
-      var txt="Пользуюсь Family Budget — учёт расходов для семьи. Попробуй:";
-      var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(txt);
-      if(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.openTelegramLink){
-        window.Telegram.WebApp.openTelegramLink(shareUrl);
-      }else{
-        window.open(shareUrl,"_blank");
-      }
-    };
-  }).catch(function(e){
+  };
+}).catch(function(e){
+  el.innerHTML='<div class="ref-empty">ошибка: '+e.message+'</div>';
+});
     el.innerHTML='<div class="ref-empty">ошибка загрузки: '+e.message+'</div>';
   });
 }

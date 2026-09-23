@@ -139,7 +139,9 @@ var MONTHS=["январь","февраль","март","апрель","май","
     no_exp_cat:"нет расходов",no_shops:"пока нет ни одного магазина",no_items:"товары в чеках пока не указаны",
     invited:"Приглашено",coupons:"Купонов −10%",
     ref_hint:"Купон даёт −10% на одну покупку. Купоны копятся.",
-    copy:"Скопировать",share:"Поделиться"
+    copy:"Скопировать",share:"Поделиться",
+    total_records:"Всего записей",export_csv:"Экспорт CSV",download:"Скачать",
+    cancel:"Отмена",create_family:"Создать семью",join:"Войти"
   },
   en:{
     records:"Records",envelopes:"Envelopes",stats:"Stats",settings:"Settings",
@@ -152,7 +154,9 @@ var MONTHS=["январь","февраль","март","апрель","май","
     no_exp_cat:"no expenses",no_shops:"no shops yet",no_items:"no items in receipts yet",
     invited:"Invited",coupons:"Coupons −10%",
     ref_hint:"Each coupon gives −10% on one purchase. They stack.",
-    copy:"Copy",share:"Share"
+    copy:"Copy",share:"Share",
+    total_records:"Total records",export_csv:"Export CSV",download:"Download",
+    cancel:"Cancel",create_family:"Create family",join:"Join"
   }
 };
 function t(k){return (I18N[state.lang]&&I18N[state.lang][k])||(I18N.ru[k])||k}
@@ -174,6 +178,20 @@ $$(".tab").forEach(function(tab){
   el=$("#h-refs"); if(el)el.textContent=t("referrals");
   el=$("#h-family"); if(el)el.textContent=t("family");
   el=$("#lbl-personal"); if(el)el.textContent=t("personal_mode");
+  el=$("#btn-open-family"); if(el)el.textContent=t("connect_family");
+  el=$("#btn-copy-code"); if(el)el.textContent=t("copy_code");
+  el=$("#btn-leave-family"); if(el)el.textContent=t("leave_family");
+  el=$("#total-count-label"); if(el)el.textContent=t("total_records");
+  el=$("#export-label"); if(el)el.textContent=t("export_csv");
+  el=$("#btn-export"); if(el)el.textContent=t("download");
+  el=$("#btn-auth-cancel"); if(el)el.textContent=t("cancel");
+  el=$("#btn-create"); if(el)el.textContent=t("create_family");
+  el=$("#btn-join"); if(el)el.textContent=t("join");
+
+var emptyEl=$("#list .empty");
+if(emptyEl)emptyEl.innerHTML=t("no_records")+"<br><br>"+t("press_plus");
+var envEmpty=$("#env-list .empty");
+if(envEmpty)envEmpty.innerHTML=t("no_env")+"<br><br>"+t("press_plus_env");
 }
 var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
 

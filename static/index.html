@@ -84,10 +84,10 @@
       </div>
     </div>
     <div class="stat-block">
-      <div class="set-row"><div><div class="lbl">Всего записей</div><div class="sub" id="total-count">0</div></div></div>
+      <div class="lbl" id="total-count-label">Всего записей</div>
       <div class="set-row">
-        <div><div class="lbl">Экспорт CSV</div><div class="sub">все записи</div></div>
-        <button class="btn-cancel" id="export-btn">Скачать</button>
+        <div class="lbl" id="export-label">Экспорт CSV</div>
+        <button class="btn-cancel" id="btn-export">Скачать</button>
       </div>
     </div>
   </div>
@@ -814,7 +814,7 @@ $("#btn-leave-family").onclick=function(){
   saveLocal();render();toast("Вышел из семьи");
 };
 
-$("#export-btn").onclick=function(){
+$("#btn-export").onclick=function(){
   if(!state.records.length){toast("Нет записей","err");return}
   var rows=[["дата","тип","категория","сумма","магазин","товары","комментарий","кто"]];
   state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){

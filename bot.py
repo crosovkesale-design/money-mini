@@ -1,5 +1,6 @@
 # language: Python 3.11+, file: bot.py
 import os
+import requests
 import asyncio
 import logging
 from contextlib import asynccontextmanager
@@ -33,19 +34,57 @@ dp = Dispatcher()
 
 if bot:
     @dp.message(Command("start"))
-    async def cmd_start(message: Message):
-        kb = InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(
-                text="📊 Открыть бюджет",
-                web_app=WebAppInfo(url=MINI_APP_URL),
-            )
-        ]])
-        await message.answer(
-            "Привет! Это <b>Family Budget</b> — учёт доходов и расходов "
-            "для тебя и семьи.\n\n"
-            "Нажми кнопку, чтобы открыть приложение.",
-            reply_markup=kb,
+async def cmd_start(message: Message):
+    args = message.text.split()
+    ref_id = None
+    if len(args) > 1 and args[1].startswith("ref_"):
+        ref_id = args[1][4:]
+
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(
+            text="📊 Открыть бюджет",
+            web_app=WebAppInfo(url=MINI_APP_URL),
         )
+    ]])
+
+    user_id = str(message.from_user.id)
+
+    if ref_id and ref_id != user_id:
+        try:
+            base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
+            r = requests.get(f"{base}/users/{user_id}.json", timeout=10)
+            existing = r.json()
+            if not existing or not existing.get("referredBy"):
+                now_ms = int(__import__("time").time() * 1000)
+                requests.patch(
+                    f"{base}/users/{user_id}.json",
+                    json={"referredBy": ref_id, "referredAt": now_ms},
+                    timeout=10,
+                )
+                r2 = requests.get(f"{base}/users/{ref_id}/referrals.json", timeout=10)
+                refs = r2.json() or {}
+                refs[user_id] = now_ms
+                requests.put(
+                    f"{base}/users/{ref_id}/referrals.json",
+                    json=refs,
+                    timeout=10,
+                )
+                count = len(refs)
+                tiers = [1, 5, 10, 20, 40, 80, 160, 320, 640, 1280]
+                earned = sum(1 for t in tiers if count >= t)
+                requests.patch(
+                    f"{base}/users/{ref_id}.json",
+                    json={"referralCount": count, "couponsEarned": earned},
+                    timeout=10,
+                )
+        except Exception as e:
+            log.warning(f"referral save: {e}")
+
+    await message.answer(
+        "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"
+        "Нажми кнопку, чтобы открыть приложение.",
+        reply_markup=kb,
+    )
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):

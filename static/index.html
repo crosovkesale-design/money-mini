@@ -127,6 +127,53 @@ var KEY="fb_data_v3";
 var UID_KEY="budget_uid";
 var LANG_KEY="budget_lang";
 var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+  var I18N={
+  ru:{
+    records:"Записи",envelopes:"Конверты",stats:"Стата",settings:"Настройки",
+    balance:"Баланс месяца",income:"Доходы",expense:"Расходы",
+    top_cats:"Топ категорий за месяц",top_shops:"Где тратишь больше всего",top_items:"Топ товаров",
+    referrals:"Рефералы",family:"Семья",personal_mode:"Сейчас личный режим",
+    connect_family:"Подключить семью",copy_code:"Скопировать код",leave_family:"Выйти из семьи",
+    no_records:"Записей нет",press_plus:"Нажми + чтобы добавить",
+    no_env:"Нет конвертов",press_plus_env:"Нажми + чтобы добавить бюджет",
+    no_exp_cat:"нет расходов",no_shops:"пока нет ни одного магазина",no_items:"товары в чеках пока не указаны",
+    invited:"Приглашено",coupons:"Купонов −10%",
+    ref_hint:"Купон даёт −10% на одну покупку. Купоны копятся.",
+    copy:"Скопировать",share:"Поделиться"
+  },
+  en:{
+    records:"Records",envelopes:"Envelopes",stats:"Stats",settings:"Settings",
+    balance:"Month balance",income:"Income",expense:"Expense",
+    top_cats:"Top categories",top_shops:"Where you spend most",top_items:"Top items",
+    referrals:"Referrals",family:"Family",personal_mode:"Currently personal mode",
+    connect_family:"Connect family",copy_code:"Copy code",leave_family:"Leave family",
+    no_records:"No records",press_plus:"Tap + to add",
+    no_env:"No envelopes",press_plus_env:"Tap + to add budget",
+    no_exp_cat:"no expenses",no_shops:"no shops yet",no_items:"no items in receipts yet",
+    invited:"Invited",coupons:"Coupons −10%",
+    ref_hint:"Each coupon gives −10% on one purchase. They stack.",
+    copy:"Copy",share:"Share"
+  }
+};
+function t(k){return (I18N[state.lang]&&I18N[state.lang][k])||(I18N.ru[k])||k}
+function applyLang(){
+  var lang=state.lang;
+  $$(".tab").forEach(function(tab){
+    var v=tab.dataset.v;
+    var txt=t(v);
+    tab.textContent=(v==="list"?"📋 ":v==="env"?"💰 ":v==="stats"?"📊 ":v==="settings"?"⚙️ ":"")+txt;
+  });
+  var el;
+  el=$("#lbl-balance"); if(el)el.textContent=t("balance");
+  el=$("#lbl-income"); if(el)el.textContent=t("income");
+  el=$("#lbl-expense"); if(el)el.textContent=t("expense");
+  el=$("#h-cats"); if(el)el.textContent=t("top_cats");
+  el=$("#h-shops"); if(el)el.textContent=t("top_shops");
+  el=$("#h-items"); if(el)el.textContent=t("top_items");
+  el=$("#h-refs"); if(el)el.textContent=t("referrals");
+  el=$("#h-family"); if(el)el.textContent=t("family");
+  el=$("#lbl-personal"); if(el)el.textContent=t("personal_mode");
+}
 var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
 
 var INCOME=[
@@ -692,6 +739,7 @@ $$(".lang-btn").forEach(function(b){
     state.lang=b.dataset.lang;
     localStorage.setItem(LANG_KEY,state.lang);
     $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
+    applyLang();
     toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
   };
 });

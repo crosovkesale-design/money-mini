@@ -58,11 +58,11 @@
 
   <div class="view on" id="v-list"><div class="list" id="list"></div></div>
   <div class="view" id="v-env"><div class="env-list" id="env-list"></div></div>
-<div class="view" id="v-stats">
-  <div class="stat-block"><h3>Топ категорий за месяц</h3><div id="stats-cats"></div></div>
-  <div class="stat-block"><h3>Где тратишь больше всего</h3><div id="stats-shops"></div></div>
-  <div class="stat-block"><h3>Топ товаров</h3><div id="stats-items"></div></div>
-</div>
+  <div class="view" id="v-stats">
+    <div class="stat-block"><h3>Топ категорий за месяц</h3><div id="stats-cats"></div></div>
+    <div class="stat-block"><h3>Где тратишь больше всего</h3><div id="stats-shops"></div></div>
+    <div class="stat-block"><h3>Топ товаров</h3><div id="stats-items"></div></div>
+  </div>
   <div class="view" id="v-settings">
     <div class="stat-block" id="family-block">
       <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Семья</h3>
@@ -96,7 +96,7 @@
 
 <script>
 var firebaseConfig = {
-  apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_vWEvfU",
+  apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_wEWfU",
   authDomain: "money-family-f9d8b.firebaseapp.com",
   databaseURL: "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "money-family-f9d8b",
@@ -104,7 +104,6 @@ var firebaseConfig = {
   messagingSenderId: "47777538709",
   appId: "1:47777538709:web:11e5bbfb2795b59299f19c"
 };
-
 firebase.initializeApp(firebaseConfig);
 var auth = firebase.auth();
 var db = firebase.database();
@@ -188,6 +187,7 @@ function genCode(){
   return c;
 }
 function saveLocal(){
+  if(typeof USER_KEY === "undefined") return;
   localStorage.setItem(USER_KEY,JSON.stringify({
     mode:state.mode,records:state.records,envelopes:state.envelopes
   }));
@@ -261,10 +261,12 @@ function render(){
       var c=findCat(r.cat);
       var sign=r.type==="income"?"+":"−";
       var by=(state.mode==="family"&&r.byName)?'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.byName+'</div>':'';
+      var extra=r.shop?(' · '+r.shop):'';
+      var itms=(r.items&&r.items.length)?('<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.items.length+' поз.</div>'):'';
       return '<div class="rec" data-id="'+r.id+'">'
         +'<div class="ico">'+c.e+'</div>'
         +'<div class="info"><div class="name">'+(r.note||c.name)+'</div>'
-        +'<div class="date">'+c.name+' · '+r.date.split("-").reverse().join(".")+'</div></div>'
+        +'<div class="date">'+c.name+extra+' · '+r.date.split("-").reverse().join(".")+'</div>'+itms+'</div>'
         +'<div style="text-align:right"><div class="amt '+r.type+'">'+sign+fmt(r.amount)+'</div>'+by+'</div>'
         +'</div>';
     }).join("");
@@ -306,32 +308,6 @@ function renderEnvelopes(recs){
   });
 }
 
-  var byItem={};
-ex.forEach(function(r){
-  if(r.items&&r.items.length){
-    r.items.forEach(function(it){
-      if(it.name&&it.price>0){
-        byItem[it.name]=(byItem[it.name]||0)+it.price;
-      }
-    });
-  }
-});
-var items=Object.entries(byItem).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
-var elI=$("#stats-items");
-if(elI){
-  if(!items.length){
-    elI.innerHTML='<div style="color:var(--muted);font-size:13px">товары в чеках пока не указаны</div>';
-  }else{
-    var totalItems=items.reduce(function(s,kv){return s+kv[1]},0);
-    elI.innerHTML=items.map(function(kv){
-      var pct=totalItems>0?(kv[1]/totalItems*100):0;
-      return '<div class="cat-row"><div class="ico">📦</div>'
-        +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
-        +'<div class="val">'+fmt(kv[1])+'</div></div>';
-    }).join("");
-  }
-}
-  
 function renderStats(recs){
   var ex=recs.filter(function(r){return r.type==="expense"});
   var total=ex.reduce(function(s,r){return s+r.amount},0);
@@ -357,22 +333,49 @@ function renderStats(recs){
   });
   var shops=Object.entries(byShop).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
   var elS=$("#stats-shops");
-  if(!elS)return;
-  if(!shops.length){
-    elS.innerHTML='<div style="color:var(--muted);font-size:13px">пока не указано ни одного магазина</div>';
-  }else{
-    var totalShops=shops.reduce(function(s,kv){return s+kv[1]},0);
-    elS.innerHTML=shops.map(function(kv){
-      var pct=totalShops>0?(kv[1]/totalShops*100):0;
-      return '<div class="cat-row"><div class="ico">🏪</div>'
-        +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
-        +'<div class="val">'+fmt(kv[1])+'</div></div>';
-    }).join("");
+  if(elS){
+    if(!shops.length){
+      elS.innerHTML='<div style="color:var(--muted);font-size:13px">пока не указано ни одного магазина</div>';
+    }else{
+      var totalShops=shops.reduce(function(s,kv){return s+kv[1]},0);
+      elS.innerHTML=shops.map(function(kv){
+        var pct=totalShops>0?(kv[1]/totalShops*100):0;
+        return '<div class="cat-row"><div class="ico">🏪</div>'
+          +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
+          +'<div class="val">'+fmt(kv[1])+'</div></div>';
+      }).join("");
+    }
+  }
+
+  var byItem={};
+  ex.forEach(function(r){
+    if(r.items&&r.items.length){
+      r.items.forEach(function(it){
+        if(it.name&&it.price>0){
+          byItem[it.name]=(byItem[it.name]||0)+it.price;
+        }
+      });
+    }
+  });
+  var items=Object.entries(byItem).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+  var elI=$("#stats-items");
+  if(elI){
+    if(!items.length){
+      elI.innerHTML='<div style="color:var(--muted);font-size:13px">товары в чеках пока не указаны</div>';
+    }else{
+      var totalItems=items.reduce(function(s,kv){return s+kv[1]},0);
+      elI.innerHTML=items.map(function(kv){
+        var pct=totalItems>0?(kv[1]/totalItems*100):0;
+        return '<div class="cat-row"><div class="ico">📦</div>'
+          +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
+          +'<div class="val">'+fmt(kv[1])+'</div></div>';
+      }).join("");
+    }
   }
 }
 
 var modal=null;
-var edit={type:"expense",cat:"food",amount:"",note:"",date:"",id:null};
+var edit={type:"expense",cat:"food",amount:"",note:"",shop:"",date:"",id:null,items:[]};
 
 function openRecord(existing){
   if(existing){
@@ -385,7 +388,7 @@ function openRecord(existing){
   }
   renderRecordModal();
 }
-  
+
 function renderRecordModal(){
   if(modal)modal.remove();
   modal=document.createElement("div");
@@ -436,57 +439,64 @@ function renderRecordModal(){
     +'</div></div>';
   document.body.appendChild(modal);
   attachRecordEvents();
-}
-
+           }
+  
 function attachRecordEvents(){
   modal.querySelectorAll(".item-row").forEach(function(row){
-  var i=parseInt(row.dataset.i);
-  var nInput=row.querySelector(".it-name");
-  var pInput=row.querySelector(".it-price");
-  if(nInput)nInput.oninput=function(){
-    edit.items[i].name=nInput.value;
-  };
-  if(pInput)pInput.oninput=function(){
-    edit.items[i].price=pInput.value;
-    var sum=0;
-    edit.items.forEach(function(it){ sum+=parseFloat(it.price)||0; });
-    var t=modal.querySelector("#total-sum");
-    if(t)t.textContent=fmt(sum);
-  };
-});
+    var i=parseInt(row.dataset.i);
+    var nInput=row.querySelector(".it-name");
+    var pInput=row.querySelector(".it-price");
+    if(nInput)nInput.oninput=function(){
+      edit.items[i].name=nInput.value;
+    };
+    if(pInput)pInput.oninput=function(){
+      edit.items[i].price=pInput.value;
+      var sum=0;
+      edit.items.forEach(function(it){ sum+=parseFloat(it.price)||0; });
+      var t=modal.querySelector("#total-sum");
+      if(t)t.textContent=fmt(sum);
+    };
+  });
 
-var delBtns=modal.querySelectorAll(".it-del");
-delBtns.forEach(function(b){
-  b.onclick=function(){
-    var i=parseInt(b.dataset.i);
-    edit.items.splice(i,1);
-    if(!edit.items.length)edit.items=[{name:"",price:""}];
-    renderRecordModal();
-  };
-});
+  modal.querySelectorAll(".it-del").forEach(function(b){
+    b.onclick=function(){
+      var i=parseInt(b.dataset.i);
+      edit.items.splice(i,1);
+      if(!edit.items.length)edit.items=[{name:"",price:""}];
+      renderRecordModal();
+    };
+  });
 
-var addBtn=modal.querySelector("#add-item");
-if(addBtn){
-  addBtn.onclick=function(){
-    edit.items.forEach(function(it){
-      var n=modal.querySelector('.item-row[data-i="'+edit.items.indexOf(it)+'"] .it-name');
-      var p=modal.querySelector('.item-row[data-i="'+edit.items.indexOf(it)+'"] .it-price');
-      if(n)it.name=n.value;
-      if(p)it.price=p.value;
-    });
-    edit.items.push({name:"",price:""});
-    renderRecordModal();
-  };
-}
+  var addBtn=modal.querySelector("#add-item");
+  if(addBtn){
+    addBtn.onclick=function(){
+      modal.querySelectorAll(".item-row").forEach(function(row){
+        var i=parseInt(row.dataset.i);
+        var n=row.querySelector(".it-name");
+        var p=row.querySelector(".it-price");
+        if(edit.items[i]){
+          if(n)edit.items[i].name=n.value;
+          if(p)edit.items[i].price=p.value;
+        }
+      });
+      edit.items.push({name:"",price:""});
+      renderRecordModal();
+    };
+  }
+
   modal.querySelectorAll(".type-switch button").forEach(function(b){
     b.onclick=function(){
       edit.type=b.dataset.t;
       edit.cat=(edit.type==="income"?INCOME[0].id:EXPENSE[0].id);
-      edit.amount=modal.querySelector("#m-am").value;
-      edit.note=modal.querySelector("#m-note").value;
+      if(edit.type==="income"){
+        edit.items=[];
+      }else{
+        if(!edit.items.length)edit.items=[{name:"",price:""}];
+      }
       renderRecordModal();
     };
   });
+
   modal.querySelectorAll(".cat").forEach(function(c){
     c.onclick=function(){
       edit.cat=c.dataset.cat;
@@ -494,6 +504,7 @@ if(addBtn){
       c.classList.add("on");
     };
   });
+
   modal.querySelectorAll("[data-act]").forEach(function(b){
     b.onclick=function(){
       var act=b.dataset.act;
@@ -509,26 +520,35 @@ if(addBtn){
       }
       if(act==="save"){
         var amt=0;
-var items=[];
-if(edit.type==="expense"){
-  edit.items.forEach(function(it){
-    var n=(it.name||"").trim();
-    var p=parseFloat(it.price)||0;
-    if(n||p>0){
-      items.push({name:n,price:p});
-      amt+=p;
-    }
-  });
-  if(!amt||amt<=0){toast("Добавь хотя бы один товар","err");return}
-}else{
-  amt=parseFloat(modal.querySelector("#m-am").value);
-  if(!amt||amt<=0){toast("Введи сумму","err");return}
-}
+        var items=[];
+        if(edit.type==="expense"){
+          modal.querySelectorAll(".item-row").forEach(function(row){
+            var i=parseInt(row.dataset.i);
+            var n=row.querySelector(".it-name");
+            var p=row.querySelector(".it-price");
+            if(edit.items[i]){
+              if(n)edit.items[i].name=n.value;
+              if(p)edit.items[i].price=p.value;
+            }
+          });
+          edit.items.forEach(function(it){
+            var n=(it.name||"").trim();
+            var p=parseFloat(it.price)||0;
+            if(n||p>0){
+              items.push({name:n,price:p});
+              amt+=p;
+            }
+          });
+          if(!amt||amt<=0){toast("Добавь хотя бы один товар с ценой","err");return}
+        }else{
+          amt=parseFloat(modal.querySelector("#m-am").value);
+          if(!amt||amt<=0){toast("Введи сумму","err");return}
+        }
         var note=modal.querySelector("#m-note").value.trim();
-var shop=modal.querySelector("#m-shop").value.trim();
-var date=modal.querySelector("#m-date").value||today();
-var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,shop:shop,date:date,
-         items:items,ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
+        var shop=modal.querySelector("#m-shop").value.trim();
+        var date=modal.querySelector("#m-date").value||today();
+        var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,shop:shop,date:date,
+                 items:items,ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
         if(state.mode==="family"){
           var id=edit.id||(Date.now()+"-"+Math.random().toString(36).slice(2,8));
           db.ref("families/"+state.familyCode+"/records/"+id).set(rec);
@@ -605,8 +625,8 @@ function editEnvelope(catId){
     };
   });
   modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
-        }
-  
+}
+
 $$(".tab").forEach(function(t){
   t.onclick=function(){
     $$(".tab").forEach(function(x){x.classList.remove("on")});
@@ -693,11 +713,12 @@ $("#btn-leave-family").onclick=function(){
 
 $("#export-btn").onclick=function(){
   if(!state.records.length){toast("Нет записей","err");return}
-  var rows=[["дата","тип","категория","сумма","магазин","комментарий","кто"]];
-state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){
-  var c=findCat(r.cat);
-  rows.push([r.date,r.type==="income"?"доход":"расход",c.name,r.amount,r.shop||"",r.note||"",r.byName||""]);
-});
+  var rows=[["дата","тип","категория","сумма","магазин","товары","комментарий","кто"]];
+  state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){
+    var c=findCat(r.cat);
+    var itms=(r.items||[]).map(function(it){return it.name+" "+it.price}).join("; ");
+    rows.push([r.date,r.type==="income"?"доход":"расход",c.name,r.amount,r.shop||"",itms,r.note||"",r.byName||""]);
+  });
   var csv=rows.map(function(row){
     return row.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",");
   }).join("\n");
@@ -710,53 +731,45 @@ state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.dat
   toast("Скачано","ok");
 };
 
-var storedLang=localStorage.getItem(LANG_KEY);
-if(storedLang)state.lang=storedLang;
-$$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
-
-var tgUser = window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
+var tgUser=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
   ?window.Telegram.WebApp.initDataUnsafe.user:null;
-var tgId = tgUser&&tgUser.id ? String(tgUser.id) : "anon";
+var tgId=tgUser&&tgUser.id?String(tgUser.id):"anon";
 
 if(tgUser&&tgUser.first_name)state.userName=tgUser.first_name;
 if(!state.userName)state.userName="Гость";
 
-var USER_KEY = "budget_data_" + tgId;
-var FAMILY_KEY = "budget_family_" + tgId;
+var USER_KEY="budget_data_"+tgId;
+var FAMILY_KEY="budget_family_"+tgId;
 
 function bootApp(){
   auth.signInAnonymously().then(function(cred){
-    state.uid = tgId;
-
+    state.uid=tgId;
     try{
       var saved=JSON.parse(localStorage.getItem(USER_KEY)||"{}");
       if(saved.mode)state.mode=saved.mode;
       if(saved.records)state.records=saved.records;
       if(saved.envelopes)state.envelopes=saved.envelopes;
     }catch(e){}
-
-    var famCode = localStorage.getItem(FAMILY_KEY);
-    var famName = localStorage.getItem(FAMILY_KEY + "_name");
-    if(famCode && state.mode==="family"){
-      state.familyCode = famCode;
-      state.familyName = famName || "Семья";
+    var famCode=localStorage.getItem(FAMILY_KEY);
+    var famName=localStorage.getItem(FAMILY_KEY+"_name");
+    if(famCode&&state.mode==="family"){
+      state.familyCode=famCode;
+      state.familyName=famName||"Семья";
     }
-
     var n=new Date();
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
-
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
   }).catch(function(e){
-    state.uid = tgId;
+    state.uid=tgId;
     try{
       var saved=JSON.parse(localStorage.getItem(USER_KEY)||"{}");
       if(saved.mode)state.mode=saved.mode;
       if(saved.records)state.records=saved.records;
       if(saved.envelopes)state.envelopes=saved.envelopes;
     }catch(e){}
-    var famCode = localStorage.getItem(FAMILY_KEY);
-    if(famCode && state.mode==="family")state.familyCode = famCode;
+    var famCode=localStorage.getItem(FAMILY_KEY);
+    if(famCode&&state.mode==="family")state.familyCode=famCode;
     var n=new Date();
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
@@ -764,37 +777,6 @@ function bootApp(){
   });
 }
 
-function saveUserProfile(){
-  var u=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
-    ?window.Telegram.WebApp.initDataUnsafe.user:null;
-  if(!u||!u.id)return;
-  var now=Date.now();
-  var ref=db.ref("users/"+tgId);
-  ref.once("value").then(function(snap){
-    if(!snap.exists()){
-      ref.set({
-        name:u.first_name||"Гость",
-        username:u.username||"",
-        tgId:tgId,
-        firstSeen:now,
-        lastSeen:now,
-        tariff:"trial",
-        subStart:now,
-        subEnd:now+30*24*60*60*1000,
-        status:"active"
-      });
-    }else{
-      ref.update({
-        name:u.first_name||"Гость",
-        username:u.username||"",
-        lastSeen:now
-      });
-    }
-  });
-}
-
-setTimeout(saveUserProfile,1500);
-  
 bootApp();
 
 var tg=window.Telegram&&window.Telegram.WebApp;

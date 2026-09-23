@@ -41,11 +41,11 @@
       <span>·</span><span id="family-count">1</span>
       <span>· код: <b id="family-code">···</b></span>
     </div>
-    <div class="balance-label">Баланс месяца</div>
+    <div class="balance-label" id="lbl-balance">Баланс месяца</div>
     <div class="balance" id="bal">0</div>
     <div class="summary">
-      <div class="summary-box income"><div class="lbl">Доходы</div><div class="val" id="sum-in">0</div></div>
-      <div class="summary-box expense"><div class="lbl">Расходы</div><div class="val" id="sum-ex">0</div></div>
+      <div class="summary-box income"><div class="lbl" id="lbl-income">Доходы</div><div class="val" id="sum-in">0</div></div>
+      <div class="summary-box expense"><div class="lbl" id="lbl-expense">Расходы</div><div class="val" id="sum-ex">0</div></div>
     </div>
   </div>
 
@@ -59,21 +59,21 @@
   <div class="view on" id="v-list"><div class="list" id="list"></div></div>
   <div class="view" id="v-env"><div class="env-list" id="env-list"></div></div>
   <div class="view" id="v-stats">
-    <div class="stat-block"><h3>Топ категорий за месяц</h3><div id="stats-cats"></div></div>
-    <div class="stat-block"><h3>Где тратишь больше всего</h3><div id="stats-shops"></div></div>
-    <div class="stat-block"><h3>Топ товаров</h3><div id="stats-items"></div></div>
+    <div class="stat-block"><h3 id="h-cats">Топ категорий за месяц</h3><div id="stats-cats"></div></div>
+<div class="stat-block"><h3 id="h-shops">Где тратишь больше всего</h3><div id="stats-shops"></div></div>
+<div class="stat-block"><h3 id="h-items">Топ товаров</h3><div id="stats-items"></div></div>
   </div>
   <div class="view" id="v-settings">
     <div class="stat-block">
-      <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Рефералы</h3>
+      <h3 id="h-refs" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Рефералы</h3>
       <div id="ref-info">
         <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:13px">загрузка...</div>
       </div>
     </div>
     <div class="stat-block" id="family-block">
-      <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Семья</h3>
+      <h3 id="h-family" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Семья</h3>
       <div id="family-personal">
-        <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Сейчас личный режим</p>
+        <p id="lbl-personal" style="color:var(--muted);font-size:13px;margin-bottom:12px">Сейчас личный режим</p>
         <button class="btn-primary" id="btn-open-family" style="width:100%">Подключить семью</button>
       </div>
       <div id="family-active" style="display:none">

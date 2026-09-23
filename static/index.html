@@ -413,7 +413,7 @@ function renderRecordModal(){
     +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">+ Доход</button>'
     +'</div>'
     +'<div class="field"><label>Магазин / место</label>'
-    +'<input type="text" id="m-shop" placeholder="Сильпо, ATB, Rozetka..." value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
+    +'<input type="text" id="m-shop" placeholder="Введите название магазина" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
     +(edit.type==="expense"
       ? '<div class="field"><label>Товары в чеке</label>'
         +'<div id="items-list">'+itemsHtml+'</div>'

@@ -158,11 +158,12 @@ var MONTHS=["январь","февраль","март","апрель","май","
 function t(k){return (I18N[state.lang]&&I18N[state.lang][k])||(I18N.ru[k])||k}
 function applyLang(){
   var lang=state.lang;
-  $$(".tab").forEach(function(tab){
-    var v=tab.dataset.v;
-    var txt=t(v);
-    tab.textContent=(v==="list"?"📋 ":v==="env"?"💰 ":v==="stats"?"📊 ":v==="settings"?"⚙️ ":"")+txt;
-  });
+  var tabMap={list:"records",env:"envelopes",stats:"stats",settings:"settings"};
+var tabIcons={list:"📋 ",env:"💰 ",stats:"📊 ",settings:"⚙️ "};
+$$(".tab").forEach(function(tab){
+  var v=tab.dataset.v;
+  tab.textContent=(tabIcons[v]||"")+t(tabMap[v]||v);
+});
   var el;
   el=$("#lbl-balance"); if(el)el.textContent=t("balance");
   el=$("#lbl-income"); if(el)el.textContent=t("income");

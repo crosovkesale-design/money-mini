@@ -127,6 +127,7 @@ var MONTHS={
   ru:["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"],
   en:["January","February","March","April","May","June","July","August","September","October","November","December"]
 };
+var NO_ITEMS_CATS=["rent","util","delivery","transp","taxi","fuel"];
 var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
 
 var I18N={
@@ -583,7 +584,7 @@ function renderRecordModal(){
     +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>'
     +'<div class="field"><label>'+t("shop")+'</label>'
     +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
-    +(edit.type==="expense"
+    +(edit.type==="expense" && NO_ITEMS_CATS.indexOf(edit.cat)===-1
       ? '<div class="field"><label>'+t("items")+' <span style="color:var(--muted);text-transform:none;font-size:10px">('+t("comment_ph")+')</span></label>'
         +'<div id="items-list">'+itemsHtml+'</div>'
         +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
@@ -655,12 +656,18 @@ function attachRecordEvents(){
     };
   });
   modal.querySelectorAll(".cat").forEach(function(c){
-    c.onclick=function(){
-      edit.cat=c.dataset.cat;
-      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
-      c.classList.add("on");
-    };
-  });
+  c.onclick=function(){
+    edit.cat=c.dataset.cat;
+    if(NO_ITEMS_CATS.indexOf(edit.cat)!==-1){
+      edit.items=[];
+    }else{
+      if(!edit.items.length)edit.items=[{name:"",price:""}];
+      renderRecordModal();
+    }
+    modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
+    c.classList.add("on");
+  };
+});
   modal.querySelectorAll("[data-act]").forEach(function(b){
     b.onclick=function(){
       var act=b.dataset.act;
@@ -690,10 +697,15 @@ function attachRecordEvents(){
           var p=parseFloat(it.price)||0;
           if(n||p>0)items.push({name:n,price:p});
         });
+        var noItems=NO_ITEMS_CATS.indexOf(edit.cat)!==-1;
         var itemSum=0;
-        items.forEach(function(it){itemSum+=it.price});
+        if(!noItems)items.forEach(function(it){itemSum+=it.price});
         var amt;
-        if(itemSum>0){
+        if(noItems){
+          amt=parseFloat(modal.querySelector("#m-am").value);
+          if(!amt||amt<=0){toast(t("err_amount"),"err");return}
+          items=[];
+        }else if(itemSum>0){
           amt=itemSum;
         }else{
           amt=parseFloat(modal.querySelector("#m-am").value);

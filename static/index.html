@@ -31,6 +31,7 @@
       <button id="prev">‹</button>
       <div class="label" id="mlabel">—</div>
       <button id="next">›</button>
+      <button id="top-settings-btn" style="background:transparent;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:6px 10px;line-height:1">⚙️</button>
       <div class="lang-switch">
         <button class="lang-btn on" data-lang="ru">RU</button>
         <button class="lang-btn" data-lang="en">EN</button>
@@ -53,7 +54,6 @@
     <div class="tab on" data-v="list"></div>
     <div class="tab" data-v="env"></div>
     <div class="tab" data-v="stats"></div>
-    <div class="tab" data-v="settings"></div>
   </div>
 
   <div class="view on" id="v-list"><div class="list" id="list"></div></div>
@@ -803,9 +803,23 @@ $$(".tab").forEach(function(tab){
     $$(".view").forEach(function(x){x.classList.remove("on")});
     tab.classList.add("on");
     document.getElementById("v-"+tab.dataset.v).classList.add("on");
-    if(tab.dataset.v==="settings"){try{renderReferrals()}catch(e){}}
   };
 });
+
+var topBtn=$("#top-settings-btn");
+if(topBtn)topBtn.onclick=function(){
+  var v=document.getElementById("v-settings");
+  if(v.classList.contains("on")){
+    v.classList.remove("on");
+    var listTab=document.querySelector('.tab[data-v="list"]');
+    if(listTab)listTab.classList.add("on");
+    document.getElementById("v-list").classList.add("on");
+  }else{
+    $$(".view").forEach(function(x){x.classList.remove("on")});
+    v.classList.add("on");
+    try{renderReferrals()}catch(e){}
+  }
+};
 
 $("#prev").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,-1);render()};
 $("#next").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,+1);render()};

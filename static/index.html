@@ -417,15 +417,22 @@ function editEnvelope(catId){
   });
   modal.querySelectorAll("[data-act]").forEach(function(b){
     b.onclick=function(){
-      var act=b.dataset.act;
-      if(act==="cancel"){modal.remove();modal=null;return}
-      if(act==="del"){
-        if(state.mode==="family"){
-          db.ref("families/"+state.familyCode+"/envelopes/"+catId).remove();
-        }else{
-          delete state.envelopes[catId];saveLocal();render();
-        }
-        modal.remove();modal=null;toast(t("deleted")||"Удалено");return;
+      if(act==="save"){
+  var lim=parseFloat(modal.querySelector("#m-lim").value);
+  if(!lim||lim<=0){toast("Введи лимит","err");return}
+  if(!chosenCat){toast("Выбери категорию","err");return}
+  toast("Режим: "+state.mode+" · Код: "+(state.familyCode||"нет"),"ok");
+  if(state.mode==="family"&&state.familyCode){
+    db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim).then(function(){
+      toast("Записалось в Firebase","ok");
+    }).catch(function(e){
+      toast("Ошибка Firebase: "+e.message,"err");
+    });
+  }else{
+    state.envelopes[chosenCat]=lim;saveLocal();render();
+    toast("Сохранил локально","ok");
+  }
+  modal.remove();modal=null;
       }
       if(act==="save"){
         var lim=parseFloat(modal.querySelector("#m-lim").value);

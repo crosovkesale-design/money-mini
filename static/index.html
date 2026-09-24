@@ -549,10 +549,10 @@ function openRecord(existing){
   if(existing){
     edit={type:existing.type,cat:existing.cat,amount:String(existing.amount),
           note:existing.note||"",shop:existing.shop||"",date:existing.date,id:existing.id,
-          items:existing.items||[]};
+          items:existing.items||[],showItems:!!(existing.items&&existing.items.length)};
   }else{
     edit={type:"expense",cat:"food",amount:"",note:"",shop:"",
-          date:today(),id:null,items:[{name:"",price:""}]};
+          date:today(),id:null,items:[],showItems:false};
   }
   renderRecordModal();
 }
@@ -589,11 +589,13 @@ function renderRecordModal(){
     +'<div class="field"><label>'+t("shop")+'</label>'
     +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
     +(edit.type==="expense" && NO_ITEMS_CATS.indexOf(edit.cat)===-1
-      ? '<div class="field"><label>'+t("items")+' <span style="color:var(--muted);text-transform:none;font-size:10px">('+t("comment_ph")+')</span></label>'
-        +'<div id="items-list">'+itemsHtml+'</div>'
-        +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
-        +'<div style="text-align:right;margin-top:12px;font-size:14px">'+t("total")+': <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
-        +'</div>'
+      ? (edit.showItems
+         ? '<div class="field"><label>'+t("items")+'</label>'
+         +'<div id="items-list">'+itemsHtml+'</div>'
+         +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
+         +'<div style="text-align:right;margin-top:12px;font-size:14px">'+t("total")+': <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
+         +'</div>'
+         : '<button type="button" id="show-items" style="width:100%;margin-top:8px;padding:10px;background:transparent;color:var(--muted);border:1px dashed var(--line);border-radius:10px;font:inherit;font-size:12px;cursor:pointer">+ '+t("items")+'</button>')
       : '')
     +'<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
     +cats.map(function(c){
@@ -636,6 +638,12 @@ function attachRecordEvents(){
       renderRecordModal();
     };
   });
+  var showBtn=modal.querySelector("#show-items");
+  if(showBtn)showBtn.onclick=function(){
+    edit.showItems=true;
+    if(!edit.items.length)edit.items=[{name:"",price:""}];
+    renderRecordModal();
+  };
   var addBtn=modal.querySelector("#add-item");
   if(addBtn)addBtn.onclick=function(){
     modal.querySelectorAll(".item-row").forEach(function(row){

@@ -123,7 +123,10 @@ var state={mode:"local",userName:"",familyCode:null,familyName:"",records:[],env
 var KEY="fb_data_v3";
 var UID_KEY="budget_uid";
 var LANG_KEY="budget_lang";
-var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+var MONTHS={
+  ru:["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"],
+  en:["January","February","March","April","May","June","July","August","September","October","November","December"]
+};
 var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
 
 var I18N={
@@ -261,7 +264,10 @@ function toast(msg,cls){
   toast._t=setTimeout(function(){el.className="toast "+(cls||"")},1800);
 }
 
-function monthLabel(ym){return MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]}
+function monthLabel(ym){
+  var arr=MONTHS[state.lang]||MONTHS.ru;
+  return arr[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0];
+}
 function shiftMonth(ym,d){
   var p=ym.split("-"),y=parseInt(p[0]),m=parseInt(p[1])-1+d;
   while(m<0){m+=12;y--}
@@ -325,6 +331,7 @@ function applyLang(){
   set("#code-lbl","code_word");
   set("#code-word","code_word");
   set("#code-word2","code_word");
+  if(state.viewMonth&&$("#mlabel"))$("#mlabel").textContent=monthLabel(state.viewMonth);
 }
 
 var familySub=null;

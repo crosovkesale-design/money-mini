@@ -264,7 +264,7 @@ function toast(msg,cls){
   toast._t=setTimeout(function(){el.className="toast "+(cls||"")},1800);
 }
 
-function monthLabel(ym){
+function monthLabel(ym){return MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]}
   var arr=MONTHS[state.lang]||MONTHS.ru;
   return arr[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0];
 }
@@ -331,7 +331,6 @@ function applyLang(){
   set("#code-lbl","code_word");
   set("#code-word","code_word");
   set("#code-word2","code_word");
-  if(state.viewMonth&&$("#mlabel"))$("#mlabel").textContent=monthLabel(state.viewMonth);
 }
 
 var familySub=null;

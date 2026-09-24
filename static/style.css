@@ -157,3 +157,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue)}
 .ref-btns .share{background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
 .ref-hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px}
 .ref-empty{text-align:center;padding:20px 0;color:var(--muted);font-size:13px}
+.month-nav{position:relative}
+.month-nav .lang-switch{margin-left:auto}
+#top-settings-btn{position:absolute;top:0;right:0;background:transparent;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:6px 8px;line-height:1;z-index:2}
+.month-nav .lang-switch{margin-top:32px}

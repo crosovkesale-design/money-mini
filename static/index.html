@@ -784,15 +784,20 @@ function editEnvelope(catId){
         modal.remove();modal=null;toast("Удалено");return;
       }
       if(act==="save"){
-        var lim=parseFloat(modal.querySelector("#m-lim").value);
-        if(!lim||lim<=0){toast("Введи лимит","err");return}
-        if(!chosenCat){toast("Выбери категорию","err");return}
-        if(state.mode==="family"){
-          db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim);
-        }else{
-          state.envelopes[chosenCat]=lim;saveLocal();render();
-        }
-        modal.remove();modal=null;toast("Сохранено","ok");
+  var lim=parseFloat(modal.querySelector("#m-lim").value);
+  if(!lim||lim<=0){toast("Введи лимит","err");return}
+  if(!chosenCat){toast("Выбери категорию","err");return}
+  if(state.mode==="family"&&state.familyCode){
+    db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim).then(function(){
+      toast("Ок: записано в Firebase","ok");
+    }).catch(function(e){
+      toast("FB ошибка: "+e.message,"err");
+    });
+  }else{
+    state.envelopes[chosenCat]=lim;saveLocal();render();
+    toast("Ок: сохранено локально","ok");
+  }
+  modal.remove();modal=null;
       }
     };
   });

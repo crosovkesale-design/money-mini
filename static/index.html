@@ -262,7 +262,10 @@ function toast(msg,cls){
   toast._t=setTimeout(function(){el.className="toast "+(cls||"")},1800);
 }
 
-function monthLabel(ym){return MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]}
+function monthLabel(ym){
+  var arr=MONTHS[state.lang]||MONTHS.ru;
+  return arr[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0];
+}
 function shiftMonth(ym,d){
   var p=ym.split("-"),y=parseInt(p[0]),m=parseInt(p[1])-1+d;
   while(m<0){m+=12;y--}

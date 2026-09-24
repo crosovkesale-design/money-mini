@@ -12,13 +12,13 @@
 
 <div class="auth-screen hidden" id="auth-screen" style="display:none">
   <div class="auth-box">
-    <h1>Семья</h1>
-    <p class="sub">Один код — все видят одни траты</p>
-    <div class="field"><label>Ваше имя</label>
+    <h1 id="auth-title">Семья</h1>
+    <p class="sub" id="auth-sub">Один код — все видят одни траты</p>
+    <div class="field"><label id="auth-name-lbl">Ваше имя</label>
       <input type="text" id="auth-fname" placeholder="Иван" maxlength="20"></div>
     <button class="btn-primary" id="btn-create" style="width:100%">Создать семью</button>
-    <div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0">или войти по коду</div>
-    <div class="field"><label>Код семьи</label>
+    <div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0" id="or-text">или войти по коду</div>
+    <div class="field"><label id="code-lbl">Код семьи</label>
       <input type="text" id="auth-code" class="code-input" placeholder="XXXXXX" maxlength="6" autocomplete="off"></div>
     <button class="btn-cancel" id="btn-join" style="width:100%">Войти</button>
     <button class="btn-cancel" id="btn-auth-cancel" style="width:100%;margin-top:10px">Отмена</button>
@@ -39,7 +39,7 @@
     <div class="family-badge" id="family-badge" style="display:none">
       <span>👨‍👩‍👧</span><b id="family-name">Семья</b>
       <span>·</span><span id="family-count">1</span>
-      <span>· код: <b id="family-code">···</b></span>
+      <span>· <span id="code-word">код</span>: <b id="family-code">···</b></span>
     </div>
     <div class="balance-label" id="lbl-balance">Баланс месяца</div>
     <div class="balance" id="bal">0</div>
@@ -50,25 +50,23 @@
   </div>
 
   <div class="tabs">
-    <div class="tab on" data-v="list">📋 Записи</div>
-    <div class="tab" data-v="env">💰 Конверты</div>
-    <div class="tab" data-v="stats">📊 Стата</div>
-    <div class="tab" data-v="settings">⚙️</div>
+    <div class="tab on" data-v="list"></div>
+    <div class="tab" data-v="env"></div>
+    <div class="tab" data-v="stats"></div>
+    <div class="tab" data-v="settings"></div>
   </div>
 
   <div class="view on" id="v-list"><div class="list" id="list"></div></div>
   <div class="view" id="v-env"><div class="env-list" id="env-list"></div></div>
   <div class="view" id="v-stats">
     <div class="stat-block"><h3 id="h-cats">Топ категорий за месяц</h3><div id="stats-cats"></div></div>
-<div class="stat-block"><h3 id="h-shops">Где тратишь больше всего</h3><div id="stats-shops"></div></div>
-<div class="stat-block"><h3 id="h-items">Топ товаров</h3><div id="stats-items"></div></div>
+    <div class="stat-block"><h3 id="h-shops">Где тратишь больше всего</h3><div id="stats-shops"></div></div>
+    <div class="stat-block"><h3 id="h-items">Топ товаров</h3><div id="stats-items"></div></div>
   </div>
   <div class="view" id="v-settings">
     <div class="stat-block">
       <h3 id="h-refs" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Рефералы</h3>
-      <div id="ref-info">
-        <div style="text-align:center;padding:20px 0;color:var(--muted);font-size:13px">загрузка...</div>
-      </div>
+      <div id="ref-info"></div>
     </div>
     <div class="stat-block" id="family-block">
       <h3 id="h-family" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Семья</h3>
@@ -77,16 +75,16 @@
         <button class="btn-primary" id="btn-open-family" style="width:100%">Подключить семью</button>
       </div>
       <div id="family-active" style="display:none">
-        <div style="font-size:14px;margin-bottom:10px">Код: <b id="family-code-display" style="color:var(--blue);letter-spacing:4px">—</b></div>
+        <div style="font-size:14px;margin-bottom:10px"><span id="code-word2">Код</span>: <b id="family-code-display" style="color:var(--blue);letter-spacing:4px">—</b></div>
         <div class="members-list" id="members-list" style="margin-bottom:12px"></div>
         <button class="btn-cancel" id="btn-copy-code" style="width:100%;margin-bottom:8px">Скопировать код</button>
         <button class="btn-delete" id="btn-leave-family" style="width:100%">Выйти из семьи</button>
       </div>
     </div>
     <div class="stat-block">
-      <div class="lbl" id="total-count-label">Всего записей</div>
+      <div class="set-row"><div><div class="lbl" id="total-count-label">Всего записей</div><div class="sub" id="total-count">0</div></div></div>
       <div class="set-row">
-        <div class="lbl" id="export-label">Экспорт CSV</div>
+        <div><div class="lbl" id="export-label">Экспорт CSV</div><div class="sub" id="export-sub">все записи</div></div>
         <button class="btn-cancel" id="btn-export">Скачать</button>
       </div>
     </div>
@@ -115,7 +113,6 @@ firebase.initializeApp(firebaseConfig);
 var auth = firebase.auth();
 var db = firebase.database();
 </script>
-  
 <script>
 (function(){
 "use strict";
@@ -127,7 +124,9 @@ var KEY="fb_data_v3";
 var UID_KEY="budget_uid";
 var LANG_KEY="budget_lang";
 var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
-  var I18N={
+var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
+
+var I18N={
   ru:{
     records:"Записи",envelopes:"Конверты",stats:"Стата",settings:"Настройки",
     balance:"Баланс месяца",income:"Доходы",expense:"Расходы",
@@ -135,13 +134,27 @@ var MONTHS=["январь","февраль","март","апрель","май","
     referrals:"Рефералы",family:"Семья",personal_mode:"Сейчас личный режим",
     connect_family:"Подключить семью",copy_code:"Скопировать код",leave_family:"Выйти из семьи",
     no_records:"Записей нет",press_plus:"Нажми + чтобы добавить",
-    no_env:"Нет конвертов",press_plus_env:"Нажми + чтобы добавить бюджет",
+    no_env:"Нет конвертов",press_plus_env:"Нажми + чтобы добавить бюджет по теме",
     no_exp_cat:"нет расходов",no_shops:"пока нет ни одного магазина",no_items:"товары в чеках пока не указаны",
     invited:"Приглашено",coupons:"Купонов −10%",
     ref_hint:"Купон даёт −10% на одну покупку. Купоны копятся.",
     copy:"Скопировать",share:"Поделиться",
-    total_records:"Всего записей",export_csv:"Экспорт CSV",download:"Скачать",
+    total_records:"Всего записей",export_csv:"Экспорт CSV",export_sub:"все записи",download:"Скачать",
     cancel:"Отмена",create_family:"Создать семью",join:"Войти",
+    auth_title:"Семья",auth_sub:"Один код — все видят одни траты",
+    auth_name:"Ваше имя",or_text:"или войти по коду",code_word:"Код",
+    new_record:"Новая запись",edit_record:"Изменить запись",
+    expense_btn:"− Расход",income_btn:"+ Доход",
+    shop:"Магазин / место",shop_ph:"Введите название магазина",
+    items:"Товары в чеке",item_ph:"Товар",price_ph:"Цена",
+    add_item:"+ добавить товар",total:"Итого",category:"Категория",
+    comment:"Комментарий",comment_ph:"необязательно",date:"Дата",
+    save:"Сохранить",amount:"Сумма",delete:"Удалить",
+    new_env:"Новый конверт",edit_env:"Изменить конверт",
+    env_limit:"Лимит на месяц",spent:"израсходовано",of:"из",left:"осталось",
+    saved:"Сохранено",deleted:"Удалено",save_fb:"Ок: записано в Firebase",save_local:"Ок: сохранено локально",
+    err_limit:"Введи лимит",err_cat:"Выбери категорию",err_amount:"Введи сумму",err_items:"Добавь хотя бы один товар с ценой",
+    entered:"Нажми + чтобы начать",
     cat_food:"Продукты",cat_delivery:"Доставка",cat_coffee:"Кофе/снеки",cat_rent:"Аренда",
     cat_util:"Коммуналка",cat_transp:"Транспорт",cat_taxi:"Такси",cat_fuel:"Бензин",
     cat_health:"Здоровье",cat_doctor:"Врачи",cat_fun:"Развлечения",cat_clothes:"Одежда",
@@ -151,16 +164,7 @@ var MONTHS=["январь","февраль","март","апрель","май","
     cat_vape:"Вейп/сигареты",cat_party:"Праздники",cat_tax:"Налоги",cat_bank:"Банк/комиссии",
     cat_other_ex:"Другое",
     cat_salary:"Зарплата",cat_freel:"Фриланс",cat_gift_in:"Подарок",cat_invest:"Инвестиции",
-    cat_cashback:"Кэшбэк",cat_other_in:"Другое",
-    new_record:"Новая запись",edit_record:"Изменить запись",
-    expense_btn:"− Расход",income_btn:"+ Доход",
-    shop:"Магазин / место",shop_ph:"Введите название магазина",
-    items:"Товары в чеке",item_ph:"Товар",price_ph:"Цена",
-    add_item:"+ добавить товар",total:"Итого",category:"Категория",
-    comment:"Комментарий",comment_ph:"необязательно",date:"Дата",
-    save:"Сохранить",new_env:"Новый конверт",edit_env:"Изменить конверт",
-    env_limit:"Лимит на месяц",spent:"израсходовано",of:"из",left:"осталось",
-    amount:"Сумма",delete:"Удалить"
+    cat_cashback:"Кэшбэк",cat_other_in:"Другое"
   },
   en:{
     records:"Records",envelopes:"Envelopes",stats:"Stats",settings:"Settings",
@@ -169,13 +173,27 @@ var MONTHS=["январь","февраль","март","апрель","май","
     referrals:"Referrals",family:"Family",personal_mode:"Currently personal mode",
     connect_family:"Connect family",copy_code:"Copy code",leave_family:"Leave family",
     no_records:"No records",press_plus:"Tap + to add",
-    no_env:"No envelopes",press_plus_env:"Tap + to add budget",
+    no_env:"No envelopes",press_plus_env:"Tap + to add budget by category",
     no_exp_cat:"no expenses",no_shops:"no shops yet",no_items:"no items in receipts yet",
     invited:"Invited",coupons:"Coupons −10%",
     ref_hint:"Each coupon gives −10% on one purchase. They stack.",
     copy:"Copy",share:"Share",
-    total_records:"Total records",export_csv:"Export CSV",download:"Download",
+    total_records:"Total records",export_csv:"Export CSV",export_sub:"all records",download:"Download",
     cancel:"Cancel",create_family:"Create family",join:"Join",
+    auth_title:"Family",auth_sub:"One code — everyone sees the same",
+    auth_name:"Your name",or_text:"or join by code",code_word:"Code",
+    new_record:"New record",edit_record:"Edit record",
+    expense_btn:"− Expense",income_btn:"+ Income",
+    shop:"Shop / place",shop_ph:"Enter shop name",
+    items:"Items in receipt",item_ph:"Item",price_ph:"Price",
+    add_item:"+ add item",total:"Total",category:"Category",
+    comment:"Comment",comment_ph:"optional",date:"Date",
+    save:"Save",amount:"Amount",delete:"Delete",
+    new_env:"New envelope",edit_env:"Edit envelope",
+    env_limit:"Monthly limit",spent:"spent",of:"of",left:"left",
+    saved:"Saved",deleted:"Deleted",save_fb:"Ok: saved to Firebase",save_local:"Ok: saved locally",
+    err_limit:"Enter limit",err_cat:"Pick category",err_amount:"Enter amount",err_items:"Add at least one item with price",
+    entered:"Tap + to start",
     cat_food:"Groceries",cat_delivery:"Delivery",cat_coffee:"Coffee/snacks",cat_rent:"Rent",
     cat_util:"Utilities",cat_transp:"Transport",cat_taxi:"Taxi",cat_fuel:"Fuel",
     cat_health:"Health",cat_doctor:"Doctors",cat_fun:"Entertainment",cat_clothes:"Clothes",
@@ -185,53 +203,10 @@ var MONTHS=["январь","февраль","март","апрель","май","
     cat_vape:"Vape/cigarettes",cat_party:"Parties",cat_tax:"Taxes",cat_bank:"Bank/fees",
     cat_other_ex:"Other",
     cat_salary:"Salary",cat_freel:"Freelance",cat_gift_in:"Gift",cat_invest:"Investments",
-    cat_cashback:"Cashback",cat_other_in:"Other",
-    new_record:"New record",edit_record:"Edit record",
-    expense_btn:"− Expense",income_btn:"+ Income",
-    shop:"Shop / place",shop_ph:"Enter shop name",
-    items:"Items in receipt",item_ph:"Item",price_ph:"Price",
-    add_item:"+ add item",total:"Total",category:"Category",
-    comment:"Comment",comment_ph:"optional",date:"Date",
-    save:"Save",new_env:"New envelope",edit_env:"Edit envelope",
-    env_limit:"Monthly limit",spent:"spent",of:"of",left:"left",
-    amount:"Amount",delete:"Delete"
+    cat_cashback:"Cashback",cat_other_in:"Other"
   }
 };
 function t(k){return (I18N[state.lang]&&I18N[state.lang][k])||(I18N.ru[k])||k}
-function applyLang(){
-  var lang=state.lang;
-  var tabMap={list:"records",env:"envelopes",stats:"stats",settings:"settings"};
-var tabIcons={list:"📋 ",env:"💰 ",stats:"📊 ",settings:"⚙️ "};
-$$(".tab").forEach(function(tab){
-  var v=tab.dataset.v;
-  tab.textContent=(tabIcons[v]||"")+t(tabMap[v]||v);
-});
-  var el;
-  el=$("#lbl-balance"); if(el)el.textContent=t("balance");
-  el=$("#lbl-income"); if(el)el.textContent=t("income");
-  el=$("#lbl-expense"); if(el)el.textContent=t("expense");
-  el=$("#h-cats"); if(el)el.textContent=t("top_cats");
-  el=$("#h-shops"); if(el)el.textContent=t("top_shops");
-  el=$("#h-items"); if(el)el.textContent=t("top_items");
-  el=$("#h-refs"); if(el)el.textContent=t("referrals");
-  el=$("#h-family"); if(el)el.textContent=t("family");
-  el=$("#lbl-personal"); if(el)el.textContent=t("personal_mode");
-  el=$("#btn-open-family"); if(el)el.textContent=t("connect_family");
-  el=$("#btn-copy-code"); if(el)el.textContent=t("copy_code");
-  el=$("#btn-leave-family"); if(el)el.textContent=t("leave_family");
-  el=$("#total-count-label"); if(el)el.textContent=t("total_records");
-  el=$("#export-label"); if(el)el.textContent=t("export_csv");
-  el=$("#btn-export"); if(el)el.textContent=t("download");
-  el=$("#btn-auth-cancel"); if(el)el.textContent=t("cancel");
-  el=$("#btn-create"); if(el)el.textContent=t("create_family");
-  el=$("#btn-join"); if(el)el.textContent=t("join");
-
-var emptyEl=$("#list .empty");
-if(emptyEl)emptyEl.innerHTML=t("no_records")+"<br><br>"+t("press_plus");
-var envEmpty=$("#env-list .empty");
-if(envEmpty)envEmpty.innerHTML=t("no_env")+"<br><br>"+t("press_plus_env");
-}
-var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
 
 var INCOME=[
   {id:"salary",name:"Зарплата",e:"💼"},
@@ -316,6 +291,42 @@ function today(){return new Date().toISOString().slice(0,10)}
 function closeAuth(){$("#auth-screen").style.display="none"}
 function openAuth(){$("#auth-screen").style.display="flex"}
 
+function applyLang(){
+  var tabMap={list:"records",env:"envelopes",stats:"stats",settings:"settings"};
+  var tabIcons={list:"📋 ",env:"💰 ",stats:"📊 ",settings:"⚙️ "};
+  $$(".tab").forEach(function(tab){
+    var v=tab.dataset.v;
+    tab.textContent=(tabIcons[v]||"")+t(tabMap[v]||v);
+  });
+  var set=function(id,key){var el=$(id);if(el)el.textContent=t(key)};
+  set("#lbl-balance","balance");
+  set("#lbl-income","income");
+  set("#lbl-expense","expense");
+  set("#h-cats","top_cats");
+  set("#h-shops","top_shops");
+  set("#h-items","top_items");
+  set("#h-refs","referrals");
+  set("#h-family","family");
+  set("#lbl-personal","personal_mode");
+  set("#btn-open-family","connect_family");
+  set("#btn-copy-code","copy_code");
+  set("#btn-leave-family","leave_family");
+  set("#total-count-label","total_records");
+  set("#export-label","export_csv");
+  set("#export-sub","export_sub");
+  set("#btn-export","download");
+  set("#btn-auth-cancel","cancel");
+  set("#btn-create","create_family");
+  set("#btn-join","join");
+  set("#auth-title","auth_title");
+  set("#auth-sub","auth_sub");
+  set("#auth-name-lbl","auth_name");
+  set("#or-text","or_text");
+  set("#code-lbl","code_word");
+  set("#code-word","code_word");
+  set("#code-word2","code_word");
+}
+
 var familySub=null;
 function subscribeFamily(){
   if(familySub){familySub.off();familySub=null}
@@ -332,6 +343,7 @@ function subscribeFamily(){
     render();
   });
 }
+
 function render(){
   var ym=state.viewMonth;
   var recs=recordsOfMonth(ym);
@@ -365,7 +377,7 @@ function render(){
   var sorted=recs.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)});
   var list=$("#list");
   if(!sorted.length){
-    list.innerHTML='<div class="empty">Записей нет<br><br>Нажми <b>+</b> чтобы добавить</div>';
+    list.innerHTML='<div class="empty">'+t("no_records")+'<br><br>'+t("press_plus")+'</div>';
   }else{
     list.innerHTML=sorted.map(function(r){
       var c=findCat(r.cat);
@@ -373,7 +385,7 @@ function render(){
       var sign=r.type==="income"?"+":"−";
       var by=(state.mode==="family"&&r.byName)?'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.byName+'</div>':'';
       var extra=r.shop?(' · '+r.shop):'';
-      var itms=(r.items&&r.items.length)?('<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.items.length+' поз.</div>'):'';
+      var itms=(r.items&&r.items.length)?('<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.items.length+'</div>'):'';
       return '<div class="rec" data-id="'+r.id+'">'
         +'<div class="ico">'+c.e+'</div>'
         +'<div class="info"><div class="name">'+(r.note||cName)+'</div>'
@@ -385,69 +397,40 @@ function render(){
   renderEnvelopes(recs);
   renderStats(recs);
   $("#total-count").textContent=state.records.length;
+  applyLang();
 }
 
-function editEnvelope(catId){
-  if(modal)modal.remove();
-  modal=document.createElement("div");
-  modal.className="modal";
-  var isNew=!catId;
-  var current=catId?state.envelopes[catId]:"";
-  modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(isNew?t("new_env"):t("edit_env"))+'</h2>'
-    +(isNew?('<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
-      +EXPENSE.map(function(c){
-        return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+t("cat_"+c.id)+'</div>';
-      }).join("")+'</div></div>'):'')
-    +'<div class="field"><label>'+t("env_limit")+'</label>'
-    +'<input type="number" inputmode="decimal" step="1" id="m-lim" class="amount-input" placeholder="0" value="'+current+'"></div>'
-    +'<div class="row-btns">'
-    +(isNew?'':'<button class="btn-delete" data-act="del">'+t("delete")+'</button>')
-    +'<button class="btn-cancel" data-act="cancel">'+t("cancel")+'</button>'
-    +'<button class="btn-primary" data-act="save">'+t("save")+'</button>'
-    +'</div></div>';
-  document.body.appendChild(modal);
-  var chosenCat=catId||null;
-  modal.querySelectorAll(".cat").forEach(function(c){
-    c.onclick=function(){
-      chosenCat=c.dataset.cat;
-      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
-      c.classList.add("on");
-    };
-  });
-  modal.querySelectorAll("[data-act]").forEach(function(b){
-    b.onclick=function(){
-      if(act==="save"){
-  var lim=parseFloat(modal.querySelector("#m-lim").value);
-  if(!lim||lim<=0){toast("Введи лимит","err");return}
-  if(!chosenCat){toast("Выбери категорию","err");return}
-  toast("Режим: "+state.mode+" · Код: "+(state.familyCode||"нет"),"ok");
-  if(state.mode==="family"&&state.familyCode){
-    db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim).then(function(){
-      toast("Записалось в Firebase","ok");
-    }).catch(function(e){
-      toast("Ошибка Firebase: "+e.message,"err");
-    });
-  }else{
-    state.envelopes[chosenCat]=lim;saveLocal();render();
-    toast("Сохранил локально","ok");
+function renderEnvelopes(recs){
+  var el=$("#env-list");
+  var keys=Object.keys(state.envelopes);
+  if(!keys.length){
+    el.innerHTML='<div class="empty">'+t("no_env")+'<br><br>'+t("press_plus_env")+'</div>';
+    return;
   }
-  modal.remove();modal=null;
-      }
-      if(act==="save"){
-        var lim=parseFloat(modal.querySelector("#m-lim").value);
-        if(!lim||lim<=0){toast("Введи лимит","err");return}
-        if(!chosenCat){toast("Выбери категорию","err");return}
-        if(state.mode==="family"){
-          db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim);
-        }else{
-          state.envelopes[chosenCat]=lim;saveLocal();render();
-        }
-        modal.remove();modal=null;toast("Сохранено","ok");
-      }
-    };
+  var byCat={};
+  recs.filter(function(r){return r.type==="expense"}).forEach(function(r){
+    byCat[r.cat]=(byCat[r.cat]||0)+r.amount;
   });
-  modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
+  el.innerHTML=keys.map(function(catId){
+    var lim=state.envelopes[catId];
+    var spent=byCat[catId]||0;
+    var left=lim-spent;
+    var pct=lim>0?Math.min(100,spent/lim*100):0;
+    var cls=spent>lim?"over":(pct>=80?"warn":"");
+    var c=findCat(catId);
+    var cName=t("cat_"+c.id);
+    return '<div class="env '+cls+'">'
+      +'<div class="env-head">'
+      +'<div class="env-name"><span class="e">'+c.e+'</span>'+cName+'</div>'
+      +'<button class="env-edit" data-cat="'+catId+'">✏️</button>'
+      +'</div>'
+      +'<div class="env-nums">'+t("spent")+' <b>'+fmt(spent)+'</b> '+t("of")+' '+fmt(lim)+' · '+t("left")+' <b>'+fmt(left)+'</b></div>'
+      +'<div class="env-bar"><i style="width:'+pct+'%"></i></div>'
+      +'</div>';
+  }).join("");
+  el.querySelectorAll(".env-edit").forEach(function(b){
+    b.onclick=function(){editEnvelope(b.dataset.cat)};
+  });
 }
 
 function renderStats(recs){
@@ -458,7 +441,7 @@ function renderStats(recs){
   var cats=Object.entries(byCat).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
   var el=$("#stats-cats");
   if(!cats.length){
-    el.innerHTML='<div style="color:var(--muted);font-size:13px">нет расходов</div>';
+    el.innerHTML='<div style="color:var(--muted);font-size:13px">'+t("no_exp_cat")+'</div>';
   }else{
     el.innerHTML=cats.map(function(kv){
       var c=findCat(kv[0]);
@@ -471,14 +454,12 @@ function renderStats(recs){
   }
 
   var byShop={};
-  ex.forEach(function(r){
-    if(r.shop)byShop[r.shop]=(byShop[r.shop]||0)+r.amount;
-  });
+  ex.forEach(function(r){if(r.shop)byShop[r.shop]=(byShop[r.shop]||0)+r.amount});
   var shops=Object.entries(byShop).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
   var elS=$("#stats-shops");
   if(elS){
     if(!shops.length){
-      elS.innerHTML='<div style="color:var(--muted);font-size:13px">пока не указано ни одного магазина</div>';
+      elS.innerHTML='<div style="color:var(--muted);font-size:13px">'+t("no_shops")+'</div>';
     }else{
       var totalShops=shops.reduce(function(s,kv){return s+kv[1]},0);
       elS.innerHTML=shops.map(function(kv){
@@ -494,9 +475,7 @@ function renderStats(recs){
   ex.forEach(function(r){
     if(r.items&&r.items.length){
       r.items.forEach(function(it){
-        if(it.name&&it.price>0){
-          byItem[it.name]=(byItem[it.name]||0)+it.price;
-        }
+        if(it.name&&it.price>0)byItem[it.name]=(byItem[it.name]||0)+it.price;
       });
     }
   });
@@ -504,7 +483,7 @@ function renderStats(recs){
   var elI=$("#stats-items");
   if(elI){
     if(!items.length){
-      elI.innerHTML='<div style="color:var(--muted);font-size:13px">товары в чеках пока не указаны</div>';
+      elI.innerHTML='<div style="color:var(--muted);font-size:13px">'+t("no_items")+'</div>';
     }else{
       var totalItems=items.reduce(function(s,kv){return s+kv[1]},0);
       elI.innerHTML=items.map(function(kv){
@@ -521,7 +500,7 @@ function renderReferrals(){
   var el=$("#ref-info");
   if(!el)return;
   if(!state.uid||state.uid==="anon"){
-    el.innerHTML='<div class="ref-empty">Нет Telegram ID</div>';
+    el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--muted);font-size:13px">no id</div>';
     return;
   }
   db.ref("users/"+state.uid).once("value").then(function(snap){
@@ -530,19 +509,19 @@ function renderReferrals(){
     var coupons=u.couponsEarned||0;
     var link="https://t.me/moneyfamilybudget_bot?start=ref_"+state.uid;
     el.innerHTML='<div class="ref-stat">'
-  +'<div class="box"><div class="n">'+count+'</div><div class="t">'+t("invited")+'</div></div>'
-  +'<div class="box"><div class="n">'+coupons+'</div><div class="t">'+t("coupons")+'</div></div>'
-  +'</div>'
-  +'<div class="ref-link">'+link+'</div>'
-  +'<div class="ref-btns">'
-  +'<button class="copy" id="ref-copy">'+t("copy")+'</button>'
-  +'<button class="share" id="ref-share">'+t("share")+'</button>'
-  +'</div>'
-  +'<div class="ref-hint">'+t("ref_hint")+'</div>';
+      +'<div class="box"><div class="n">'+count+'</div><div class="t">'+t("invited")+'</div></div>'
+      +'<div class="box"><div class="n">'+coupons+'</div><div class="t">'+t("coupons")+'</div></div>'
+      +'</div>'
+      +'<div class="ref-link">'+link+'</div>'
+      +'<div class="ref-btns">'
+      +'<button class="copy" id="ref-copy">'+t("copy")+'</button>'
+      +'<button class="share" id="ref-share">'+t("share")+'</button>'
+      +'</div>'
+      +'<div class="ref-hint">'+t("ref_hint")+'</div>';
     var cb=$("#ref-copy");
     if(cb)cb.onclick=function(){
       navigator.clipboard.writeText(link);
-      toast("Ссылка скопирована","ok");
+      toast(t("saved"),"ok");
     };
     var sb=$("#ref-share");
     if(sb)sb.onclick=function(){
@@ -554,10 +533,9 @@ function renderReferrals(){
       }
     };
   }).catch(function(e){
-    el.innerHTML='<div class="ref-empty">Ошибка: '+e.message+'</div>';
+    el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--red);font-size:12px">'+e.message+'</div>';
   });
 }
-
 var modal=null;
 var edit={type:"expense",cat:"food",amount:"",note:"",shop:"",date:"",id:null,items:[]};
 
@@ -624,7 +602,7 @@ function renderRecordModal(){
   document.body.appendChild(modal);
   attachRecordEvents();
 }
-  
+
 function attachRecordEvents(){
   modal.querySelectorAll(".item-row").forEach(function(row){
     var i=parseInt(row.dataset.i);
@@ -635,8 +613,8 @@ function attachRecordEvents(){
       edit.items[i].price=pInput.value;
       var sum=0;
       edit.items.forEach(function(it){sum+=parseFloat(it.price)||0});
-      var t=modal.querySelector("#total-sum");
-      if(t)t.textContent=fmt(sum);
+      var tEl=modal.querySelector("#total-sum");
+      if(tEl)tEl.textContent=fmt(sum);
     };
   });
   modal.querySelectorAll(".it-del").forEach(function(b){
@@ -682,13 +660,13 @@ function attachRecordEvents(){
       var act=b.dataset.act;
       if(act==="cancel"){modal.remove();modal=null;return}
       if(act==="del"){
-        if(state.mode==="family"){
+        if(state.mode==="family"&&state.familyCode){
           db.ref("families/"+state.familyCode+"/records/"+edit.id).remove();
         }else{
           state.records=state.records.filter(function(r){return r.id!==edit.id});
           saveLocal();render();
         }
-        modal.remove();modal=null;toast("Удалено");return;
+        modal.remove();modal=null;toast(t("deleted"));return;
       }
       if(act==="save"){
         var amt=0;
@@ -711,17 +689,17 @@ function attachRecordEvents(){
               amt+=p;
             }
           });
-          if(!amt||amt<=0){toast("Добавь хотя бы один товар с ценой","err");return}
+          if(!amt||amt<=0){toast(t("err_items"),"err");return}
         }else{
           amt=parseFloat(modal.querySelector("#m-am").value);
-          if(!amt||amt<=0){toast("Введи сумму","err");return}
+          if(!amt||amt<=0){toast(t("err_amount"),"err");return}
         }
         var note=modal.querySelector("#m-note").value.trim();
         var shop=modal.querySelector("#m-shop").value.trim();
         var date=modal.querySelector("#m-date").value||today();
         var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,shop:shop,date:date,
                  items:items,ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
-        if(state.mode==="family"){
+        if(state.mode==="family"&&state.familyCode){
           var id=edit.id||(Date.now()+"-"+Math.random().toString(36).slice(2,8));
           db.ref("families/"+state.familyCode+"/records/"+id).set(rec);
         }else{
@@ -736,7 +714,7 @@ function attachRecordEvents(){
         }
         var ym=date.slice(0,7);
         if(ym!==state.viewMonth)state.viewMonth=ym;
-        render();modal.remove();modal=null;toast("Сохранено","ok");
+        render();modal.remove();modal=null;toast(t("saved"),"ok");
       }
     };
   });
@@ -750,17 +728,17 @@ function editEnvelope(catId){
   var isNew=!catId;
   var current=catId?state.envelopes[catId]:"";
   modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(isNew?"Новый конверт":"Изменить конверт")+'</h2>'
-    +(isNew?('<div class="field"><label>Категория</label><div class="cat-grid">'
+    +'<h2>'+(isNew?t("new_env"):t("edit_env"))+'</h2>'
+    +(isNew?('<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
       +EXPENSE.map(function(c){
-        return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+c.name+'</div>';
+        return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+t("cat_"+c.id)+'</div>';
       }).join("")+'</div></div>'):'')
-    +'<div class="field"><label>Лимит на месяц</label>'
+    +'<div class="field"><label>'+t("env_limit")+'</label>'
     +'<input type="number" inputmode="decimal" step="1" id="m-lim" class="amount-input" placeholder="0" value="'+current+'"></div>'
     +'<div class="row-btns">'
-    +(isNew?'':'<button class="btn-delete" data-act="del">Удалить</button>')
-    +'<button class="btn-cancel" data-act="cancel">Отмена</button>'
-    +'<button class="btn-primary" data-act="save">Сохранить</button>'
+    +(isNew?'':'<button class="btn-delete" data-act="del">'+t("delete")+'</button>')
+    +'<button class="btn-cancel" data-act="cancel">'+t("cancel")+'</button>'
+    +'<button class="btn-primary" data-act="save">'+t("save")+'</button>'
     +'</div></div>';
   document.body.appendChild(modal);
   var chosenCat=catId||null;
@@ -776,41 +754,39 @@ function editEnvelope(catId){
       var act=b.dataset.act;
       if(act==="cancel"){modal.remove();modal=null;return}
       if(act==="del"){
-        if(state.mode==="family"){
+        if(state.mode==="family"&&state.familyCode){
           db.ref("families/"+state.familyCode+"/envelopes/"+catId).remove();
         }else{
           delete state.envelopes[catId];saveLocal();render();
         }
-        modal.remove();modal=null;toast("Удалено");return;
+        modal.remove();modal=null;toast(t("deleted"));return;
       }
       if(act==="save"){
-  var lim=parseFloat(modal.querySelector("#m-lim").value);
-  if(!lim||lim<=0){toast("Введи лимит","err");return}
-  if(!chosenCat){toast("Выбери категорию","err");return}
-  if(state.mode==="family"&&state.familyCode){
-    db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim).then(function(){
-      toast("Ок: записано в Firebase","ok");
-    }).catch(function(e){
-      toast("FB ошибка: "+e.message,"err");
-    });
-  }else{
-    state.envelopes[chosenCat]=lim;saveLocal();render();
-    toast("Ок: сохранено локально","ok");
-  }
-  modal.remove();modal=null;
+        var lim=parseFloat(modal.querySelector("#m-lim").value);
+        if(!lim||lim<=0){toast(t("err_limit"),"err");return}
+        if(!chosenCat){toast(t("err_cat"),"err");return}
+        if(state.mode==="family"&&state.familyCode){
+          db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim);
+        }else{
+          state.envelopes[chosenCat]=lim;
+          saveLocal();
+        }
+        render();
+        modal.remove();modal=null;
+        toast(t("saved"),"ok");
       }
     };
   });
   modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
-}
-
-$$(".tab").forEach(function(t){
-  t.onclick=function(){
+    }
+  
+$$(".tab").forEach(function(tab){
+  tab.onclick=function(){
     $$(".tab").forEach(function(x){x.classList.remove("on")});
     $$(".view").forEach(function(x){x.classList.remove("on")});
-    t.classList.add("on");
-    document.getElementById("v-"+t.dataset.v).classList.add("on");
-    if(t.dataset.v==="settings"){try{renderReferrals()}catch(e){}}
+    tab.classList.add("on");
+    document.getElementById("v-"+tab.dataset.v).classList.add("on");
+    if(tab.dataset.v==="settings"){try{renderReferrals()}catch(e){}}
   };
 });
 
@@ -835,6 +811,7 @@ $$(".lang-btn").forEach(function(b){
     localStorage.setItem(LANG_KEY,state.lang);
     $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
     applyLang();
+    render();
     toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
   };
 });
@@ -847,14 +824,14 @@ $("#btn-auth-cancel").onclick=closeAuth;
 
 $("#btn-create").onclick=function(){
   var n=$("#auth-fname").value.trim();
-  if(!n){toast("Введи имя","err");return}
-  if(!state.uid){toast("Подключение... жди","err");setTimeout(function(){$("#btn-create").click()},3000);return}
+  if(!n){toast(t("auth_name"),"err");return}
+  if(!state.uid){toast("...","err");setTimeout(function(){$("#btn-create").click()},3000);return}
   state.userName=n;state.mode="family";state.familyCode=genCode();
   var ref=db.ref("families/"+state.familyCode);
   ref.set({name:"Семья "+n,createdAt:Date.now()}).then(function(){
     return ref.child("members").child(state.uid).set({name:n,joined:Date.now()});
   }).then(function(){
-    toast("Семья создана: "+state.familyCode,"ok");
+    toast(state.familyCode,"ok");
     saveLocal();closeAuth();subscribeFamily();
   }).catch(function(e){toast("Ошибка: "+e.message,"err")});
 };
@@ -862,16 +839,16 @@ $("#btn-create").onclick=function(){
 $("#btn-join").onclick=function(){
   var n=$("#auth-fname").value.trim();
   var c=$("#auth-code").value.trim().toUpperCase();
-  if(!n){toast("Введи имя","err");return}
-  if(c.length!==6){toast("Код из 6 знаков","err");return}
-  if(!state.uid){toast("Подключение... жди","err");setTimeout(function(){$("#btn-join").click()},3000);return}
+  if(!n){toast(t("auth_name"),"err");return}
+  if(c.length!==6){toast("XXXXXX","err");return}
+  if(!state.uid){toast("...","err");setTimeout(function(){$("#btn-join").click()},3000);return}
   var ref=db.ref("families/"+c);
   ref.once("value").then(function(snap){
-    if(!snap.exists()){toast("Семья не найдена","err");return}
+    if(!snap.exists()){toast("not found","err");return}
     state.userName=n;state.mode="family";state.familyCode=c;
     state.familyName=snap.val().name||"Семья";
     return ref.child("members").child(state.uid).set({name:n,joined:Date.now()}).then(function(){
-      toast("Присоединился","ok");saveLocal();closeAuth();subscribeFamily();
+      toast("ok","ok");saveLocal();closeAuth();subscribeFamily();
     });
   }).catch(function(e){toast("Ошибка: "+e.message,"err")});
 };
@@ -879,24 +856,24 @@ $("#btn-join").onclick=function(){
 $("#btn-copy-code").onclick=function(){
   if(!state.familyCode)return;
   navigator.clipboard.writeText(state.familyCode);
-  toast("Код: "+state.familyCode,"ok");
+  toast(state.familyCode,"ok");
 };
 
 $("#btn-leave-family").onclick=function(){
-  if(!confirm("Выйти из семьи?"))return;
+  if(!confirm(t("leave_family")+"?"))return;
   if(familySub){familySub.off();familySub=null}
   state.mode="local";state.familyCode=null;state.familyName="";
   state.records=[];state.members={};state.envelopes={};
-  saveLocal();render();toast("Вышел из семьи");
+  saveLocal();render();
 };
 
 $("#btn-export").onclick=function(){
-  if(!state.records.length){toast("Нет записей","err");return}
-  var rows=[["дата","тип","категория","сумма","магазин","товары","комментарий","кто"]];
+  if(!state.records.length){toast(t("no_records"),"err");return}
+  var rows=[["date","type","category","amount","shop","items","comment","who"]];
   state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){
     var c=findCat(r.cat);
     var itms=(r.items||[]).map(function(it){return it.name+" "+it.price}).join("; ");
-    rows.push([r.date,r.type==="income"?"доход":"расход",c.name,r.amount,r.shop||"",itms,r.note||"",r.byName||""]);
+    rows.push([r.date,r.type,c.name,r.amount,r.shop||"",itms,r.note||"",r.byName||""]);
   });
   var csv=rows.map(function(row){
     return row.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",");
@@ -907,7 +884,7 @@ $("#btn-export").onclick=function(){
   a.href=url;a.download="budget-"+today()+".csv";
   document.body.appendChild(a);a.click();a.remove();
   URL.revokeObjectURL(url);
-  toast("Скачано","ok");
+  toast("ok","ok");
 };
 
 var tgUser=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
@@ -921,6 +898,10 @@ var USER_KEY="budget_data_"+tgId;
 var FAMILY_KEY="budget_family_"+tgId;
 
 function bootApp(){
+  var storedLang=localStorage.getItem(LANG_KEY);
+  if(storedLang)state.lang=storedLang;
+  $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
+
   auth.signInAnonymously().then(function(cred){
     state.uid=tgId;
     try{
@@ -939,7 +920,6 @@ function bootApp(){
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
-    applyLang();
   }).catch(function(e){
     state.uid=tgId;
     try{
@@ -947,22 +927,16 @@ function bootApp(){
       if(saved.mode)state.mode=saved.mode;
       if(saved.records)state.records=saved.records;
       if(saved.envelopes)state.envelopes=saved.envelopes;
-    }catch(e){}
+    }catch(e2){}
     var famCode=localStorage.getItem(FAMILY_KEY);
     if(famCode&&state.mode==="family")state.familyCode=famCode;
     var n=new Date();
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
-    applyLang();
   });
 }
 
-  var storedLang0=localStorage.getItem(LANG_KEY);
-if(storedLang0)state.lang=storedLang0;
-$$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
-applyLang();
-  
 bootApp();
 
 var tg=window.Telegram&&window.Telegram.WebApp;
@@ -972,3 +946,4 @@ if(tg){tg.ready();tg.expand()}
 </script>
 </body>
 </html>
+  

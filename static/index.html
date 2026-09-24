@@ -123,10 +123,7 @@ var state={mode:"local",userName:"",familyCode:null,familyName:"",records:[],env
 var KEY="fb_data_v3";
 var UID_KEY="budget_uid";
 var LANG_KEY="budget_lang";
-var MONTHS={
-  ru:["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"],
-  en:["January","February","March","April","May","June","July","August","September","October","November","December"]
-};
+var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
 var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
 
 var I18N={
@@ -155,9 +152,8 @@ var I18N={
     save:"Сохранить",amount:"Сумма",delete:"Удалить",
     new_env:"Новый конверт",edit_env:"Изменить конверт",
     env_limit:"Лимит на месяц",spent:"израсходовано",of:"из",left:"осталось",
-    saved:"Сохранено",deleted:"Удалено",save_fb:"Ок: записано в Firebase",save_local:"Ок: сохранено локально",
-    err_limit:"Введи лимит",err_cat:"Выбери категорию",err_amount:"Введи сумму",err_items:"Добавь хотя бы один товар с ценой",
-    entered:"Нажми + чтобы начать",
+    saved:"Сохранено",deleted:"Удалено",
+    err_limit:"Введи лимит",err_cat:"Выбери категорию",err_amount:"Введи сумму",
     cat_food:"Продукты",cat_delivery:"Доставка",cat_coffee:"Кофе/снеки",cat_rent:"Аренда",
     cat_util:"Коммуналка",cat_transp:"Транспорт",cat_taxi:"Такси",cat_fuel:"Бензин",
     cat_health:"Здоровье",cat_doctor:"Врачи",cat_fun:"Развлечения",cat_clothes:"Одежда",
@@ -194,9 +190,8 @@ var I18N={
     save:"Save",amount:"Amount",delete:"Delete",
     new_env:"New envelope",edit_env:"Edit envelope",
     env_limit:"Monthly limit",spent:"spent",of:"of",left:"left",
-    saved:"Saved",deleted:"Deleted",save_fb:"Ok: saved to Firebase",save_local:"Ok: saved locally",
-    err_limit:"Enter limit",err_cat:"Pick category",err_amount:"Enter amount",err_items:"Add at least one item with price",
-    entered:"Tap + to start",
+    saved:"Saved",deleted:"Deleted",
+    err_limit:"Enter limit",err_cat:"Pick category",err_amount:"Enter amount",
     cat_food:"Groceries",cat_delivery:"Delivery",cat_coffee:"Coffee/snacks",cat_rent:"Rent",
     cat_util:"Utilities",cat_transp:"Transport",cat_taxi:"Taxi",cat_fuel:"Fuel",
     cat_health:"Health",cat_doctor:"Doctors",cat_fun:"Entertainment",cat_clothes:"Clothes",
@@ -265,9 +260,6 @@ function toast(msg,cls){
 }
 
 function monthLabel(ym){return MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]}
-  var arr=MONTHS[state.lang]||MONTHS.ru;
-  return arr[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0];
-}
 function shiftMonth(ym,d){
   var p=ym.split("-"),y=parseInt(p[0]),m=parseInt(p[1])-1+d;
   while(m<0){m+=12;y--}
@@ -542,6 +534,7 @@ function renderReferrals(){
     el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--red);font-size:12px">'+e.message+'</div>';
   });
 }
+
 var modal=null;
 var edit={type:"expense",cat:"food",amount:"",note:"",shop:"",date:"",id:null,items:[]};
 
@@ -580,16 +573,16 @@ function renderRecordModal(){
     +'<button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">'+t("expense_btn")+'</button>'
     +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">'+t("income_btn")+'</button>'
     +'</div>'
-    +'<div class="field"><label>'+t("shop")+'</label>'
-    +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
     +'<div class="field"><label>'+t("amount")+'</label>'
     +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>'
+    +'<div class="field"><label>'+t("shop")+'</label>'
+    +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
     +(edit.type==="expense"
       ? '<div class="field"><label>'+t("items")+' <span style="color:var(--muted);text-transform:none;font-size:10px">('+t("comment_ph")+')</span></label>'
-      +'<div id="items-list">'+itemsHtml+'</div>'
-      +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
-      +'<div style="text-align:right;margin-top:12px;font-size:14px">'+t("total")+': <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
-      +'</div>'
+        +'<div id="items-list">'+itemsHtml+'</div>'
+        +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
+        +'<div style="text-align:right;margin-top:12px;font-size:14px">'+t("total")+': <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
+        +'</div>'
       : '')
     +'<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
     +cats.map(function(c){
@@ -676,8 +669,6 @@ function attachRecordEvents(){
         modal.remove();modal=null;toast(t("deleted"));return;
       }
       if(act==="save"){
-        var amt=0;
-        var items=[];
         modal.querySelectorAll(".item-row").forEach(function(row){
           var i=parseInt(row.dataset.i);
           var n=row.querySelector(".it-name");
@@ -685,23 +676,19 @@ function attachRecordEvents(){
           if(edit.items[i]){
             if(n)edit.items[i].name=n.value;
             if(p)edit.items[i].price=p.value;
-          }  
+          }
         });
+        var items=[];
         edit.items.forEach(function(it){
           var n=(it.name||"").trim();
           var p=parseFloat(it.price)||0;
-          if(n||p>0){
-            items.push({name:n,price:p});
-          }
+          if(n||p>0)items.push({name:n,price:p});
         });
         var itemSum=0;
         items.forEach(function(it){itemSum+=it.price});
+        var amt;
         if(itemSum>0){
           amt=itemSum;
-        }else{
-          amt=parseFloat(modal.querySelector("#m-am").value);
-          if(!amt||amt<=0){toast(t("err_amount"),"err");return}
-        }
         }else{
           amt=parseFloat(modal.querySelector("#m-am").value);
           if(!amt||amt<=0){toast(t("err_amount"),"err");return}
@@ -790,7 +777,7 @@ function editEnvelope(catId){
     };
   });
   modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
-    }
+  }
   
 $$(".tab").forEach(function(tab){
   tab.onclick=function(){
@@ -822,7 +809,6 @@ $$(".lang-btn").forEach(function(b){
     state.lang=b.dataset.lang;
     localStorage.setItem(LANG_KEY,state.lang);
     $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
-    applyLang();
     render();
     toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
   };
@@ -958,4 +944,3 @@ if(tg){tg.ready();tg.expand()}
 </script>
 </body>
 </html>
-  

@@ -581,7 +581,11 @@ function renderRecordModal(){
     +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">'+t("income_btn")+'</button>'
     +'</div>'
     +'<div class="field"><label>'+t("amount")+'</label>'
-    +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'"></div>'
+    +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'">'
+    +(edit.type==="expense" && NO_ITEMS_CATS.indexOf(edit.cat)!==-1
+      ? '<div style="text-align:center;color:var(--muted);font-size:11px;margin-top:6px">'+t("cat_"+edit.cat)+'</div>'
+      : '')
+    +'</div>'
     +'<div class="field"><label>'+t("shop")+'</label>'
     +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
     +(edit.type==="expense" && NO_ITEMS_CATS.indexOf(edit.cat)===-1

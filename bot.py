@@ -35,37 +35,34 @@ dp = Dispatcher()
 if bot:
 
     @dp.message(Command("start"))
-async def cmd_start(message: Message):
-    args = message.text.split()
-    ref_id = None
-    if len(args) > 1 and args[1].startswith("ref_"):
-        ref_id = args[1][4:]
-
-    kb = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
-            text="Открыть бюджет",
-            web_app=WebAppInfo(url=MINI_APP_URL),
-        )
-    ]])
-
-    user_id = str(message.from_user.id)
-    base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
-
-    if ref_id and ref_id != user_id:
-        try:
-            r = requests.get(base + "/users/" + user_id + ".json", timeout=10)
-            existing = r.json()
-            if not existing or not existing.get("referredBy"):
-                now_ms = int(__import__("time").time() * 1000)
-                requests.patch(
-                    base + "/users/" + user_id + ".json",
-                    json={"referredBy": ref_id, "referredAt": now_ms},
-                    timeout=10,
+    async def cmd_start(message: Message):
+        args = message.text.split()
+        ref_id = None
+        if len(args) > 1 and args[1].startswith("ref_"):
+            ref_id = args[1][4:]
+            kb = InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(
+                    text="Открыть бюджет",
+                    web_app=WebAppInfo(url=MINI_APP_URL),
                 )
-                r2 = requests.get(base + "/users/" + ref_id + "/referrals.json", timeout=10)
-                refs = r2.json() or {}
-                refs[user_id] = now_ms
-                requests.put(
+            ]])
+            user_id = str(message.from_user.id)
+            base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
+            if ref_id and ref_id != user_id:
+                try:
+                    r = requests.get(base + "/users/" + user_id + ".json", timeout=10)
+                    existing = r.json()
+                    if not existing or not existing.get("referredBy"):
+                        now_ms = int(__import__("time").time() * 1000)
+                        requests.patch(
+                            base + "/users/" + user_id + ".json",
+                            json={"referredBy": ref_id, "referredAt": now_ms},
+                            timeout=10,
+                        )
+                        r2 = requests.get(base + "/users/" + ref_id + "/referrals.json", timeout=10)
+                        refs = r2.json() or {}
+                        refs[user_id] = now_ms
+                        requests.put(
                     base + "/users/" + ref_id + "/referrals.json",
                     json=refs,
                     timeout=10,

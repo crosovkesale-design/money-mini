@@ -1018,6 +1018,7 @@ function bootApp(){
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
+    try{renderSubscription()}catch(e){}
   }).catch(function(e){
     state.uid=tgId;
     try{
@@ -1032,9 +1033,53 @@ function bootApp(){
     state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
     if(state.mode==="family"&&state.familyCode){subscribeFamily()}
     render();
+    try{renderSubscription()}catch(e){}
   });
 }
 
+  function renderSubscription(){
+  var el=$("#sub-info");
+  if(!el)return;
+  if(!state.uid||state.uid==="anon"){el.textContent="—";return}
+  db.ref("users/"+state.uid).once("value").then(function(snap){
+    var u=snap.val()||{};
+    var tariff=u.tariff||"trial";
+    var subEnd=u.subEnd||0;
+    var now=Date.now();
+    var days=0;
+    if(subEnd>now)days=Math.ceil((subEnd-now)/86400000);
+    var status=(subEnd>now)?"активна":"истекла";
+    var nameMap={
+      "trial":"Trial",
+      "1month":"1 месяц",
+      "3months":"3 месяца",
+      "6months":"6 месяцев",
+      "12months":"12 месяцев",
+      "pro1":"Pro 1 месяц",
+      "pro12":"Pro 12 месяцев"
+    };
+    var label=nameMap[tariff]||tariff;
+    el.innerHTML=label+" · "+status+" · "+days+" дн.";
+  }).catch(function(){
+    el.textContent="—";
+  });
+}
+
+var payBtn=$("#btn-pay");
+if(payBtn)payBtn.onclick=function(){
+  var pw=$("#paywall");
+  if(pw)pw.classList.add("open");
+  renderSubscription();
+};
+
+document.querySelectorAll(".tariff").forEach(function(t){
+  t.onclick=function(){
+    var plan=t.getAttribute("data-plan");
+    var usd=t.getAttribute("data-usd");
+    toast("Оплата "+plan+" ($"+usd+") — скоро включим","ok");
+  };
+});
+  
 bootApp();
 
 var tg=window.Telegram&&window.Telegram.WebApp;

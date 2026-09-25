@@ -92,7 +92,58 @@
 
   <button class="fab" id="fab">+</button>
 </div>
+<div class="paywall" id="paywall">
+  <div class="paywall-box">
+    <h1 id="pw-title">Оплатить подписку</h1>
+    <p class="sub" id="pw-sub">Выбери тариф. Оплата в USDT / TON / BTC через Telegram.</p>
 
+    <div class="tariff" data-plan="1month" data-usd="5">
+      <div class="info">
+        <div class="nm" id="t-1m-name">1 месяц</div>
+        <div class="desc" id="t-1m-desc">Стандартный доступ</div>
+      </div>
+      <div class="price">199 ₴<small>$5</small></div>
+    </div>
+
+    <div class="tariff" data-plan="3months" data-usd="13">
+      <div class="info">
+        <div class="nm" id="t-3m-name">3 месяца</div>
+        <div class="desc" id="t-3m-desc">Скидка 10%</div>
+      </div>
+      <div class="price">530 ₴<small>$13</small></div>
+    </div>
+
+    <div class="tariff best" data-plan="12months" data-usd="38">
+      <div class="badge" id="t-best">Выгодно</div>
+      <div class="info">
+        <div class="nm" id="t-12m-name">12 месяцев</div>
+        <div class="desc" id="t-12m-desc">Скидка 37%</div>
+      </div>
+      <div class="price">1490 ₴<small>$38</small></div>
+    </div>
+
+    <div class="tariff" data-plan="pro1" data-usd="10">
+      <div class="info">
+        <div class="nm" id="t-pro1-name">Pro — 1 месяц</div>
+        <div class="desc" id="t-pro1-desc">Приложение + ИИ-ассистент</div>
+      </div>
+      <div class="price">399 ₴<small>$10</small></div>
+    </div>
+
+    <div class="tariff" data-plan="pro12" data-usd="75">
+      <div class="info">
+        <div class="nm" id="t-pro12-name">Pro — 12 месяцев</div>
+        <div class="desc" id="t-pro12-desc">ИИ + фото чеков + экономия 37%</div>
+      </div>
+      <div class="price">2990 ₴<small>$75</small></div>
+    </div>
+
+    <button class="paywall-close" id="pw-close" onclick="document.getElementById('paywall').classList.remove('open')">Закрыть</button>
+    <div class="paywall-footer" id="pw-footer">
+      Оплата проходит через CryptoBot. Подписка активируется автоматически в течение минуты.
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>

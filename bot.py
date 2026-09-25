@@ -32,6 +32,21 @@ dp = Dispatcher()
 
 FIREBASE = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
 
+CRYPTOPAY_TOKEN = os.getenv("CRYPTOPAY_TOKEN", "")
+CRYPTOPAY_NETWORK = os.getenv("CRYPTOPAY_NETWORK", "USDT")
+CRYPTOPAY_API = "https://pay.crypt.bot/api"
+
+TARIFFS = {
+    "1month":   {"days": 30,  "price_usd": 5,  "name": "1 месяц"},
+    "3months":  {"days": 90,  "price_usd": 13, "name": "3 месяца"},
+    "6months":  {"days": 180, "price_usd": 23, "name": "6 месяцев"},
+    "12months": {"days": 365, "price_usd": 38, "name": "12 месяцев"},
+    "pro1":     {"days": 30,  "price_usd": 10, "name": "Pro 1 месяц"},
+    "pro12":    {"days": 365, "price_usd": 75, "name": "Pro 12 месяцев"},
+}
+
+# тарифы без ограничения на купоны (можно до 3)
+BIG_TARIFFS = ["6months", "12months", "pro1", "pro12"]
 
 if bot:
 

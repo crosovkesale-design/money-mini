@@ -83,6 +83,30 @@ if bot:
                     )
             except Exception as e:
                 log.warning("referral save: " + str(e))
+                # сохранить имя и username в Firebase при первом заходе
+try:
+    base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
+    existing = requests.get(base + "/users/" + user_id + ".json", timeout=10).json() or {}
+    upd = {
+        "name": message.from_user.first_name or "Гость",
+        "username": message.from_user.username or "",
+        "tgId": user_id,
+        "lastSeen": int(__import__("time").time() * 1000),
+    }
+    if not existing.get("firstSeen"):
+        now_ms = int(__import__("time").time() * 1000)
+        upd["firstSeen"] = now_ms
+        upd["tariff"] = "trial"
+        upd["subStart"] = now_ms
+        upd["subEnd"] = now_ms + 30 * 24 * 60 * 60 * 1000
+        upd["status"] = "active"
+    requests.patch(
+        base + "/users/" + user_id + ".json",
+        json=upd,
+        timeout=10,
+    )
+except Exception as e:
+    log.warning("save user: " + str(e))
 
         await message.answer(
             "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"

@@ -171,7 +171,7 @@ if bot:
             lines.append("Купонов: <b>" + str(coupons) + "</b> (−10% каждый)")
             lines.append("Суммарно купили на <b>" + str(total_paid) + " ₴</b>")
 
-            await message.answer("\n".join(lines))
+            await message.answer("\n".join(lines), parse_mode="HTML")
         except Exception as e:
             log.warning("referrals cmd: " + str(e))
             await message.answer("Ошибка загрузки. Попробуй позже.")

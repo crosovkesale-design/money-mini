@@ -1,4 +1,3 @@
-# language: Python 3.11+, file: bot.py
 import os
 import requests
 import asyncio
@@ -26,10 +25,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 MINI_APP_URL = os.getenv("MINI_APP_URL", "http://localhost:8000")
 
 if not BOT_TOKEN:
-    log.warning("BOT_TOKEN не задан — бот не запустится, только API")
+    log.warning("BOT_TOKEN missing")
 
 bot = Bot(token=BOT_TOKEN) if BOT_TOKEN else None
 dp = Dispatcher()
+
+FIREBASE = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
 
 
 if bot:
@@ -40,75 +41,77 @@ if bot:
         ref_id = None
         if len(args) > 1 and args[1].startswith("ref_"):
             ref_id = args[1][4:]
-            kb = InlineKeyboardMarkup(inline_keyboard=[[
-                InlineKeyboardButton(
-                    text="Открыть бюджет",
-                    web_app=WebAppInfo(url=MINI_APP_URL),
-                )
-            ]])
-            user_id = str(message.from_user.id)
-            base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
-            if ref_id and ref_id != user_id:
-                try:
-                    r = requests.get(base + "/users/" + user_id + ".json", timeout=10)
-                    existing = r.json()
-                    if not existing or not existing.get("referredBy"):
-                        now_ms = int(__import__("time").time() * 1000)
-                        requests.patch(
-                            base + "/users/" + user_id + ".json",
-                            json={"referredBy": ref_id, "referredAt": now_ms},
-                            timeout=10,
-                        )
-                        r2 = requests.get(base + "/users/" + ref_id + "/referrals.json", timeout=10)
-                        refs = r2.json() or {}
-                        refs[user_id] = now_ms
-                        requests.put(
-                    base + "/users/" + ref_id + "/referrals.json",
-                    json=refs,
-                    timeout=10,
-                )
-                count = len(refs)
-                tiers = [1, 5, 10, 20, 40, 80, 160, 320, 640, 1280]
-                earned = 0
-                for t in tiers:
-                    if count >= t:
-                        earned = earned + 1
-                requests.patch(
-                    base + "/users/" + ref_id + ".json",
-                    json={"referralCount": count, "couponsEarned": earned},
-                    timeout=10,
-                )
+
+        kb = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(
+                text="Открыть бюджет",
+                web_app=WebAppInfo(url=MINI_APP_URL),
+            )
+        ]])
+
+        user_id = str(message.from_user.id)
+
+        if ref_id and ref_id != user_id:
+            try:
+                r = requests.get(FIREBASE + "/users/" + user_id + ".json", timeout=10)
+                existing = r.json()
+                if not existing or not existing.get("referredBy"):
+                    now_ms = int(__import__("time").time() * 1000)
+                    requests.patch(
+                        FIREBASE + "/users/" + user_id + ".json",
+                        json={"referredBy": ref_id, "referredAt": now_ms},
+                        timeout=10,
+                    )
+                    r2 = requests.get(FIREBASE + "/users/" + ref_id + "/referrals.json", timeout=10)
+                    refs = r2.json() or {}
+                    refs[user_id] = now_ms
+                    requests.put(
+                        FIREBASE + "/users/" + ref_id + "/referrals.json",
+                        json=refs,
+                        timeout=10,
+                    )
+                    count = len(refs)
+                    tiers = [1, 5, 10, 20, 40, 80, 160, 320, 640, 1280]
+                    earned = 0
+                    for t in tiers:
+                        if count >= t:
+                            earned = earned + 1
+                    requests.patch(
+                        FIREBASE + "/users/" + ref_id + ".json",
+                        json={"referralCount": count, "couponsEarned": earned},
+                        timeout=10,
+                    )
+            except Exception as e:
+                log.warning("referral save: " + str(e))
+
+        try:
+            existing = requests.get(FIREBASE + "/users/" + user_id + ".json", timeout=10).json() or {}
+            now_ms = int(__import__("time").time() * 1000)
+            upd = {
+                "name": message.from_user.first_name or "Гость",
+                "username": message.from_user.username or "",
+                "tgId": user_id,
+                "lastSeen": now_ms,
+            }
+            if not existing.get("firstSeen"):
+                upd["firstSeen"] = now_ms
+                upd["tariff"] = "trial"
+                upd["subStart"] = now_ms
+                upd["subEnd"] = now_ms + 30 * 24 * 60 * 60 * 1000
+                upd["status"] = "active"
+            requests.patch(
+                FIREBASE + "/users/" + user_id + ".json",
+                json=upd,
+                timeout=10,
+            )
         except Exception as e:
-            log.warning("referral save: " + str(e))
+            log.warning("save user: " + str(e))
 
-    try:
-        existing = requests.get(base + "/users/" + user_id + ".json", timeout=10).json() or {}
-        now_ms = int(__import__("time").time() * 1000)
-        upd = {
-            "name": message.from_user.first_name or "Гость",
-            "username": message.from_user.username or "",
-            "tgId": user_id,
-            "lastSeen": now_ms,
-        }
-        if not existing.get("firstSeen"):
-            upd["firstSeen"] = now_ms
-            upd["tariff"] = "trial"
-            upd["subStart"] = now_ms
-            upd["subEnd"] = now_ms + 30 * 24 * 60 * 60 * 1000
-            upd["status"] = "active"
-        requests.patch(
-            base + "/users/" + user_id + ".json",
-            json=upd,
-            timeout=10,
+        await message.answer(
+            "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"
+            "Нажми кнопку, чтобы открыть приложение.",
+            reply_markup=kb,
         )
-    except Exception as e:
-        log.warning("save user: " + str(e))
-
-    await message.answer(
-        "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"
-        "Нажми кнопку, чтобы открыть приложение.",
-        reply_markup=kb,
-    )
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
@@ -122,9 +125,8 @@ if bot:
     @dp.message(Command("status"))
     async def cmd_status(message: Message):
         uid = str(message.from_user.id)
-        base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
         try:
-            r = requests.get(base + "/users/" + uid + ".json", timeout=10)
+            r = requests.get(FIREBASE + "/users/" + uid + ".json", timeout=10)
             u = r.json() or {}
             tariff = u.get("tariff") or "trial"
             sub_end = u.get("subEnd") or 0
@@ -133,7 +135,6 @@ if bot:
             if sub_end > now_ms:
                 days_left = (sub_end - now_ms) // 86400000
             status = "активна" if sub_end > now_ms else "истекла"
-
             await message.answer(
                 "📊 <b>Подписка</b>\n\n"
                 "Тариф: " + tariff + "\n"
@@ -141,15 +142,14 @@ if bot:
                 "Осталось: " + str(days_left) + " дней"
             )
         except Exception as e:
-            log.warning("status cmd: " + str(e))
-            await message.answer("📊 Подписка: информация недоступна")
+            log.warning("status: " + str(e))
+            await message.answer("Подписка: информация недоступна")
 
     @dp.message(Command("referrals"))
     async def cmd_referrals(message: Message):
         uid = str(message.from_user.id)
-        base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
         try:
-            r = requests.get(base + "/users/" + uid + ".json", timeout=10)
+            r = requests.get(FIREBASE + "/users/" + uid + ".json", timeout=10)
             me = r.json() or {}
             refs = me.get("referrals") or {}
             count = me.get("referralCount") or 0
@@ -160,7 +160,8 @@ if bot:
                     "👥 <b>Рефералы</b>\n\n"
                     "Пока никого не пригласил.\n\n"
                     "Твоя ссылка:\n"
-                    "<code>https://t.me/moneyfamilybudget_bot?start=ref_" + uid + "</code>"
+                    "<code>https://t.me/moneyfamilybudget_bot?start=ref_" + uid + "</code>",
+                    parse_mode="HTML",
                 )
                 return
 
@@ -169,7 +170,7 @@ if bot:
             i = 0
             for ref_id in refs:
                 i += 1
-                rr = requests.get(base + "/users/" + ref_id + ".json", timeout=10)
+                rr = requests.get(FIREBASE + "/users/" + ref_id + ".json", timeout=10)
                 ru = rr.json() or {}
                 name = ru.get("name") or ("id " + ref_id)
                 uname = ("@" + ru.get("username")) if ru.get("username") else ""
@@ -179,7 +180,6 @@ if bot:
                 sub_end = ru.get("subEnd") or 0
                 now_ms = int(__import__("time").time() * 1000)
                 status = "активна" if sub_end > now_ms else "истекла"
-
                 lines.append(
                     str(i) + ". <b>" + name + "</b> " + uname + "\n"
                     "   Тариф: " + tariff + " · " + status + "\n"
@@ -193,7 +193,7 @@ if bot:
 
             await message.answer("\n".join(lines), parse_mode="HTML")
         except Exception as e:
-            log.warning("referrals cmd: " + str(e))
+            log.warning("referrals: " + str(e))
             await message.answer("Ошибка загрузки. Попробуй позже.")
 
 
@@ -204,7 +204,7 @@ STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 async def lifespan(app: FastAPI):
     if bot:
         task = asyncio.create_task(dp.start_polling(bot))
-        log.info("бот запущен")
+        log.info("bot started")
         yield
         task.cancel()
         try:
@@ -229,7 +229,7 @@ if os.path.isdir(STATIC_DIR):
 else:
     @app.get("/")
     async def root():
-        return HTMLResponse("<h1>Money Mini — soon</h1>")
+        return HTMLResponse("<h1>Money Mini</h1>")
 
 
 if __name__ == "__main__":

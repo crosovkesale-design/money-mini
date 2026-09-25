@@ -35,84 +35,83 @@ dp = Dispatcher()
 if bot:
 
     @dp.message(Command("start"))
-    async def cmd_start(message: Message):
-        args = message.text.split()
-        ref_id = None
-        if len(args) > 1 and args[1].startswith("ref_"):
-            ref_id = args[1][4:]
+async def cmd_start(message: Message):
+    args = message.text.split()
+    ref_id = None
+    if len(args) > 1 and args[1].startswith("ref_"):
+        ref_id = args[1][4:]
 
-        kb = InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(
-                text="Открыть бюджет",
-                web_app=WebAppInfo(url=MINI_APP_URL),
-            )
-        ]])
-
-        user_id = str(message.from_user.id)
-
-        if ref_id and ref_id != user_id:
-            try:
-                base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
-                r = requests.get(base + "/users/" + user_id + ".json", timeout=10)
-                existing = r.json()
-                if not existing or not existing.get("referredBy"):
-                    now_ms = int(__import__("time").time() * 1000)
-                    requests.patch(
-                        base + "/users/" + user_id + ".json",
-                        json={"referredBy": ref_id, "referredAt": now_ms},
-                        timeout=10,
-                    )
-                    r2 = requests.get(base + "/users/" + ref_id + "/referrals.json", timeout=10)
-                    refs = r2.json() or {}
-                    refs[user_id] = now_ms
-                    requests.put(
-                        base + "/users/" + ref_id + "/referrals.json",
-                        json=refs,
-                        timeout=10,
-                    )
-                    count = len(refs)
-                    tiers = [1, 5, 10, 20, 40, 80, 160, 320, 640, 1280]
-                    earned = 0
-                    for t in tiers:
-                        if count >= t:
-                            earned = earned + 1
-                    requests.patch(
-                        base + "/users/" + ref_id + ".json",
-                        json={"referralCount": count, "couponsEarned": earned},
-                        timeout=10,
-                    )
-            except Exception as e:
-                log.warning("referral save: " + str(e))
-                # сохранить имя и username в Firebase при первом заходе
-try:
-    base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
-    existing = requests.get(base + "/users/" + user_id + ".json", timeout=10).json() or {}
-    upd = {
-        "name": message.from_user.first_name or "Гость",
-        "username": message.from_user.username or "",
-        "tgId": user_id,
-        "lastSeen": int(__import__("time").time() * 1000),
-    }
-    if not existing.get("firstSeen"):
-        now_ms = int(__import__("time").time() * 1000)
-        upd["firstSeen"] = now_ms
-        upd["tariff"] = "trial"
-        upd["subStart"] = now_ms
-        upd["subEnd"] = now_ms + 30 * 24 * 60 * 60 * 1000
-        upd["status"] = "active"
-    requests.patch(
-        base + "/users/" + user_id + ".json",
-        json=upd,
-        timeout=10,
-    )
-except Exception as e:
-    log.warning("save user: " + str(e))
-
-        await message.answer(
-            "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"
-            "Нажми кнопку, чтобы открыть приложение.",
-            reply_markup=kb,
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(
+            text="Открыть бюджет",
+            web_app=WebAppInfo(url=MINI_APP_URL),
         )
+    ]])
+
+    user_id = str(message.from_user.id)
+    base = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
+
+    if ref_id and ref_id != user_id:
+        try:
+            r = requests.get(base + "/users/" + user_id + ".json", timeout=10)
+            existing = r.json()
+            if not existing or not existing.get("referredBy"):
+                now_ms = int(__import__("time").time() * 1000)
+                requests.patch(
+                    base + "/users/" + user_id + ".json",
+                    json={"referredBy": ref_id, "referredAt": now_ms},
+                    timeout=10,
+                )
+                r2 = requests.get(base + "/users/" + ref_id + "/referrals.json", timeout=10)
+                refs = r2.json() or {}
+                refs[user_id] = now_ms
+                requests.put(
+                    base + "/users/" + ref_id + "/referrals.json",
+                    json=refs,
+                    timeout=10,
+                )
+                count = len(refs)
+                tiers = [1, 5, 10, 20, 40, 80, 160, 320, 640, 1280]
+                earned = 0
+                for t in tiers:
+                    if count >= t:
+                        earned = earned + 1
+                requests.patch(
+                    base + "/users/" + ref_id + ".json",
+                    json={"referralCount": count, "couponsEarned": earned},
+                    timeout=10,
+                )
+        except Exception as e:
+            log.warning("referral save: " + str(e))
+
+    try:
+        existing = requests.get(base + "/users/" + user_id + ".json", timeout=10).json() or {}
+        now_ms = int(__import__("time").time() * 1000)
+        upd = {
+            "name": message.from_user.first_name or "Гость",
+            "username": message.from_user.username or "",
+            "tgId": user_id,
+            "lastSeen": now_ms,
+        }
+        if not existing.get("firstSeen"):
+            upd["firstSeen"] = now_ms
+            upd["tariff"] = "trial"
+            upd["subStart"] = now_ms
+            upd["subEnd"] = now_ms + 30 * 24 * 60 * 60 * 1000
+            upd["status"] = "active"
+        requests.patch(
+            base + "/users/" + user_id + ".json",
+            json=upd,
+            timeout=10,
+        )
+    except Exception as e:
+        log.warning("save user: " + str(e))
+
+    await message.answer(
+        "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"
+        "Нажми кнопку, чтобы открыть приложение.",
+        reply_markup=kb,
+    )
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):

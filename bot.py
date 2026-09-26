@@ -251,3 +251,25 @@ else:
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+
+@app.get("/api/pay/debug")
+async def pay_debug():
+    token_set = bool(CRYPTOPAY_TOKEN)
+    token_len = len(CRYPTOPAY_TOKEN) if CRYPTOPAY_TOKEN else 0
+    token_preview = (CRYPTOPAY_TOKEN[:8] + "...") if CRYPTOPAY_TOKEN else "нет"
+    network = CRYPTOPAY_NETWORK
+    try:
+        test = cp_request("getMe", {})
+        cp_ok = test.get("ok")
+        cp_result = test.get("result") or test
+    except Exception as e:
+        cp_ok = False
+        cp_result = str(e)
+    return {
+        "token_set": token_set,
+        "token_len": token_len,
+        "token_preview": token_preview,
+        "network": network,
+        "cryptopay_ok": cp_ok,
+        "cryptopay_result": cp_result,
+    }

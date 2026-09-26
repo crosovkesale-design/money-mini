@@ -1075,8 +1075,29 @@ if(payBtn)payBtn.onclick=function(){
 document.querySelectorAll(".tariff").forEach(function(t){
   t.onclick=function(){
     var plan=t.getAttribute("data-plan");
-    var usd=t.getAttribute("data-usd");
-    toast("Оплата "+plan+" ($"+usd+") — скоро включим","ok");
+    var pw=$("#paywall");
+    if(pw)pw.classList.remove("open");
+
+    toast("Создаю счёт...","ok");
+
+    fetch("/api/pay/create",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({uid:state.uid,plan:plan,use10:0,use20:0})
+    }).then(function(r){return r.json()}).then(function(res){
+      if(!res||!res.ok||!res.invoice_url){
+        toast("Ошибка: "+(res&&res.error||"не создать счёт"),"err");
+        return;
+      }
+      toast("Счёт на $"+res.final_usd+" создан. Открываю оплату...","ok");
+      if(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.openLink){
+        window.Telegram.WebApp.openLink(res.invoice_url);
+      }else{
+        window.open(res.invoice_url,"_blank");
+      }
+    }).catch(function(e){
+      toast("Ошибка сети: "+e.message,"err");
+    });
   };
 });
   

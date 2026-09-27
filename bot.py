@@ -258,6 +258,14 @@ app = FastAPI(lifespan=lifespan)
 async def health():
     return {"ok": True}
 
+@app.get("/api/routes")
+async def routes_list():
+    result = []
+    for r in app.routes:
+        if hasattr(r, "path") and hasattr(r, "methods"):
+            result.append({"path": r.path, "methods": list(r.methods)})
+    return result
+
 
 @app.get("/api/pay/debug")
 async def pay_debug():

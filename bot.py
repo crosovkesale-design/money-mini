@@ -289,6 +289,42 @@ async def pay_debug():
             result["cryptopay_error"] = str(e)
     return result
 
+@app.get("/api/pay/test-webhook")
+async def pay_test_webhook(uid: str = "", plan: str = "1month", key: str = ""):
+    TEST_KEY = os.getenv("TEST_WEBHOOK_KEY", "")
+    if not TEST_KEY:
+        return {"error": "TEST_WEBHOOK_KEY not set in Railway variables"}
+    if key != TEST_KEY:
+        return {"error": "wrong key"}
+    if not uid or plan not in TARIFFS:
+        return {"error": "need uid and valid plan"}
+
+    fake_body = {
+        "update_id": 999999,
+        "update_type": "invoice_paid",
+        "request_date": datetime.utcnow().isoformat(),
+        "payload": {
+            "invoice_id": 999999,
+            "status": "paid",
+            "amount": str(TARIFFS[plan]["price_usd"]),
+            "asset": CRYPTOPAY_NETWORK,
+            "payload": json.dumps({
+                "uid": uid,
+                "plan": plan,
+                "use10": 0,
+                "use20": 0,
+                "discount": 0,
+                "base": TARIFFS[plan]["price_usd"],
+                "final": TARIFFS[plan]["price_usd"],
+            }),
+        },
+    }
+
+    class FakeRequest:
+        async def json(self):
+            return fake_body
+
+    return await pay_webhook(FakeRequest())
 
 @app.post("/api/pay/create")
 async def pay_create(request: Request):

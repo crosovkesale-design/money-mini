@@ -235,15 +235,65 @@ if bot:
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 
+async def daily_check():
+    while True:
+        try:
+            await asyncio.sleep(6 * 60 * 60)
+            if not bot:
+                continue
+            now_ms = int(datetime.utcnow().timestamp() * 1000)
+            users = fb_get("/users") or {}
+            for uid, u in users.items():
+                if not isinstance(u, dict):
+                    continue
+                sub_end = u.get("subEnd") or 0
+                if sub_end <= now_ms:
+                    continue
+                days = (sub_end - now_ms) // 86400000
+                sent_flag = u.get("reminderSent") or 0
+                if days == 3 and sent_flag < 3:
+                    try:
+                        await bot.send_message(
+                            uid,
+                            "⏰ Подписка истекает через <b>3 дня</b>.\n\n"
+                            "Продлить: открой приложение → ⚙️ Настройки → Оплатить.",
+                            parse_mode="HTML"
+                        )
+                    except Exception:
+                        pass
+                    fb_patch("/users/" + uid, {"reminderSent": 3})
+                elif days == 1 and sent_flag < 1:
+                    try:
+                        await bot.send_message(
+                            uid,
+                            "⏰ Подписка истекает <b>завтра</b>.\n\n"
+                            "Продлить: ⚙️ Настройки → Оплатить.",
+                            parse_mode="HTML"
+                        )
+                    except Exception:
+                        pass
+                    fb_patch("/users/" + uid, {"reminderSent": 1})
+                elif days > 3 and sent_flag > 0:
+                    fb_patch("/users/" + uid, {"reminderSent": 0})
+        except Exception as e:
+            log.warning("daily_check: " + str(e))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if bot:
         task = asyncio.create_task(dp.start_polling(bot))
+        reminder_task = asyncio.create_task(daily_check())
         log.info("bot started")
         yield
         task.cancel()
+        reminder_task.cancel()
         try:
             await task
+        except asyncio.CancelledError:
+            pass
+        try:
+            await reminder_task
         except asyncio.CancelledError:
             pass
         await bot.session.close()

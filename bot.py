@@ -28,6 +28,7 @@ MINI_APP_URL = os.getenv("MINI_APP_URL", "http://localhost:8000")
 CRYPTOPAY_TOKEN = os.getenv("CRYPTOPAY_TOKEN", "")
 CRYPTOPAY_NETWORK = os.getenv("CRYPTOPAY_NETWORK", "USDT")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "")
+TEST_WEBHOOK_KEY = os.getenv("TEST_WEBHOOK_KEY", "")
 
 CRYPTOPAY_API = "https://pay.crypt.bot/api"
 FIREBASE = "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app"
@@ -232,13 +233,10 @@ if bot:
         await message.answer("\n".join(lines), parse_mode="HTML")
 
 
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-
-
 async def daily_check():
     while True:
         try:
-            await asyncio.sleep(5)
+            await asyncio.sleep(6 * 60 * 60)
             if not bot:
                 continue
             now_ms = int(datetime.utcnow().timestamp() * 1000)
@@ -251,34 +249,37 @@ async def daily_check():
                 if sub_end <= now_ms:
                     continue
                 days = (sub_end - now_ms) // 86400000
-                log.info("check " + uid + ": days=" + str(days) + " sent=" + str(sent_flag))
                 sent_flag = u.get("reminderSent") or 0
+                log.info("check " + str(uid) + ": days=" + str(days) + " sent=" + str(sent_flag))
                 if days >= 1 and days <= 3 and sent_flag < 3:
                     try:
                         await bot.send_message(
-                            uid,
-                            "⏰ Подписка истекает через <b>3 дня</b>.\n\n"
+                            str(uid),
+                            "⏰ Подписка истекает через <b>" + str(days) + " дн.</b>\n\n"
                             "Продлить: открой приложение → ⚙️ Настройки → Оплатить.",
                             parse_mode="HTML"
                         )
-                    except Exception:
-                        pass
-                    fb_patch("/users/" + uid, {"reminderSent": 3})
+                    except Exception as e:
+                        log.warning("reminder send " + str(uid) + ": " + str(e))
+                    fb_patch("/users/" + str(uid), {"reminderSent": 3})
                 elif days == 0 and sent_flag < 1:
                     try:
                         await bot.send_message(
-                            uid,
-                            "⏰ Подписка истекает <b>завтра</b>.\n\n"
+                            str(uid),
+                            "⏰ Подписка истекает <b>сегодня</b>.\n\n"
                             "Продлить: ⚙️ Настройки → Оплатить.",
                             parse_mode="HTML"
                         )
-                    except Exception:
-                        pass
-                    fb_patch("/users/" + uid, {"reminderSent": 1})
+                    except Exception as e:
+                        log.warning("reminder send " + str(uid) + ": " + str(e))
+                    fb_patch("/users/" + str(uid), {"reminderSent": 1})
                 elif days > 3 and sent_flag > 0:
-                    fb_patch("/users/" + uid, {"reminderSent": 0})
+                    fb_patch("/users/" + str(uid), {"reminderSent": 0})
         except Exception as e:
             log.warning("daily_check: " + str(e))
+
+
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
 
 @asynccontextmanager
@@ -309,6 +310,7 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/api/health")
 async def health():
     return {"ok": True}
+
 
 @app.get("/api/routes")
 async def routes_list():
@@ -341,20 +343,18 @@ async def pay_debug():
             result["cryptopay_error"] = str(e)
     return result
 
+
 @app.get("/api/pay/test-webhook")
 async def pay_test_webhook(uid: str = "", plan: str = "1month", key: str = ""):
-    TEST_KEY = os.getenv("TEST_WEBHOOK_KEY", "")
-    if not TEST_KEY:
-        return {"error": "TEST_WEBHOOK_KEY not set in Railway variables"}
-    if key != TEST_KEY:
+    if not TEST_WEBHOOK_KEY:
+        return {"error": "TEST_WEBHOOK_KEY not set"}
+    if key != TEST_WEBHOOK_KEY:
         return {"error": "wrong key"}
     if not uid or plan not in TARIFFS:
         return {"error": "need uid and valid plan"}
 
     fake_body = {
-        "update_id": 999999,
         "update_type": "invoice_paid",
-        "request_date": datetime.utcnow().isoformat(),
         "payload": {
             "invoice_id": 999999,
             "status": "paid",
@@ -377,6 +377,7 @@ async def pay_test_webhook(uid: str = "", plan: str = "1month", key: str = ""):
             return fake_body
 
     return await pay_webhook(FakeRequest())
+
 
 @app.post("/api/pay/create")
 async def pay_create(request: Request):
@@ -496,6 +497,7 @@ async def pay_webhook(request: Request):
             "paidAmount": (u.get("paidAmount") or 0) + final_usd,
             "couponsUsed10": cur_used10 + use10,
             "couponsUsed20": cur_used20 + use20,
+            "reminderSent": 0,
         }
         fb_patch("/users/" + uid, upd)
 
@@ -516,7 +518,8 @@ async def pay_webhook(request: Request):
                         await bot.send_message(
                             referred_by,
                             "🎉 Твои рефералы купили на $" + str(round(total_spent)) +
-                            " — получил купон 20%!"
+                            " — получил купон 20%!",
+                            parse_mode="HTML"
                         )
                     except Exception:
                         pass
@@ -525,11 +528,12 @@ async def pay_webhook(request: Request):
             try:
                 await bot.send_message(
                     uid,
-                    "✅ Оплата получена!\n\n"
+                    "✅ <b>Оплата получена!</b>\n\n"
                     "Тариф: " + TARIFFS[plan]["name"] + "\n"
                     "Сумма: $" + str(final_usd) + "\n"
                     "Активен до: " + datetime.fromtimestamp(new_end / 1000).strftime("%d.%m.%Y") + "\n\n"
-                    "Открой приложение — всё готово."
+                    "Открой приложение — всё готово.",
+                    parse_mode="HTML"
                 )
             except Exception:
                 pass
@@ -538,10 +542,11 @@ async def pay_webhook(request: Request):
             try:
                 await bot.send_message(
                     ADMIN_CHAT_ID,
-                    "💰 Оплата\n"
+                    "💰 <b>Оплата</b>\n"
                     "ID: " + str(uid) + "\n"
                     "Тариф: " + TARIFFS[plan]["name"] + "\n"
-                    "Сумма: $" + str(final_usd) + " (скидка " + str(meta.get("discount", 0)) + "%)"
+                    "Сумма: $" + str(final_usd) + " (скидка " + str(meta.get("discount", 0)) + "%)",
+                    parse_mode="HTML"
                 )
             except Exception:
                 pass

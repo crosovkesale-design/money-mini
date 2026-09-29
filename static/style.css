@@ -181,3 +181,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue)}
 .coupon-row input{width:20px;height:20px;cursor:pointer;accent-color:var(--blue)}
 .coupon-row label{cursor:pointer;font-size:13px;flex:1}
 .coupon-row .cnt{color:var(--muted);font-size:11px}
+.expired-banner{background:linear-gradient(180deg,rgba(255,85,102,.15),rgba(255,85,102,.05));border:1px solid rgba(255,85,102,.4);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.expired-banner .txt{flex:1;font-size:13px;color:var(--fg)}
+.expired-banner button{background:var(--red);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap}
+.fab.disabled{opacity:.4;pointer-events:none;filter:grayscale(1)}

@@ -1073,7 +1073,54 @@ if(payBtn)payBtn.onclick=function(){
   var pw=$("#paywall");
   if(pw)pw.classList.add("open");
   renderSubscription();
+  renderCoupons();
 };
+
+function renderCoupons(){
+  var box=$("#coupon-box");
+  var list=$("#coupon-list");
+  if(!box||!list)return;
+  if(!state.uid||state.uid==="anon"){box.style.display="none";return}
+  db.ref("users/"+state.uid).once("value").then(function(snap){
+    var u=snap.val()||{};
+    var have10=(u.couponsEarned||0)-(u.couponsUsed10||0);
+    var have20=(u.coupons20Earned||0)-(u.couponsUsed20||0);
+    if(have10<0)have10=0;
+    if(have20<0)have20=0;
+    if(have10===0&&have20===0){box.style.display="none";return}
+    box.style.display="block";
+    var html="";
+    if(have10>0){
+      html+='<div class="coupon-row"><input type="checkbox" id="cb10"><label for="cb10">Купон −10% <span class="cnt">(доступно: '+have10+')</span></label></div>';
+    }
+    if(have20>0){
+      html+='<div class="coupon-row"><input type="checkbox" id="cb20"><label for="cb20">Купоны −20% <span class="cnt">(доступно: '+have20+')</span></label></div>';
+    }
+    html+='<div id="coupon-total" style="font-size:12px;color:var(--gold);margin-top:8px"></div>';
+    list.innerHTML=html;
+    updateCouponTotal();
+    var cb10=$("#cb10");
+    var cb20=$("#cb20");
+    if(cb10)cb10.onchange=updateCouponTotal;
+    if(cb20)cb20.onchange=updateCouponTotal;
+  }).catch(function(){
+    box.style.display="none";
+  });
+}
+
+function updateCouponTotal(){
+  var el=$("#coupon-total");
+  if(!el)return;
+  var c10=($("#cb10")&&$("#cb10").checked)?1:0;
+  var c20=($("#cb20")&&$("#cb20").checked)?1:0;
+  var total=c10*10+c20*20;
+  if(total>50)total=50;
+  if(total===0){
+    el.textContent="";
+  }else{
+    el.textContent="Скидка: −"+total+"% (применится к выбранному тарифу)";
+  }
+}
 
 document.querySelectorAll(".tariff").forEach(function(t){
   t.onclick=function(){
@@ -1083,11 +1130,14 @@ document.querySelectorAll(".tariff").forEach(function(t){
 
     toast("Создаю счёт...","ok");
 
-    fetch("/api/pay/create",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({uid:state.uid,plan:plan,use10:0,use20:0})
-    }).then(function(r){return r.json()}).then(function(res){
+    var c10=($("#cb10")&&$("#cb10").checked)?1:0;
+var c20=($("#cb20")&&$("#cb20").checked)?1:0;
+fetch("/api/pay/create",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({uid:state.uid,plan:plan,use10:c10,use20:c20})
+})
+      then(function(r){return r.json()}).then(function(res){
       if(!res||!res.ok||!res.invoice_url){
         toast("Ошибка: "+(res&&res.error||"не создать счёт"),"err");
         return;

@@ -243,6 +243,7 @@ async def daily_check():
                 continue
             now_ms = int(datetime.utcnow().timestamp() * 1000)
             users = fb_get("/users") or {}
+            log.info("daily_check: users=" + str(len(users)))
             for uid, u in users.items():
                 if not isinstance(u, dict):
                     continue
@@ -250,8 +251,9 @@ async def daily_check():
                 if sub_end <= now_ms:
                     continue
                 days = (sub_end - now_ms) // 86400000
+                log.info("check " + uid + ": days=" + str(days) + " sent=" + str(sent_flag))
                 sent_flag = u.get("reminderSent") or 0
-                if days == 3 and sent_flag < 3:
+                if days >= 1 and days <= 3 and sent_flag < 3:
                     try:
                         await bot.send_message(
                             uid,
@@ -262,7 +264,7 @@ async def daily_check():
                     except Exception:
                         pass
                     fb_patch("/users/" + uid, {"reminderSent": 3})
-                elif days == 1 and sent_flag < 1:
+                elif days == 0 and sent_flag < 1:
                     try:
                         await bot.send_message(
                             uid,

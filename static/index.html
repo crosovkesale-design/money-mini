@@ -418,7 +418,7 @@ function render(){
   recs.forEach(function(r){if(r.type==="income")inc+=r.amount;else ex+=r.amount});
   var bal=inc-ex;
 
-  $("#mlabel").textContent=monthLabel(ym);
+  $("#mlabel").textContent=monthLabel(ym)
   $("#bal").textContent=fmt(bal);
   $("#bal").className="balance "+(bal>0?"pos":bal<0?"neg":"");
   $("#sum-in").textContent=fmt(inc);
@@ -869,6 +869,56 @@ function editEnvelope(catId){
   });
   modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
 }
+
+var subActive=true;
+var subChecked=false;
+
+function checkAccess(callback){
+  if(!state.uid||state.uid==="anon"){subActive=true;subChecked=true;if(callback)callback();return}
+  db.ref("users/"+state.uid).once("value").then(function(snap){
+    var u=snap.val()||{};
+    var subEnd=u.subEnd||0;
+    var tariff=u.tariff||"trial";
+    subActive = subEnd > Date.now();
+    subChecked = true;
+    updateAccessUI();
+    if(callback)callback();
+  }).catch(function(){
+    subActive=true;
+    subChecked=true;
+    updateAccessUI();
+    if(callback)callback();
+  });
+}
+
+function updateAccessUI(){
+  var fab=$("#fab");
+  if(!fab)return;
+  if(subActive){
+    fab.classList.remove("disabled");
+  }else{
+    fab.classList.add("disabled");
+  }
+  var existing=$("#expired-banner");
+  if(existing)existing.remove();
+  if(!subActive){
+    var topbar=$(".topbar");
+    if(!topbar)return;
+    var banner=document.createElement("div");
+    banner.id="expired-banner";
+    banner.className="expired-banner";
+    banner.innerHTML='<div class="txt">Подписка истекла. Просмотр открыт, добавление новых записей заблокировано.</div>'
+      +'<button id="banner-pay">Оплатить</button>';
+    topbar.parentNode.insertBefore(banner,topbar.nextSibling);
+    var bp=$("#banner-pay");
+    if(bp)bp.onclick=function(){
+      var pw=$("#paywall");
+      if(pw)pw.classList.add("open");
+      renderCoupons();
+      renderSubscription();
+    };
+  }
+}
   
 function renderSubscription(){
   var el=$("#sub-info");
@@ -961,6 +1011,13 @@ $("#prev").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,-1);ren
 $("#next").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,+1);render()};
 
 $("#fab").onclick=function(){
+  if(!subActive){
+    var pw=$("#paywall");
+    if(pw)pw.classList.add("open");
+    renderCoupons();
+    renderSubscription();
+    return;
+  }
   if($("#v-env").classList.contains("on"))editEnvelope(null);
   else openRecord();
 };
@@ -1156,6 +1213,7 @@ function bootApp(){
 }
 
 bootApp();
+setTimeout(function(){checkAccess()},2000);
 
 var tg=window.Telegram&&window.Telegram.WebApp;
 if(tg){tg.ready();tg.expand()}

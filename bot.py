@@ -238,7 +238,7 @@ STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 async def daily_check():
     while True:
         try:
-            await asyncio.sleep(6 * 60 * 60)
+            await asyncio.sleep(5)
             if not bot:
                 continue
             now_ms = int(datetime.utcnow().timestamp() * 1000)

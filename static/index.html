@@ -1,1224 +1,1188 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#0f1116">
-<title>Family Budget</title>
-<link rel="stylesheet" href="./style.css">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Family Budget</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        /* Контейнер приложения */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Шапка приложения */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .user-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Карточка общего баланса */
+        .balance-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .balance-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+
+        .balance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .stat-value.income { color: var(--success-color); }
+        .stat-value.expense { color: var(--danger-color); }
+
+        /* Игровые плашки языков в Настройках */
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .lang-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-card:hover, .lang-card.active {
+            border-color: var(--accent-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .lang-flag {
+            font-size: 22px;
+        }
+
+        .lang-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Выбор валюты */
+        .currency-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .currency-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 10px;
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .currency-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Банки / Накопления */
+        .bank-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .bank-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .bank-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--card-border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Нижняя навигация */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        /* Модальные окна */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <h3 id="userName">Пользователь</h3>
+                    <p id="subStatusText">Подписка: Активна</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="openHelpModal()" title="Справка">
+                    <i class="fa-solid fa-circle-question"></i>
+                </button>
+                <button class="icon-btn" onclick="switchTab('settings')" title="Настройки">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
 
-<div class="auth-screen hidden" id="auth-screen" style="display:none">
-  <div class="auth-box">
-    <h1 id="auth-title">Семья</h1>
-    <p class="sub" id="auth-sub">Один код — все видят одни траты</p>
-    <div class="field"><label id="auth-name-lbl">Ваше имя</label>
-      <input type="text" id="auth-fname" placeholder="Иван" maxlength="20"></div>
-    <button class="btn-primary" id="btn-create" style="width:100%">Создать семью</button>
-    <div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0" id="or-text">или войти по коду</div>
-    <div class="field"><label id="code-lbl">Код семьи</label>
-      <input type="text" id="auth-code" class="code-input" placeholder="XXXXXX" maxlength="6" autocomplete="off"></div>
-    <button class="btn-cancel" id="btn-join" style="width:100%">Войти</button>
-    <button class="btn-cancel" id="btn-auth-cancel" style="width:100%;margin-top:10px">Отмена</button>
-  </div>
-</div>
+        <!-- Main Balance Card -->
+        <div class="balance-card">
+            <div class="balance-title" id="lblMainBalance">Основной баланс</div>
+            <div class="balance-amount" id="totalBalance">0 ₽</div>
+            
+            <div class="balance-stats">
+                <div class="stat-item">
+                    <span class="stat-label" id="lblMonthIncome">Доходы за месяц</span>
+                    <span class="stat-value income" id="monthIncome">+0 ₽</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="lblMonthExpense">Расходы за месяц</span>
+                    <span class="stat-value expense" id="monthExpense">-0 ₽</span>
+                </div>
+            </div>
+        </div>
 
-<div id="main-app" style="display:block">
-  <div class="topbar">
-    <div class="month-nav">
-      <button id="prev">‹</button>
-      <div class="label" id="mlabel">—</div>
-      <button id="next">›</button>
-      <div class="lang-switch">
-        <button class="lang-btn on" data-lang="ru">RU</button>
-        <button class="lang-btn" data-lang="en">EN</button>
-      </div>
-    </div>
-    <div class="family-badge" id="family-badge" style="display:none">
-      <span>👨‍👩‍👧</span><b id="family-name">Семья</b>
-      <span>·</span><span id="family-count">1</span>
-      <span>· <span id="code-word">код</span>: <b id="family-code">···</b></span>
-    </div>
-    <div class="balance-label" id="lbl-balance">Баланс месяца</div>
-    <div class="balance" id="bal">0</div>
-    <div class="summary">
-      <div class="summary-box income"><div class="lbl" id="lbl-income">Доходы</div><div class="val" id="sum-in">0</div></div>
-      <div class="summary-box expense"><div class="lbl" id="lbl-expense">Расходы</div><div class="val" id="sum-ex">0</div></div>
-    </div>
-  </div>
+        <!-- TAB 1: BUDGET & ENVELOPES -->
+        <div id="tab-budget" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 16px;" id="lblEnvelopes">Конверты расходов</h4>
+                <button class="icon-btn" style="width: auto; padding: 0 12px; font-size: 13px;" onclick="openAddEnvelopeModal()">
+                    <i class="fa-solid fa-plus" style="margin-right: 6px;"></i><span id="btnCreateEnvelope">Создать</span>
+                </button>
+            </div>
+            <div id="envelopesList">
+                <!-- Конверты будут динамически загружаться сюда -->
+            </div>
+        </div>
 
-  <div class="tabs">
-    <div class="tab on" data-v="list"></div>
-    <div class="tab" data-v="env"></div>
-    <div class="tab" data-v="stats"></div>
-    <div class="tab" data-v="settings"></div>
-  </div>
+        <!-- TAB 2: BANKS & SAVINGS -->
+        <div id="tab-banks" class="tab-content" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 16px;" id="lblBanksHeader">Банки и Накопления</h4>
+                <button class="icon-btn" style="width: auto; padding: 0 12px; font-size: 13px;" onclick="openAddBankModal()">
+                    <i class="fa-solid fa-piggy-bank" style="margin-right: 6px;"></i><span id="btnCreateBank">Новая банка</span>
+                </button>
+            </div>
+            <div id="banksList">
+                <!-- Банки будут загружаться сюда -->
+            </div>
+        </div>
 
-  <div class="view on" id="v-list"><div class="list" id="list"></div></div>
-  <div class="view" id="v-env"><div class="env-list" id="env-list"></div></div>
-  <div class="view" id="v-stats">
-    <div class="stat-block"><h3 id="h-cats">Топ категорий за месяц</h3><div id="stats-cats"></div></div>
-    <div class="stat-block"><h3 id="h-shops">Где тратишь больше всего</h3><div id="stats-shops"></div></div>
-    <div class="stat-block"><h3 id="h-items">Топ товаров</h3><div id="stats-items"></div></div>
-  </div>
-  <div class="view" id="v-settings">
-    <div class="stat-block">
-      <h3 id="h-sub" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Подписка</h3>
-      <div id="sub-info" style="font-size:13px;color:var(--muted);margin-bottom:12px">—</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" id="btn-pay" style="flex:1">Оплатить</button>
-        <button class="btn-cancel" id="btn-refresh-sub" style="flex:0 0 auto;padding:14px 18px">↻</button>
-      </div>
-    </div>
-    <div class="stat-block">
-      <h3 id="h-refs" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Рефералы</h3>
-      <div id="ref-info"></div>
-    </div>
-    <div class="stat-block" id="family-block">
-      <h3 id="h-family" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Семья</h3>
-      <div id="family-personal">
-        <p id="lbl-personal" style="color:var(--muted);font-size:13px;margin-bottom:12px">Сейчас личный режим</p>
-        <button class="btn-primary" id="btn-open-family" style="width:100%">Подключить семью</button>
-      </div>
-      <div id="family-active" style="display:none">
-        <div style="font-size:14px;margin-bottom:10px"><span id="code-word2">Код</span>: <b id="family-code-display" style="color:var(--blue);letter-spacing:4px">—</b></div>
-        <div class="members-list" id="members-list" style="margin-bottom:12px"></div>
-        <button class="btn-cancel" id="btn-copy-code" style="width:100%;margin-bottom:8px">Скопировать код</button>
-        <button class="btn-delete" id="btn-leave-family" style="width:100%">Выйти из семьи</button>
-      </div>
-    </div>
-    <div class="stat-block">
-      <div class="set-row"><div><div class="lbl" id="total-count-label">Всего записей</div><div class="sub" id="total-count">0</div></div></div>
-      <div class="set-row">
-        <div><div class="lbl" id="export-label">Экспорт CSV</div><div class="sub" id="export-sub">все записи</div></div>
-        <button class="btn-cancel" id="btn-export">Скачать</button>
-      </div>
-    </div>
-  </div>
+        <!-- TAB 3: ANALYTICS -->
+        <div id="tab-analytics" class="tab-content" style="display: none;">
+            <h4 style="font-size: 16px; margin-bottom: 12px;" id="lblAnalyticsHeader">Аналитика расходов</h4>
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px;">
+                <canvas id="expensesChart" height="220"></canvas>
+            </div>
+        </div>
 
-  <button class="fab" id="fab">+</button>
-</div>
+        <!-- TAB 4: SETTINGS (Полностью обновленные настройки) -->
+        <div id="tab-settings" class="tab-content" style="display: none;">
+            <h4 style="font-size: 16px; margin-bottom: 16px;" id="lblSettingsHeader">⚙️ Настройки</h4>
+            
+            <!-- Выбор Валюты -->
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 13px; color: var(--text-muted);" id="lblChooseCurrency">Выберите валюту:</label>
+                <div class="currency-selector" id="currencySelector">
+                    <button class="currency-btn active" data-curr="RUB" onclick="setCurrency('RUB')">RUB (₽)</button>
+                    <button class="currency-btn" data-curr="USD" onclick="setCurrency('USD')">USD ($)</button>
+                    <button class="currency-btn" data-curr="EUR" onclick="setCurrency('EUR')">EUR (€)</button>
+                    <button class="currency-btn" data-curr="UAH" onclick="setCurrency('UAH')">UAH (₴)</button>
+                    <button class="currency-btn" data-curr="PLN" onclick="setCurrency('PLN')">PLN (zł)</button>
+                    <button class="currency-btn" data-curr="KZT" onclick="setCurrency('KZT')">KZT (₸)</button>
+                </div>
+            </div>
 
-<div class="paywall" id="paywall">
-  <div class="paywall-box">
-    <h1 id="pw-title">Оплатить подписку</h1>
-    <p class="sub" id="pw-sub">Выбери тариф. Оплата в USDT / TON / BTC через Telegram.</p>
-
-    <div class="tariff" data-plan="1month" data-usd="5">
-      <div class="info">
-        <div class="nm">1 месяц</div>
-        <div class="desc">Стандартный доступ</div>
-      </div>
-      <div class="price">199 ₴<small>$5</small></div>
-    </div>
-
-    <div class="tariff" data-plan="3months" data-usd="13">
-      <div class="info">
-        <div class="nm">3 месяца</div>
-        <div class="desc">Скидка 10%</div>
-      </div>
-      <div class="price">530 ₴<small>$13</small></div>
-    </div>
-
-    <div class="tariff best" data-plan="12months" data-usd="38">
-      <div class="badge">Выгодно</div>
-      <div class="info">
-        <div class="nm">12 месяцев</div>
-        <div class="desc">Скидка 37%</div>
-      </div>
-      <div class="price">1490 ₴<small>$38</small></div>
-    </div>
-
-    <div class="tariff" data-plan="pro1" data-usd="10">
-      <div class="info">
-        <div class="nm">Pro — 1 месяц</div>
-        <div class="desc">Приложение + ИИ-ассистент</div>
-      </div>
-      <div class="price">399 ₴<small>$10</small></div>
-    </div>
-
-    <div class="tariff" data-plan="pro12" data-usd="75">
-      <div class="info">
-        <div class="nm">Pro — 12 месяцев</div>
-        <div class="desc">ИИ + фото чеков + скидка 37%</div>
-      </div>
-      <div class="price">2990 ₴<small>$75</small></div>
+            <!-- Игровые карточки выбора языков (8+ языков) -->
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 13px; color: var(--text-muted);" id="lblChooseLang">Выберите язык приложения:</label>
+                <div class="lang-grid" id="langGrid">
+                    <div class="lang-card active" onclick="setLanguage('ru')">
+                        <span class="lang-flag">🇷🇺</span>
+                        <span class="lang-name">Русский</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('en')">
+                        <span class="lang-flag">🇺🇸</span>
+                        <span class="lang-name">English</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('ua')">
+                        <span class="lang-flag">🇺🇦</span>
+                        <span class="lang-name">Українська</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('de')">
+                        <span class="lang-flag">🇩🇪</span>
+                        <span class="lang-name">Deutsch</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('es')">
+                        <span class="lang-flag">🇪🇸</span>
+                        <span class="lang-name">Español</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('fr')">
+                        <span class="lang-flag">🇫🇷</span>
+                        <span class="lang-name">Français</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('it')">
+                        <span class="lang-flag">🇮🇹</span>
+                        <span class="lang-name">Italiano</span>
+                    </div>
+                    <div class="lang-card" onclick="setLanguage('pl')">
+                        <span class="lang-flag">🇵🇱</span>
+                        <span class="lang-name">Polski</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Дополнительная информация о подписке -->
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px; margin-top: 20px;">
+                <div style="font-weight: 600; margin-bottom: 6px;" id="lblSubInfoTitle">Управление подпиской</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;" id="subDetailText">Статус: Активна</div>
+                <button class="currency-btn active" style="width: 100%;" onclick="openPaymentModal()" id="btnExtendSub">Продлить подписку</button>
+            </div>
+        </div>
     </div>
 
-    <div id="coupon-box" style="display:none;margin-top:14px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Купоны</div>
-      <div id="coupon-list" style="font-size:13px;line-height:1.8"></div>
+    <!-- Bottom Navigation Bar -->
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="navLblBudget">Бюджет</span>
+        </div>
+        <div class="nav-item" id="nav-banks" onclick="switchTab('banks')">
+            <i class="fa-solid fa-vault"></i>
+            <span id="navLblBanks">Банки</span>
+        </div>
+        <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span id="navLblAnalytics">Аналитика</span>
+        </div>
+        <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+            <i class="fa-solid fa-sliders"></i>
+            <span id="navLblSettings">Настройки</span>
+        </div>
+    </div>
+        <!-- MODAL 1: Help & Onboarding Guide -->
+    <div class="modal" id="modalHelp">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 18px;" id="lblHelpTitle">📖 Как пользоваться бюджетом</h3>
+                <button class="icon-btn" onclick="closeModal('modalHelp')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="font-size: 13.5px; line-height: 1.6; color: #cbd5e1;">
+                <p style="margin-bottom: 12px;">
+                    💡 <b>Основной баланс:</b> Ваш главный счет доходов и расходов. В конце каждого месяца нераспределенный остаток денег автоматически переносится на следующий месяц.
+                </p>
+                <p style="margin-bottom: 12px;">
+                    📂 <b>Конверты расходов:</b> Делите бюджет на категории (Продукты, Аренда, Развлечения). Это поможет контролировать расходы и не потратить лишнего.
+                </p>
+                <p style="margin-bottom: 12px;">
+                    🏺 <b>Банки (Сбережения):</b> Автономные копилки под ваши цели («На отпуск», «Новый ноутбук»). Деньги в банках хранятся отдельно и не списываются при повседневных тратах.
+                </p>
+                <p style="margin-bottom: 12px;">
+                    ⚙️ <b>Настройки:</b> Меняйте основной язык приложения (8 языков) и выбирайте удобную валюту (включая **рубли ₽**, USD, EUR и др.).
+                </p>
+            </div>
+            <button class="currency-btn active" style="width: 100%; margin-top: 16px;" onclick="closeModal('modalHelp')" id="btnHelpUnderstand">Понятно!</button>
+        </div>
     </div>
 
-    <button class="paywall-close" id="pw-close">Закрыть</button>
-    <div class="paywall-footer">
-      Оплата проходит через CryptoBot. Подписка активируется автоматически.
+    <!-- MODAL 2: Create / Add New Bank (Копилка/Цель) -->
+    <div class="modal" id="modalAddBank">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 18px;" id="lblNewBankTitle">🏺 Создать банку накоплений</h3>
+                <button class="icon-btn" onclick="closeModal('modalAddBank')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="font-size: 12px; color: var(--text-muted);" id="lblBankName">Название банки / цели:</label>
+                    <input type="text" id="bankNameInput" placeholder="Например: На отпуск" style="width: 100%; padding: 10px; border-radius: var(--radius-md); background: var(--bg-color); border: 1px solid var(--card-border); color: #fff; margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: var(--text-muted);" id="lblBankTarget">Целевая сумма:</label>
+                    <input type="number" id="bankTargetInput" placeholder="100000" style="width: 100%; padding: 10px; border-radius: var(--radius-md); background: var(--bg-color); border: 1px solid var(--card-border); color: #fff; margin-top: 4px;">
+                </div>
+                <button class="currency-btn active" style="width: 100%; margin-top: 8px;" onclick="createNewBank()" id="btnSaveBank">Создать банку</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<div class="toast" id="toast"></div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
-<script>
-var firebaseConfig = {
-  apiKey: "AIzaSyDiDQaNRTcy_YPTqoWsFSDXKnMZ_wEWfU",
-  authDomain: "money-family-f9d8b.firebaseapp.com",
-  databaseURL: "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "money-family-f9d8b",
-  storageBucket: "money-family-f9d8b.firebasestorage.app",
-  messagingSenderId: "47777538709",
-  appId: "1:47777538709:web:11e5bbfb2795b59299f19c"
-};
-firebase.initializeApp(firebaseConfig);
-var auth = firebase.auth();
-var db = firebase.database();
-  </script>
-  
-<script>
-(function(){
-"use strict";
-var $=function(s){return document.querySelector(s)};
-var $$=function(s){return Array.from(document.querySelectorAll(s))};
-
-var state={mode:"local",userName:"",familyCode:null,familyName:"",records:[],envelopes:{},members:{},viewMonth:null,uid:null,lang:"ru"};
-var KEY="fb_data_v3";
-var UID_KEY="budget_uid";
-var FAMILY_KEY="budget_family";
-var LANG_KEY="budget_lang";
-var MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
-var REF_TIERS=[1,5,10,20,40,80,160,320,640,1280];
-var NO_ITEMS_CATS=["rent","util","delivery","transp","taxi","fuel"];
-
-var I18N={
-  ru:{
-    records:"Записи",envelopes:"Конверты",stats:"Стата",settings:"Настройки",
-    balance:"Баланс месяца",income:"Доходы",expense:"Расходы",
-    top_cats:"Топ категорий за месяц",top_shops:"Где тратишь больше всего",top_items:"Топ товаров",
-    referrals:"Рефералы",family:"Семья",personal_mode:"Сейчас личный режим",
-    connect_family:"Подключить семью",copy_code:"Скопировать код",leave_family:"Выйти из семьи",
-    no_records:"Записей нет",press_plus:"Нажми + чтобы добавить",
-    no_env:"Нет конвертов",press_plus_env:"Нажми + чтобы добавить бюджет по теме",
-    no_exp_cat:"нет расходов",no_shops:"пока нет ни одного магазина",no_items:"товары в чеках пока не указаны",
-    invited:"Приглашено",coupons:"Купонов −10%",
-    ref_hint:"Купон даёт −10% на одну покупку. Купоны копятся.",
-    copy:"Скопировать",share:"Поделиться",
-    total_records:"Всего записей",export_csv:"Экспорт CSV",export_sub:"все записи",download:"Скачать",
-    cancel:"Отмена",create_family:"Создать семью",join:"Войти",
-    auth_title:"Семья",auth_sub:"Один код — все видят одни траты",
-    auth_name:"Ваше имя",or_text:"или войти по коду",code_word:"Код",
-    new_record:"Новая запись",edit_record:"Изменить запись",
-    expense_btn:"− Расход",income_btn:"+ Доход",
-    shop:"Магазин / место",shop_ph:"Введите название магазина",
-    items:"Товары в чеке",item_ph:"Товар",price_ph:"Цена",
-    add_item:"+ добавить товар",total:"Итого",category:"Категория",
-    comment:"Комментарий",comment_ph:"необязательно",date:"Дата",
-    save:"Сохранить",amount:"Сумма",delete:"Удалить",
-    new_env:"Новый конверт",edit_env:"Изменить конверт",
-    env_limit:"Лимит на месяц",spent:"израсходовано",of:"из",left:"осталось",
-    saved:"Сохранено",deleted:"Удалено",
-    err_limit:"Введи лимит",err_cat:"Выбери категорию",err_amount:"Введи сумму",
-    cat_food:"Продукты",cat_delivery:"Доставка",cat_coffee:"Кофе/снеки",cat_rent:"Аренда",
-    cat_util:"Коммуналка",cat_transp:"Транспорт",cat_taxi:"Такси",cat_fuel:"Бензин",
-    cat_health:"Здоровье",cat_doctor:"Врачи",cat_fun:"Развлечения",cat_clothes:"Одежда",
-    cat_kids:"Дети",cat_pets:"Животные",cat_online:"Онлайн-покупки",cat_subs:"Подписки",
-    cat_credit:"Кредиты",cat_repair:"Ремонт/дом",cat_travel:"Путешествия",cat_edu:"Образование",
-    cat_beauty:"Красота",cat_sport:"Спорт",cat_gift:"Подарки",cat_tech:"Техника",
-    cat_vape:"Вейп/сигареты",cat_party:"Праздники",cat_tax:"Налоги",cat_bank:"Банк/комиссии",
-    cat_other_ex:"Другое",
-    cat_salary:"Зарплата",cat_freel:"Фриланс",cat_gift_in:"Подарок",cat_invest:"Инвестиции",
-    cat_cashback:"Кэшбэк",cat_other_in:"Другое"
-  },
-  en:{
-    records:"Records",envelopes:"Envelopes",stats:"Stats",settings:"Settings",
-    balance:"Month balance",income:"Income",expense:"Expense",
-    top_cats:"Top categories",top_shops:"Where you spend most",top_items:"Top items",
-    referrals:"Referrals",family:"Family",personal_mode:"Currently personal mode",
-    connect_family:"Connect family",copy_code:"Copy code",leave_family:"Leave family",
-    no_records:"No records",press_plus:"Tap + to add",
-    no_env:"No envelopes",press_plus_env:"Tap + to add budget by category",
-    no_exp_cat:"no expenses",no_shops:"no shops yet",no_items:"no items in receipts yet",
-    invited:"Invited",coupons:"Coupons −10%",
-    ref_hint:"Each coupon gives −10% on one purchase. They stack.",
-    copy:"Copy",share:"Share",
-    total_records:"Total records",export_csv:"Export CSV",export_sub:"all records",download:"Download",
-    cancel:"Cancel",create_family:"Create family",join:"Join",
-    auth_title:"Family",auth_sub:"One code — everyone sees the same",
-    auth_name:"Your name",or_text:"or join by code",code_word:"Code",
-    new_record:"New record",edit_record:"Edit record",
-    expense_btn:"− Expense",income_btn:"+ Income",
-    shop:"Shop / place",shop_ph:"Enter shop name",
-    items:"Items in receipt",item_ph:"Item",price_ph:"Price",
-    add_item:"+ add item",total:"Total",category:"Category",
-    comment:"Comment",comment_ph:"optional",date:"Date",
-    save:"Save",amount:"Amount",delete:"Delete",
-    new_env:"New envelope",edit_env:"Edit envelope",
-    env_limit:"Monthly limit",spent:"spent",of:"of",left:"left",
-    saved:"Saved",deleted:"Deleted",
-    err_limit:"Enter limit",err_cat:"Pick category",err_amount:"Enter amount",
-    cat_food:"Groceries",cat_delivery:"Delivery",cat_coffee:"Coffee/snacks",cat_rent:"Rent",
-    cat_util:"Utilities",cat_transp:"Transport",cat_taxi:"Taxi",cat_fuel:"Fuel",
-    cat_health:"Health",cat_doctor:"Doctors",cat_fun:"Entertainment",cat_clothes:"Clothes",
-    cat_kids:"Kids",cat_pets:"Pets",cat_online:"Online shopping",cat_subs:"Subscriptions",
-    cat_credit:"Credits",cat_repair:"Repairs/home",cat_travel:"Travel",cat_edu:"Education",
-    cat_beauty:"Beauty",cat_sport:"Sport",cat_gift:"Gifts",cat_tech:"Electronics",
-    cat_vape:"Vape/cigarettes",cat_party:"Parties",cat_tax:"Taxes",cat_bank:"Bank/fees",
-    cat_other_ex:"Other",
-    cat_salary:"Salary",cat_freel:"Freelance",cat_gift_in:"Gift",cat_invest:"Investments",
-    cat_cashback:"Cashback",cat_other_in:"Other"
-  }
-};
-function t(k){return (I18N[state.lang]&&I18N[state.lang][k])||(I18N.ru[k])||k}
-
-var INCOME=[
-  {id:"salary",name:"Зарплата",e:"💼"},
-  {id:"freel",name:"Фриланс",e:"💻"},
-  {id:"gift_in",name:"Подарок",e:"🎁"},
-  {id:"invest",name:"Инвестиции",e:"📈"},
-  {id:"cashback",name:"Кэшбэк",e:"💵"},
-  {id:"other_in",name:"Другое",e:"💰"}
-];
-
-var EXPENSE=[
-  {id:"food",name:"Продукты",e:"🍔"},
-  {id:"delivery",name:"Доставка",e:"🛵"},
-  {id:"coffee",name:"Кофе/снеки",e:"☕"},
-  {id:"rent",name:"Аренда",e:"🏠"},
-  {id:"util",name:"Коммуналка",e:"💡"},
-  {id:"transp",name:"Транспорт",e:"🚌"},
-  {id:"taxi",name:"Такси",e:"🚕"},
-  {id:"fuel",name:"Бензин",e:"⛽"},
-  {id:"health",name:"Здоровье",e:"💊"},
-  {id:"doctor",name:"Врачи",e:"🏥"},
-  {id:"fun",name:"Развлечения",e:"🎮"},
-  {id:"clothes",name:"Одежда",e:"👕"},
-  {id:"kids",name:"Дети",e:"🧒"},
-  {id:"pets",name:"Животные",e:"🐕"},
-  {id:"online",name:"Онлайн-покупки",e:"🛒"},
-  {id:"subs",name:"Подписки",e:"📺"},
-  {id:"credit",name:"Кредиты",e:"💳"},
-  {id:"repair",name:"Ремонт/дом",e:"🔧"},
-  {id:"travel",name:"Путешествия",e:"✈️"},
-  {id:"edu",name:"Образование",e:"📚"},
-  {id:"beauty",name:"Красота",e:"💅"},
-  {id:"sport",name:"Спорт",e:"🏋️"},
-  {id:"gift",name:"Подарки",e:"🎀"},
-  {id:"tech",name:"Техника",e:"📱"},
-  {id:"vape",name:"Вейп/сигареты",e:"💨"},
-  {id:"party",name:"Праздники",e:"🎉"},
-  {id:"tax",name:"Налоги",e:"📋"},
-  {id:"bank",name:"Банк/комиссии",e:"🏦"},
-  {id:"other_ex",name:"Другое",e:"📦"}
-];
-
-var ALL=INCOME.concat(EXPENSE);
-function findCat(id){return ALL.find(function(c){return c.id===id})||{id:id,name:"?",e:"❓"}}
-function fmt(n){var a=Math.abs(n);var s=a.toFixed(2).replace(/\.00$/,"");return (n<0?"-":"")+s}
-
-function toast(msg,cls){
-  var el=$("#toast");
-  el.textContent=msg;
-  el.className="toast show "+(cls||"");
-  clearTimeout(toast._t);
-  toast._t=setTimeout(function(){el.className="toast "+(cls||"")},1800);
-}
-
-function monthLabel(ym){return MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]}
-function shiftMonth(ym,d){
-  var p=ym.split("-"),y=parseInt(p[0]),m=parseInt(p[1])-1+d;
-  while(m<0){m+=12;y--}
-  while(m>11){m-=12;y++}
-  return y+"-"+String(m+1).padStart(2,"0");
-}
-function genCode(){
-  var s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",c="";
-  for(var i=0;i<6;i++)c+=s[Math.floor(Math.random()*s.length)];
-  return c;
-}
-function saveLocal(){
-  localStorage.setItem(USER_KEY,JSON.stringify({
-    mode:state.mode,records:state.records,envelopes:state.envelopes
-  }));
-  if(state.familyCode){
-    localStorage.setItem(FAMILY_KEY,state.familyCode);
-    localStorage.setItem(FAMILY_KEY+"_name",state.familyName||"");
-  }else{
-    localStorage.removeItem(FAMILY_KEY);
-    localStorage.removeItem(FAMILY_KEY+"_name");
-  }
-}
-function recordsOfMonth(ym){return state.records.filter(function(r){return r.date&&r.date.startsWith(ym)})}
-function today(){return new Date().toISOString().slice(0,10)}
-
-function closeAuth(){$("#auth-screen").style.display="none"}
-function openAuth(){$("#auth-screen").style.display="flex"}
- 
-function applyLang(){
-  var tabMap={list:"records",env:"envelopes",stats:"stats",settings:"settings"};
-  var tabIcons={list:"📋 ",env:"💰 ",stats:"📊 ",settings:"⚙️ "};
-  $$(".tab").forEach(function(tab){
-    var v=tab.dataset.v;
-    tab.textContent=(tabIcons[v]||"")+t(tabMap[v]||v);
-  });
-  var set=function(id,key){var el=$(id);if(el)el.textContent=t(key)};
-  set("#lbl-balance","balance");
-  set("#lbl-income","income");
-  set("#lbl-expense","expense");
-  set("#h-cats","top_cats");
-  set("#h-shops","top_shops");
-  set("#h-items","top_items");
-  set("#h-refs","referrals");
-  set("#h-family","family");
-  set("#lbl-personal","personal_mode");
-  set("#btn-open-family","connect_family");
-  set("#btn-copy-code","copy_code");
-  set("#btn-leave-family","leave_family");
-  set("#total-count-label","total_records");
-  set("#export-label","export_csv");
-  set("#export-sub","export_sub");
-  set("#btn-export","download");
-  set("#btn-auth-cancel","cancel");
-  set("#btn-create","create_family");
-  set("#btn-join","join");
-  set("#auth-title","auth_title");
-  set("#auth-sub","auth_sub");
-  set("#auth-name-lbl","auth_name");
-  set("#or-text","or_text");
-  set("#code-lbl","code_word");
-  set("#code-word","code_word");
-  set("#code-word2","code_word");
-}
-
-var familySub=null;
-function subscribeFamily(){
-  if(familySub){familySub.off();familySub=null}
-  if(!state.familyCode)return;
-  familySub=db.ref("families/"+state.familyCode);
-  familySub.on("value",function(snap){
-    if(!snap.exists())return;
-    var v=snap.val();
-    state.familyName=v.name||"Семья";
-    state.members=v.members||{};
-    state.envelopes=v.envelopes||{};
-    var recs=v.records||{};
-    state.records=Object.keys(recs).map(function(k){var r=recs[k];r.id=k;return r});
-    render();
-  });
-}
-
-function render(){
-  var ym=state.viewMonth;
-  var recs=recordsOfMonth(ym);
-  var inc=0,ex=0;
-  recs.forEach(function(r){if(r.type==="income")inc+=r.amount;else ex+=r.amount});
-  var bal=inc-ex;
-
-  $("#mlabel").textContent=monthLabel(ym)
-  $("#bal").textContent=fmt(bal);
-  $("#bal").className="balance "+(bal>0?"pos":bal<0?"neg":"");
-  $("#sum-in").textContent=fmt(inc);
-  $("#sum-ex").textContent=fmt(ex);
-
-  if(state.mode==="family"&&state.familyCode){
-    $("#family-badge").style.display="inline-flex";
-    $("#family-name").textContent=state.familyName||"Семья";
-    $("#family-count").textContent=Object.keys(state.members).length;
-    $("#family-code").textContent=state.familyCode;
-    $("#family-personal").style.display="none";
-    $("#family-active").style.display="block";
-    $("#family-code-display").textContent=state.familyCode;
-    var ml=$("#members-list");
-    var mem=Object.values(state.members||{});
-    ml.innerHTML=mem.length?mem.map(function(m){return '<span class="member-chip">'+m.name+'</span>'}).join(""):'';
-  }else{
-    $("#family-badge").style.display="none";
-    $("#family-personal").style.display="block";
-    $("#family-active").style.display="none";
-  }
-
-  var sorted=recs.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)});
-  var list=$("#list");
-  if(!sorted.length){
-    list.innerHTML='<div class="empty">'+t("no_records")+'<br><br>'+t("press_plus")+'</div>';
-  }else{
-    list.innerHTML=sorted.map(function(r){
-      var c=findCat(r.cat);
-      var cName=t("cat_"+c.id);
-      var sign=r.type==="income"?"+":"−";
-      var by=(state.mode==="family"&&r.byName)?'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.byName+'</div>':'';
-      var extra=r.shop?(' · '+r.shop):'';
-      var itms=(r.items&&r.items.length)?('<div style="font-size:10px;color:var(--muted);margin-top:2px">'+r.items.length+'</div>'):'';
-      return '<div class="rec" data-id="'+r.id+'">'
-        +'<div class="ico">'+c.e+'</div>'
-        +'<div class="info"><div class="name">'+(r.note||cName)+'</div>'
-        +'<div class="date">'+cName+extra+' · '+r.date.split("-").reverse().join(".")+'</div>'+itms+'</div>'
-        +'<div style="text-align:right"><div class="amt '+r.type+'">'+sign+fmt(r.amount)+'</div>'+by+'</div>'
-        +'</div>';
-    }).join("");
-  }
-  renderEnvelopes(recs);
-  renderStats(recs);
-  $("#total-count").textContent=state.records.length;
-  applyLang();
-}
-
-function renderEnvelopes(recs){
-  var el=$("#env-list");
-  var keys=Object.keys(state.envelopes);
-  if(!keys.length){
-    el.innerHTML='<div class="empty">'+t("no_env")+'<br><br>'+t("press_plus_env")+'</div>';
-    return;
-  }
-  var byCat={};
-  recs.filter(function(r){return r.type==="expense"}).forEach(function(r){
-    byCat[r.cat]=(byCat[r.cat]||0)+r.amount;
-  });
-  el.innerHTML=keys.map(function(catId){
-    var lim=state.envelopes[catId];
-    var spent=byCat[catId]||0;
-    var left=lim-spent;
-    var pct=lim>0?Math.min(100,spent/lim*100):0;
-    var cls=spent>lim?"over":(pct>=80?"warn":"");
-    var c=findCat(catId);
-    var cName=t("cat_"+c.id);
-    return '<div class="env '+cls+'">'
-      +'<div class="env-head">'
-      +'<div class="env-name"><span class="e">'+c.e+'</span>'+cName+'</div>'
-      +'<button class="env-edit" data-cat="'+catId+'">✏️</button>'
-      +'</div>'
-      +'<div class="env-nums">'+t("spent")+' <b>'+fmt(spent)+'</b> '+t("of")+' '+fmt(lim)+' · '+t("left")+' <b>'+fmt(left)+'</b></div>'
-      +'<div class="env-bar"><i style="width:'+pct+'%"></i></div>'
-      +'</div>';
-  }).join("");
-  el.querySelectorAll(".env-edit").forEach(function(b){
-    b.onclick=function(){editEnvelope(b.dataset.cat)};
-  });
-}
-
-function renderStats(recs){
-  var ex=recs.filter(function(r){return r.type==="expense"});
-  var total=ex.reduce(function(s,r){return s+r.amount},0);
-  var byCat={};
-  ex.forEach(function(r){byCat[r.cat]=(byCat[r.cat]||0)+r.amount});
-  var cats=Object.entries(byCat).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
-  var el=$("#stats-cats");
-  if(!cats.length){
-    el.innerHTML='<div style="color:var(--muted);font-size:13px">'+t("no_exp_cat")+'</div>';
-  }else{
-    el.innerHTML=cats.map(function(kv){
-      var c=findCat(kv[0]);
-      var cName=t("cat_"+c.id);
-      var pct=total>0?(kv[1]/total*100):0;
-      return '<div class="cat-row"><div class="ico">'+c.e+'</div>'
-        +'<div class="name">'+cName+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
-        +'<div class="val">'+fmt(kv[1])+'</div></div>';
-    }).join("");
-  }
-
-  var byShop={};
-  ex.forEach(function(r){if(r.shop)byShop[r.shop]=(byShop[r.shop]||0)+r.amount});
-  var shops=Object.entries(byShop).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
-  var elS=$("#stats-shops");
-  if(elS){
-    if(!shops.length){
-      elS.innerHTML='<div style="color:var(--muted);font-size:13px">'+t("no_shops")+'</div>';
-    }else{
-      var totalShops=shops.reduce(function(s,kv){return s+kv[1]},0);
-      elS.innerHTML=shops.map(function(kv){
-        var pct=totalShops>0?(kv[1]/totalShops*100):0;
-        return '<div class="cat-row"><div class="ico">🏪</div>'
-          +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
-          +'<div class="val">'+fmt(kv[1])+'</div></div>';
-      }).join("");
-    }
-  }
-
-  var byItem={};
-  ex.forEach(function(r){
-    if(r.items&&r.items.length){
-      r.items.forEach(function(it){
-        if(it.name&&it.price>0)byItem[it.name]=(byItem[it.name]||0)+it.price;
-      });
-    }
-  });
-  var items=Object.entries(byItem).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
-  var elI=$("#stats-items");
-  if(elI){
-    if(!items.length){
-      elI.innerHTML='<div style="color:var(--muted);font-size:13px">'+t("no_items")+'</div>';
-    }else{
-      var totalItems=items.reduce(function(s,kv){return s+kv[1]},0);
-      elI.innerHTML=items.map(function(kv){
-        var pct=totalItems>0?(kv[1]/totalItems*100):0;
-        return '<div class="cat-row"><div class="ico">📦</div>'
-          +'<div class="name">'+kv[0]+' <span style="color:var(--muted);font-size:11px">'+pct.toFixed(0)+'%</span></div>'
-          +'<div class="val">'+fmt(kv[1])+'</div></div>';
-      }).join("");
-    }
-  }
-}
-
-function renderReferrals(){
-  var el=$("#ref-info");
-  if(!el)return;
-  if(!state.uid||state.uid==="anon"){
-    el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--muted);font-size:13px">no id</div>';
-    return;
-  }
-  db.ref("users/"+state.uid).once("value").then(function(snap){
-    var u=snap.val()||{};
-    var count=u.referralCount||0;
-    var coupons10=u.couponsEarned||0;
-    var coupons20=u.coupons20Earned||0;
-    var link="https://t.me/moneyfamilybudget_bot?start=ref_"+state.uid;
-    el.innerHTML='<div class="ref-stat">'
-      +'<div class="box"><div class="n">'+count+'</div><div class="t">'+t("invited")+'</div></div>'
-      +'<div class="box"><div class="n">'+coupons10+'</div><div class="t">Купон −10%</div></div>'
-      +'<div class="box"><div class="n">'+coupons20+'</div><div class="t">Купон −20%</div></div>'
-      +'</div>'
-      +'<div class="ref-link">'+link+'</div>'
-      +'<div class="ref-btns">'
-      +'<button class="copy" id="ref-copy">'+t("copy")+'</button>'
-      +'<button class="share" id="ref-share">'+t("share")+'</button>'
-      +'</div>'
-      +'<div class="ref-hint">'+t("ref_hint")+'</div>';
-    var cb=$("#ref-copy");
-    if(cb)cb.onclick=function(){
-      navigator.clipboard.writeText(link);
-      toast(t("saved"),"ok");
-    };
-    var sb=$("#ref-share");
-    if(sb)sb.onclick=function(){
-      var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link);
-      if(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.openTelegramLink){
-        window.Telegram.WebApp.openTelegramLink(shareUrl);
-      }else{
-        window.open(shareUrl,"_blank");
-      }
-    };
-  }).catch(function(e){
-    el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--red);font-size:12px">'+e.message+'</div>';
-  });
-  }
-  
-var modal=null;
-var edit={type:"expense",cat:"food",amount:"",note:"",shop:"",date:"",id:null,items:[],showItems:false};
-
-function openRecord(existing){
-  if(existing){
-    edit={type:existing.type,cat:existing.cat,amount:String(existing.amount),
-          note:existing.note||"",shop:existing.shop||"",date:existing.date,id:existing.id,
-          items:existing.items||[],showItems:!!(existing.items&&existing.items.length)};
-  }else{
-    edit={type:"expense",cat:"food",amount:"",note:"",shop:"",
-          date:today(),id:null,items:[],showItems:false};
-  }
-  renderRecordModal();
-}
-
-function renderRecordModal(){
-  if(modal)modal.remove();
-  modal=document.createElement("div");
-  modal.className="modal";
-  var cats=edit.type==="income"?INCOME:EXPENSE;
-  var itemsHtml="";
-  if(edit.type==="expense"&&edit.showItems){
-    itemsHtml=edit.items.map(function(it,i){
-      return '<div class="item-row" data-i="'+i+'">'
-        +'<input type="text" class="it-name" placeholder="'+t("item_ph")+'" value="'+(it.name||"").replace(/"/g,"&quot;")+'">'
-        +'<input type="number" class="it-price" inputmode="decimal" step="0.01" placeholder="'+t("price_ph")+'" value="'+(it.price||"")+'">'
-        +'<button type="button" class="it-del" data-i="'+i+'">✕</button>'
-        +'</div>';
-    }).join("");
-  }
-  var sum=0;
-  edit.items.forEach(function(it){ sum+=parseFloat(it.price)||0; });
-  var noItems=NO_ITEMS_CATS.indexOf(edit.cat)!==-1;
-  modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(edit.id?t("edit_record"):t("new_record"))+'</h2>'
-    +'<div class="type-switch">'
-    +'<button class="'+(edit.type==="expense"?"on expense":"")+'" data-t="expense">'+t("expense_btn")+'</button>'
-    +'<button class="'+(edit.type==="income"?"on income":"")+'" data-t="income">'+t("income_btn")+'</button>'
-    +'</div>'
-    +'<div class="field"><label>'+t("amount")+'</label>'
-    +'<input type="number" inputmode="decimal" step="0.01" id="m-am" class="amount-input" placeholder="0" value="'+edit.amount+'">'
-    +(noItems&&edit.type==="expense"?'<div style="text-align:center;color:var(--muted);font-size:11px;margin-top:6px">'+t("cat_"+edit.cat)+'</div>':'')
-    +'</div>'
-    +'<div class="field"><label>'+t("shop")+'</label>'
-    +'<input type="text" id="m-shop" placeholder="'+t("shop_ph")+'" value="'+(edit.shop||"").replace(/"/g,"&quot;")+'"></div>'
-    +(edit.type==="expense" && !noItems
-      ? (edit.showItems
-        ? '<div class="field"><label>'+t("items")+'</label>'
-          +'<div id="items-list">'+itemsHtml+'</div>'
-          +'<button type="button" id="add-item" style="width:100%;margin-top:8px;padding:10px;background:var(--panel2);color:var(--fg);border:1px dashed var(--line);border-radius:10px;font:inherit;font-weight:700;cursor:pointer">'+t("add_item")+'</button>'
-          +'<div style="text-align:right;margin-top:12px;font-size:14px">'+t("total")+': <b id="total-sum" style="color:var(--gold);font-size:18px">'+fmt(sum)+'</b></div>'
-          +'</div>'
-        : '<button type="button" id="show-items" style="width:100%;margin-top:8px;padding:10px;background:transparent;color:var(--muted);border:1px dashed var(--line);border-radius:10px;font:inherit;font-size:12px;cursor:pointer">+ '+t("items")+'</button>')
-      : '')
-    +'<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
-    +cats.map(function(c){
-      return '<div class="cat '+(edit.cat===c.id?"on":"")+'" data-cat="'+c.id+'">'
-        +'<span class="e">'+c.e+'</span>'+t("cat_"+c.id)+'</div>';
-    }).join("")
-    +'</div></div>'
-    +'<div class="field"><label>'+t("comment")+'</label>'
-    +'<input type="text" id="m-note" placeholder="'+t("comment_ph")+'" value="'+(edit.note||"").replace(/"/g,"&quot;")+'"></div>'
-    +'<div class="field"><label>'+t("date")+'</label>'
-    +'<input type="date" id="m-date" value="'+edit.date+'"></div>'
-    +'<div class="row-btns">'
-    +(edit.id?'<button class="btn-delete" data-act="del">'+t("delete")+'</button>':'')
-    +'<button class="btn-cancel" data-act="cancel">'+t("cancel")+'</button>'
-    +'<button class="btn-primary" data-act="save">'+t("save")+'</button>'
-    +'</div></div>';
-  document.body.appendChild(modal);
-  attachRecordEvents();
-}
-
-function attachRecordEvents(){
-  modal.querySelectorAll(".item-row").forEach(function(row){
-    var i=parseInt(row.dataset.i);
-    var nInput=row.querySelector(".it-name");
-    var pInput=row.querySelector(".it-price");
-    if(nInput)nInput.oninput=function(){edit.items[i].name=nInput.value};
-    if(pInput)pInput.oninput=function(){
-      edit.items[i].price=pInput.value;
-      var sum=0;
-      edit.items.forEach(function(it){sum+=parseFloat(it.price)||0});
-      var tEl=modal.querySelector("#total-sum");
-      if(tEl)tEl.textContent=fmt(sum);
-    };
-  });
-  modal.querySelectorAll(".it-del").forEach(function(b){
-    b.onclick=function(){
-      var i=parseInt(b.dataset.i);
-      edit.items.splice(i,1);
-      if(!edit.items.length)edit.items=[{name:"",price:""}];
-      renderRecordModal();
-    };
-  });
-  var addBtn=modal.querySelector("#add-item");
-  if(addBtn)addBtn.onclick=function(){
-    modal.querySelectorAll(".item-row").forEach(function(row){
-      var i=parseInt(row.dataset.i);
-      var n=row.querySelector(".it-name");
-      var p=row.querySelector(".it-price");
-      if(edit.items[i]){
-        if(n)edit.items[i].name=n.value;
-        if(p)edit.items[i].price=p.value;
-      }
-    });
-    edit.items.push({name:"",price:""});
-    renderRecordModal();
-  };
-  var showBtn=modal.querySelector("#show-items");
-  if(showBtn)showBtn.onclick=function(){
-    edit.showItems=true;
-    if(!edit.items.length)edit.items=[{name:"",price:""}];
-    renderRecordModal();
-  };
-  modal.querySelectorAll(".type-switch button").forEach(function(b){
-    b.onclick=function(){
-      edit.type=b.dataset.t;
-      edit.cat=(edit.type==="income"?INCOME[0].id:EXPENSE[0].id);
-      if(edit.type==="income"){edit.items=[];edit.showItems=false}
-      renderRecordModal();
-    };
-  });
-  modal.querySelectorAll(".cat").forEach(function(c){
-    c.onclick=function(){
-      edit.cat=c.dataset.cat;
-      if(NO_ITEMS_CATS.indexOf(edit.cat)!==-1){
-        edit.items=[];
-        edit.showItems=false;
-        renderRecordModal();
-      }
-      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
-      c.classList.add("on");
-    };
-  });
-  modal.querySelectorAll("[data-act]").forEach(function(b){
-    b.onclick=function(){
-      var act=b.dataset.act;
-      if(act==="cancel"){modal.remove();modal=null;return}
-      if(act==="del"){
-        if(state.mode==="family"&&state.familyCode){
-          db.ref("families/"+state.familyCode+"/records/"+edit.id).remove();
-        }else{
-          state.records=state.records.filter(function(r){return r.id!==edit.id});
-          saveLocal();render();
+    <!-- MODAL 3: Create Envelope -->
+    <div class="modal" id="modalAddEnvelope">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 18px;" id="lblNewEnvelopeTitle">📂 Новый конверт</h3>
+                <button class="icon-btn" onclick="closeModal('modalAddEnvelope')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="font-size: 12px; color: var(--text-muted);" id="lblEnvelopeName">Название категории:</label>
+                    <input type="text" id="envNameInput" placeholder="Продукты, Кафе..." style="width: 100%; padding: 10px; border-radius: var(--radius-md); background: var(--bg-color); border: 1px solid var(--card-border); color: #fff; margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: var(--text-muted);" id="lblEnvelopeLimit">Планируемый лимит на месяц:</label>
+                    <input type="number" id="envLimitInput" placeholder="15000" style="width: 100%; padding: 10px; border-radius: var(--radius-md); background: var(--bg-color); border: 1px solid var(--card-border); color: #fff; margin-top: 4px;">
+                </div>
+                <button class="currency-btn active" style="width: 100%; margin-top: 8px;" onclick="createNewEnvelope()" id="btnSaveEnvelope">Сохранить</button>
+            </div>
+        </div>
+    </div>
+        <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
         }
-        modal.remove();modal=null;toast(t("deleted"));return;
-      }
-      if(act==="save"){
-        modal.querySelectorAll(".item-row").forEach(function(row){
-          var i=parseInt(row.dataset.i);
-          var n=row.querySelector(".it-name");
-          var p=row.querySelector(".it-price");
-          if(edit.items[i]){
-            if(n)edit.items[i].name=n.value;
-            if(p)edit.items[i].price=p.value;
+
+        // Словарь переводов для 8 языков
+        const TRANSLATIONS = {
+            ru: {
+                lblMainBalance: "Основной баланс",
+                lblMonthIncome: "Доходы за месяц",
+                lblMonthExpense: "Расходы за месяц",
+                lblEnvelopes: "Конверты расходов",
+                btnCreateEnvelope: "Создать",
+                lblBanksHeader: "Банки и Накопления",
+                btnCreateBank: "Новая банка",
+                lblAnalyticsHeader: "Аналитика расходов",
+                lblSettingsHeader: "⚙️ Настройки",
+                lblChooseCurrency: "Выберите валюту:",
+                lblChooseLang: "Выберите язык приложения:",
+                lblSubInfoTitle: "Управление подпиской",
+                btnExtendSub: "Продлить подписку",
+                navLblBudget: "Бюджет",
+                navLblBanks: "Банки",
+                navLblAnalytics: "Аналитика",
+                navLblSettings: "Настройки",
+                lblHelpTitle: "📖 Как пользоваться бюджетом",
+                btnHelpUnderstand: "Понятно!",
+                lblNewBankTitle: "🏺 Создать банку накоплений",
+                lblBankName: "Название банки / цели:",
+                lblBankTarget: "Целевая сумма:",
+                btnSaveBank: "Создать банку",
+                lblNewEnvelopeTitle: "📂 Новый конверт",
+                lblEnvelopeName: "Название категории:",
+                lblEnvelopeLimit: "Планируемый лимит на месяц:",
+                btnSaveEnvelope: "Сохранить",
+                subActive: "Подписка: Активна",
+                subExpired: "Подписка: Истекла"
+            },
+            en: {
+                lblMainBalance: "Main Balance",
+                lblMonthIncome: "Monthly Income",
+                lblMonthExpense: "Monthly Expense",
+                lblEnvelopes: "Expense Envelopes",
+                btnCreateEnvelope: "Create",
+                lblBanksHeader: "Piggy Banks & Savings",
+                btnCreateBank: "New Bank",
+                lblAnalyticsHeader: "Expense Analytics",
+                lblSettingsHeader: "⚙️ Settings",
+                lblChooseCurrency: "Choose Currency:",
+                lblChooseLang: "Choose App Language:",
+                lblSubInfoTitle: "Subscription Management",
+                btnExtendSub: "Extend Subscription",
+                navLblBudget: "Budget",
+                navLblBanks: "Banks",
+                navLblAnalytics: "Analytics",
+                navLblSettings: "Settings",
+                lblHelpTitle: "📖 How to Use the Budget",
+                btnHelpUnderstand: "Got it!",
+                lblNewBankTitle: "🏺 Create Savings Bank",
+                lblBankName: "Bank / Goal Name:",
+                lblBankTarget: "Target Amount:",
+                btnSaveBank: "Create Bank",
+                lblNewEnvelopeTitle: "📂 New Envelope",
+                lblEnvelopeName: "Category Name:",
+                lblEnvelopeLimit: "Planned Monthly Limit:",
+                btnSaveEnvelope: "Save",
+                subActive: "Subscription: Active",
+                subExpired: "Subscription: Expired"
+            },
+            ua: {
+                lblMainBalance: "Основний баланс",
+                lblMonthIncome: "Доходи за місяць",
+                lblMonthExpense: "Витрати за місяць",
+                lblEnvelopes: "Конверти витрат",
+                btnCreateEnvelope: "Створити",
+                lblBanksHeader: "Банки та Накопичення",
+                btnCreateBank: "Нова банка",
+                lblAnalyticsHeader: "Аналітика витрат",
+                lblSettingsHeader: "⚙️ Налаштування",
+                lblChooseCurrency: "Оберіть валюту:",
+                lblChooseLang: "Оберіть мову додатку:",
+                lblSubInfoTitle: "Управління передплатою",
+                btnExtendSub: "Продовжити передплату",
+                navLblBudget: "Бюджет",
+                navLblBanks: "Банки",
+                navLblAnalytics: "Аналітика",
+                navLblSettings: "Налаштування",
+                lblHelpTitle: "📖 Як користуватися бюджетом",
+                btnHelpUnderstand: "Зрозуміло!",
+                lblNewBankTitle: "🏺 Створити банку накопичень",
+                lblBankName: "Назва банки / цілі:",
+                lblBankTarget: "Цільова сума:",
+                btnSaveBank: "Створити банку",
+                lblNewEnvelopeTitle: "📂 Новий конверт",
+                lblEnvelopeName: "Назва категорії:",
+                lblEnvelopeLimit: "Запланований ліміт на місяць:",
+                btnSaveEnvelope: "Зберегти",
+                subActive: "Передплата: Активна",
+                subExpired: "Передплата: Закінчилася"
+            },
+            de: {
+                lblMainBalance: "Hauptguthaben",
+                lblMonthIncome: "Monatliches Einkommen",
+                lblMonthExpense: "Monatliche Ausgaben",
+                lblEnvelopes: "Ausgabenumschläge",
+                btnCreateEnvelope: "Erstellen",
+                lblBanksHeader: "Spardosen & Ersparnisse",
+                btnCreateBank: "Neue Spardose",
+                lblAnalyticsHeader: "Ausgabenanalytik",
+                lblSettingsHeader: "⚙️ Einstellungen",
+                lblChooseCurrency: "Währung wählen:",
+                lblChooseLang: "App-Sprache wählen:",
+                lblSubInfoTitle: "Abonnementverwaltung",
+                btnExtendSub: "Abonnement verlängern",
+                navLblBudget: "Budget",
+                navLblBanks: "Spardosen",
+                navLblAnalytics: "Analytik",
+                navLblSettings: "Einstellungen",
+                lblHelpTitle: "📖 Anleitung zum Budget",
+                btnHelpUnderstand: "Verstanden!",
+                lblNewBankTitle: "🏺 Spardose erstellen",
+                lblBankName: "Name der Spardose / des Ziels:",
+                lblBankTarget: "Zielbetrag:",
+                btnSaveBank: "Spardose erstellen",
+                lblNewEnvelopeTitle: "📂 Neuer Umschlag",
+                lblEnvelopeName: "Kategoriename:",
+                lblEnvelopeLimit: "Geplantes Monatslimit:",
+                btnSaveEnvelope: "Speichern",
+                subActive: "Abonnement: Aktiv",
+                subExpired: "Abonnement: Abgelaufen"
+            },
+            es: {
+                lblMainBalance: "Saldo Principal",
+                lblMonthIncome: "Ingresos Mensuales",
+                lblMonthExpense: "Gastos Mensuales",
+                lblEnvelopes: "Sobres de Gastos",
+                btnCreateEnvelope: "Crear",
+                lblBanksHeader: "Huchas y Ahorros",
+                btnCreateBank: "Nueva Hucha",
+                lblAnalyticsHeader: "Análisis de Gastos",
+                lblSettingsHeader: "⚙️ Ajustes",
+                lblChooseCurrency: "Elegir moneda:",
+                lblChooseLang: "Elegir idioma de la app:",
+                lblSubInfoTitle: "Gestión de Suscripción",
+                btnExtendSub: "Renovar Suscripción",
+                navLblBudget: "Presupuesto",
+                navLblBanks: "Huchas",
+                navLblAnalytics: "Análisis",
+                navLblSettings: "Ajustes",
+                lblHelpTitle: "📖 Cómo usar el presupuesto",
+                btnHelpUnderstand: "¡Entendido!",
+                lblNewBankTitle: "🏺 Crear Hucha de Ahorro",
+                lblBankName: "Nombre de la hucha / meta:",
+                lblBankTarget: "Monto objetivo:",
+                btnSaveBank: "Crear Hucha",
+                lblNewEnvelopeTitle: "📂 Nuevo Sobre",
+                lblEnvelopeName: "Nombre de categoría:",
+                lblEnvelopeLimit: "Límite mensual planificado:",
+                btnSaveEnvelope: "Guardar",
+                subActive: "Suscripción: Activa",
+                subExpired: "Suscripción: Expirada"
+            },
+            fr: {
+                lblMainBalance: "Solde Principal",
+                lblMonthIncome: "Revenus Mensuels",
+                lblMonthExpense: "Dépenses Mensuelles",
+                lblEnvelopes: "Enveloppes de Dépenses",
+                btnCreateEnvelope: "Créer",
+                lblBanksHeader: "Tirelires & Épargne",
+                btnCreateBank: "Nouvelle Tirelire",
+                lblAnalyticsHeader: "Analyse des Dépenses",
+                lblSettingsHeader: "⚙️ Paramètres",
+                lblChooseCurrency: "Choisir la devise:",
+                lblChooseLang: "Choisir la langue de l'application:",
+                lblSubInfoTitle: "Gestion de l'Abonnement",
+                btnExtendSub: "Prolonger l'Abonnement",
+                navLblBudget: "Budget",
+                navLblBanks: "Tirelires",
+                navLblAnalytics: "Analyse",
+                navLblSettings: "Paramètres",
+                lblHelpTitle: "📖 Comment utiliser le budget",
+                btnHelpUnderstand: "Compris!",
+                lblNewBankTitle: "🏺 Créer une Tirelire",
+                lblBankName: "Nom de la tirelire / objectif:",
+                lblBankTarget: "Montant cible:",
+                btnSaveBank: "Créer la Tirelire",
+                lblNewEnvelopeTitle: "📂 Nouvelle Enveloppe",
+                lblEnvelopeName: "Nom de catégorie:",
+                lblEnvelopeLimit: "Plafond mensuel prévu:",
+                btnSaveEnvelope: "Enregistrer",
+                subActive: "Abonnement: Actif",
+                subExpired: "Abonnement: Expiré"
+            },
+            it: {
+                lblMainBalance: "Saldo Principale",
+                lblMonthIncome: "Entrate Mensili",
+                lblMonthExpense: "Uscite Mensili",
+                lblEnvelopes: "Buste di Spesa",
+                btnCreateEnvelope: "Crea",
+                lblBanksHeader: "Salvadorai e Risparmi",
+                btnCreateBank: "Nuovo Salvadorana",
+                lblAnalyticsHeader: "Analisi delle Spese",
+                lblSettingsHeader: "⚙️ Impostazioni",
+                lblChooseCurrency: "Scegli la valuta:",
+                lblChooseLang: "Scegli la lingua dell'app:",
+                lblSubInfoTitle: "Gestione Abbonamento",
+                btnExtendSub: "Rinnovare l'Abbonamento",
+                navLblBudget: "Budget",
+                navLblBanks: "Salvadorai",
+                navLblAnalytics: "Analisi",
+                navLblSettings: "Impostazioni",
+                lblHelpTitle: "📖 Come usare il budget",
+                btnHelpUnderstand: "Capito!",
+                lblNewBankTitle: "🏺 Crea Salvadorana",
+                lblBankName: "Nome del salvadanaio / obiettivo:",
+                lblBankTarget: "Importo obiettivo:",
+                btnSaveBank: "Crea Salvadorana",
+                lblNewEnvelopeTitle: "📂 Nuova Busta",
+                lblEnvelopeName: "Nome categoria:",
+                lblEnvelopeLimit: "Limite mensile pianificato:",
+                btnSaveEnvelope: "Salva",
+                subActive: "Abbonamento: Attivo",
+                subExpired: "Abbonamento: Scaduto"
+            },
+            pl: {
+                lblMainBalance: "Główne Saldo",
+                lblMonthIncome: "Miesięczny Dochód",
+                lblMonthExpense: "Miesięczne Wydatki",
+                lblEnvelopes: "Koperty Wydatków",
+                btnCreateEnvelope: "Utwórz",
+                lblBanksHeader: "Skarbonki i Oszczędności",
+                btnCreateBank: "Nowa Skarbonka",
+                lblAnalyticsHeader: "Analityka Wydatków",
+                lblSettingsHeader: "⚙️️ Ustawienia",
+                lblChooseCurrency: "Wybierz walutę:",
+                lblChooseLang: "Wybierz język aplikacji:",
+                lblSubInfoTitle: "Zarządzanie Subskrypcją",
+                btnExtendSub: "Przedłuż Subskrypcję",
+                navLblBudget: "Budżet",
+                navLblBanks: "Skarbonki",
+                navLblAnalytics: "Analityka",
+                navLblSettings: "Ustawienia",
+                lblHelpTitle: "📖 Jak korzystać z budżetu",
+                btnHelpUnderstand: "Rozumiem!",
+                lblNewBankTitle: "🏺 Utwórz Skarbonkę",
+                lblBankName: "Nazwa skarbonki / celu:",
+                lblBankTarget: "Kwota docelowa:",
+                btnSaveBank: "Utwórz Skarbonkę",
+                lblNewEnvelopeTitle: "📂 Nowa Koperta",
+                lblEnvelopeName: "Nazwa kategorii:",
+                lblEnvelopeLimit: "Planowany limit miesięczny:",
+                btnSaveEnvelope: "Zapisz",
+                subActive: "Subskrypcja: Aktywna",
+                subExpired: "Subskrypcja: Wygasła"
+            }
+        };
+
+        // Переключение языка
+        let currentLang = localStorage.getItem("app_lang") || "ru";
+
+        function setLanguage(lang) {
+            if (!TRANSLATIONS[lang]) lang = "ru";
+            currentLang = lang;
+            localStorage.setItem("app_lang", lang);
+
+            const dict = TRANSLATIONS[lang];
+            Object.keys(dict).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = dict[id];
+            });
+
+            // Обновляем активные карточки языков
+            document.querySelectorAll("#langGrid .lang-card").forEach(card => {
+                card.classList.remove("active");
+            });
+            const activeCard = document.querySelector(`#langGrid .lang-card[onclick*="'${lang}'"]`);
+            if (activeCard) activeCard.classList.add("active");
+        }
+                  // Символы валют
+        const CURRENCY_SYMBOLS = {
+            RUB: '₽',
+            USD: '$',
+            EUR: '€',
+            UAH: '₴',
+            PLN: 'zł',
+            KZT: '₸'
+        };
+
+        // Начальное состояние приложения
+        let appData = {
+            balance: 0,
+            income: 0,
+            expense: 0,
+            currency: 'RUB',
+            lastMonthSaved: new Date().getMonth(),
+            envelopes: [],
+            banks: []
+        };
+
+        // Загрузка сохраненных данных
+        function loadAppData() {
+            const saved = localStorage.getItem("app_budget_data");
+            if (saved) {
+                try {
+                    appData = JSON.parse(saved);
+                } catch(e) { console.error("Error loading state", e); }
+            }
+            checkMonthlyRollover();
+            setCurrency(appData.currency || 'RUB', false);
+            renderAll();
+        }
+
+        // Сохранение данных в Storage
+        function saveData() {
+            localStorage.setItem("app_budget_data", JSON.stringify(appData));
+        }
+
+        // Автоматический перенос остатка на новый месяц
+        function checkMonthlyRollover() {
+            const currentMonth = new Date().getMonth();
+            if (appData.lastMonthSaved !== undefined && appData.lastMonthSaved !== currentMonth) {
+                // Новый месяц - доход и расход обнуляем для нового месяца,
+                // а нераспределенный баланс автоматически сохраняется как стартовый остаток
+                appData.income = 0;
+                appData.expense = 0;
+                
+                // Сброс трат по конвертам
+                if (appData.envelopes) {
+                    appData.envelopes.forEach(e => e.spent = 0);
+                }
+
+                appData.lastMonthSaved = currentMonth;
+                saveData();
+            }
+        }
+
+        // Смена валюты
+        function setCurrency(curr, isUserAction = true) {
+            appData.currency = curr;
+            document.querySelectorAll("#currencySelector .currency-btn").forEach(btn => {
+                btn.classList.remove("active");
+                if (btn.getAttribute("data-curr") === curr) btn.classList.add("active");
+            });
+            if (isUserAction) saveData();
+            renderAll();
+        }
+
+        // Получение текущего значка валюты
+        function getCurrSymbol() {
+            return CURRENCY_SYMBOLS[appData.currency] || '₽';
+        }
+
+        // Форматирование сумм
+        function formatMoney(amount) {
+            return `${Number(amount).toLocaleString('ru-RU')} ${getCurrSymbol()}`;
+        }
+
+        // РЕНДЕР: Обновление всего интерфейса
+        function renderAll() {
+            // Главный баланс
+            document.getElementById("totalBalance").innerText = formatMoney(appData.balance);
+            document.getElementById("monthIncome").innerText = `+${formatMoney(appData.income)}`;
+            document.getElementById("monthExpense").innerText = `-${formatMoney(appData.expense)}`;
+
+            renderEnvelopes();
+            renderBanks();
+            renderChart();
+        }
+
+        // РЕНДЕР: Конверты расходов
+        function renderEnvelopes() {
+            const container = document.getElementById("envelopesList");
+            if (!container) return;
+
+            if (!appData.envelopes || appData.envelopes.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 20px; background: var(--card-bg); border-radius: var(--radius-lg); border: 1px solid var(--card-border);">
+                        Нет созданных конвертов. Нажмите «Создать», чтобы распланировать бюджет.
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = appData.envelopes.map((env, idx) => {
+                const percent = Math.min(100, Math.round((env.spent / env.limit) * 100)) || 0;
+                return `
+                    <div class="bank-card">
+                        <div class="bank-header">
+                            <span class="bank-title"><i class="fa-solid fa-folder"></i> ${env.name}</span>
+                            <span style="font-size: 13px; font-weight: 600;">${formatMoney(env.spent)} / ${formatMoney(env.limit)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%; ${percent >= 100 ? 'background: var(--danger-color);' : ''}"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">${percent}% израсходовано</span>
+                            <button class="icon-btn" style="width: auto; height: 30px; padding: 0 10px; font-size: 12px; color: var(--danger-color);" onclick="addExpenseToEnvelope(${idx})">
+                                <i class="fa-solid fa-minus" style="margin-right: 4px;"></i> Расход
+                            </button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // РЕНДЕР: Банки (Сбережения)
+        function renderBanks() {
+            const container = document.getElementById("banksList");
+            if (!container) return;
+
+            if (!appData.banks || appData.banks.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 20px; background: var(--card-bg); border-radius: var(--radius-lg); border: 1px solid var(--card-border);">
+                        У вас пока нет накопительных банок. Создайте первую банку для цели!
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = appData.banks.map((bank, idx) => {
+                const percent = Math.min(100, Math.round((bank.current / bank.target) * 100)) || 0;
+                return `
+                    <div class="bank-card">
+                        <div class="bank-header">
+                            <span class="bank-title"><i class="fa-solid fa-piggy-bank" style="color: #f59e0b;"></i> ${bank.name}</span>
+                            <span style="font-size: 13px; font-weight: 600;">${formatMoney(bank.current)} / ${formatMoney(bank.target)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">${percent}% накоплено</span>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="icon-btn" style="width: auto; height: 30px; padding: 0 10px; font-size: 12px;" onclick="withdrawFromBank(${idx})">Снять</button>
+                                <button class="currency-btn active" style="padding: 4px 10px; font-size: 12px;" onclick="depositToBank(${idx})">+ Пополнить</button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // Создание банки
+        function createNewBank() {
+            const name = document.getElementById("bankNameInput").value.trim();
+            const target = parseFloat(document.getElementById("bankTargetInput").value);
+
+            if (!name || isNaN(target) || target <= 0) {
+                alert("Пожалуйста, укажите корректное название и целевую сумму!");
+                return;
+            }
+
+            if (!appData.banks) appData.banks = [];
+            appData.banks.push({ name, target, current: 0 });
+            saveData();
+            renderAll();
+            closeModal("modalAddBank");
+            document.getElementById("bankNameInput").value = "";
+            document.getElementById("bankTargetInput").value = "";
+        }
+
+        // Пополнение банки
+        function depositToBank(idx) {
+            const amount = parseFloat(prompt("Внесите сумму для пополнения банки:"));
+            if (isNaN(amount) || amount <= 0) return;
+            if (appData.balance < amount) {
+                alert("Недостаточно средств на Основном балансе!");
+                return;
+            }
+
+            appData.balance -= amount;
+            appData.banks[idx].current += amount;
+            saveData();
+            renderAll();
+        }
+
+        // Снятие средств из банки
+        function withdrawFromBank(idx) {
+            const bank = appData.banks[idx];
+            const amount = parseFloat(prompt(`Сколько забрать из банки «${bank.name}»? (Доступно: ${formatMoney(bank.current)})`));
+            if (isNaN(amount) || amount <= 0) return;
+            if (bank.current < amount) {
+                alert("В банке нет столько средств!");
+                return;
+            }
+
+            appData.banks[idx].current -= amount;
+            appData.balance += amount;
+            saveData();
+            renderAll();
+        }
+
+        // Создание конверта
+        function createNewEnvelope() {
+            const name = document.getElementById("envNameInput").value.trim();
+            const limit = parseFloat(document.getElementById("envLimitInput").value);
+
+            if (!name || isNaN(limit) || limit <= 0) {
+                alert("Введите название и лимит!");
+                return;
+            }
+
+            if (!appData.envelopes) appData.envelopes = [];
+            appData.envelopes.push({ name, limit, spent: 0 });
+            saveData();
+            renderAll();
+            closeModal("modalAddEnvelope");
+            document.getElementById("envNameInput").value = "";
+            document.getElementById("envLimitInput").value = "";
+        }
+
+        // Списание расхода с конверта
+        function addExpenseToEnvelope(idx) {
+            const env = appData.envelopes[idx];
+            const amount = parseFloat(prompt(`Расход по категории «${env.name}»:`));
+            if (isNaN(amount) || amount <= 0) return;
+
+            env.spent += amount;
+            appData.expense += amount;
+            appData.balance -= amount;
+            
+            // Предупреждение о превышении бюджета
+            if (env.spent > env.limit) {
+                alert(`⚠️ Внимание! Лимит по конверту «${env.name}» превышен!`);
+            }
+
+            saveData();
+            renderAll();
           }
+                  // График Chart.js для аналитики
+        let chartInstance = null;
+
+        function renderChart() {
+            const ctx = document.getElementById('expensesChart');
+            if (!ctx) return;
+
+            // Собираем данные из конвертов
+            const labels = (appData.envelopes || []).map(e => e.name);
+            const data = (appData.envelopes || []).map(e => e.spent);
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            if (labels.length === 0 || data.every(v => v === 0)) {
+                return;
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#3b82f6', '#22c55e', '#f59e0b', '#ef4444', 
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#10b981'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Переключение навигационных вкладок
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+
+            const selectedTab = document.getElementById(`tab-${tabName}`);
+            const selectedNav = document.getElementById(`nav-${tabName}`);
+
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+                selectedTab.classList.add('active');
+            }
+
+            if (selectedNav) {
+                selectedNav.classList.add('active');
+            }
+
+            if (tabName === 'analytics') {
+                setTimeout(renderChart, 100);
+            }
+        }
+
+        // Модальные окна: открытие и закрытие
+        function openHelpModal() {
+            document.getElementById('modalHelp').classList.add('active');
+        }
+
+        function openAddBankModal() {
+            document.getElementById('modalAddBank').classList.add('active');
+        }
+
+        function openAddEnvelopeModal() {
+            document.getElementById('modalAddEnvelope').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('active');
+        }
+
+        function openPaymentModal() {
+            alert("Функционал оплаты Telegram Stars подключается к вашему боту через Backend API.");
+        }
+
+        // Инициализация при старте страницы
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAppData();
+            setLanguage(currentLang);
+
+            // Проверка первого захода для вызова Onboarding (Справки)
+            if (!localStorage.getItem('onboarding_shown')) {
+                openHelpModal();
+                localStorage.setItem('onboarding_shown', 'true');
+            }
         });
-        var items=[];
-        edit.items.forEach(function(it){
-          var n=(it.name||"").trim();
-          var p=parseFloat(it.price)||0;
-          if(n||p>0)items.push({name:n,price:p});
-        });
-        var noItemsCat=NO_ITEMS_CATS.indexOf(edit.cat)!==-1;
-        var itemSum=0;
-        if(!noItemsCat)items.forEach(function(it){itemSum+=it.price});
-        var amt;
-        if(noItemsCat){
-          amt=parseFloat(modal.querySelector("#m-am").value);
-          if(!amt||amt<=0){toast(t("err_amount"),"err");return}
-          items=[];
-        }else if(itemSum>0){
-          amt=itemSum;
-        }else{
-          amt=parseFloat(modal.querySelector("#m-am").value);
-          if(!amt||amt<=0){toast(t("err_amount"),"err");return}
-        }
-        var note=modal.querySelector("#m-note").value.trim();
-        var shop=modal.querySelector("#m-shop").value.trim();
-        var date=modal.querySelector("#m-date").value||today();
-        var rec={type:edit.type,cat:edit.cat,amount:amt,note:note,shop:shop,date:date,
-                 items:items,ts:Date.now(),byName:state.userName||"",byUid:state.uid||""};
-        if(state.mode==="family"&&state.familyCode){
-          var id=edit.id||(Date.now()+"-"+Math.random().toString(36).slice(2,8));
-          db.ref("families/"+state.familyCode+"/records/"+id).set(rec);
-        }else{
-          if(edit.id){
-            var r=state.records.find(function(x){return x.id===edit.id});
-            if(r)Object.assign(r,rec);
-          }else{
-            rec.id=Date.now()+"-"+Math.random().toString(36).slice(2,8);
-            state.records.push(rec);
-          }
-          saveLocal();render();
-        }
-        var ym=date.slice(0,7);
-        if(ym!==state.viewMonth)state.viewMonth=ym;
-        render();modal.remove();modal=null;toast(t("saved"),"ok");
-      }
-    };
-  });
-  modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
-}
-
-function editEnvelope(catId){
-  if(modal)modal.remove();
-  modal=document.createElement("div");
-  modal.className="modal";
-  var isNew=!catId;
-  var current=catId?state.envelopes[catId]:"";
-  modal.innerHTML='<div class="sheet">'
-    +'<h2>'+(isNew?t("new_env"):t("edit_env"))+'</h2>'
-    +(isNew?('<div class="field"><label>'+t("category")+'</label><div class="cat-grid">'
-      +EXPENSE.map(function(c){
-        return '<div class="cat" data-cat="'+c.id+'"><span class="e">'+c.e+'</span>'+t("cat_"+c.id)+'</div>';
-      }).join("")+'</div></div>'):'')
-    +'<div class="field"><label>'+t("env_limit")+'</label>'
-    +'<input type="number" inputmode="decimal" step="1" id="m-lim" class="amount-input" placeholder="0" value="'+current+'"></div>'
-    +'<div class="row-btns">'
-    +(isNew?'':'<button class="btn-delete" data-act="del">'+t("delete")+'</button>')
-    +'<button class="btn-cancel" data-act="cancel">'+t("cancel")+'</button>'
-    +'<button class="btn-primary" data-act="save">'+t("save")+'</button>'
-    +'</div></div>';
-  document.body.appendChild(modal);
-  var chosenCat=catId||null;
-  modal.querySelectorAll(".cat").forEach(function(c){
-    c.onclick=function(){
-      chosenCat=c.dataset.cat;
-      modal.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on")});
-      c.classList.add("on");
-    };
-  });
-  modal.querySelectorAll("[data-act]").forEach(function(b){
-    b.onclick=function(){
-      var act=b.dataset.act;
-      if(act==="cancel"){modal.remove();modal=null;return}
-      if(act==="del"){
-        if(state.mode==="family"&&state.familyCode){
-          db.ref("families/"+state.familyCode+"/envelopes/"+catId).remove();
-        }else{
-          delete state.envelopes[catId];saveLocal();render();
-        }
-        modal.remove();modal=null;toast(t("deleted"));return;
-      }
-      if(act==="save"){
-        var lim=parseFloat(modal.querySelector("#m-lim").value);
-        if(!lim||lim<=0){toast(t("err_limit"),"err");return}
-        if(!chosenCat){toast(t("err_cat"),"err");return}
-        if(state.mode==="family"&&state.familyCode){
-          db.ref("families/"+state.familyCode+"/envelopes/"+chosenCat).set(lim);
-        }else{
-          state.envelopes[chosenCat]=lim;
-          saveLocal();
-        }
-        render();
-        modal.remove();modal=null;
-        toast(t("saved"),"ok");
-      }
-    };
-  });
-  modal.onclick=function(e){if(e.target===modal){modal.remove();modal=null}};
-}
-
-var subActive=true;
-var subChecked=false;
-
-function checkAccess(callback){
-  if(!state.uid||state.uid==="anon"){subActive=true;subChecked=true;if(callback)callback();return}
-  db.ref("users/"+state.uid).once("value").then(function(snap){
-    var u=snap.val()||{};
-    var subEnd=u.subEnd||0;
-    var tariff=u.tariff||"trial";
-    subActive = subEnd > Date.now();
-    subChecked = true;
-    updateAccessUI();
-    if(callback)callback();
-  }).catch(function(){
-    subActive=true;
-    subChecked=true;
-    updateAccessUI();
-    if(callback)callback();
-  });
-}
-
-function updateAccessUI(){
-  var fab=$("#fab");
-  if(!fab)return;
-  if(subActive){
-    fab.classList.remove("disabled");
-  }else{
-    fab.classList.add("disabled");
-  }
-  var existing=$("#expired-banner");
-  if(existing)existing.remove();
-  if(!subActive){
-    var topbar=$(".topbar");
-    if(!topbar)return;
-    var banner=document.createElement("div");
-    banner.id="expired-banner";
-    banner.className="expired-banner";
-    banner.innerHTML='<div class="txt">Подписка истекла. Просмотр открыт, добавление новых записей заблокировано.</div>'
-      +'<button id="banner-pay">Оплатить</button>';
-    topbar.parentNode.insertBefore(banner,topbar.nextSibling);
-    var bp=$("#banner-pay");
-    if(bp)bp.onclick=function(){
-      var pw=$("#paywall");
-      if(pw)pw.classList.add("open");
-      renderCoupons();
-      renderSubscription();
-    };
-  }
-}
-  
-function renderSubscription(){
-  var el=$("#sub-info");
-  if(!el)return;
-  if(!state.uid||state.uid==="anon"){el.textContent="—";return}
-  db.ref("users/"+state.uid).once("value").then(function(snap){
-    var u=snap.val()||{};
-    var tariff=u.tariff||"trial";
-    var subEnd=u.subEnd||0;
-    var now=Date.now();
-    var days=0;
-    if(subEnd>now)days=Math.ceil((subEnd-now)/86400000);
-    var status=(subEnd>now)?"активна":"истекла";
-    var nameMap={
-      "trial":"Trial",
-      "1month":"1 месяц",
-      "3months":"3 месяца",
-      "6months":"6 месяцев",
-      "12months":"12 месяцев",
-      "pro1":"Pro 1 месяц",
-      "pro12":"Pro 12 месяцев"
-    };
-    var label=nameMap[tariff]||tariff;
-    el.innerHTML=label+" · "+status+" · "+days+" дн.";
-  }).catch(function(){
-    el.textContent="—";
-  });
-}
-
-function renderCoupons(){
-  var box=$("#coupon-box");
-  var list=$("#coupon-list");
-  if(!box||!list)return;
-  if(!state.uid||state.uid==="anon"){box.style.display="none";return}
-  db.ref("users/"+state.uid).once("value").then(function(snap){
-    var u=snap.val()||{};
-    var have10=(u.couponsEarned||0)-(u.couponsUsed10||0);
-    var have20=(u.coupons20Earned||0)-(u.couponsUsed20||0);
-    if(have10<0)have10=0;
-    if(have20<0)have20=0;
-    if(have10===0&&have20===0){box.style.display="none";return}
-    box.style.display="block";
-    var html="";
-    if(have10>0){
-      html+='<div class="coupon-row"><input type="checkbox" id="cb10"><label for="cb10">Купон −10% <span class="cnt">(доступно: '+have10+')</span></label></div>';
-    }
-    if(have20>0){
-      html+='<div class="coupon-row"><input type="checkbox" id="cb20"><label for="cb20">Купоны −20% <span class="cnt">(доступно: '+have20+')</span></label></div>';
-    }
-    html+='<div id="coupon-total" style="font-size:12px;color:var(--gold);margin-top:8px"></div>';
-    list.innerHTML=html;
-    updateCouponTotal();
-    var cb10=$("#cb10");
-    var cb20=$("#cb20");
-    if(cb10)cb10.onchange=updateCouponTotal;
-    if(cb20)cb20.onchange=updateCouponTotal;
-  }).catch(function(){
-    box.style.display="none";
-  });
-}
-
-function updateCouponTotal(){
-  var el=$("#coupon-total");
-  if(!el)return;
-  var c10=($("#cb10")&&$("#cb10").checked)?1:0;
-  var c20=($("#cb20")&&$("#cb20").checked)?1:0;
-  var total=c10*10+c20*20;
-  if(total>50)total=50;
-  if(total===0){
-    el.textContent="";
-  }else{
-    el.textContent="Скидка: −"+total+"% (применится к выбранному тарифу)";
-  }
-}
-
-$$(".tab").forEach(function(tab){
-  tab.onclick=function(){
-    $$(".tab").forEach(function(x){x.classList.remove("on")});
-    $$(".view").forEach(function(x){x.classList.remove("on")});
-    tab.classList.add("on");
-    document.getElementById("v-"+tab.dataset.v).classList.add("on");
-    if(tab.dataset.v==="settings"){
-      try{renderReferrals()}catch(e){}
-      try{renderSubscription()}catch(e){}
-    }
-  };
-});
-
-$("#prev").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,-1);render()};
-$("#next").onclick=function(){state.viewMonth=shiftMonth(state.viewMonth,+1);render()};
-
-$("#fab").onclick=function(){
-  if(!subActive){
-    var pw=$("#paywall");
-    if(pw)pw.classList.add("open");
-    renderCoupons();
-    renderSubscription();
-    return;
-  }
-  if($("#v-env").classList.contains("on"))editEnvelope(null);
-  else openRecord();
-};
-
-$("#list").addEventListener("click",function(e){
-  var rec=e.target.closest(".rec");
-  if(!rec)return;
-  var existing=state.records.find(function(r){return r.id===rec.dataset.id});
-  if(existing)openRecord(existing);
-});
-
-$$(".lang-btn").forEach(function(b){
-  b.onclick=function(){
-    state.lang=b.dataset.lang;
-    localStorage.setItem(LANG_KEY,state.lang);
-    $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
-    render();
-    toast(state.lang==="en"?"Language: English":"Язык: русский","ok");
-  };
-});
-
-$("#btn-open-family").onclick=function(){
-  $("#auth-fname").value=state.userName||"";
-  openAuth();
-};
-$("#btn-auth-cancel").onclick=closeAuth;
-
-$("#btn-create").onclick=function(){
-  var n=$("#auth-fname").value.trim();
-  if(!n){toast(t("auth_name"),"err");return}
-  if(!state.uid){toast("...","err");setTimeout(function(){$("#btn-create").click()},3000);return}
-  state.userName=n;state.mode="family";state.familyCode=genCode();
-  var ref=db.ref("families/"+state.familyCode);
-  ref.set({name:"Семья "+n,createdAt:Date.now()}).then(function(){
-    return ref.child("members").child(state.uid).set({name:n,joined:Date.now()});
-  }).then(function(){
-    toast(state.familyCode,"ok");
-    saveLocal();closeAuth();subscribeFamily();
-  }).catch(function(e){toast("Ошибка: "+e.message,"err")});
-};
-
-$("#btn-join").onclick=function(){
-  var n=$("#auth-fname").value.trim();
-  var c=$("#auth-code").value.trim().toUpperCase();
-  if(!n){toast(t("auth_name"),"err");return}
-  if(c.length!==6){toast("XXXXXX","err");return}
-  if(!state.uid){toast("...","err");setTimeout(function(){$("#btn-join").click()},3000);return}
-  var ref=db.ref("families/"+c);
-  ref.once("value").then(function(snap){
-    if(!snap.exists()){toast("not found","err");return}
-    state.userName=n;state.mode="family";state.familyCode=c;
-    state.familyName=snap.val().name||"Семья";
-    return ref.child("members").child(state.uid).set({name:n,joined:Date.now()}).then(function(){
-      toast("ok","ok");saveLocal();closeAuth();subscribeFamily();
-    });
-  }).catch(function(e){toast("Ошибка: "+e.message,"err")});
-};
-
-$("#btn-copy-code").onclick=function(){
-  if(!state.familyCode)return;
-  navigator.clipboard.writeText(state.familyCode);
-  toast(state.familyCode,"ok");
-};
-
-$("#btn-leave-family").onclick=function(){
-  if(!confirm(t("leave_family")+"?"))return;
-  if(familySub){familySub.off();familySub=null}
-  state.mode="local";state.familyCode=null;state.familyName="";
-  state.records=[];state.members={};state.envelopes={};
-  saveLocal();render();
-};
-
-$("#btn-export").onclick=function(){
-  if(!state.records.length){toast(t("no_records"),"err");return}
-  var rows=[["date","type","category","amount","shop","items","comment","who"]];
-  state.records.slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"")}).forEach(function(r){
-    var c=findCat(r.cat);
-    var itms=(r.items||[]).map(function(it){return it.name+" "+it.price}).join("; ");
-    rows.push([r.date,r.type,c.name,r.amount,r.shop||"",itms,r.note||"",r.byName||""]);
-  });
-  var csv=rows.map(function(row){
-    return row.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",");
-  }).join("\n");
-  var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");
-  a.href=url;a.download="budget-"+today()+".csv";
-  document.body.appendChild(a);a.click();a.remove();
-  URL.revokeObjectURL(url);
-  toast("ok","ok");
-};
-
-var payBtn=$("#btn-pay");
-if(payBtn)payBtn.onclick=function(){
-  var pw=$("#paywall");
-  if(pw)pw.classList.add("open");
-  renderSubscription();
-  renderCoupons();
-};
-
-var refBtn=$("#btn-refresh-sub");
-if(refBtn)refBtn.onclick=function(){
-  renderSubscription();
-  toast("Обновлено","ok");
-};
-
-var pwClose=$("#pw-close");
-if(pwClose)pwClose.onclick=function(){
-  var pw=$("#paywall");
-  if(pw)pw.classList.remove("open");
-};
-
-document.querySelectorAll(".tariff").forEach(function(t){
-  t.onclick=function(){
-    var plan=t.getAttribute("data-plan");
-    var pw=$("#paywall");
-    if(pw)pw.classList.remove("open");
-    toast("Создаю счёт...","ok");
-    var c10=($("#cb10")&&$("#cb10").checked)?1:0;
-    var c20=($("#cb20")&&$("#cb20").checked)?1:0;
-    fetch("/api/pay/create",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({uid:state.uid,plan:plan,use10:c10,use20:c20})
-    }).then(function(r){return r.json()}).then(function(res){
-      if(!res||!res.ok||!res.invoice_url){
-        toast("Ошибка: "+((res&&res.error)||"не создать счёт"),"err");
-        return;
-      }
-      toast("Счёт на $"+res.final_usd+" создан","ok");
-      if(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.openLink){
-        window.Telegram.WebApp.openLink(res.invoice_url);
-      }else{
-        window.open(res.invoice_url,"_blank");
-      }
-    }).catch(function(e){
-      toast("Ошибка сети: "+e.message,"err");
-    });
-  };
-});
-
-var tgUser=window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initDataUnsafe
-  ?window.Telegram.WebApp.initDataUnsafe.user:null;
-var tgId=tgUser&&tgUser.id?String(tgUser.id):"anon";
-
-if(tgUser&&tgUser.first_name)state.userName=tgUser.first_name;
-if(!state.userName)state.userName="Гость";
-
-var USER_KEY="budget_data_"+tgId;
-var FAMILY_KEY="budget_family_"+tgId;
-
-function bootApp(){
-  var storedLang=localStorage.getItem(LANG_KEY);
-  if(storedLang)state.lang=storedLang;
-  $$(".lang-btn").forEach(function(x){x.classList.toggle("on",x.dataset.lang===state.lang)});
-
-  auth.signInAnonymously().then(function(cred){
-    state.uid=tgId;
-    try{
-      var saved=JSON.parse(localStorage.getItem(USER_KEY)||"{}");
-      if(saved.mode)state.mode=saved.mode;
-      if(saved.records)state.records=saved.records;
-      if(saved.envelopes)state.envelopes=saved.envelopes;
-    }catch(e){}
-    var famCode=localStorage.getItem(FAMILY_KEY);
-    var famName=localStorage.getItem(FAMILY_KEY+"_name");
-    if(famCode&&state.mode==="family"){
-      state.familyCode=famCode;
-      state.familyName=famName||"Семья";
-    }
-    var n=new Date();
-    state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
-    if(state.mode==="family"&&state.familyCode){subscribeFamily()}
-    render();
-    try{renderSubscription()}catch(e){}
-    setInterval(function(){try{renderSubscription()}catch(e){}},30000);
-  }).catch(function(e){
-    state.uid=tgId;
-    try{
-      var saved=JSON.parse(localStorage.getItem(USER_KEY)||"{}");
-      if(saved.mode)state.mode=saved.mode;
-      if(saved.records)state.records=saved.records;
-      if(saved.envelopes)state.envelopes=saved.envelopes;
-    }catch(e2){}
-    var famCode=localStorage.getItem(FAMILY_KEY);
-    if(famCode&&state.mode==="family")state.familyCode=famCode;
-    var n=new Date();
-    state.viewMonth=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");
-    if(state.mode==="family"&&state.familyCode){subscribeFamily()}
-    render();
-    try{renderSubscription()}catch(e){}
-  });
-}
-
-bootApp();
-setTimeout(function(){checkAccess()},2000);
-
-var tg=window.Telegram&&window.Telegram.WebApp;
-if(tg){tg.ready();tg.expand()}
-
-})();
-</script>
+    </script>
 </body>
 </html>

@@ -339,7 +339,7 @@ async def daily_check():
             log.warning("daily_check error: " + str(e))
 
         # Пауза между проверками — 6 часов
-        await asyncio.sleep(6 * 60 * 60)
+        await asyncio.sleep(10)
 
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")

@@ -256,7 +256,9 @@ async def daily_check():
     while True:
         try:
             if not bot:
-                await asyncio.sleep(10)
+                        # Пауза между проверками — 6 часов
+                await asyncio.sleep(6 * 60 * 60)
+        
                 continue
 
             now_sec = int(datetime.utcnow().timestamp())

@@ -10,8 +10,80 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Подключение CSS -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #3b82f6;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --radius-square: 8px; /* Квадратный стиль */
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 16px; padding-bottom: 80px;
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        .balance-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-square); padding: 16px; margin-bottom: 16px; }
+        .balance-amount { font-size: 28px; font-weight: 700; margin: 8px 0; }
+        .balance-stats { display: flex; justify-content: space-between; margin-top: 12px; }
+        .stat-value.income { color: var(--success-color); }
+        .stat-value.expense { color: var(--danger-color); }
+
+        /* Квадратные кнопки */
+        .btn-square {
+            border-radius: var(--radius-square) !important;
+            padding: 10px 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .grid-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 8px; }
+        
+        .opt-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-color); padding: 8px; border-radius: var(--radius-square); cursor: pointer; text-align: center; font-size: 13px; }
+        .opt-btn.active { border-color: var(--accent-color); background: rgba(59, 130, 246, 0.2); }
+
+        .custom-input, select.custom-input {
+            width: 100%; background: var(--bg-color); border: 1px solid var(--card-border);
+            color: var(--text-color); padding: 10px; border-radius: var(--radius-square);
+            box-sizing: border-box; margin-top: 6px; margin-bottom: 12px;
+        }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 400px; padding: 20px; border-radius: var(--radius-square); border: 1px solid var(--card-border); }
+
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-muted); cursor: pointer; }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-item i { font-size: 18px; margin-bottom: 3px; }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -19,56 +91,46 @@
         <div class="header">
             <div class="user-profile">
                 <div class="user-avatar" id="userAvatar">U</div>
-                <div class="user-info">
-                    <h3 id="userName" data-i18n="user_default">Пользователь</h3>
-                    <p id="subStatusText" data-i18n="sub_active">Подписка: Активна</p>
+                <div>
+                    <h3 id="userName" style="margin:0; font-size: 16px;" data-i18n="user_default">Пользователь</h3>
+                    <p id="subStatusText" style="margin:0; font-size: 12px; color: var(--text-muted);" data-i18n="sub_active">Подписка: Активна</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="openHelpModal()"><i class="fa-solid fa-circle-question"></i></button>
-                <button class="icon-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i></button>
-            </div>
+            <button class="opt-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i></button>
         </div>
 
-        <!-- Переключатель месяцев -->
-        <div class="month-selector">
-            <button class="icon-btn" style="width: 32px; height: 32px;" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-            <div class="month-title" id="currentMonthDisplay">Октябрь 2026</div>
-            <button class="icon-btn" style="width: 32px; height: 32px;" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-
-        <!-- Карточка баланса -->
+        <!-- Баланс -->
         <div class="balance-card">
-            <div class="balance-title" data-i18n="main_balance">Основной баланс</div>
+            <div style="font-size: 12px; color: var(--text-muted);" data-i18n="main_balance">Основной баланс</div>
             <div class="balance-amount" id="totalBalance">0 ₴</div>
             <div class="balance-stats">
-                <div class="stat-item">
-                    <span class="stat-label" data-i18n="month_income">Доходы за месяц</span>
-                    <span class="stat-value income" id="monthIncome">+0 ₴</span>
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted);" data-i18n="month_income">Доходы за месяц</div>
+                    <div class="stat-value income" id="monthIncome">+0 ₴</div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label" data-i18n="month_expense">Расходы за месяц</span>
-                    <span class="stat-value expense" id="monthExpense">-0 ₴</span>
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted);" data-i18n="month_expense">Расходы за месяц</div>
+                    <div class="stat-value expense" id="monthExpense">-0 ₴</div>
                 </div>
             </div>
         </div>
 
-        <!-- Быстрый ввод -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-            <button class="currency-btn active" onclick="openAddTransactionModal('expense')" style="background: var(--danger-color); border: none;">
-                <i class="fa-solid fa-minus-circle"></i> <span data-i18n="btn_expense">Расход</span>
+        <!-- Кнопки Расход и Доход -->
+        <div class="grid-2">
+            <button class="btn-square" style="background: var(--danger-color);" onclick="openTransactionModal('expense')">
+                <i class="fa-solid fa-circle-minus"></i> <span data-i18n="btn_expense">Расход</span>
             </button>
-            <button class="currency-btn active" onclick="openAddTransactionModal('income')" style="background: var(--success-color); border: none;">
-                <i class="fa-solid fa-plus-circle"></i> <span data-i18n="btn_income">Доход</span>
+            <button class="btn-square" style="background: var(--success-color);" onclick="openTransactionModal('income')">
+                <i class="fa-solid fa-circle-plus"></i> <span data-i18n="btn_income">Доход</span>
             </button>
         </div>
 
         <!-- Вкладка 1: Бюджет -->
-        <div id="tab-budget" class="tab-content active">
+        <div id="tab-budget" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4 style="font-size: 16px;" data-i18n="envelope_title">Конверты расходов</h4>
-                <button class="icon-btn" style="width: auto; padding: 0 12px; font-size: 13px;" onclick="openAddEnvelopeModal()">
-                    <i class="fa-solid fa-plus" style="margin-right: 6px;"></i><span data-i18n="btn_create">Создать</span>
+                <h4 style="margin:0;" data-i18n="envelope_title">Конверты расходов</h4>
+                <button class="btn-square" style="background: var(--accent-color);" onclick="openModal('modalAddEnvelope')">
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create">Создать</span>
                 </button>
             </div>
             <div id="envelopesList"></div>
@@ -77,328 +139,83 @@
         <!-- Вкладка 2: Банки -->
         <div id="tab-banks" class="tab-content" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4 style="font-size: 16px;" data-i18n="banks_title">Банки и Накопления</h4>
-                <button class="icon-btn" style="width: auto; padding: 0 12px; font-size: 13px;" onclick="openAddBankModal()">
-                    <i class="fa-solid fa-piggy-bank" style="margin-right: 6px;"></i><span data-i18n="btn_new_bank">Новая банка</span>
+                <h4 style="margin:0;" data-i18n="banks_title">Банки и Накопления</h4>
+                <button class="btn-square" style="background: var(--accent-color);" onclick="openModal('modalAddBank')">
+                    <i class="fa-solid fa-piggy-bank"></i> <span data-i18n="btn_new_bank">Новая банка</span>
                 </button>
             </div>
             <div id="banksList"></div>
         </div>
+            <script>
+        const CURRENCY_SYMBOLS = { UAH: '₴', RUB: '₽', USD: '$', EUR: '€', PLN: 'zł', KZT: '₸', GBP: '£' };
 
-        <!-- Вкладка 3: Аналитика -->
-        <div id="tab-analytics" class="tab-content" style="display: none;">
-            <h4 style="font-size: 16px; margin-bottom: 12px;" data-i18n="analytics_title">Аналитика расходов</h4>
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                <canvas id="expensesChart" height="220"></canvas>
-            </div>
-            <button class="currency-btn active" style="width: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); border: none;" onclick="requestBudgetAnalysis()" data-i18n="btn_request_analysis">
-                📊 Заказать персональный разбор трат
-            </button>
-        </div>
-                <!-- Вкладка 4: Настройки -->
-        <div id="tab-settings" class="tab-content" style="display: none;">
-            <h4 style="font-size: 16px; margin-bottom: 16px;" data-i18n="settings_title">⚙️ Настройки & Партнерка</h4>
-
-            <!-- Выбор языка -->
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                <label style="font-size: 13px; color: var(--text-muted);" data-i18n="select_language">Выберите язык интерфейса:</label>
-                <div class="currency-selector" style="grid-template-columns: repeat(3, 1fr); margin-top: 8px;">
-                    <button class="currency-btn" id="lang-ru" onclick="changeLanguage('ru')">Русский</button>
-                    <button class="currency-btn" id="lang-uk" onclick="changeLanguage('uk')">Українська</button>
-                    <button class="currency-btn" id="lang-en" onclick="changeLanguage('en')">English</button>
-                </div>
-            </div>
-
-            <!-- Переключатель темы -->
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                <label style="font-size: 13px; color: var(--text-muted);" data-i18n="select_theme">Тема оформления:</label>
-                <div class="currency-selector" style="grid-template-columns: 1fr 1fr; margin-top: 8px;">
-                    <button class="currency-btn" id="theme-dark" onclick="setTheme('dark')"><i class="fa-solid fa-moon"></i> <span data-i18n="theme_dark">Темная</span></button>
-                    <button class="currency-btn" id="theme-light" onclick="setTheme('light')"><i class="fa-solid fa-sun"></i> <span data-i18n="theme_light">Светлая</span></button>
-                </div>
-            </div>
-
-            <!-- Реферальная программа -->
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;">
-                <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                    <span data-i18n="ref_program">🎁 Реферальная программа</span>
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;" data-i18n="ref_desc">
-                    • 1 друг = купон -10%<br>
-                    • 5 друзей = купон -10%<br>
-                    • $150 депозитов от рефералов = купон -20%
-                </div>
-                <label style="font-size: 11px; color: var(--text-muted);" data-i18n="ref_link_label">Ваша пригласительная ссылка:</label>
-                <div style="display: flex; gap: 8px; margin-top: 4px;">
-                    <input type="text" id="refLinkInput" readonly value="https://t.me/BudgetBot?start=ref12345" class="custom-input" style="font-size: 12px;">
-                    <button class="icon-btn" style="width: 44px; height: 42px; margin-top: 6px;" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
-                </div>
-            </div>
-
-            <!-- Валюта -->
-            <div style="margin-bottom: 20px;">
-                <label style="font-size: 13px; color: var(--text-muted);" data-i18n="select_currency">Выберите валюту:</label>
-                <div class="currency-selector" id="currencySelector">
-                    <button class="currency-btn" data-curr="UAH" onclick="setCurrency('UAH')">UAH (₴)</button>
-                    <button class="currency-btn" data-curr="RUB" onclick="setCurrency('RUB')">RUB (₽)</button>
-                    <button class="currency-btn" data-curr="USD" onclick="setCurrency('USD')">USD ($)</button>
-                    <button class="currency-btn" data-curr="EUR" onclick="setCurrency('EUR')">EUR (€)</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Навигация -->
-    <div class="nav-bar">
-        <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span data-i18n="nav_budget">Бюджет</span></div>
-        <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="nav_banks">Банки</span></div>
-        <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="nav_analytics">Аналитика</span></div>
-        <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="nav_settings">Настройки</span></div>
-    </div>
-
-    <!-- Модальные окна -->
-    <div class="modal" id="modalAddEnvelope">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 18px;" data-i18n="modal_add_envelope">Создать конверт</h3>
-                <button class="icon-btn" onclick="closeModal('modalAddEnvelope')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_name">Название</label>
-            <input type="text" id="envNameInput" class="custom-input" placeholder="Продукты, Кафе..." data-i18n-ph="ph_envelope_name">
-            <label style="font-size: 12px; color: var(--text-muted); margin-top: 10px; display: block;" data-i18n="label_target">Лимит / Цель</label>
-            <input type="number" id="envTargetInput" class="custom-input" placeholder="5000">
-            <button class="currency-btn active" style="width: 100%; margin-top: 16px;" onclick="saveEnvelope()" data-i18n="btn_save">Сохранить</button>
-        </div>
-    </div>
-
-    <!-- ТЕГ SCRIPT: Здесь начинается JavaScript -->
-    <script>
         const I18N = {
-            ru: {
-                user_default: "Пользователь",
-                sub_active: "Подписка: Активна",
-                main_balance: "Основной баланс",
-                month_income: "Доходы за месяц",
-                month_expense: "Расходы за месяц",
-                btn_expense: "Расход",
-                btn_income: "Доход",
-                envelope_title: "Конверты расходов",
-                btn_create: "Создать",
-                banks_title: "Банки и Накопления",
-                btn_new_bank: "Новая банка",
-                analytics_title: "Аналитика расходов",
-                btn_request_analysis: "📊 Заказать персональный разбор трат",
-                settings_title: "⚙️ Настройки & Партнерка",
-                select_language: "Выберите язык интерфейса:",
-                select_theme: "Тема оформления:",
-                theme_dark: "Темная",
-                theme_light: "Светлая",
-                ref_program: "🎁 Реферальная программа",
-                ref_desc: "• 1 друг = купон -10%<br>• 5 друзей = купон -10%<br>• $150 депозитов = купон -20%",
-                ref_invited: "Приглашено",
-                ref_volume: "Оборот друзей",
-                ref_link_label: "Ваша пригласительная ссылка:",
-                select_currency: "Выберите валюту:",
-                sub_payment: "Оплата подписки",
-                pay_via_crypto: "Оплатить через Crypto Bot",
-                nav_budget: "Бюджет",
-                nav_banks: "Банки",
-                nav_analytics: "Аналитика",
-                nav_settings: "Настройки",
-                no_envelopes: "Нет созданных конвертов",
-                no_banks: "Нет созданных банок",
-                modal_add_envelope: "Создать конверт",
-                modal_add_bank: "Новая банка",
-                label_name: "Название",
-                label_target: "Лимит / Цель",
-                ph_envelope_name: "Продукты, Кафе...",
-                ph_bank_name: "Новый айфон, Отпуск...",
-                btn_save: "Сохранить",
-                copied: "📋 Ваша ссылка скопирована!",
-                months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
-            },
-            uk: {
-                user_default: "Користувач",
-                sub_active: "Передплата: Активна",
-                main_balance: "Основний баланс",
-                month_income: "Доходи за місяць",
-                month_expense: "Витрати за місяць",
-                btn_expense: "Витрата",
-                btn_income: "Дохід",
-                envelope_title: "Конверти витрат",
-                btn_create: "Створити",
-                banks_title: "Банки та Накопичення",
-                btn_new_bank: "Нова банка",
-                analytics_title: "Аналітика витрат",
-                btn_request_analysis: "📊 Замовити персональний аналіз",
-                settings_title: "⚙️ Налаштування & Партнерка",
-                select_language: "Оберіть мову інтерфейсу:",
-                select_theme: "Тема оформлення:",
-                theme_dark: "Темна",
-                theme_light: "Світла",
-                ref_program: "🎁 Реферальна програма",
-                ref_desc: "• 1 друг = купон -10%<br>• 5 друзів = купон -10%<br>• $150 депозитів = купон -20%",
-                ref_invited: "Запрошено",
-                ref_volume: "Оборот друзів",
-                ref_link_label: "Ваше запрошувальне посилання:",
-                select_currency: "Оберіть валюту:",
-                sub_payment: "Оплата передплати",
-                pay_via_crypto: "Оплатити через Crypto Bot",
-                nav_budget: "Бюджет",
-                nav_banks: "Банки",
-                nav_analytics: "Аналітика",
-                nav_settings: "Налаштування",
-                no_envelopes: "Немає створених конвертів",
-                no_banks: "Немає створених банок",
-                modal_add_envelope: "Створити конверт",
-                modal_add_bank: "Нова банка",
-                label_name: "Назва",
-                label_target: "Ліміт / Ціль",
-                ph_envelope_name: "Продукти, Кафе...",
-                ph_bank_name: "Новий айфон, Відпустка...",
-                btn_save: "Зберегти",
-                copied: "📋 Ваше посилання скопійовано!",
-                months: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"]
-            },
-            en: {
-                user_default: "User",
-                sub_active: "Subscription: Active",
-                main_balance: "Main Balance",
-                month_income: "Monthly Income",
-                month_expense: "Monthly Expense",
-                btn_expense: "Expense",
-                btn_income: "Income",
-                envelope_title: "Expense Envelopes",
-                btn_create: "Create",
-                banks_title: "Piggy Banks",
-                btn_new_bank: "New Bank",
-                analytics_title: "Expense Analytics",
-                btn_request_analysis: "📊 Request Personal Analysis",
-                settings_title: "⚙ Settings & Affiliate",
-                select_language: "Select Interface Language:",
-                select_theme: "Theme:",
-                theme_dark: "Dark",
-                theme_light: "Light",
-                ref_program: "🎁 Referral Program",
-                ref_desc: "• 1 friend = 10% coupon<br>• 5 friends = 10% coupon<br>• $150 deposits = 20% coupon",
-                ref_invited: "Invited",
-                ref_volume: "Friends Turnover",
-                ref_link_label: "Your Invitation Link:",
-                select_currency: "Select Currency:",
-                sub_payment: "Subscription Payment",
-                pay_via_crypto: "Pay via Crypto Bot",
-                nav_budget: "Budget",
-                nav_banks: "Banks",
-                nav_analytics: "Analytics",
-                nav_settings: "Settings",
-                no_envelopes: "No envelopes created",
-                no_banks: "No piggy banks created",
-                modal_add_envelope: "Create Envelope",
-                modal_add_bank: "New Piggy Bank",
-                label_name: "Name",
-                label_target: "Limit / Target",
-                ph_envelope_name: "Groceries, Cafe...",
-                ph_bank_name: "New iPhone, Vacation...",
-                btn_save: "Save",
-                copied: "📋 Your link has been copied!",
-                months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-            }
+            ru: { user_default: "Пользователь", sub_active: "Подписка: Активна", main_balance: "Основной баланс", month_income: "Доходы за месяц", month_expense: "Расходы за месяц", btn_expense: "Расход", btn_income: "Доход", envelope_title: "Конверты расходов", btn_create: "Создать", banks_title: "Банки и Накопления", btn_new_bank: "Новая банка", analytics_title: "Аналитика расходов", settings_title: "⚙️ Настройки", select_language: "Язык интерфейса:", select_currency: "Основная валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналитика", nav_settings: "Настройки", modal_add_envelope: "Создать конверт", modal_add_bank: "Новая банка", label_name: "Название", label_target: "Лимит / Цель", btn_save: "Сохранить" },
+            uk: { user_default: "Користувач", sub_active: "Передплата: Активна", main_balance: "Основний баланс", month_income: "Доходи за місяць", month_expense: "Витрати за місяць", btn_expense: "Витрата", btn_income: "Дохід", envelope_title: "Конверти витрат", btn_create: "Створити", banks_title: "Банки та Накопичення", btn_new_bank: "Нова банка", analytics_title: "Аналітика витрат", settings_title: "⚙️ Налаштування", select_language: "Мова інтерфейсу:", select_currency: "Основна валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналітика", nav_settings: "Налаштування", modal_add_envelope: "Створити конверт", modal_add_bank: "Нова банка", label_name: "Назва", label_target: "Ліміт / Ціль", btn_save: "Зберегти" },
+            en: { user_default: "User", sub_active: "Subscription: Active", main_balance: "Main Balance", month_income: "Monthly Income", month_expense: "Monthly Expense", btn_expense: "Expense", btn_income: "Income", envelope_title: "Expense Envelopes", btn_create: "Create", banks_title: "Piggy Banks", btn_new_bank: "New Bank", analytics_title: "Analytics", settings_title: "⚙️ Settings", select_language: "Language:", select_currency: "Currency:", nav_budget: "Budget", nav_banks: "Banks", nav_analytics: "Analytics", nav_settings: "Settings", modal_add_envelope: "Create Envelope", modal_add_bank: "New Bank", label_name: "Name", label_target: "Limit / Target", btn_save: "Save" },
+            es: { user_default: "Usuario", sub_active: "Suscripción: Activa", main_balance: "Saldo principal", month_income: "Ingresos", month_expense: "Gastos", btn_expense: "Gasto", btn_income: "Ingreso", envelope_title: "Sobres de gastos", btn_create: "Crear", banks_title: "Huchas", btn_new_bank: "Nueva hucha", analytics_title: "Análisis", settings_title: "⚙️ Ajustes", select_language: "Idioma:", select_currency: "Moneda:", nav_budget: "Presupuesto", nav_banks: "Huchas", nav_analytics: "Análisis", nav_settings: "Ajustes", modal_add_envelope: "Crear sobre", modal_add_bank: "Nueva hucha", label_name: "Nombre", label_target: "Límite / Objetivo", btn_save: "Guardar" },
+            de: { user_default: "Benutzer", sub_active: "Abonnement: Aktiv", main_balance: "Hauptguthaben", month_income: "Einnahmen", month_expense: "Ausgaben", btn_expense: "Ausgabe", btn_income: "Einnahme", envelope_title: "Umschläge", btn_create: "Erstellen", banks_title: "Spardosen", btn_new_bank: "Neue Spardose", analytics_title: "Analysen", settings_title: "⚙️ Einstellungen", select_language: "Sprache:", select_currency: "Währung:", nav_budget: "Budget", nav_banks: "Spardosen", nav_analytics: "Analysen", nav_settings: "Einstellungen", modal_add_envelope: "Umschlag erstellen", modal_add_bank: "Neue Spardose", label_name: "Name", label_target: "Ziel", btn_save: "Speichern" },
+            fr: { user_default: "Utilisateur", sub_active: "Abonnement: Actif", main_balance: "Solde principal", month_income: "Revenus", month_expense: "Dépenses", btn_expense: "Dépense", btn_income: "Revenu", envelope_title: "Enveloppes", btn_create: "Créer", banks_title: "Tirelires", btn_new_bank: "Nouvelle tirelire", analytics_title: "Analyses", settings_title: "⚙️ Paramètres", select_language: "Langue:", select_currency: "Devise:", nav_budget: "Budget", nav_banks: "Tirelires", nav_analytics: "Analyses", nav_settings: "Paramètres", modal_add_envelope: "Créer une enveloppe", modal_add_bank: "Nouvelle tirelire", label_name: "Nom", label_target: "Limite / Objectif", btn_save: "Enregistrer" },
+            pl: { user_default: "Użytkownik", sub_active: "Subskrypcja: Aktywna", main_balance: "Główne saldo", month_income: "Przychody", month_expense: "Wydatki", btn_expense: "Wydatek", btn_income: "Przychód", envelope_title: "Koperty", btn_create: "Utwórz", banks_title: "Skarbonki", btn_new_bank: "Nowa skarbonka", analytics_title: "Analityka", settings_title: "⚙️ Ustawienia", select_language: "Język:", select_currency: "Waluta:", nav_budget: "Budżet", nav_banks: "Skarbonki", nav_analytics: "Analityka", nav_settings: "Ustawienia", modal_add_envelope: "Utwórz kopertę", modal_add_bank: "Nowa skarbonka", label_name: "Nazwa", label_target: "Limit / Cel", btn_save: "Zapisz" }
         };
-                const CURRENCY_SYMBOLS = { UAH: '₴', RUB: '₽', USD: '$', EUR: '€' };
-
-        let currentDate = new Date();
-        let selectedYear = currentDate.getFullYear();
-        let selectedMonth = currentDate.getMonth();
 
         let appData = {
-            lang: 'ru',
-            theme: 'dark',
-            currency: 'UAH',
-            balance: 0,
-            months: {},
-            banks: []
+            lang: 'ru', currency: 'UAH', balance: 0, monthIncome: 0, monthExpense: 0,
+            envelopes: [], banks: []
         };
 
-        function getMonthKey(year, month) { return `${year}-${String(month + 1).padStart(2, '0')}`; }
-
-        function getCurrentMonthData() {
-            const key = getMonthKey(selectedYear, selectedMonth);
-            if (!appData.months[key]) appData.months[key] = { income: 0, expense: 0, envelopes: [] };
-            return appData.months[key];
-        }
+        let activeTxType = 'expense';
 
         function loadAppData() {
-            const saved = localStorage.getItem("app_budget_data");
+            const saved = localStorage.getItem("app_budget_v2");
             if (saved) { try { appData = Object.assign(appData, JSON.parse(saved)); } catch(e){} }
-            setTheme(appData.theme || 'dark');
-            applyLanguage(appData.lang);
+            applyLanguage(appData.lang || 'ru');
             renderAll();
         }
 
-        function saveData() { localStorage.setItem("app_budget_data", JSON.stringify(appData)); }
+        function saveData() { localStorage.setItem("app_budget_v2", JSON.stringify(appData)); }
 
-        function applyLanguage(lang) {
-            appData.lang = lang;
+        function openTransactionModal(type) {
+            activeTxType = type;
+            const titleElem = document.getElementById('txModalTitle');
+            const envGroup = document.getElementById('txEnvelopeGroup');
+            
+            titleElem.innerText = type === 'expense' ? 'Добавить Расход' : 'Добавить Доход';
+            envGroup.style.display = type === 'expense' ? 'block' : 'none';
+
+            const select = document.getElementById('txEnvelopeSelect');
+            select.innerHTML = appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+
+            openModal('modalTransaction');
+        }
+
+        function submitTransaction() {
+            const amount = parseFloat(document.getElementById('txAmountInput').value);
+            if (!amount || amount <= 0) return;
+
+            if (activeTxType === 'expense') {
+                appData.balance -= amount;
+                appData.monthExpense += amount;
+                const envId = document.getElementById('txEnvelopeSelect').value;
+                const env = appData.envelopes.find(e => e.id == envId);
+                if (env) env.spent += amount;
+            } else {
+                appData.balance += amount;
+                appData.monthIncome += amount;
+            }
+
             saveData();
-
-            document.querySelectorAll('#lang-ru, #lang-uk, #lang-en').forEach(b => b.classList.remove('active'));
-            document.getElementById(`lang-${lang}`)?.classList.add('active');
-
-            const dictionary = I18N[lang] || I18N.ru;
-
-            document.querySelectorAll('[data-i18n]').forEach(elem => {
-                const key = elem.getAttribute('data-i18n');
-                if (dictionary[key]) elem.innerHTML = dictionary[key];
-            });
-
-            document.querySelectorAll('[data-i18n-ph]').forEach(elem => {
-                const key = elem.getAttribute('data-i18n-ph');
-                if (dictionary[key]) elem.placeholder = dictionary[key];
-            });
-
-            updateMonthDisplay();
+            closeModal('modalTransaction');
+            document.getElementById('txAmountInput').value = '';
             renderAll();
         }
-
-        function changeLanguage(lang) { applyLanguage(lang); }
-
-        function setTheme(theme) {
-            appData.theme = theme;
-            document.documentElement.setAttribute('data-theme', theme);
-            document.getElementById('theme-dark')?.classList.toggle('active', theme === 'dark');
-            document.getElementById('theme-light')?.classList.toggle('active', theme === 'light');
-            saveData();
-        }
-
-        function updateMonthDisplay() {
-            const dict = I18N[appData.lang] || I18N.ru;
-            document.getElementById("currentMonthDisplay").innerText = `${dict.months[selectedMonth]} ${selectedYear}`;
-        }
-
-        function changeMonth(delta) {
-            selectedMonth += delta;
-            if (selectedMonth > 11) { selectedMonth = 0; selectedYear++; }
-            else if (selectedMonth < 0) { selectedMonth = 11; selectedYear--; }
-            updateMonthDisplay();
-            renderAll();
-        }
-
-        function copyRefLink() {
-            const dict = I18N[appData.lang] || I18N.ru;
-            navigator.clipboard.writeText(document.getElementById("refLinkInput").value);
-            alert(dict.copied);
-        }
-
-        function openAddEnvelopeModal() { document.getElementById('modalAddEnvelope').classList.add('active'); }
-        function openAddBankModal() { document.getElementById('modalAddBank').classList.add('active'); }
 
         function saveEnvelope() {
             const name = document.getElementById('envNameInput').value;
             const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
             if (!name) return;
 
-            const mData = getCurrentMonthData();
-            mData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
+            appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
             saveData();
             closeModal('modalAddEnvelope');
             document.getElementById('envNameInput').value = '';
@@ -406,39 +223,59 @@
             renderAll();
         }
 
-        function renderAll() {
-            const dict = I18N[appData.lang] || I18N.ru;
-            const monthData = getCurrentMonthData();
+        function saveBank() {
+            const name = document.getElementById('bankNameInput').value;
+            const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
+            if (!name) return;
 
-            document.getElementById("totalBalance").innerText = formatMoney(appData.balance);
-            document.getElementById("monthIncome").innerText = `+${formatMoney(monthData.income)}`;
-            document.getElementById("monthExpense").innerText = `-${formatMoney(monthData.expense)}`;
-
-            const envContainer = document.getElementById('envelopesList');
-            if (!monthData.envelopes || monthData.envelopes.length === 0) {
-                envContainer.innerHTML = `<div class="empty-text">${dict.no_envelopes}</div>`;
-            } else {
-                envContainer.innerHTML = monthData.envelopes.map(e => `
-                    <div class="item-card">
-                        <div>
-                            <div style="font-weight: 600;">${e.name}</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(e.spent)} / ${formatMoney(e.target)}</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function formatMoney(amount) {
-            return `${Number(amount).toLocaleString()} ${CURRENCY_SYMBOLS[appData.currency] || '₴'}`;
-        }
-
-        function setCurrency(curr) {
-            appData.currency = curr;
+            appData.banks.push({ id: Date.now(), name, target, balance: 0 });
             saveData();
+            closeModal('modalAddBank');
+            document.getElementById('bankNameInput').value = '';
+            document.getElementById('bankTargetInput').value = '';
             renderAll();
         }
 
+        function renderAll() {
+            document.getElementById("totalBalance").innerText = formatMoney(appData.balance);
+            document.getElementById("monthIncome").innerText = `+${formatMoney(appData.monthIncome)}`;
+            document.getElementById("monthExpense").innerText = `-${formatMoney(appData.monthExpense)}`;
+
+            // Конверты
+            const envContainer = document.getElementById('envelopesList');
+            envContainer.innerHTML = appData.envelopes.map(e => `
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-square); padding: 12px; margin-bottom: 8px;">
+                    <div style="font-weight: 600;">${e.name}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(e.spent)} / ${formatMoney(e.target)}</div>
+                </div>
+            `).join('');
+
+            // Банки
+            const bankContainer = document.getElementById('banksList');
+            bankContainer.innerHTML = appData.banks.map(b => `
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-square); padding: 12px; margin-bottom: 8px;">
+                    <div style="font-weight: 600;">${b.name}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(b.balance)} / ${formatMoney(b.target)}</div>
+                </div>
+            `).join('');
+        }
+
+        function applyLanguage(lang) {
+            appData.lang = lang;
+            saveData();
+            const dict = I18N[lang] || I18N.ru;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (dict[k]) el.innerText = dict[k];
+            });
+        }
+
+        function changeLanguage(lang) { applyLanguage(lang); }
+        function setCurrency(curr) { appData.currency = curr; saveData(); renderAll(); }
+        function formatMoney(amount) { return `${Number(amount).toLocaleString()} ${CURRENCY_SYMBOLS[appData.currency] || '₴'}`; }
+        function openModal(id) { document.getElementById(id)?.classList.add('active'); }
+        function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+        
         function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -446,9 +283,148 @@
             document.getElementById(`nav-${t}`)?.classList.add('active');
         }
 
-        function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+        window.addEventListener('DOMContentLoaded', loadAppData);
+    </script>
+</body>
+</html>
+    <script>
+        const CURRENCY_SYMBOLS = { UAH: '₴', RUB: '₽', USD: '$', EUR: '€', PLN: 'zł', KZT: '₸', GBP: '£' };
 
-        window.addEventListener('DOMContentLoaded', () => { loadAppData(); });
+        const I18N = {
+            ru: { user_default: "Пользователь", sub_active: "Подписка: Активна", main_balance: "Основной баланс", month_income: "Доходы за месяц", month_expense: "Расходы за месяц", btn_expense: "Расход", btn_income: "Доход", envelope_title: "Конверты расходов", btn_create: "Создать", banks_title: "Банки и Накопления", btn_new_bank: "Новая банка", analytics_title: "Аналитика расходов", settings_title: "⚙️ Настройки", select_language: "Язык интерфейса:", select_currency: "Основная валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналитика", nav_settings: "Настройки", modal_add_envelope: "Создать конверт", modal_add_bank: "Новая банка", label_name: "Название", label_target: "Лимит / Цель", btn_save: "Сохранить" },
+            uk: { user_default: "Користувач", sub_active: "Передплата: Активна", main_balance: "Основний баланс", month_income: "Доходи за місяць", month_expense: "Витрати за місяць", btn_expense: "Витрата", btn_income: "Дохід", envelope_title: "Конверти витрат", btn_create: "Створити", banks_title: "Банки та Накопичення", btn_new_bank: "Нова банка", analytics_title: "Аналітика витрат", settings_title: "⚙️ Налаштування", select_language: "Мова інтерфейсу:", select_currency: "Основна валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналітика", nav_settings: "Налаштування", modal_add_envelope: "Створити конверт", modal_add_bank: "Нова банка", label_name: "Назва", label_target: "Ліміт / Ціль", btn_save: "Зберегти" },
+            en: { user_default: "User", sub_active: "Subscription: Active", main_balance: "Main Balance", month_income: "Monthly Income", month_expense: "Monthly Expense", btn_expense: "Expense", btn_income: "Income", envelope_title: "Expense Envelopes", btn_create: "Create", banks_title: "Piggy Banks", btn_new_bank: "New Bank", analytics_title: "Analytics", settings_title: "⚙️ Settings", select_language: "Language:", select_currency: "Currency:", nav_budget: "Budget", nav_banks: "Banks", nav_analytics: "Analytics", nav_settings: "Settings", modal_add_envelope: "Create Envelope", modal_add_bank: "New Bank", label_name: "Name", label_target: "Limit / Target", btn_save: "Save" },
+            es: { user_default: "Usuario", sub_active: "Suscripción: Activa", main_balance: "Saldo principal", month_income: "Ingresos", month_expense: "Gastos", btn_expense: "Gasto", btn_income: "Ingreso", envelope_title: "Sobres de gastos", btn_create: "Crear", banks_title: "Huchas", btn_new_bank: "Nueva hucha", analytics_title: "Análisis", settings_title: "⚙️ Ajustes", select_language: "Idioma:", select_currency: "Moneda:", nav_budget: "Presupuesto", nav_banks: "Huchas", nav_analytics: "Análisis", nav_settings: "Ajustes", modal_add_envelope: "Crear sobre", modal_add_bank: "Nueva hucha", label_name: "Nombre", label_target: "Límite / Objetivo", btn_save: "Guardar" },
+            de: { user_default: "Benutzer", sub_active: "Abonnement: Aktiv", main_balance: "Hauptguthaben", month_income: "Einnahmen", month_expense: "Ausgaben", btn_expense: "Ausgabe", btn_income: "Einnahme", envelope_title: "Umschläge", btn_create: "Erstellen", banks_title: "Spardosen", btn_new_bank: "Neue Spardose", analytics_title: "Analysen", settings_title: "⚙️ Einstellungen", select_language: "Sprache:", select_currency: "Währung:", nav_budget: "Budget", nav_banks: "Spardosen", nav_analytics: "Analysen", nav_settings: "Einstellungen", modal_add_envelope: "Umschlag erstellen", modal_add_bank: "Neue Spardose", label_name: "Name", label_target: "Ziel", btn_save: "Speichern" },
+            fr: { user_default: "Utilisateur", sub_active: "Abonnement: Actif", main_balance: "Solde principal", month_income: "Revenus", month_expense: "Dépenses", btn_expense: "Dépense", btn_income: "Revenu", envelope_title: "Enveloppes", btn_create: "Créer", banks_title: "Tirelires", btn_new_bank: "Nouvelle tirelire", analytics_title: "Analyses", settings_title: "⚙️ Paramètres", select_language: "Langue:", select_currency: "Devise:", nav_budget: "Budget", nav_banks: "Tirelires", nav_analytics: "Analyses", nav_settings: "Paramètres", modal_add_envelope: "Créer une enveloppe", modal_add_bank: "Nouvelle tirelire", label_name: "Nom", label_target: "Limite / Objectif", btn_save: "Enregistrer" },
+            pl: { user_default: "Użytkownik", sub_active: "Subskrypcja: Aktywna", main_balance: "Główne saldo", month_income: "Przychody", month_expense: "Wydatki", btn_expense: "Wydatek", btn_income: "Przychód", envelope_title: "Koperty", btn_create: "Utwórz", banks_title: "Skarbonki", btn_new_bank: "Nowa skarbonka", analytics_title: "Analityka", settings_title: "⚙️ Ustawienia", select_language: "Język:", select_currency: "Waluta:", nav_budget: "Budżet", nav_banks: "Skarbonki", nav_analytics: "Analityka", nav_settings: "Ustawienia", modal_add_envelope: "Utwórz kopertę", modal_add_bank: "Nowa skarbonka", label_name: "Nazwa", label_target: "Limit / Cel", btn_save: "Zapisz" }
+        };
+
+        let appData = {
+            lang: 'ru', currency: 'UAH', balance: 0, monthIncome: 0, monthExpense: 0,
+            envelopes: [], banks: []
+        };
+
+        let activeTxType = 'expense';
+
+        function loadAppData() {
+            const saved = localStorage.getItem("app_budget_v2");
+            if (saved) { try { appData = Object.assign(appData, JSON.parse(saved)); } catch(e){} }
+            applyLanguage(appData.lang || 'ru');
+            renderAll();
+        }
+
+        function saveData() { localStorage.setItem("app_budget_v2", JSON.stringify(appData)); }
+
+        function openTransactionModal(type) {
+            activeTxType = type;
+            const titleElem = document.getElementById('txModalTitle');
+            const envGroup = document.getElementById('txEnvelopeGroup');
+            
+            titleElem.innerText = type === 'expense' ? 'Добавить Расход' : 'Добавить Доход';
+            envGroup.style.display = type === 'expense' ? 'block' : 'none';
+
+            const select = document.getElementById('txEnvelopeSelect');
+            select.innerHTML = appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+
+            openModal('modalTransaction');
+        }
+
+        function submitTransaction() {
+            const amount = parseFloat(document.getElementById('txAmountInput').value);
+            if (!amount || amount <= 0) return;
+
+            if (activeTxType === 'expense') {
+                appData.balance -= amount;
+                appData.monthExpense += amount;
+                const envId = document.getElementById('txEnvelopeSelect').value;
+                const env = appData.envelopes.find(e => e.id == envId);
+                if (env) env.spent += amount;
+            } else {
+                appData.balance += amount;
+                appData.monthIncome += amount;
+            }
+
+            saveData();
+            closeModal('modalTransaction');
+            document.getElementById('txAmountInput').value = '';
+            renderAll();
+        }
+
+        function saveEnvelope() {
+            const name = document.getElementById('envNameInput').value;
+            const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
+            if (!name) return;
+
+            appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
+            saveData();
+            closeModal('modalAddEnvelope');
+            document.getElementById('envNameInput').value = '';
+            document.getElementById('envTargetInput').value = '';
+            renderAll();
+        }
+
+        function saveBank() {
+            const name = document.getElementById('bankNameInput').value;
+            const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
+            if (!name) return;
+
+            appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+            saveData();
+            closeModal('modalAddBank');
+            document.getElementById('bankNameInput').value = '';
+            document.getElementById('bankTargetInput').value = '';
+            renderAll();
+        }
+
+        function renderAll() {
+            document.getElementById("totalBalance").innerText = formatMoney(appData.balance);
+            document.getElementById("monthIncome").innerText = `+${formatMoney(appData.monthIncome)}`;
+            document.getElementById("monthExpense").innerText = `-${formatMoney(appData.monthExpense)}`;
+
+            // Конверты
+            const envContainer = document.getElementById('envelopesList');
+            envContainer.innerHTML = appData.envelopes.map(e => `
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-square); padding: 12px; margin-bottom: 8px;">
+                    <div style="font-weight: 600;">${e.name}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(e.spent)} / ${formatMoney(e.target)}</div>
+                </div>
+            `).join('');
+
+            // Банки
+            const bankContainer = document.getElementById('banksList');
+            bankContainer.innerHTML = appData.banks.map(b => `
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-square); padding: 12px; margin-bottom: 8px;">
+                    <div style="font-weight: 600;">${b.name}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(b.balance)} / ${formatMoney(b.target)}</div>
+                </div>
+            `).join('');
+        }
+
+        function applyLanguage(lang) {
+            appData.lang = lang;
+            saveData();
+            const dict = I18N[lang] || I18N.ru;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (dict[k]) el.innerText = dict[k];
+            });
+        }
+
+        function changeLanguage(lang) { applyLanguage(lang); }
+        function setCurrency(curr) { appData.currency = curr; saveData(); renderAll(); }
+        function formatMoney(amount) { return `${Number(amount).toLocaleString()} ${CURRENCY_SYMBOLS[appData.currency] || '₴'}`; }
+        function openModal(id) { document.getElementById(id)?.classList.add('active'); }
+        function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+        
+        function switchTab(t) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`tab-${t}`).style.display = 'block';
+            document.getElementById(`nav-${t}`)?.classList.add('active');
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAppData);
     </script>
 </body>
 </html>

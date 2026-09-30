@@ -1,5 +1,6 @@
 import os
 import json
+import math
 import asyncio
 import logging
 from datetime import datetime
@@ -150,12 +151,14 @@ if bot:
             upd["subStart"] = now_ms
             upd["subEnd"] = now_ms + 30 * 24 * 60 * 60 * 1000
             upd["status"] = "active"
+            upd["reminderSent"] = 0
         fb_patch("/users/" + user_id, upd)
 
         await message.answer(
             "Привет! Это <b>Family Budget</b> — учёт доходов и расходов.\n\n"
             "Нажми кнопку, чтобы открыть приложение.",
             reply_markup=kb,
+            parse_mode="HTML"
         )
 
     @dp.message(Command("help"))
@@ -173,16 +176,24 @@ if bot:
         u = fb_get("/users/" + uid) or {}
         tariff = u.get("tariff") or "trial"
         sub_end = u.get("subEnd") or 0
-        now_ms = int(datetime.utcnow().timestamp() * 1000)
+        try:
+            sub_end = int(sub_end)
+            if sub_end > 10**11:
+                sub_end //= 1000
+        except (ValueError, TypeError):
+            sub_end = 0
+
+        now_sec = int(datetime.utcnow().timestamp())
         days_left = 0
-        if sub_end > now_ms:
-            days_left = (sub_end - now_ms) // 86400000
-        status = "активна" if sub_end > now_ms else "истекла"
+        if sub_end > now_sec:
+            days_left = math.ceil((sub_end - now_sec) / 86400)
+        status = "активна" if sub_end > now_sec else "истекла"
         await message.answer(
             "📊 <b>Подписка</b>\n\n"
-            "Тариф: " + tariff + "\n"
+            "Тариф: " + str(tariff) + "\n"
             "Статус: " + status + "\n"
-            "Осталось: " + str(days_left) + " дней"
+            "Осталось: " + str(days_left) + " дней",
+            parse_mode="HTML"
         )
 
     @dp.message(Command("referrals"))
@@ -207,6 +218,7 @@ if bot:
         lines = ["👥 <b>Твои рефералы</b>", ""]
         total_paid = 0
         i = 0
+        now_ms = int(datetime.utcnow().timestamp() * 1000)
         for ref_id in refs:
             i += 1
             ru = fb_get("/users/" + ref_id) or {}
@@ -216,11 +228,17 @@ if bot:
             paid = ru.get("paidAmount") or 0
             total_paid += paid
             sub_end = ru.get("subEnd") or 0
-            now_ms = int(datetime.utcnow().timestamp() * 1000)
+            try:
+                sub_end = int(sub_end)
+                if sub_end < 10**11:
+                    sub_end *= 1000
+            except (ValueError, TypeError):
+                sub_end = 0
+
             status = "активна" if sub_end > now_ms else "истекла"
             lines.append(
-                str(i) + ". <b>" + name + "</b> " + uname + "\n"
-                "   Тариф: " + tariff + " · " + status + "\n"
+                str(i) + ". <b>" + str(name) + "</b> " + str(uname) + "\n"
+                "   Тариф: " + str(tariff) + " · " + status + "\n"
                 "   Купил на: " + str(paid) + " ₴"
             )
 
@@ -234,49 +252,94 @@ if bot:
 
 
 async def daily_check():
+    """Фоновая проверка подписок: работает раз в 6 часов"""
     while True:
         try:
-            await asyncio.sleep(5)
             if not bot:
+                await asyncio.sleep(10)
                 continue
-            now_ms = int(datetime.utcnow().timestamp() * 1000)
+
+            now_sec = int(datetime.utcnow().timestamp())
             users = fb_get("/users") or {}
-            log.info("daily_check: users=" + str(len(users)))
+
             for uid, u in users.items():
                 if not isinstance(u, dict):
                     continue
+
                 sub_end = u.get("subEnd") or 0
-                if sub_end <= now_ms:
+                try:
+                    sub_end = int(sub_end)
+                except (ValueError, TypeError):
                     continue
-                days = (sub_end - now_ms) // 86400000
+
+                # Переводим миллисекунды в секунды, если нужно
+                if sub_end > 10**11:
+                    sub_end //= 1000
+
+                if sub_end <= 0:
+                    continue
+
+                seconds_left = sub_end - now_sec
+                days = math.ceil(seconds_left / 86400)
                 sent_flag = u.get("reminderSent") or 0
-                log.info("check " + str(uid) + ": days=" + str(days) + " sent=" + str(sent_flag))
-                if days >= 1 and days <= 3 and sent_flag < 3:
+
+                # 1. За 3 дня
+                if days == 3 and sent_flag < 3:
                     try:
                         await bot.send_message(
                             str(uid),
-                            "⏰ Подписка истекает через <b>" + str(days) + " дн.</b>\n\n"
+                            "⏰ Подписка истекает через <b>3 дн.</b>\n\n"
                             "Продлить: открой приложение → ⚙️ Настройки → Оплатить.",
                             parse_mode="HTML"
                         )
                     except Exception as e:
                         log.warning("reminder send " + str(uid) + ": " + str(e))
                     fb_patch("/users/" + str(uid), {"reminderSent": 3})
-                elif days == 0 and sent_flag < 1:
+
+                # 2. За 2 дня
+                elif days == 2 and sent_flag < 2:
                     try:
                         await bot.send_message(
                             str(uid),
-                            "⏰ Подписка истекает <b>сегодня</b>.\n\n"
+                            "⏰ Подписка истекает через <b>2 дн.</b>\n\n"
+                            "Продлить: ⚙️ Настройки → Оплатить.",
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        log.warning("reminder send " + str(uid) + ": " + str(e))
+                    fb_patch("/users/" + str(uid), {"reminderSent": 2})
+
+                # 3. За 1 день
+                elif days == 1 and sent_flag < 1:
+                    try:
+                        await bot.send_message(
+                            str(uid),
+                            "⏰ Подписка истекает <b>завтра</b>.\n\n"
                             "Продлить: ⚙️ Настройки → Оплатить.",
                             parse_mode="HTML"
                         )
                     except Exception as e:
                         log.warning("reminder send " + str(uid) + ": " + str(e))
                     fb_patch("/users/" + str(uid), {"reminderSent": 1})
-                elif days > 3 and sent_flag > 0:
-                    fb_patch("/users/" + str(uid), {"reminderSent": 0})
+
+                # 4. Истекла
+                elif days <= 0 and sent_flag != 99:
+                    try:
+                        await bot.send_message(
+                            str(uid),
+                            "❌ <b>Ваша подписка истекла.</b>\n\n"
+                            "Продлить: ⚙️ Настройки → Оплатить.",
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        log.warning("reminder send " + str(uid) + ": " + str(e))
+                    fb_patch("/users/" + str(uid), {"reminderSent": 99, "status": "expired"})
+
         except Exception as e:
-            log.warning("daily_check: " + str(e))
+            log.warning("daily_check error: " + str(e))
+
+        # Пауза между проверками — 6 часов
+        await asyncio.sleep(6 * 60 * 60)
 
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -482,9 +545,17 @@ async def pay_webhook(request: Request):
 
         u = fb_get("/users/" + uid) or {}
         cur_end = u.get("subEnd") or now_ms
+        try:
+            cur_end = int(cur_end)
+            if cur_end < 10**11:
+                cur_end *= 1000
+        except (ValueError, TypeError):
+            cur_end = now_ms
+
         if cur_end < now_ms:
             cur_end = now_ms
-        new_end = cur_end + days * 86400000
+
+        new_end = cur_end + (days * 86400000)
 
         cur_used10 = u.get("couponsUsed10") or 0
         cur_used20 = u.get("couponsUsed20") or 0
@@ -497,7 +568,7 @@ async def pay_webhook(request: Request):
             "paidAmount": (u.get("paidAmount") or 0) + final_usd,
             "couponsUsed10": cur_used10 + use10,
             "couponsUsed20": cur_used20 + use20,
-            "reminderSent": 0,
+            "reminderSent": 0,  # Сбрасываем флаг при продлении
         }
         fb_patch("/users/" + uid, upd)
 
@@ -527,7 +598,7 @@ async def pay_webhook(request: Request):
         if bot:
             try:
                 await bot.send_message(
-                    uid,
+                     uid,
                     "✅ <b>Оплата получена!</b>\n\n"
                     "Тариф: " + TARIFFS[plan]["name"] + "\n"
                     "Сумма: $" + str(final_usd) + "\n"

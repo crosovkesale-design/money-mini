@@ -888,7 +888,24 @@ async def receipt_ocr(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
+# ... твои роуты /api/me, /api/pay/* ...
 
+@app.post("/api/receipt/ocr")
+async def receipt_ocr(file: UploadFile = File(...)):
+    data = await file.read()
+    if len(data) > 8 * 1024 * 1024:
+        return JSONResponse({"error": "file too large"}, status_code=413)
+    try:
+        return extract_receipt(data)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+# ТОЛЬКО ПОСЛЕ этого:
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+
+if __name__ == "__main__":
+    ...
 
 if __name__ == "__main__":
     import uvicorn

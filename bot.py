@@ -262,7 +262,12 @@ if bot:
             f"Рефералы купили на <b>${round(total_paid)}</b>",
         ]
         await message.answer("\n".join(lines), parse_mode="HTML")
-
+        
+        async def fb_get(path):
+            return await fb.get(path)
+            
+        async def fb_patch(path, data)
+            return await fb.patch(path, data)
 
 # ---------- фоновые проверки ----------
 
@@ -339,7 +344,7 @@ async def lifespan(app: FastAPI):
     reminder_task = None
     if bot:
         await bot.delete_webhook(drop_pending_updates=True)
-        polling_task = asyncio.create_task(dp.start_polling(bot))
+        polling_task = asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types()))
         reminder_task = asyncio.create_task(daily_check())
         log.info("bot started")
     yield
@@ -869,10 +874,7 @@ async def api_pay_webhook(request: Request):
         return JSONResponse({"ok": False, "err": str(e)}, status_code=500)
 
 
-# ---------- статика ----------
-
-if os.path.isdir(STATIC_DIR):
-    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+# ---------- OCR ----------
 
 from fastapi import UploadFile, File
 from ocr import extract_receipt
@@ -888,24 +890,12 @@ async def receipt_ocr(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-# ... твои роуты /api/me, /api/pay/* ...
 
-@app.post("/api/receipt/ocr")
-async def receipt_ocr(file: UploadFile = File(...)):
-    data = await file.read()
-    if len(data) > 8 * 1024 * 1024:
-        return JSONResponse({"error": "file too large"}, status_code=413)
-    try:
-        return extract_receipt(data)
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+# ---------- статика ----------
 
+if os.path.isdir(STATIC_DIR):
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
-# ТОЛЬКО ПОСЛЕ этого:
-app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
-
-if __name__ == "__main__":
-    ...
 
 if __name__ == "__main__":
     import uvicorn

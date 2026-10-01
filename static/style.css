@@ -128,12 +128,18 @@ body {
     background: var(--bg-color);
     border: 1px solid var(--card-border);
     color: var(--text-main);
-    padding: 8px;
+    padding: 10px 6px;
     border-radius: 8px;
     cursor: pointer;
     text-align: center;
     font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
 }
+
 
 .opt-btn.active {
     border-color: var(--accent);

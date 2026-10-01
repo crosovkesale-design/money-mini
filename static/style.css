@@ -220,6 +220,28 @@ body {
     margin-bottom: 12px;
     font-size: 14px;
 }
+/* Блок с копированием кода */
+.copy-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.copy-btn {
+    background: var(--card-border);
+    border: none;
+    color: var(--text-main);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.copy-btn:active {
+    background: var(--accent);
+}
 
 /* Modals */
 .modal {

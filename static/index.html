@@ -200,7 +200,45 @@ body{background:var(--bg-color);color:var(--text-main);padding-bottom:80px}
       </div>
       <p style="font-size:11px;color:var(--text-muted);margin-top:8px">dev-переключатель — убрать перед публикацией.</p>
     </div>
-
+    <!-- Язык и валюта -->
+    <div class="card">
+      <h5 style="margin-bottom:12px"><i class="fa-solid fa-globe"></i> Язык и валюта</h5>
+      <label style="font-size:12px;color:var(--text-muted)">Язык:</label>
+      <button type="button" class="select-fake" onclick="openPicker('language')">
+        <span id="langLabel">🇷🇺 Русский</span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+      <label style="font-size:12px;color:var(--text-muted)">Валюта:</label>
+      <button type="button" class="select-fake" onclick="openPicker('currency')">
+        <span id="currLabel">₴ Гривня</span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+      <h5 style="margin:16px 0 8px 0"><i class="fa-solid fa-palette"></i> Тема</h5>
+      <div class="seg">
+        <button class="seg-btn" data-theme-btn="dark" onclick="setTheme('dark')">🌙 Тёмная</button>
+        <button class="seg-btn" data-theme-btn="light" onclick="setTheme('light')">☀️ Светлая</button>
+      </div>
+    </div>
+    <!-- Рефералы -->
+    <div class="card">
+      <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> Пригласи друга</h5>
+      <div class="ref-code" id="refCode">—</div>
+      <div class="family-code" style="margin-bottom:8px">
+        <input type="text" id="refLink" readonly placeholder="ссылка появится после входа">
+        <button class="copy-btn" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
+      </div>
+      <div class="ref-progress-bar"><div class="ref-progress-fill" id="refProgressFill" style="width:0%"></div></div>
+      <div class="ref-progress-label" id="refProgressLabel">0 / 1 до купона 10%</div>
+      <div class="ref-stats">
+        <div class="ref-stat"><div class="lbl">Приглашено</div><div class="val" id="refCount">0</div></div>
+        <div class="ref-stat"><div class="lbl">Купон 10%</div><div class="val" id="refC10">0</div></div>
+        <div class="ref-stat"><div class="lbl">Купон 20%</div><div class="val" id="refC20">0</div></div>
+      </div>
+      <button class="btn btn-accent btn-block" style="margin-top:12px" onclick="shareRef()">
+        <i class="fa-solid fa-share"></i> Поделиться ссылкой
+      </button>
+    </div>
+    
     <!-- Семья (опционально, свёрнуто) -->
     <div class="card">
       <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> Семья</h5>
@@ -326,6 +364,30 @@ body{background:var(--bg-color);color:var(--text-main);padding-bottom:80px}
   </div>
 </div>
 
+  <!-- МОДАЛКА ПИКЕРА -->
+<div class="modal" id="modalPicker">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="pickerTitle">Выбрать</h3>
+      <span class="modal-close" onclick="closeModal('modalPicker')">×</span>
+    </div>
+    <div id="pickerList" class="picker-list"></div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ПОПОЛНЕНИЯ БАНКИ -->
+<div class="modal" id="modalDeposit">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="depositTitle">Пополнить банку</h3>
+      <span class="modal-close" onclick="closeModal('modalDeposit')">×</span>
+    </div>
+    <input type="number" id="depositAmount" class="custom-input" placeholder="Сумма" inputmode="decimal">
+    <input type="text" id="depositNote" class="custom-input" placeholder="Комментарий (необязательно)">
+    <button class="btn btn-accent btn-block" onclick="confirmDeposit()">Пополнить</button>
+  </div>
+</div>
+  
 <!-- МОДАЛКА КОНВЕРТА -->
 <div class="modal" id="modalAddEnvelope">
   <div class="modal-content">
@@ -420,24 +482,149 @@ const DEFAULT_STATE = {
 
 let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
-function loadData(){
-  const saved = localStorage.getItem('budgetAppData_v6');
-  if(saved){
-    try{
-      const parsed = JSON.parse(saved);
-      appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-      if(!appData.subscription) appData.subscription = { plan:'free', expiresAt:null };
-    }catch(e){}
+  const LANGS = [
+    { id:'ru', flag:'🇷🇺', label:'Русский' },
+    { id:'uk', flag:'🇺🇦', label:'Українська' },
+    { id:'en', flag:'🇬🇧', label:'English' },
+    { id:'de', flag:'🇩🇪', label:'Deutsch' },
+    { id:'fr', flag:'🇫🇷', label:'Français' },
+    { id:'es', flag:'🇪🇸', label:'Español' },
+    { id:'it', flag:'🇮🇹', label:'Italiano' },
+    { id:'pl', flag:'🇵🇱', label:'Polski' },
+    { id:'tr', flag:'🇹🇷', label:'Türkçe' },
+    { id:'zh', flag:'🇨🇳', label:'中文' }
+  ];
+  const CURRENCIES = [
+    { id:'UAH', sym:'₴',  label:'Гривня' },
+    { id:'USD', sym:'$',  label:'Доллар США' },
+    { id:'EUR', sym:'€',  label:'Евро' },
+    { id:'PLN', sym:'zł', label:'Злотый' },
+    { id:'GBP', sym:'£',  label:'Фунт' },
+    { id:'TRY', sym:'₺',  label:'Лира' },
+    { id:'CHF', sym:'₣',  label:'Франк' },
+    { id:'CZK', sym:'Kč', label:'Крона' },
+    { id:'JPY', sym:'¥',  label:'Иена' },
+    { id:'CNY', sym:'元', label:'Юань' }
+  ];
+  
+  function openPicker(kind){
+    const cfg = {
+      envelope:        { title:'Конверт', items:[{id:'',label:'Без конверта'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
+      envelopeReceipt: { title:'Конверт', items:[{id:'',label:'Без конверта'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
+      language:        { title:'Язык',   items: LANGS },
+      currency:        { title:'Валюта', items: CURRENCIES }
+    }[kind];
+    if(!cfg) return;
+    document.getElementById('pickerTitle').innerText = cfg.title;
+    const cur = {
+      envelope: appData.selectedEnvelopeId,
+      envelopeReceipt: appData.selectedEnvelopeReceiptId,
+      language: appData.lang,
+      currency: appData.currency
+    }[kind];
+    document.getElementById('pickerList').innerHTML = cfg.items.map(it => `
+    <div class="picker-item ${String(it.id)===String(cur)?'active':''}" onclick="pick('${kind}','${it.id}')">
+    ${it.flag?`<span class="flag">${it.flag}</span>`:''}
+    ${it.sym?`<span class="sym">${it.sym}</span>`:''}
+      <span>${it.label}</span>
+      <i class="fa-solid fa-check check"></i>
+      </div>`).join('');
+    openModal('modalPicker');
   }
-}
 
-function saveData(){
-  localStorage.setItem('budgetAppData_v6', JSON.stringify(appData));
-}
+  function pick(kind, id){
+    if(kind === 'envelope'){
+      appData.selectedEnvelopeId = id;
+      const env = appData.envelopes.find(e => String(e.id)===String(id));
+      document.getElementById('envSelectLabel').innerText = env ? env.name : 'Без конверта';
+    } else if(kind === 'envelopeReceipt'){
+      appData.selectedEnvelopeReceiptId = id;
+      const env = appData.envelopes.find(e => String(e.id)===String(id));
+      document.getElementById('envReceiptLabel').innerText = env ? env.name : 'Без конверта';
+    } else if(kind === 'language'){
+      appData.lang = id;
+    } else if(kind === 'currency'){
+      appData.currency = id;
+    }
+    saveData(); closeModal('modalPicker'); renderAll();
+  }
 
-function isPro(){
-  return appData.subscription && appData.subscription.plan === 'pro';
-}
+  function fmtMoney(v){
+    const c = CURRENCIES.find(x => x.id === appData.currency) || CURRENCIES[0];
+    const n = Number(v||0).toLocaleString(appData.lang || 'ru', { maximumFractionDigits: 2 });
+    return ['$','£','€'].includes(c.sym) ? `${c.sym}${n}` : `${n} ${c.sym}`;
+  }
+
+  function setTheme(mode){
+    appData.theme = mode; saveData();
+    document.documentElement.dataset.theme = mode;
+    document.querySelectorAll('.seg-btn[data-theme-btn]').forEach(b => b.classList.toggle('active', b.dataset.themeBtn === mode))
+      if(window.Telegram?.WebApp){
+        Telegram.WebApp.setHeaderColor(mode==='light'?'#f5f7fa':'#0f172a');
+        Telegram.WebApp.setBackgroundColor(mode==='light'?'#f5f7fa':'#0f172a');
+      }
+  }
+
+  function renderSettingsLabels(){
+    const l = LANGS.find(x => x.id === appData.lang) || LANGS[0];
+    const c = CURRENCIES.find(x => x.id === appData.currency) || CURRENCIES[0];
+    const le = document.getElementById('langLabel');
+    const ce = document.getElementById('currLabel');
+    if(le) le.innerText = l.flag + ' ' + l.label;
+    if(ce) ce.innerText = c.sym + ' ' + c.label;
+  }
+  
+  function renderReferral(){
+    const r = appData.referral || {};
+    const tiers = [1,3,5,10,25,50,100,250];
+    const count = r.count || 0;
+    const next = tiers.find(t => t > count) || tiers[tiers.length-1];
+    const prev = tiers.filter(t => t <= count).pop() || 0;
+    const pct = next > prev ? Math.min(100, ((count - prev)/(next - prev))*100) : 100;
+    const el = id => document.getElementById(id);
+    if(el('refCode')) el('refCode').innerText = r.code || '—';
+    if(el('refLink')) el('refLink').value = r.link || '';
+    if(el('refProgressFill')) el('refProgressFill').style.width = pct + '%';
+    if(el('refProgressLabel')) el('refProgressLabel').innerText = count + ' / ' + next + ' до следующей награды';
+    if(el('refCount')) el('refCount').innerText = count;
+    if(el('refC10')) el('refC10').innerText = r.coupons10 || 0;
+    if(el('refC20')) el('refC20').innerText = r.coupons20 || 0;
+  }
+
+  function copyRefLink(){
+    const inp = document.getElementById('refLink');
+    if(!inp) return;
+    inp.select();
+    navigator.clipboard.writeText(inp.value)
+      if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+  }
+
+  function shareRef(){
+    const link = document.getElementById('refLink')?.value || ''
+      const text = 'Веду бюджет в Family Budget. Заходи: ' + link
+        const url = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+    if(window.Telegram?.WebApp?.openTelegramLink) Telegram.WebApp.openTelegramLink(url);
+    else window.open(url, '_blank');
+  }
+  
+  function loadData(){
+    const saved = localStorage.getItem('budgetAppData_v6');
+    if(saved){
+      try{
+        const parsed = JSON.parse(saved);
+        appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+        if(!appData.subscription) appData.subscription = { plan:'free', expiresAt:null };
+      }catch(e){}
+    }
+  }
+
+  function saveData(){
+    localStorage.setItem('budgetAppData_v6', JSON.stringify(appData));
+  }
+
+  function isPro(){
+    return appData.subscription && appData.subscription.plan === 'pro';
+  }
 
 /* ============ НАВИГАЦИЯ ============ */
 function switchTab(name){

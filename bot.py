@@ -641,7 +641,7 @@ async def api_pay_preview(request: Request, uid: str = Depends(current_uid)):
 async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
     body = await request.json()
     plan = str(body.get("plan") or "")
-     if plan not in TARIFFS:
+    if plan not in TARIFFS:
         raise HTTPException(400, "bad plan")
     if not CRYPTOPAY_TOKEN:
         raise HTTPException(500, "cryptopay not configured")

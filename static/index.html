@@ -733,17 +733,24 @@ function saveBank(){
   renderAll();
 }
 
-function depositBank(id){
-  const val = prompt('Сумма пополнения:');
-  if(!val || isNaN(val) || parseFloat(val) <= 0) return;
-  const amount = parseFloat(val);
-  const bank = appData.banks.find(b => b.id == id);
-  if(bank){
+function depositBank(id) {
+    appData.selectedBankId = id;
+    document.getElementById('depositTitle').innerText = 'Пополнить: ' + (appData.banks.find(b => b.id == id)?.name || '');
+    document.getElementById('depositAmount').value = '';
+    document.getElementById('depositNote').value = '';
+    openModal('modalDeposit');
+}
+
+function confirmDeposit() {
+    const amount = parseFloat(document.getElementById('depositAmount').value);
+    if (!amount || amount <= 0) { alert("Введите сумму"); return; }
+    const bank = appData.banks.find(b => b.id == appData.selectedBankId);
+    if (!bank) return;
     bank.balance += amount;
     appData.balance -= amount;
     saveData();
+    closeModal('modalDeposit');
     renderAll();
-  }
 }
 
 /* ============ СЕМЬЯ ============ */

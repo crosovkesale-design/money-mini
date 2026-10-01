@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Family Budget Pro</title>
+    <title>Family Budget System</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,224 +15,424 @@
 
     <!-- Header -->
     <div class="header">
-        <div class="user-info">
+        <div class="user-profile">
             <div class="avatar" id="uAvatar">U</div>
             <div>
-                <div style="font-weight: 700;" id="uName">Пользователь</div>
-                <div style="font-size: 12px; color: var(--text-secondary);" id="familyStatus">Семейная группа: Не подключено</div>
+                <h3 id="uName" style="margin:0; font-size: 15px;" data-i18n="user_default">Пользователь</h3>
+                <p id="subStatusText" style="margin:0; font-size: 11px; color: var(--text-muted);" data-i18n="sub_active">Подписка: Активна (Free)</p>
             </div>
         </div>
-        <i class="fa-solid fa-gear" style="font-size: 20px; cursor: pointer; color: var(--text-secondary);" onclick="switchTab('settings')"></i>
+        <button class="opt-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i></button>
     </div>
 
-    <!-- Основной баланс -->
+    <!-- Главная плашка баланса -->
     <div class="card">
-        <div class="balance-title">Общий баланс</div>
+        <div class="balance-title" data-i18n="main_balance">Основной баланс</div>
         <div class="balance-value" id="totalBalance">0 ₴</div>
         <div class="stats-grid">
-            <div class="stat-item">
-                <div class="balance-title">Доходы / мес</div>
-                <div class="val inc" id="incVal">+0 ₴</div>
+            <div>
+                <div class="balance-title" data-i18n="month_income">Доходы за месяц</div>
+                <div class="stat-val inc" id="monthIncome">+0 ₴</div>
             </div>
-            <div class="stat-item">
-                <div class="balance-title">Расходы / мес</div>
-                <div class="val exp" id="expVal">-0 ₴</div>
+            <div>
+                <div class="balance-title" data-i18n="month_expense">Расходы за месяц</div>
+                <div class="stat-val exp" id="monthExpense">-0 ₴</div>
             </div>
         </div>
     </div>
 
-    <!-- Операции -->
-    <div class="action-grid">
-        <button class="btn-action btn-expense" onclick="openExpenseModal()">
-            <i class="fa-solid fa-arrow-down"></i> Расход
+    <!-- Кнопки Расход и Доход -->
+    <div class="grid-2">
+        <button class="btn btn-danger" onclick="openTransactionModal('expense')">
+            <i class="fa-solid fa-circle-minus"></i> <span data-i18n="btn_expense">Расход</span>
         </button>
-        <button class="btn-action btn-income" onclick="openIncomeModal()">
-            <i class="fa-solid fa-arrow-up"></i> Доход
+        <button class="btn btn-success" onclick="openTransactionModal('income')">
+            <i class="fa-solid fa-circle-plus"></i> <span data-i18n="btn_income">Доход</span>
         </button>
     </div>
 
-    <!-- Вкладка 1: Конверты -->
-    <div id="tab-budget">
+    <!-- ВКЛАДКА 1: БЮДЖЕТ И КОНВЕРТЫ -->
+    <div id="tab-budget" class="tab-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0;">Конверты расходов</h3>
-            <button class="btn-primary" style="width: auto; padding: 8px 14px;" onclick="openModal('modalAddEnvelope')">+ Создать</button>
+            <h4 style="margin:0;" data-i18n="envelope_title">Конверты расходов</h4>
+            <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddEnvelope')">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create">Создать</span>
+            </button>
         </div>
         <div id="envelopesList"></div>
     </div>
 
-    <!-- Вкладка 2: Настройки и Семейный бюджет -->
-    <div id="tab-settings" style="display: none;">
-        <h3>⚙️ Настройки и Семья</h3>
-        
-        <!-- Блок Семейного бюджета -->
+    <!-- ВКЛАДКА 2: БАНКИ И НАКОПЛЕНИЯ -->
+    <div id="tab-banks" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="margin:0;" data-i18n="banks_title">Банки и Цели</h4>
+            <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddBank')">
+                <i class="fa-solid fa-piggy-bank"></i> <span data-i18n="btn_new_bank">Новая банка</span>
+            </button>
+        </div>
+        <div id="banksList"></div>
+    </div>
+
+    <!-- ВКЛАДКА 3: АНАЛИТИКА -->
+    <div id="tab-analytics" class="tab-content" style="display: none;">
+        <h4 style="margin-top: 0;" data-i18n="analytics_title">Аналитика расходов</h4>
         <div class="card">
-            <h4 style="margin-top: 0;"><i class="fa-solid fa-users"></i> Код в семью</h4>
-            <p style="font-size: 13px; color: var(--text-secondary);">Поделитесь этим кодом с партнером, чтобы вести общий бюджет:</p>
-            <input type="text" id="myFamilyCode" class="input-field" readonly value="FAM-783921">
+            <canvas id="expensesChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА 4: НАСТРОЙКИ, СЕМЬЯ, РЕФЕРАЛКА, ТАРИФЫ -->
+    <div id="tab-settings" class="tab-content" style="display: none;">
+        <h4 style="margin-top: 0;" data-i18n="settings_title">⚙️ Настройки и Управление</h4>
+
+        <!-- Семейный доступ -->
+        <div class="card">
+            <h5 style="margin: 0 0 8px 0;"><i class="fa-solid fa-users"></i> Семейный бюджет</h5>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Введите код партнера для объединения счета:</p>
+            <input type="text" id="familyCodeInput" class="custom-input" placeholder="Код семьи (например, FAM-1234)">
+            <button class="btn btn-accent" style="width: 100%;" onclick="connectFamily()">Подключиться</button>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+                Ваш личный код семьи: <strong id="myFamilyCode" style="color: var(--accent);">FAM-882190</strong>
+            </div>
+        </div>
+
+        <!-- Тарифные планы и Подписка -->
+        <div class="card">
+            <h5 style="margin: 0 0 10px 0;"><i class="fa-solid fa-crown" style="color: var(--warning);"></i> Подписка и Тарифы</h5>
             
-            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 10px;">Или введите код семьи партнера:</p>
-            <input type="text" id="joinFamilyCode" class="input-field" placeholder="Введите код...">
-            <button class="btn-primary" onclick="connectFamily()">Подключиться к семье</button>
-        </div>
-
-        <!-- Язык и Валюта -->
-        <div class="card">
-            <h4>Валюта и Язык</h4>
-            <select class="input-field" id="currencySelect" onchange="changeCurrency(this.value)">
-                <option value="UAH">UAH (₴)</option>
-                <option value="RUB">RUB (₽)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- Нижняя навигация -->
-    <div class="nav-bar">
-        <div class="nav-link active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i>Бюджет</div>
-        <div class="nav-link" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-users"></i>Семья</div>
-    </div>
-
-    <!-- Модалка: Расход (С ИКОНКАМИ КАТЕГОРИЙ) -->
-    <div class="modal" id="modalExpense">
-        <div class="modal-content">
-            <h3 style="margin-top:0;">Добавить Расход</h3>
-            <label style="font-size: 12px; color: var(--text-secondary);">Сумма</label>
-            <input type="number" id="expAmount" class="input-field" placeholder="0">
-
-            <label style="font-size: 12px; color: var(--text-secondary);">Выберите иконку / категорию</label>
-            <div class="category-grid" id="expenseCategories">
-                <div class="cat-card selected" onclick="selectCat(this, '🍔 Продукты')"><span class="emoji">🍔</span>Продукты</div>
-                <div class="cat-card" onclick="selectCat(this, '🚗 Транспорт')"><span class="emoji">🚗</span>Транспорт</div>
-                <div class="cat-card" onclick="selectCat(this, '🏠 ЖКХ')"><span class="emoji">🏠</span>ЖКХ</div>
-                <div class="cat-card" onclick="selectCat(this, '🎬 Развлечения')"><span class="emoji">🎬</span>Отдых</div>
-                <div class="cat-card" onclick="selectCat(this, '💊 Здоровье')"><span class="emoji">💊</span>Здоровье</div>
-                <div class="cat-card" onclick="selectCat(this, '🛍️ Покупки')"><span class="emoji">🛍️</span>Покупки</div>
+            <div class="tariff-card">
+                <div style="font-weight: 700;">Free Plan</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Базовый учет доходов и расходов</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">0 ₴ / мес</div>
             </div>
 
-            <button class="btn-primary" onclick="submitExpense()">Списать расход</button>
-            <button class="btn-primary" style="background: transparent; color: var(--text-secondary); margin-top: 6px;" onclick="closeModal('modalExpense')">Отмена</button>
+            <div class="tariff-card popular">
+                <div style="font-weight: 700; color: var(--accent);">Pro Family Plan</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Общий бюджет, безлимит банок, детальная аналитика</div>
+                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">99 ₴ / мес</div>
+                <button class="btn btn-accent" style="width: 100%; margin-top: 8px; padding: 8px;" onclick="buySub('Pro Family')">Оформить подписку</button>
+            </div>
+        </div>
+
+        <!-- Реферальная система -->
+        <div class="card">
+            <h5 style="margin: 0 0 8px 0;"><i class="fa-solid fa-gift" style="color: var(--success);"></i> Реферальная программа</h5>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Приглашайте друзей и получайте 1 месяц Pro за каждого!</p>
+            <input type="text" class="custom-input" value="https://t.me/BudgetBot?start=ref882190" readonly>
+            <div style="font-size: 11px; color: var(--text-muted);">Приглашено: <strong id="refCount">0 пользователей</strong></div>
+        </div>
+
+        <!-- Выбор Языка -->
+        <div class="card">
+            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="select_language">Язык интерфейса:</label>
+            <div class="grid-selector">
+                <button class="opt-btn" onclick="changeLanguage('ru')">Русский</button>
+                <button class="opt-btn" onclick="changeLanguage('uk')">Українська</button>
+                <button class="opt-btn" onclick="changeLanguage('en')">English</button>
+                <button class="opt-btn" onclick="changeLanguage('es')">Español</button>
+                <button class="opt-btn" onclick="changeLanguage('de')">Deutsch</button>
+                <button class="opt-btn" onclick="changeLanguage('fr')">Français</button>
+                <button class="opt-btn" onclick="changeLanguage('pl')">Polski</button>
+            </div>
+        </div>
+
+        <!-- Выбор Валюты -->
+        <div class="card">
+            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="select_currency">Основная валюта:</label>
+            <div class="grid-selector">
+                <button class="opt-btn" onclick="setCurrency('UAH')">UAH (₴)</button>
+                <button class="opt-btn" onclick="setCurrency('RUB')">RUB (₽)</button>
+                <button class="opt-btn" onclick="setCurrency('USD')">USD ($)</button>
+                <button class="opt-btn" onclick="setCurrency('EUR')">EUR (€)</button>
+                <button class="opt-btn" onclick="setCurrency('PLN')">PLN (zł)</button>
+                <button class="opt-btn" onclick="setCurrency('KZT')">KZT (₸)</button>
+                <button class="opt-btn" onclick="setCurrency('GBP')">GBP (£)</button>
+            </div>
         </div>
     </div>
 
-    <!-- Модалка: Доход (ТОЛЬКО СУММА) -->
-    <div class="modal" id="modalIncome">
+    <!-- Нижняя Навигация -->
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span data-i18n="nav_budget">Бюджет</span></div>
+        <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="nav_banks">Банки</span></div>
+        <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="nav_analytics">Аналитика</span></div>
+        <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="nav_settings">Настройки</span></div>
+    </div>
+
+    <!-- МОДАЛКА: ТРАНЗАКЦИЯ (Расход / Доход) -->
+    <div class="modal" id="modalTransaction">
         <div class="modal-content">
-            <h3 style="margin-top:0;">Добавить Доход</h3>
-            <label style="font-size: 12px; color: var(--text-secondary);">Сумма пополнения</label>
-            <input type="number" id="incAmount" class="input-field" placeholder="0">
+            <h3 style="margin-top:0;" id="txModalTitle">Операция</h3>
+            <label style="font-size: 12px; color: var(--text-muted);">Сумма</label>
+            <input type="number" id="txAmountInput" class="custom-input" placeholder="0">
+            
+            <div id="txExpenseFields">
+                <label style="font-size: 12px; color: var(--text-muted);">Выберите иконку категории</label>
+                <div class="icon-grid" id="iconGrid">
+                    <div class="icon-item active" onclick="selectIcon(this, '🍔 Продукты')"><span>🍔</span>Продукты</div>
+                    <div class="icon-item" onclick="selectIcon(this, '🚗 Транспорт')"><span>🚗</span>Транспорт</div>
+                    <div class="icon-item" onclick="selectIcon(this, '🏠 Аренда')"><span>🏠</span>Аренда</div>
+                    <div class="icon-item" onclick="selectIcon(this, '💡 ЖКХ')"><span>💡</span>ЖКХ</div>
+                    <div class="icon-item" onclick="selectIcon(this, '☕ Кафе')"><span>☕</span>Кафе</div>
+                    <div class="icon-item" onclick="selectIcon(this, '🎬 Отдых')"><span>🎬</span>Отдых</div>
+                    <div class="icon-item" onclick="selectIcon(this, '🛍️ Покупки')"><span>🛍️</span>Покупки</div>
+                    <div class="icon-item" onclick="selectIcon(this, '💊 Здоровье')"><span>💊</span>Здоровье</div>
+                    <div class="icon-item" onclick="selectIcon(this, '🐾 Питомцы')"><span>🐾</span>Питомцы</div>
+                    <div class="icon-item" onclick="selectIcon(this, '📱 Связь')"><span>📱</span>Связь</div>
+                    <div class="icon-item" onclick="selectIcon(this, '🎁 Подарки')"><span>🎁</span>Подарки</div>
+                    <div class="icon-item" onclick="selectIcon(this, '✈️ Путешествия')"><span>✈️</span>Туризм</div>
+                </div>
 
-            <button class="btn-primary" style="background: var(--accent-green);" onclick="submitIncome()">Зачислить доход</button>
-            <button class="btn-primary" style="background: transparent; color: var(--text-secondary); margin-top: 6px;" onclick="closeModal('modalIncome')">Отмена</button>
+                <label style="font-size: 12px; color: var(--text-muted);">Списать из конверта</label>
+                <select id="txEnvelopeSelect" class="custom-input"></select>
+            </div>
+
+            <button class="btn btn-accent" style="width: 100%;" onclick="submitTransaction()">Сохранить</button>
+            <button class="btn btn-outline" style="width: 100%; margin-top: 6px;" onclick="closeModal('modalTransaction')">Отмена</button>
         </div>
     </div>
 
-    <!-- Модалка: Добавление конверта -->
+    <!-- МОДАЛКА: СОЗДАТЬ КОНВЕРТ -->
     <div class="modal" id="modalAddEnvelope">
         <div class="modal-content">
-            <h3 style="margin-top:0;">Создать Конверт</h3>
-            <input type="text" id="envName" class="input-field" placeholder="Название (например, Еда)">
-            <input type="number" id="envTarget" class="input-field" placeholder="Месячный лимит">
-            <button class="btn-primary" onclick="createEnvelope()">Создать</button>
-            <button class="btn-primary" style="background: transparent; color: var(--text-secondary); margin-top: 6px;" onclick="closeModal('modalAddEnvelope')">Отмена</button>
+            <h3 style="margin-top:0;" data-i18n="modal_add_envelope">Создать конверт</h3>
+            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_name">Название</label>
+            <input type="text" id="envNameInput" class="custom-input" placeholder="Продукты, Связь...">
+            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_target">Лимит на месяц</label>
+            <input type="number" id="envTargetInput" class="custom-input" placeholder="1000">
+            <button class="btn btn-accent" style="width: 100%;" onclick="saveEnvelope()" data-i18n="btn_save">Сохранить</button>
+            <button class="btn btn-outline" style="width: 100%; margin-top: 6px;" onclick="closeModal('modalAddEnvelope')">Отмена</button>
         </div>
     </div>
 
+    <!-- МОДАЛКА: СОЗДАТЬ БАНКУ -->
+    <div class="modal" id="modalAddBank">
+        <div class="modal-content">
+            <h3 style="margin-top:0;" data-i18n="modal_add_bank">Новая банка</h3>
+            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_name">Название цели</label>
+            <input type="text" id="bankNameInput" class="custom-input" placeholder="Новый телефон...">
+            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_target">Цель накопления</label>
+            <input type="number" id="bankTargetInput" class="custom-input" placeholder="5000">
+            <button class="btn btn-accent" style="width: 100%;" onclick="saveBank()" data-i18n="btn_save">Сохранить</button>
+            <button class="btn btn-outline" style="width: 100%; margin-top: 6px;" onclick="closeModal('modalAddBank')">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Логика скрипта -->
     <script>
-        let db = {
-            balance: 0,
-            income: 0,
-            expense: 0,
-            currency: 'UAH',
-            selectedCat: '🍔 Продукты',
-            envelopes: []
+        const CURRENCY_SYMBOLS = { UAH: '₴', RUB: '₽', USD: '$', EUR: '€', PLN: 'zł', KZT: '₸', GBP: '£' };
+
+        const I18N = {
+            ru: { user_default: "Пользователь", sub_active: "Подписка: Активна (Free)", main_balance: "Основной баланс", month_income: "Доходы за месяц", month_expense: "Расходы за месяц", btn_expense: "Расход", btn_income: "Доход", envelope_title: "Конверты расходов", btn_create: "Создать", banks_title: "Банки и Цели", btn_new_bank: "Новая банка", analytics_title: "Аналитика расходов", settings_title: "⚙️ Настройки и Управление", select_language: "Язык интерфейса:", select_currency: "Основная валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналитика", nav_settings: "Настройки", modal_add_envelope: "Создать конверт", modal_add_bank: "Новая банка", label_name: "Название", label_target: "Лимит / Цель", btn_save: "Сохранить" },
+            uk: { user_default: "Користувач", sub_active: "Передплата: Активна (Free)", main_balance: "Основний баланс", month_income: "Доходи за місяць", month_expense: "Витрати за місяць", btn_expense: "Витрата", btn_income: "Дохід", envelope_title: "Конверти витрат", btn_create: "Створити", banks_title: "Банки та Цілі", btn_new_bank: "Нова банка", analytics_title: "Аналітика витрат", settings_title: "⚙️ Налаштування та Управління", select_language: "Мова інтерфейсу:", select_currency: "Основна валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналітика", nav_settings: "Налаштування", modal_add_envelope: "Створити конверт", modal_add_bank: "Нова банка", label_name: "Назва", label_target: "Ліміт / Ціль", btn_save: "Зберегти" },
+            en: { user_default: "User", sub_active: "Subscription: Active (Free)", main_balance: "Main Balance", month_income: "Monthly Income", month_expense: "Monthly Expense", btn_expense: "Expense", btn_income: "Income", envelope_title: "Expense Envelopes", btn_create: "Create", banks_title: "Piggy Banks", btn_new_bank: "New Bank", analytics_title: "Analytics", settings_title: "⚙️ Settings & Management", select_language: "Language:", select_currency: "Currency:", nav_budget: "Budget", nav_banks: "Banks", nav_analytics: "Analytics", nav_settings: "Settings", modal_add_envelope: "Create Envelope", modal_add_bank: "New Bank", label_name: "Name", label_target: "Limit / Target", btn_save: "Save" },
+            es: { user_default: "Usuario", sub_active: "Suscripción: Activa (Free)", main_balance: "Saldo principal", month_income: "Ingresos", month_expense: "Gastos", btn_expense: "Gasto", btn_income: "Ingreso", envelope_title: "Sobres de gastos", btn_create: "Crear", banks_title: "Huchas", btn_new_bank: "Nueva hucha", analytics_title: "Análisis", settings_title: "⚙️ Ajustes", select_language: "Idioma:", select_currency: "Moneda:", nav_budget: "Presupuesto", nav_banks: "Huchas", nav_analytics: "Análisis", nav_settings: "Ajustes", modal_add_envelope: "Crear sobre", modal_add_bank: "Nueva hucha", label_name: "Nombre", label_target: "Límite / Objetivo", btn_save: "Guardar" },
+            de: { user_default: "Benutzer", sub_active: "Abonnement: Aktiv (Free)", main_balance: "Hauptguthaben", month_income: "Einnahmen", month_expense: "Ausgaben", btn_expense: "Ausgabe", btn_income: "Einnahme", envelope_title: "Umschläge", btn_create: "Erstellen", banks_title: "Spardosen", btn_new_bank: "Neue Spardose", analytics_title: "Analysen", settings_title: "⚙️ Einstellungen", select_language: "Sprache:", select_currency: "Währung:", nav_budget: "Budget", nav_banks: "Spardosen", nav_analytics: "Analysen", nav_settings: "Einstellungen", modal_add_envelope: "Umschlag erstellen", modal_add_bank: "Neue Spardose", label_name: "Name", label_target: "Ziel", btn_save: "Speichern" },
+            fr: { user_default: "Utilisateur", sub_active: "Abonnement: Actif (Free)", main_balance: "Solde principal", month_income: "Revenus", month_expense: "Dépenses", btn_expense: "Dépense", btn_income: "Revenu", envelope_title: "Enveloppes", btn_create: "Créer", banks_title: "Tirelires", btn_new_bank: "Nouvelle tirelire", analytics_title: "Analyses", settings_title: "⚙️ Paramètres", select_language: "Langue:", select_currency: "Devise:", nav_budget: "Budget", nav_banks: "Tirelires", nav_analytics: "Analyses", nav_settings: "Paramètres", modal_add_envelope: "Créer une enveloppe", modal_add_bank: "Nouvelle tirelire", label_name: "Nom", label_target: "Limite / Objectif", btn_save: "Enregistrer" },
+            pl: { user_default: "Użytkownik", sub_active: "Subskrypcja: Aktywna (Free)", main_balance: "Główne saldo", month_income: "Przychody", month_expense: "Wydatki", btn_expense: "Wydatek", btn_income: "Przychód", envelope_title: "Koperty", btn_create: "Utwórz", banks_title: "Skarbonki", btn_new_bank: "Nowa skarbonka", analytics_title: "Analityka", settings_title: "⚙️ Ustawienia", select_language: "Język:", select_currency: "Waluta:", nav_budget: "Budżet", nav_banks: "Skarbonki", nav_analytics: "Analityka", nav_settings: "Ustawienia", modal_add_envelope: "Utwórz kopertę", modal_add_bank: "Nowa skarbonka", label_name: "Nazwa", label_target: "Limit / Cel", btn_save: "Zapisz" }
         };
 
-        const symbols = { UAH: '₴', RUB: '₽', USD: '$', EUR: '€' };
+        let appData = {
+            lang: 'ru', currency: 'UAH', balance: 0, monthIncome: 0, monthExpense: 0,
+            envelopes: [], banks: [], selectedCategory: '🍔 Продукты'
+        };
 
-        function updateUI() {
-            document.getElementById('totalBalance').innerText = `${db.balance.toLocaleString()} ${symbols[db.currency]}`;
-            document.getElementById('incVal').innerText = `+${db.income.toLocaleString()} ${symbols[db.currency]}`;
-            document.getElementById('expVal').innerText = `-${db.expense.toLocaleString()} ${symbols[db.currency]}`;
+        let activeTxType = 'expense';
+        let chartInstance = null;
+
+        function loadAppData() {
+            const saved = localStorage.getItem("app_budget_full_v3");
+            if (saved) { try { appData = Object.assign(appData, JSON.parse(saved)); } catch(e){} }
+            applyLanguage(appData.lang || 'ru');
+            renderAll();
+        }
+
+        function saveData() { localStorage.setItem("app_budget_full_v3", JSON.stringify(appData)); }
+
+        function openTransactionModal(type) {
+            activeTxType = type;
+            const titleElem = document.getElementById('txModalTitle');
+            const expFields = document.getElementById('txExpenseFields');
             
-            const list = document.getElementById('envelopesList');
-            list.innerHTML = db.envelopes.map(e => `
-                <div class="card">
-                    <div style="font-weight:700;">${e.name}</div>
-                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Потрачено: ${e.spent} из ${e.target} ${symbols[db.currency]}</div>
-                </div>
-            `).join('');
+            titleElem.innerText = type === 'expense' ? 'Добавить Расход' : 'Добавить Доход';
+            expFields.style.display = type === 'expense' ? 'block' : 'none';
+
+            if (type === 'expense') {
+                const select = document.getElementById('txEnvelopeSelect');
+                select.innerHTML = appData.envelopes.length > 0 
+                    ? appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('')
+                    : `<option value="">Без конверта</option>`;
+            }
+
+            openModal('modalTransaction');
         }
 
-        function openExpenseModal() { openModal('modalExpense'); }
-        function openIncomeModal() { openModal('modalIncome'); }
-
-        function selectCat(elem, catName) {
-            document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
-            elem.classList.add('selected');
-            db.selectedCat = catName;
+        function selectIcon(elem, catName) {
+            document.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
+            elem.classList.add('active');
+            appData.selectedCategory = catName;
         }
 
-        function submitExpense() {
-            const val = parseFloat(document.getElementById('expAmount').value);
-            if (!val || val <= 0) return;
-            
-            db.balance -= val;
-            db.expense += val;
+        function submitTransaction() {
+            const amount = parseFloat(document.getElementById('txAmountInput').value);
+            if (!amount || amount <= 0) return;
 
-            closeModal('modalExpense');
-            document.getElementById('expAmount').value = '';
-            updateUI();
+            if (activeTxType === 'expense') {
+                appData.balance -= amount;
+                appData.monthExpense += amount;
+                const envId = document.getElementById('txEnvelopeSelect').value;
+                const env = appData.envelopes.find(e => e.id == envId);
+                if (env) env.spent += amount;
+            } else {
+                appData.balance += amount;
+                appData.monthIncome += amount;
+            }
+
+            saveData();
+            closeModal('modalTransaction');
+            document.getElementById('txAmountInput').value = '';
+            renderAll();
         }
 
-        function submitIncome() {
-            const val = parseFloat(document.getElementById('incAmount').value);
-            if (!val || val <= 0) return;
+        function saveEnvelope() {
+            const name = document.getElementById('envNameInput').value;
+            const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
+            if (!name) return;
 
-            db.balance += val;
-            db.income += val;
-
-            closeModal('modalIncome');
-            document.getElementById('incAmount').value = '';
-            updateUI();
-        }
-
-        function createEnvelope() {
-            const name = document.getElementById('envName').value;
-            const target = parseFloat(document.getElementById('envTarget').value) || 0;
-            if(!name) return;
-
-            db.envelopes.push({ name, target, spent: 0 });
+            appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
+            saveData();
             closeModal('modalAddEnvelope');
-            document.getElementById('envName').value = '';
-            document.getElementById('envTarget').value = '';
-            updateUI();
+            document.getElementById('envNameInput').value = '';
+            document.getElementById('envTargetInput').value = '';
+            renderAll();
         }
 
-        function connectFamily() {
-            const code = document.getElementById('joinFamilyCode').value;
-            if (code) {
-                document.getElementById('familyStatus').innerText = `Семейная группа: ${code}`;
-                alert('Вы успешно подключились к семейному бюджету!');
+        function saveBank() {
+            const name = document.getElementById('bankNameInput').value;
+            const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
+            if (!name) return;
+
+            appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+            saveData();
+            closeModal('modalAddBank');
+            document.getElementById('bankNameInput').value = '';
+            document.getElementById('bankTargetInput').value = '';
+            renderAll();
+        }
+
+        function depositBank(id) {
+            const val = prompt("Сумма пополнения:");
+            if(!val || isNaN(val)) return;
+            const bank = appData.banks.find(b => b.id == id);
+            if(bank) {
+                bank.balance += parseFloat(val);
+                appData.balance -= parseFloat(val);
+                saveData();
+                renderAll();
             }
         }
 
-        function changeCurrency(val) {
-            db.currency = val;
-            updateUI();
+        function renderAll() {
+            document.getElementById("totalBalance").innerText = formatMoney(appData.balance);
+            document.getElementById("monthIncome").innerText = `+${formatMoney(appData.monthIncome)}`;
+            document.getElementById("monthExpense").innerText = `-${formatMoney(appData.monthExpense)}`;
+
+            // Отрисовка Конвертов
+            const envContainer = document.getElementById('envelopesList');
+            envContainer.innerHTML = appData.envelopes.map(e => {
+                const percent = Math.min(100, Math.round((e.spent / (e.target || 1)) * 100));
+                return `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; font-weight: 600;">
+                        <span>${e.name}</span>
+                        <span>${percent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percent}%; background: ${percent > 90 ? 'var(--danger)' : 'var(--accent)'};"></div>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(e.spent)} / ${formatMoney(e.target)}</div>
+                </div>`;
+            }).join('');
+
+            // Отрисовка Банок
+            const bankContainer = document.getElementById('banksList');
+            bankContainer.innerHTML = appData.banks.map(b => {
+                const percent = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
+                return `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; font-weight: 600;">
+                        <span>🏦 ${b.name}</span>
+                        <span>${percent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percent}%; background: var(--success);"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                        <span style="font-size: 12px; color: var(--text-muted);">${formatMoney(b.balance)} / ${formatMoney(b.target)}</span>
+                        <button class="btn btn-success" style="padding: 4px 8px; font-size:11px;" onclick="depositBank(${b.id})">+ Пополнить</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            renderChart();
         }
 
-        function switchTab(tab) {
-            document.getElementById('tab-budget').style.display = tab === 'budget' ? 'block' : 'none';
-            document.getElementById('tab-settings').style.display = tab === 'settings' ? 'block' : 'none';
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            document.getElementById(`nav-${tab}`).classList.add('active');
+        function renderChart() {
+            const ctx = document.getElementById('expensesChart')?.getContext('2d');
+            if(!ctx) return;
+            if(chartInstance) chartInstance.destroy();
+
+            const labels = appData.envelopes.length ? appData.envelopes.map(e => e.name) : ['Продукты', 'Транспорт', 'Прочее'];
+            const data = appData.envelopes.length ? appData.envelopes.map(e => e.spent) : [0, 0, 0];
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#f8fafc' } } } }
+            });
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function applyLanguage(lang) {
+            appData.lang = lang;
+            saveData();
+            const dict = I18N[lang] || I18N.ru;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (dict[k]) el.innerText = dict[k];
+            });
+        }
 
-        updateUI();
+        function changeLanguage(lang) { applyLanguage(lang); }
+        function setCurrency(curr) { appData.currency = curr; saveData(); renderAll(); }
+        function formatMoney(amount) { return `${Number(amount).toLocaleString()} ${CURRENCY_SYMBOLS[appData.currency] || '₴'}`; }
+        
+        function connectFamily() {
+            const code = document.getElementById('familyCodeInput').value;
+            if(code) alert(`Успешно подключено к семейной группе ${code}!`);
+        }
+
+        function buySub(plan) {
+            alert(`Переход к оплате подписки "${plan}"...`);
+        }
+
+        function openModal(id) { document.getElementById(id)?.classList.add('active'); }
+        function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+
+        function switchTab(t) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`tab-${t}`).style.display = 'block';
+            document.getElementById(`nav-${t}`)?.classList.add('active');
+            if(t === 'analytics') renderChart();
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAppData);
     </script>
 </body>
 </html>

@@ -658,21 +658,15 @@ function openTransactionModal(type){
   appData.currentIcon = cats[0].icon;
   renderCategoryGrid();
 
-  // конверты
-  const select = document.getElementById('txEnvelopeSelect');
-  if(select){
-    select.innerHTML = appData.envelopes.length
-      ? appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('')
-      : `<option value="">Без конверта</option>`;
+  // конверты — fake select
+  if(appData.envelopes.length && !appData.selectedEnvelopeId){
+    appData.selectedEnvelopeId = appData.envelopes[0].id;
   }
+  const env = appData.envelopes.find(e => String(e.id) === String(appData.selectedEnvelopeId));
+  document.getElementById('envSelectLabel').innerText = env ? env.name : 'Без конверта';
 
-  // конверты для чека
-  const rSelect = document.getElementById('receiptEnvelopeSelect');
-  if(rSelect){
-    rSelect.innerHTML = appData.envelopes.length
-      ? appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('')
-      : `<option value="">Без конверта</option>`;
-  }
+  const envR = appData.envelopes.find(e => String(e.id) === String(appData.selectedEnvelopeReceiptId));
+  document.getElementById('envReceiptLabel').innerText = envR ? envR.name : 'Без конверта';
 
   // поля чека
   document.getElementById('receiptStore').value = '';
@@ -748,8 +742,7 @@ function applyTx(tx){
   if(tx.type === 'expense'){
     appData.balance -= tx.amount;
     appData.monthExpense += tx.amount;
-    const envSelect = document.getElementById('txEnvelopeSelect');
-    const selectedEnvId = tx.receipt ? document.getElementById('receiptEnvelopeSelect')?.value : envSelect?.value;
+    const selectedEnvId = tx.receipt ? appData.selectedEnvelopeReceiptId : appData.selectedEnvelopeId;
     if(selectedEnvId){
       const env = appData.envelopes.find(e => String(e.id) === String(selectedEnvId));
       if(env) env.spent += tx.amount;
@@ -799,24 +792,28 @@ function resetReceiptPhoto(){
   document.getElementById('receiptPhotoUpload').style.display = 'block';
 }
 
-// Заглушка: реальный вызов бэкенда будет здесь.
-// POST /api/receipt/ocr  { image: <base64> }  → { store, date, items:[{name,qty,price}] }
 async function simulateOcr(){
-  // когда бэкенд подключён — раскомментировать:
-  // const res = await fetch('/api/receipt/ocr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ image: pendingReceiptPhoto }) });
-  // const data = await res.json();
-  // fillReceipt(data);
-
-  // пока — заглушка с демо-данными
-  await new Promise(r => setTimeout(r, 800));
-  fillReceipt({
-    store: 'Магазин (распознан)',
-    items: [
-      { name: 'Позиция 1', qty: 1, price: 0 },
-    ],
-  });
+  if(!pendingReceiptPhoto) return;
+  try{
+    const blob = await (await fetch(pendingReceiptPhoto)).blob();
+    const fd = new FormData();
+    fd.append('file', blob, 'receipt.jpg');
+    const res = await fetch('/api/receipt/ocr', { method: 'POST', body: fd });
+    const data = await res.json();
+    const items = (data.lines || []).slice(1, 20).map(l => {
+      const m = l.match(/^(.*?)\s+([\d.,]+)$/);
+      return m ? { name: m[1].trim().slice(0,40), qty: 1, price: parseFloat(m[2].replace(',','.'))||0 }
+               : { name: l.slice(0,40), qty: 1, price: 0 };
+    }).filter(x => x.price > 0);
+    fillReceipt({
+      store: (data.lines && data.lines[0]) ? data.lines[0].slice(0,50) : 'Магазин',
+      items: items.length ? items : [{ name: 'Позиция', qty: 1, price: data.amount_guess || 0 }]
+    });
+  }catch(e){
+    fillReceipt({ store:'Ошибка распознавания', items:[{ name:'Позиция', qty:1, price:0 }] });
+  }
 }
-
+  
 function fillReceipt(data){
   if(data.store) document.getElementById('receiptStore').value = data.store;
   appData.receiptItems = (data.items || []).map(i => ({ name: i.name || '', qty: i.qty || 1, price: i.price || 0 }));
@@ -1075,6 +1072,9 @@ function renderAll(){
   document.getElementById('monthIncome').innerText = `+${appData.monthIncome.toLocaleString('ru-RU')} ₴`;
   document.getElementById('monthExpense').innerText = `-${appData.monthExpense.toLocaleString('ru-RU')} ₴`;
 
+  renderSettingsLabels();
+  renderReferral();
+  
   // Конверты
   const envBox = document.getElementById('envelopesList');
   if(envBox){
@@ -1132,16 +1132,34 @@ function renderAll(){
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
 
-  // баннер семьи — один раз за установку
+  if(!appData.theme && window.Telegram?.WebApp?.colorScheme){
+    appData.theme = Telegram.WebApp.colorScheme;
+  }
+  setTheme(appData.theme || 'dark');
+
   if(!appData.familyBannerShown && !appData.joinedFamily){
     document.getElementById('familyBanner').style.display = 'flex';
     appData.familyBannerShown = true;
     saveData();
   }
 
+  if(window.Telegram?.WebApp) Telegram.WebApp.ready();
+
   renderSubscription();
   renderFamily();
   renderAll();
+
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  if(tgUser?.id){
+    fetch('/api/me', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ uid: String(tgUser.id) })
+    }).then(r => r.json()).then(j => {
+      if(j.referral) appData.referral = j.referral;
+      saveData(); renderReferral();
+    }).catch(() => {});
+  }
 });
 </script>
 </body>

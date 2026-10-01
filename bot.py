@@ -280,8 +280,7 @@ async def daily_check():
                 continue
 
             now_sec = int(datetime.utcnow().timestamp())
-            users = fb_get("/users") or {}
-
+            users = (await fb.get("/users")) or {}
             for uid, u in users.items():
                 if not isinstance(u, dict):
                     continue
@@ -326,7 +325,7 @@ async def daily_check():
                     patch = {"reminderSent": new_flag}
                     if new_flag == 99:
                         patch["status"] = "expired"
-                    fb_patch("/users/" + str(uid), patch)
+                        await fb.patch(f"/users/{uid}", patch)
 
         except Exception as e:
             log.warning("daily_check error: " + str(e))

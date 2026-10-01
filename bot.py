@@ -75,6 +75,51 @@ def gen_family_code() -> str:
     return "FAM-" + "".join(secrets.choice(FAMILY_CODE_ALPHABET) for _ in range(6))
 
 
+REFERRAL_REWARDS = [
+    {"at": 1,   "type": "coupon10", "label": "Купон 10%"},
+    {"at": 3,   "type": "coupon10", "label": "Купон 10%"},
+    {"at": 5,   "type": "coupon20", "label": "Купон 20%"},
+    {"at": 10,  "type": "coupon10", "label": "Купон 10%"},
+    {"at": 15,  "type": "coupon10", "label": "Купон 10%"},
+    {"at": 20,  "type": "coupon20", "label": "Купон 20%"},
+    {"at": 30,  "type": "coupon10", "label": "Купон 10%"},
+    {"at": 50,  "type": "coupon20", "label": "Купон 20%"},
+    {"at": 75,  "type": "coupon10", "label": "Купон 10%"},
+    {"at": 100, "type": "coupon20", "label": "Купон 20%"},
+]
+
+
+async def grant_rewards(uid: str, count: int):
+    u = fb_get("/users/" + uid) or {}
+    got = set(u.get("rewardsClaimed") or [])
+    c10 = u.get("couponsEarned") or 0
+    c20 = u.get("coupons20Earned") or 0
+
+    for r in REFERRAL_REWARDS:
+        key = r["type"] + "_" + str(r["at"])
+        if count >= r["at"] and key not in got:
+            if r["type"] == "coupon10":
+                c10 += 1
+            elif r["type"] == "coupon20":
+                c20 += 1
+            got.add(key)
+
+            if bot:
+                try:
+                    await bot.send_message(
+                        uid,
+                        "🎁 Новая награда: <b>" + r["label"] + "</b>\n\nПриглашено: " + str(count),
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
+
+    fb_patch("/users/" + uid, {
+        "rewardsClaimed": list(got),
+        "referralCount": count,
+        "couponsEarned": c10,
+        "coupons20Earned": c20,
+    })
 def calc_max_coupons(plan: str) -> int:
     return 3 if plan in BIG_TARIFFS else 1
 
@@ -117,13 +162,7 @@ if bot:
                 refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
                 refs[uid] = ts
                 await fb.put(f"/users/{ref_id}/referrals", refs)
-                count = len(refs)
-                tiers = [1, 5, 10, 20, 40, 80, 160, 320, 640, 1280]
-                earned = sum(1 for t in tiers if count >= t)
-                await fb.patch(
-                    f"/users/{ref_id}",
-                    {"referralCount": count, "couponsEarned": earned},
-                )
+                await grant_rewards(ref_id, len(refs))
 
         existing = await get_user(uid)
         upd = {
@@ -643,6 +682,38 @@ async def api_pay_preview(request: Request, uid: str = Depends(current_uid)):
     }
 
 
+@app.post("/api/me")
+async def api_me(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "bad json"}, status_code=400)
+    uid = str(body.get("uid", "")).strip()
+    if not uid:
+        return JSONResponse({"error": "no uid"}, status_code=400)
+
+    u = fb_get("/users/" + uid) or {}
+    refs = fb_get("/users/" + uid + "/referrals") or {}
+    me = await bot.get_me() if bot else None
+    username = me.username if me else "your_bot"
+
+    return {
+        "tgId": uid,
+        "name": u.get("name") or "",
+        "subscription": {
+            "tariff": u.get("tariff") or "trial",
+            "subEnd": int(u.get("subEnd") or 0),
+            "status": u.get("status") or "active",
+        },
+        "referral": {
+            "count": len(refs),
+            "code": "FAM-" + uid[-6:].upper(),
+            "link": "https://t.me/" + username + "?start=ref_" + uid,
+            "coupons10": max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0)),
+            "coupons20": max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0)),
+        },
+    }
+    
 @app.post("/api/pay/create")
 async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
     body = await request.json()
@@ -802,6 +873,21 @@ async def api_pay_webhook(request: Request):
 
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+
+from fastapi import UploadFile, File
+from ocr import extract_receipt
+
+
+@app.post("/api/receipt/ocr")
+async def receipt_ocr(file: UploadFile = File(...)):
+    data = await file.read()
+    if len(data) > 8 * 1024 * 1024:
+        return JSONResponse({"error": "file too large"}, status_code=413)
+    try:
+        return extract_receipt(data)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
 
 
 if __name__ == "__main__":

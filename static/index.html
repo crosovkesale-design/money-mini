@@ -270,7 +270,10 @@ body{background:var(--bg-color);color:var(--text-main);padding-bottom:80px}
 
       <div id="txExpenseFields">
         <label style="font-size:12px;color:var(--text-muted)">Конверт:</label>
-        <select id="txEnvelopeSelect" class="custom-input"></select>
+        <button type="button" class="select-fake" onclick="openPicker('envelope')">
+          <span id="envSelectLabel">Без конверта</span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
       </div>
 
       <button class="btn btn-accent btn-block" style="margin-top:10px" onclick="submitTransaction()">Сохранить</button>
@@ -313,8 +316,10 @@ body{background:var(--bg-color);color:var(--text-main);padding-bottom:80px}
         <span id="receiptTotal">0 ₴</span>
       </div>
 
-      <select id="receiptEnvelopeSelect" class="custom-input"></select>
-
+      <button type="button" class="select-fake" onclick="openPicker('envelopeReceipt')">
+        <span id="envReceiptLabel">Без конверта</span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
       <button class="btn btn-accent btn-block" onclick="submitReceipt()">Сохранить чек</button>
     </div>
 

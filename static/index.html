@@ -3,180 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Family Budget System</title>
-    
+    <title>Семейный Бюджет</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
+        .container { padding: 16px; max-width: 500px; margin: 0 auto; }
+
+        /* Баланс */
+        .balance-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .balance-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-val { font-size: 32px; font-weight: 800; margin: 8px 0 16px 0; color: #ffffff; }
+
+        .balance-stats { display: flex; justify-content: space-between; border-top: 1px solid var(--card-border); padding-top: 12px; }
+        .stat-item { flex: 1; text-align: center; }
+        .stat-item:first-child { border-right: 1px solid var(--card-border); }
+        .stat-label { font-size: 11px; color: var(--text-muted); }
+        .stat-amount { font-size: 15px; font-weight: 700; margin-top: 2px; }
+        .stat-amount.inc { color: var(--success); }
+        .stat-amount.exp { color: var(--danger); }
+
+        /* Кнопки действий */
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .btn {
+            border: none;
+            padding: 12px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-success { background-color: var(--success); color: #fff; }
+        .btn-danger { background-color: var(--danger); color: #fff; }
+        .btn-accent { background-color: var(--accent); color: #fff; }
+        .btn:active { transform: scale(0.97); opacity: 0.9; }
+
+        /* Карточки и списки */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar { background: #334155; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; transition: width 0.3s; }
+
+        /* Лента истории */
+        .history-list { display: flex; flex-direction: column; gap: 8px; }
+        .history-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-left { display: flex; align-items: center; gap: 12px; }
+        .history-icon { font-size: 20px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; }
+        .history-title { font-weight: 600; font-size: 14px; }
+        .history-sub { font-size: 11px; color: var(--text-muted); }
+        .history-amount { font-weight: 700; font-size: 15px; }
+        .history-amount.inc { color: var(--success); }
+        .history-amount.exp { color: #f8fafc; }
+
+        /* Нижнее меню */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            gap: 4px;
+            width: 20%;
+        }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: var(--accent); }
+
+        /* Модальные окна */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            padding: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-top: 1px solid var(--card-border);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-close { font-size: 20px; color: var(--text-muted); cursor: pointer; }
+
+        /* Формы ввода */
+        .custom-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+        .custom-input:focus { border-color: var(--accent); }
+
+        /* Выбор иконки/категории */
+        .icon-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+        .icon-item {
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .icon-item.active { border-color: var(--accent); background: rgba(59,130,246,0.2); }
+
+        .copy-box { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+        .copy-btn { background: var(--card-border); color: #fff; border: none; padding: 12px; border-radius: 10px; cursor: pointer; }
+    </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="user-profile">
-            <div class="avatar" id="uAvatar">U</div>
-            <div>
-                <h3 id="uName" style="margin:0; font-size: 15px;" data-i18n="user_default">Пользователь</h3>
-                <p id="subStatusText" style="margin:0; font-size: 11px; color: var(--text-muted);" data-i18n="sub_active">Подписка: Активна (Free)</p>
+    <div class="container">
+        <!-- ВКЛАДКА 1: ГЛАВНАЯ -->
+        <div id="tab-budget" class="tab-content">
+            <div class="balance-card">
+                <div class="balance-title">Текущий баланс</div>
+                <div class="balance-val" id="totalBalance">0 ₴</div>
+                <div class="balance-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Доходы</div>
+                        <div class="stat-amount inc" id="monthIncome">+0 ₴</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Расходы</div>
+                        <div class="stat-amount exp" id="monthExpense">-0 ₴</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <button class="opt-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i></button>
-    </div>
 
-    <!-- Главная плашка баланса -->
-    <div class="card">
-        <div class="balance-title" data-i18n="main_balance">Основной баланс</div>
-        <div class="balance-value" id="totalBalance">0 ₴</div>
-        <div class="stats-grid">
-            <div>
-                <div class="balance-title" data-i18n="month_income">Доходы за месяц</div>
-                <div class="stat-val inc" id="monthIncome">+0 ₴</div>
+            <div class="actions-grid">
+                <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> Доход</button>
+                <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> Расход</button>
             </div>
-            <div>
-                <div class="balance-title" data-i18n="month_expense">Расходы за месяц</div>
-                <div class="stat-val exp" id="monthExpense">-0 ₴</div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Кнопки Расход и Доход -->
-    <div class="grid-2">
-        <button class="btn btn-danger" onclick="openTransactionModal('expense')">
-            <i class="fa-solid fa-circle-minus"></i> <span data-i18n="btn_expense">Расход</span>
-        </button>
-        <button class="btn btn-success" onclick="openTransactionModal('income')">
-            <i class="fa-solid fa-circle-plus"></i> <span data-i18n="btn_income">Доход</span>
-        </button>
-    </div>
-
-        <!-- ВКЛАДКА 1: ГЛАВНАЯ (БАЛАНС И ИСТОРИЯ) -->
-    <div id="tab-budget" class="tab-content">
-        <!-- Блок Истории Операций -->
-        <div style="margin-top: 10px;">
-            <h4 style="margin: 0 0 10px 0;">История операций</h4>
+            <h4 style="margin: 16px 0 10px 0;">История операций</h4>
             <div id="historyContainer" class="history-list"></div>
         </div>
-    </div>
 
-    <!-- ВКЛАДКА: КОНВЕРТЫ (ОТДЕЛЬНАЯ) -->
-    <div id="tab-envelopes" class="tab-content" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="margin:0;">Конверты расходов</h4>
-            <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddEnvelope')">
-                <i class="fa-solid fa-plus"></i> <span>Создать</span>
-            </button>
-        </div>
-        <div id="envelopesList"></div>
-    </div>
-
-    <!-- Блок Истории Операций -->
-    <div style="margin-top: 20px;">
-        <h4 style="margin: 0 0 10px 0;">История операций</h4>
-        <div id="historyContainer" class="history-list">
-            <!-- Сюда JS будет рендерить список как на скриншоте -->
-        </div>
-    </div>
-    
-    <!-- ВКЛАДКА 2: БАНКИ И НАКОПЛЕНИЯ -->
-    <div id="tab-banks" class="tab-content" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="margin:0;" data-i18n="banks_title">Банки и Цели</h4>
-            <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddBank')">
-                <i class="fa-solid fa-piggy-bank"></i> <span data-i18n="btn_new_bank">Новая банка</span>
-            </button>
-        </div>
-        <div id="banksList"></div>
-    </div>
-
-    <!-- ВКЛАДКА 3: АНАЛИТИКА -->
-    <div id="tab-analytics" class="tab-content" style="display: none;">
-        <h4 style="margin-top: 0;" data-i18n="analytics_title">Аналитика расходов</h4>
-        <div class="card">
-            <canvas id="expensesChart" height="200"></canvas>
-        </div>
-    </div>
-
-    <!-- ВКЛАДКА 4: НАСТРОЙКИ, СЕМЬЯ, РЕФЕРАЛКА, ТАРИФЫ -->
-    <div id="tab-settings" class="tab-content" style="display: none;">
-        <h4 style="margin-top: 0;" data-i18n="settings_title">⚙️ Настройки и Управление</h4>
-
-        <!-- Семейный доступ -->
-        <div class="card">
-            <h5 style="margin: 0 0 8px 0;"><i class="fa-solid fa-users"></i> Семейный бюджет</h5>
-            <div style="font-size: 12px; color: var(--success); font-weight: 600; margin-bottom: 10px;">
-                👥 В семье: <span id="familyMembersCount">1 человек</span>
+        <!-- ВКЛАДКА 2: КОНВЕРТЫ -->
+        <div id="tab-envelopes" class="tab-content" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4>Конверты расходов</h4>
+                <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddEnvelope')">
+                    <i class="fa-solid fa-plus"></i> Создать
+                </button>
             </div>
-            
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Ваш личный код семьи:</p>
-            <div class="copy-box">
-                <input type="text" id="myFamilyCode" class="custom-input" style="margin:0;" value="FAM-882190" readonly>
-                <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i> Копировать</button>
-            </div>
-
-            <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px; margin-bottom: 4px;">Присоединиться к партнеру:</p>
-            <input type="text" id="familyCodeInput" class="custom-input" placeholder="Введите код партнера...">
-            <button class="btn btn-accent" style="width: 100%;" onclick="connectFamily()">Подключиться</button>
+            <div id="envelopesList"></div>
         </div>
 
-        <!-- Тарифные планы и Подписка -->
-        <div class="card">
-            <h5 style="margin: 0 0 10px 0;"><i class="fa-solid fa-crown" style="color: var(--warning);"></i> Подписка и Тарифы</h5>
-            
-            <div class="tariff-card">
-                <div style="font-weight: 700;">Free Plan</div>
-                <div style="font-size: 11px; color: var(--text-muted);">Базовый учет доходов и расходов</div>
-                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">0 ₴ / мес</div>
+        <!-- ВКЛАДКА 3: БАНКИ -->
+        <div id="tab-banks" class="tab-content" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4>Накопительные банки</h4>
+                <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddBank')">
+                    <i class="fa-solid fa-plus"></i> Создать
+                </button>
             </div>
+            <div id="banksList"></div>
+        </div>
 
-            <div class="tariff-card popular">
-                <div style="font-weight: 700; color: var(--accent);">Pro Family Plan</div>
-                <div style="font-size: 11px; color: var(--text-muted);">Общий бюджет, безлимит банок, детальная аналитика</div>
-                <div style="font-size: 14px; font-weight: 700; margin-top: 4px;">99 ₴ / мес</div>
-                <button class="btn btn-accent" style="width: 100%; margin-top: 8px; padding: 8px;" onclick="buySub('Pro Family')">Оформить подписку</button>
+        <!-- ВКЛАДКА 4: АНАЛИТИКА -->
+        <div id="tab-analytics" class="tab-content" style="display: none;">
+            <h4>Аналитика расходов</h4>
+            <div class="card" style="margin-top: 12px;">
+                <canvas id="expensesChart"></canvas>
             </div>
         </div>
 
-        <!-- Реферальная система -->
-        <div class="card">
-            <h5 style="margin: 0 0 8px 0;"><i class="fa-solid fa-gift" style="color: var(--success);"></i> Реферальная программа</h5>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Приглашайте друзей и получайте 1 месяц Pro за каждого!</p>
-            <input type="text" class="custom-input" value="https://t.me/BudgetBot?start=ref882190" readonly>
-            <div style="font-size: 11px; color: var(--text-muted);">Приглашено: <strong id="refCount">0 пользователей</strong></div>
-        </div>
-
-                <!-- Выбор Языка с флажками -->
-        <div class="card">
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="select_language">Язык интерфейса:</label>
-            <div class="grid-selector">
-                <button class="opt-btn" onclick="changeLanguage('ru')">🇷🇺 Русский</button>
-                <button class="opt-btn" onclick="changeLanguage('uk')">🇺🇦 Українська</button>
-                <button class="opt-btn" onclick="changeLanguage('en')">🇬🇧 English</button>
-                <button class="opt-btn" onclick="changeLanguage('es')">🇪🇸 Español</button>
-                <button class="opt-btn" onclick="changeLanguage('de')">🇩🇪 Deutsch</button>
-                <button class="opt-btn" onclick="changeLanguage('fr')">🇫🇷 Français</button>
-                <button class="opt-btn" onclick="changeLanguage('pl')">🇵🇱 Polski</button>
-            </div>
-        </div>
-
-
-        <!-- Выбор Валюты -->
-        <div class="card">
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="select_currency">Основная валюта:</label>
-            <div class="grid-selector">
-                <button class="opt-btn" onclick="setCurrency('UAH')">UAH (₴)</button>
-                <button class="opt-btn" onclick="setCurrency('RUB')">RUB (₽)</button>
-                <button class="opt-btn" onclick="setCurrency('USD')">USD ($)</button>
-                <button class="opt-btn" onclick="setCurrency('EUR')">EUR (€)</button>
-                <button class="opt-btn" onclick="setCurrency('PLN')">PLN (zł)</button>
-                <button class="opt-btn" onclick="setCurrency('KZT')">KZT (₸)</button>
-                <button class="opt-btn" onclick="setCurrency('GBP')">GBP (£)</button>
+        <!-- ВКЛАДКА 5: НАСТРОЙКИ -->
+        <div id="tab-settings" class="tab-content" style="display: none;">
+            <div class="card">
+                <h5 style="margin-bottom: 8px;"><i class="fa-solid fa-users"></i> Семейный доступ</h5>
+                <div style="font-size: 13px; color: var(--success); font-weight: 600; margin-bottom: 10px;">
+                    👥 В семье: <span id="familyMembersCount">1 чел.</span>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted);">Ваш личный код семьи:</p>
+                <div class="copy-box">
+                    <input type="text" id="myFamilyCode" class="custom-input" style="margin:0;" value="FAM-882190" readonly>
+                    <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px;">Присоединиться к партнеру:</p>
+                <input type="text" id="familyCodeInput" class="custom-input" placeholder="Введите код партнера...">
+                <button class="btn btn-accent" style="width: 100%;" onclick="connectFamily()">Подключиться</button>
             </div>
         </div>
     </div>
 
-        <!-- Нижняя Навигация -->
+    <!-- Нижняя Навигация -->
     <div class="nav-bar">
         <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></div>
         <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></div>
@@ -185,142 +263,125 @@
         <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
     </div>
 
-
-    <!-- МОДАЛКА: ТРАНЗАКЦИЯ (Расход / Доход) -->
+    <!-- МОДАЛЬНОЕ ОКНО: ТРАНЗАКЦИЯ -->
     <div class="modal" id="modalTransaction">
         <div class="modal-content">
-            <h3 style="margin-top:0;" id="txModalTitle">Операция</h3>
-            <label style="font-size: 12px; color: var(--text-muted);">Сумма</label>
-            <input type="number" id="txAmountInput" class="custom-input" placeholder="0">
-            
+            <div class="modal-header">
+                <h3 id="txModalTitle">Добавить Расход</h3>
+                <span class="modal-close" onclick="closeModal('modalTransaction')">&times;</span>
+            </div>
+            <label style="font-size: 12px; color: var(--text-muted);">Категория:</label>
+            <div class="icon-grid">
+                <div class="icon-item active" onclick="selectIcon(this, '🍔 Еда', '🍔')">🍔</div>
+                <div class="icon-item" onclick="selectIcon(this, '🚗 Транспорт', '🚗')">🚗</div>
+                <div class="icon-item" onclick="selectIcon(this, '🏠 Дом', '🏠')">🏠</div>
+                <div class="icon-item" onclick="selectIcon(this, '🎉 Досуг', '🎉')">🎉</div>
+                <div class="icon-item" onclick="selectIcon(this, '📦 Разное', '📦')">📦</div>
+            </div>
+            <input type="number" id="txAmountInput" class="custom-input" placeholder="Сумма">
+            <input type="text" id="txCommentInput" class="custom-input" placeholder="Комментарий">
             <div id="txExpenseFields">
-                <label style="font-size: 12px; color: var(--text-muted);">Выберите иконку категории</label>
-                <div class="icon-grid" id="iconGrid">
-                    <div class="icon-item active" onclick="selectIcon(this, '🍔 Продукты')"><span>🍔</span>Продукты</div>
-                    <div class="icon-item" onclick="selectIcon(this, '🚗 Транспорт')"><span>🚗</span>Транспорт</div>
-                    <div class="icon-item" onclick="selectIcon(this, '🏠 Аренда')"><span>🏠</span>Аренда</div>
-                    <div class="icon-item" onclick="selectIcon(this, '💡 ЖКХ')"><span>💡</span>ЖКХ</div>
-                    <div class="icon-item" onclick="selectIcon(this, '☕ Кафе')"><span>☕</span>Кафе</div>
-                    <div class="icon-item" onclick="selectIcon(this, '🎬 Отдых')"><span>🎬</span>Отдых</div>
-                    <div class="icon-item" onclick="selectIcon(this, '🛍️ Покупки')"><span>🛍️</span>Покупки</div>
-                    <div class="icon-item" onclick="selectIcon(this, '💊 Здоровье')"><span>💊</span>Здоровье</div>
-                    <div class="icon-item" onclick="selectIcon(this, '🐾 Питомцы')"><span>🐾</span>Питомцы</div>
-                    <div class="icon-item" onclick="selectIcon(this, '📱 Связь')"><span>📱</span>Связь</div>
-                    <div class="icon-item" onclick="selectIcon(this, '🎁 Подарки')"><span>🎁</span>Подарки</div>
-                    <div class="icon-item" onclick="selectIcon(this, '✈️ Путешествия')"><span>✈️</span>Туризм</div>
-                </div>
-
-                <label style="font-size: 12px; color: var(--text-muted);">Списать из конверта</label>
+                <label style="font-size: 12px; color: var(--text-muted);">Конверт:</label>
                 <select id="txEnvelopeSelect" class="custom-input"></select>
             </div>
-
-            <button class="btn btn-accent" style="width: 100%;" onclick="submitTransaction()">Сохранить</button>
-            <button class="btn btn-outline" style="width: 100%; margin-top: 6px;" onclick="closeModal('modalTransaction')">Отмена</button>
+            <button class="btn btn-accent" style="width: 100%; margin-top: 10px;" onclick="submitTransaction()">Сохранить</button>
         </div>
     </div>
 
-    <!-- МОДАЛКА: СОЗДАТЬ КОНВЕРТ -->
+    <!-- МОДАЛЬНОЕ ОКНО: СОЗДАТЬ КОНВЕРТ -->
     <div class="modal" id="modalAddEnvelope">
         <div class="modal-content">
-            <h3 style="margin-top:0;" data-i18n="modal_add_envelope">Создать конверт</h3>
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_name">Название</label>
-            <input type="text" id="envNameInput" class="custom-input" placeholder="Продукты, Связь...">
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_target">Лимит на месяц</label>
-            <input type="number" id="envTargetInput" class="custom-input" placeholder="1000">
-            <button class="btn btn-accent" style="width: 100%;" onclick="saveEnvelope()" data-i18n="btn_save">Сохранить</button>
-            <button class="btn btn-outline" style="width: 100%; margin-top: 6px;" onclick="closeModal('modalAddEnvelope')">Отмена</button>
+            <div class="modal-header">
+                <h3>Новый конверт</h3>
+                <span class="modal-close" onclick="closeModal('modalAddEnvelope')">&times;</span>
+            </div>
+            <input type="text" id="envNameInput" class="custom-input" placeholder="Название (например: Продукты)">
+            <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит в месяц">
+            <button class="btn btn-accent" style="width: 100%;" onclick="saveEnvelope()">Создать</button>
         </div>
     </div>
 
-    <!-- МОДАЛКА: СОЗДАТЬ БАНКУ -->
+    <!-- МОДАЛЬНОЕ ОКНО: СОЗДАТЬ БАНКУ -->
     <div class="modal" id="modalAddBank">
         <div class="modal-content">
-            <h3 style="margin-top:0;" data-i18n="modal_add_bank">Новая банка</h3>
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_name">Название цели</label>
-            <input type="text" id="bankNameInput" class="custom-input" placeholder="Новый телефон...">
-            <label style="font-size: 12px; color: var(--text-muted);" data-i18n="label_target">Цель накопления</label>
-            <input type="number" id="bankTargetInput" class="custom-input" placeholder="5000">
-            <button class="btn btn-accent" style="width: 100%;" onclick="saveBank()" data-i18n="btn_save">Сохранить</button>
-            <button class="btn btn-outline" style="width: 100%; margin-top: 6px;" onclick="closeModal('modalAddBank')">Отмена</button>
+            <div class="modal-header">
+                <h3>Новая банка</h3>
+                <span class="modal-close" onclick="closeModal('modalAddBank')">&times;</span>
+            </div>
+            <input type="text" id="bankNameInput" class="custom-input" placeholder="Название (например: На авто)">
+            <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель накопления">
+            <button class="btn btn-accent" style="width: 100%;" onclick="saveBank()">Создать</button>
         </div>
     </div>
 
-    <!-- Логика скрипта -->
     <script>
-        const CURRENCY_SYMBOLS = { UAH: '₴', RUB: '₽', USD: '$', EUR: '€', PLN: 'zł', KZT: '₸', GBP: '£' };
-
-        const I18N = {
-            ru: { user_default: "Пользователь", sub_active: "Подписка: Активна (Free)", main_balance: "Основной баланс", month_income: "Доходы за месяц", month_expense: "Расходы за месяц", btn_expense: "Расход", btn_income: "Доход", envelope_title: "Конверты расходов", btn_create: "Создать", banks_title: "Банки и Цели", btn_new_bank: "Новая банка", analytics_title: "Аналитика расходов", settings_title: "⚙️ Настройки и Управление", select_language: "Язык интерфейса:", select_currency: "Основная валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналитика", nav_settings: "Настройки", modal_add_envelope: "Создать конверт", modal_add_bank: "Новая банка", label_name: "Название", label_target: "Лимит / Цель", btn_save: "Сохранить" },
-            uk: { user_default: "Користувач", sub_active: "Передплата: Активна (Free)", main_balance: "Основний баланс", month_income: "Доходи за місяць", month_expense: "Витрати за місяць", btn_expense: "Витрата", btn_income: "Дохід", envelope_title: "Конверти витрат", btn_create: "Створити", banks_title: "Банки та Цілі", btn_new_bank: "Нова банка", analytics_title: "Аналітика витрат", settings_title: "⚙️ Налаштування та Управління", select_language: "Мова інтерфейсу:", select_currency: "Основна валюта:", nav_budget: "Бюджет", nav_banks: "Банки", nav_analytics: "Аналітика", nav_settings: "Налаштування", modal_add_envelope: "Створити конверт", modal_add_bank: "Нова банка", label_name: "Назва", label_target: "Ліміт / Ціль", btn_save: "Зберегти" },
-            en: { user_default: "User", sub_active: "Subscription: Active (Free)", main_balance: "Main Balance", month_income: "Monthly Income", month_expense: "Monthly Expense", btn_expense: "Expense", btn_income: "Income", envelope_title: "Expense Envelopes", btn_create: "Create", banks_title: "Piggy Banks", btn_new_bank: "New Bank", analytics_title: "Analytics", settings_title: "⚙️ Settings & Management", select_language: "Language:", select_currency: "Currency:", nav_budget: "Budget", nav_banks: "Banks", nav_analytics: "Analytics", nav_settings: "Settings", modal_add_envelope: "Create Envelope", modal_add_bank: "New Bank", label_name: "Name", label_target: "Limit / Target", btn_save: "Save" },
-            es: { user_default: "Usuario", sub_active: "Suscripción: Activa (Free)", main_balance: "Saldo principal", month_income: "Ingresos", month_expense: "Gastos", btn_expense: "Gasto", btn_income: "Ingreso", envelope_title: "Sobres de gastos", btn_create: "Crear", banks_title: "Huchas", btn_new_bank: "Nueva hucha", analytics_title: "Análisis", settings_title: "⚙️ Ajustes", select_language: "Idioma:", select_currency: "Moneda:", nav_budget: "Presupuesto", nav_banks: "Huchas", nav_analytics: "Análisis", nav_settings: "Ajustes", modal_add_envelope: "Crear sobre", modal_add_bank: "Nueva hucha", label_name: "Nombre", label_target: "Límite / Objetivo", btn_save: "Guardar" },
-            de: { user_default: "Benutzer", sub_active: "Abonnement: Aktiv (Free)", main_balance: "Hauptguthaben", month_income: "Einnahmen", month_expense: "Ausgaben", btn_expense: "Ausgabe", btn_income: "Einnahme", envelope_title: "Umschläge", btn_create: "Erstellen", banks_title: "Spardosen", btn_new_bank: "Neue Spardose", analytics_title: "Analysen", settings_title: "⚙️ Einstellungen", select_language: "Sprache:", select_currency: "Währung:", nav_budget: "Budget", nav_banks: "Spardosen", nav_analytics: "Analysen", nav_settings: "Einstellungen", modal_add_envelope: "Umschlag erstellen", modal_add_bank: "Neue Spardose", label_name: "Name", label_target: "Ziel", btn_save: "Speichern" },
-            fr: { user_default: "Utilisateur", sub_active: "Abonnement: Actif (Free)", main_balance: "Solde principal", month_income: "Revenus", month_expense: "Dépenses", btn_expense: "Dépense", btn_income: "Revenu", envelope_title: "Enveloppes", btn_create: "Créer", banks_title: "Tirelires", btn_new_bank: "Nouvelle tirelire", analytics_title: "Analyses", settings_title: "⚙️ Paramètres", select_language: "Langue:", select_currency: "Devise:", nav_budget: "Budget", nav_banks: "Tirelires", nav_analytics: "Analyses", nav_settings: "Paramètres", modal_add_envelope: "Créer une enveloppe", modal_add_bank: "Nouvelle tirelire", label_name: "Nom", label_target: "Limite / Objectif", btn_save: "Enregistrer" },
-            pl: { user_default: "Użytkownik", sub_active: "Subskrypcja: Aktywna (Free)", main_balance: "Główne saldo", month_income: "Przychody", month_expense: "Wydatki", btn_expense: "Wydatek", btn_income: "Przychód", envelope_title: "Koperty", btn_create: "Utwórz", banks_title: "Skarbonki", btn_new_bank: "Nowa skarbonka", analytics_title: "Analityka", settings_title: "⚙️ Ustawienia", select_language: "Język:", select_currency: "Waluta:", nav_budget: "Budżet", nav_banks: "Skarbonki", nav_analytics: "Analityka", nav_settings: "Ustawienia", modal_add_envelope: "Utwórz kopertę", modal_add_bank: "Nowa skarbonka", label_name: "Nazwa", label_target: "Limit / Cel", btn_save: "Zapisz" }
-        };
-
-        let appData = {
-            lang: 'ru', currency: 'UAH', balance: 0, monthIncome: 0, monthExpense: 0,
-            envelopes: [], banks: [], history: [], familyMembers: 1, familyCode: 'FAM-882190',
-            selectedCategory: '🍔 Еда', currentIcon: '🍔'
-        };
-
-
         let activeTxType = 'expense';
         let chartInstance = null;
 
-        function loadAppData() {
-            const saved = localStorage.getItem("app_budget_full_v3");
-            if (saved) { try { appData = Object.assign(appData, JSON.parse(saved)); } catch(e){} }
-            applyLanguage(appData.lang || 'ru');
-            renderAll();
-        }
+        let appData = {
+            balance: 0,
+            monthIncome: 0,
+            monthExpense: 0,
+            envelopes: [],
+            banks: [],
+            history: [],
+            familyMembers: 1,
+            selectedCategory: '🍔 Еда',
+            currentIcon: '🍔'
+        };
 
-                // Копирование семейного кода в буфер обмена
-        function copyFamilyCode() {
-            const input = document.getElementById('myFamilyCode');
-            input.select();
-            navigator.clipboard.writeText(input.value).then(() => {
-                alert("Код семьи скопирован!");
-            }).catch(() => {
-                // Запасной вариант для старых браузеров
-                document.execCommand('copy');
-                alert("Код семьи скопирован!");
-            });
-        }
-
-        // Подключение к семье партнера
-        function connectFamily() {
-            const codeInput = document.getElementById('familyCodeInput');
-            const code = codeInput ? codeInput.value.trim() : '';
-            if (code) {
-                appData.familyMembers = (appData.familyMembers || 1) + 1;
-                saveData();
-                renderAll();
-                alert(`Успешно подключено к группе ${code}! В семье теперь людей: ${appData.familyMembers}`);
-                codeInput.value = '';
-            } else {
-                alert("Пожалуйста, введите код семьи!");
+        function loadData() {
+            const saved = localStorage.getItem('budgetAppData_v5');
+            if (saved) {
+                try {
+                    appData = Object.assign(appData, JSON.parse(saved));
+                } catch(e) {}
             }
         }
-        
-        function saveData() { localStorage.setItem("app_budget_full_v3", JSON.stringify(appData)); }
+
+        function saveData() {
+            localStorage.setItem('budgetAppData_v5', JSON.stringify(appData));
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            const targetTab = document.getElementById(`tab-${tabName}`);
+            const targetNav = document.getElementById(`nav-${tabName}`);
+
+            if (targetTab) targetTab.style.display = 'block';
+            if (targetNav) targetNav.classList.add('active');
+
+            if (tabName === 'analytics') renderChart();
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('active');
+        }
 
         function openTransactionModal(type) {
             activeTxType = type;
-            const titleElem = document.getElementById('txModalTitle');
+            const title = document.getElementById('txModalTitle');
             const expFields = document.getElementById('txExpenseFields');
-            
-            titleElem.innerText = type === 'expense' ? 'Добавить Расход' : 'Добавить Доход';
-            expFields.style.display = type === 'expense' ? 'block' : 'none';
 
-            if (type === 'expense') {
-                const select = document.getElementById('txEnvelopeSelect');
-                select.innerHTML = appData.envelopes.length > 0 
-                    ? appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('')
-                    : `<option value="">Без конверта</option>`;
+            if (title) title.innerText = type === 'expense' ? 'Добавить Расход' : 'Добавить Доход';
+            if (expFields) expFields.style.display = type === 'expense' ? 'block' : 'none';
+
+            const select = document.getElementById('txEnvelopeSelect');
+            if (select) {
+                if (appData.envelopes && appData.envelopes.length > 0) {
+                    select.innerHTML = appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+                } else {
+                    select.innerHTML = `<option value="">Без конверта</option>`;
+                }
             }
-
             openModal('modalTransaction');
         }
 
@@ -332,8 +393,11 @@
         }
 
         function submitTransaction() {
-            const amount = parseFloat(document.getElementById('txAmountInput').value);
-            const comment = document.getElementById('txCommentInput').value.trim();
+            const amountInput = document.getElementById('txAmountInput');
+            const commentInput = document.getElementById('txCommentInput');
+            const amount = parseFloat(amountInput.value);
+            const comment = commentInput.value.trim();
+
             if (!amount || amount <= 0) {
                 alert("Введите корректную сумму!");
                 return;
@@ -347,7 +411,7 @@
                 id: Date.now(),
                 type: activeTxType,
                 title: title,
-                category: appData.selectedCategory.replace(/^[^\s]+\s/, ''),
+                category: appData.selectedCategory,
                 icon: appData.currentIcon || '📦',
                 amount: amount,
                 date: dateStr
@@ -356,11 +420,9 @@
             if (activeTxType === 'expense') {
                 appData.balance -= amount;
                 appData.monthExpense += amount;
-                
-                // Проверяем наличие элемента перед считыванием
-                const envElem = document.getElementById('txEnvelopeSelect');
-                if (envElem && envElem.value) {
-                    const env = appData.envelopes.find(e => e.id == envElem.value);
+                const envSelect = document.getElementById('txEnvelopeSelect');
+                if (envSelect && envSelect.value) {
+                    const env = appData.envelopes.find(e => e.id == envSelect.value);
                     if (env) env.spent += amount;
                 }
             } else {
@@ -373,26 +435,19 @@
 
             saveData();
             closeModal('modalTransaction');
-            document.getElementById('txAmountInput').value = '';
-            document.getElementById('txCommentInput').value = '';
-            renderAll();
-        }
-          
-            // Сохраняем в начало истории
-            appData.history.unshift(txItem);
-            saveData();
-            closeModal('modalTransaction');
-            document.getElementById('txAmountInput').value = '';
-            document.getElementById('txCommentInput').value = '';
+            amountInput.value = '';
+            commentInput.value = '';
             renderAll();
         }
 
         function saveEnvelope() {
-            const name = document.getElementById('envNameInput').value;
+            const name = document.getElementById('envNameInput').value.trim();
             const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
-            if (!name) return;
 
+            if (!name) return alert("Введите название!");
+            if (!appData.envelopes) appData.envelopes = [];
             appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
+
             saveData();
             closeModal('modalAddEnvelope');
             document.getElementById('envNameInput').value = '';
@@ -401,11 +456,13 @@
         }
 
         function saveBank() {
-            const name = document.getElementById('bankNameInput').value;
+            const name = document.getElementById('bankNameInput').value.trim();
             const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
-            if (!name) return;
 
+            if (!name) return alert("Введите название!");
+            if (!appData.banks) appData.banks = [];
             appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+
             saveData();
             closeModal('modalAddBank');
             document.getElementById('bankNameInput').value = '';
@@ -414,95 +471,43 @@
         }
 
         function depositBank(id) {
-            const val = prompt("Сумма пополнения:");
-            if(!val || isNaN(val)) return;
+            const val = prompt("Введите сумму пополнения:");
+            if (!val || isNaN(val) || parseFloat(val) <= 0) return;
+            const amount = parseFloat(val);
             const bank = appData.banks.find(b => b.id == id);
-            if(bank) {
-                bank.balance += parseFloat(val);
-                appData.balance -= parseFloat(val);
+            if (bank) {
+                bank.balance += amount;
+                appData.balance -= amount;
                 saveData();
                 renderAll();
             }
         }
 
-        function renderAll() {
-            document.getElementById("totalBalance").innerText = formatMoney(appData.balance);
-            document.getElementById("monthIncome").innerText = `+${formatMoney(appData.monthIncome)}`;
-            document.getElementById("monthExpense").innerText = `-${formatMoney(appData.monthExpense)}`;
-
-            // Отрисовка Конвертов
-            const envContainer = document.getElementById('envelopesList');
-            envContainer.innerHTML = appData.envelopes.map(e => {
-                const percent = Math.min(100, Math.round((e.spent / (e.target || 1)) * 100));
-                return `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; font-weight: 600;">
-                        <span>${e.name}</span>
-                        <span>${percent}%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%; background: ${percent > 90 ? 'var(--danger)' : 'var(--accent)'};"></div>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-muted);">${formatMoney(e.spent)} / ${formatMoney(e.target)}</div>
-                </div>`;
-            }).join('');
-
-            // Отрисовка Банок
-            const bankContainer = document.getElementById('banksList');
-            bankContainer.innerHTML = appData.banks.map(b => {
-                const percent = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
-                return `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; font-weight: 600;">
-                        <span>🏦 ${b.name}</span>
-                        <span>${percent}%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%; background: var(--success);"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                        <span style="font-size: 12px; color: var(--text-muted);">${formatMoney(b.balance)} / ${formatMoney(b.target)}</span>
-                        <button class="btn btn-success" style="padding: 4px 8px; font-size:11px;" onclick="depositBank(${b.id})">+ Пополнить</button>
-                    </div>
-                </div>`;
-            }).join('');
-            
-        const membersElem = document.getElementById('familyMembersCount');
-        if (membersElem) membersElem.innerText = `${appData.familyMembers || 1} чел.`;
-            
-            renderChart();
+        function copyFamilyCode() {
+            const input = document.getElementById('myFamilyCode');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert("Код семьи скопирован!");
         }
 
-            // Отрисовка Истории
-    const historyContainer = document.getElementById('historyContainer');
-    if (historyContainer) {
-        if (!appData.history || appData.history.length === 0) {
-            historyContainer.innerHTML = `<div style="text-align:center; color: var(--text-muted); font-size:12px; padding:10px;">История пуста</div>`;
-        } else {
-            historyContainer.innerHTML = appData.history.map(item => `
-                <div class="history-item">
-                    <div class="history-left">
-                        <div class="history-icon">${item.icon}</div>
-                        <div>
-                            <div class="history-title">${item.title}</div>
-                            <div class="history-sub">${item.category} · ${item.date}</div>
-                        </div>
-                    </div>
-                    <div class="history-amount ${item.type === 'expense' ? 'exp' : 'inc'}">
-                        ${item.type === 'expense' ? '-' : '+'}${item.amount}
-                    </div>
-                </div>
-            `).join('');
+        function connectFamily() {
+            const codeInput = document.getElementById('familyCodeInput');
+            if (codeInput.value.trim()) {
+                appData.familyMembers = (appData.familyMembers || 1) + 1;
+                saveData();
+                renderAll();
+                alert(`Успешно подключено! В семье: ${appData.familyMembers} чел.`);
+                codeInput.value = '';
+            }
         }
-    }
-        
+
         function renderChart() {
             const ctx = document.getElementById('expensesChart')?.getContext('2d');
-            if(!ctx) return;
-            if(chartInstance) chartInstance.destroy();
+            if (!ctx) return;
+            if (chartInstance) chartInstance.destroy();
 
-            const labels = appData.envelopes.length ? appData.envelopes.map(e => e.name) : ['Продукты', 'Транспорт', 'Прочее'];
-            const data = appData.envelopes.length ? appData.envelopes.map(e => e.spent) : [0, 0, 0];
+            const labels = appData.envelopes.length ? appData.envelopes.map(e => e.name) : ['Продукты', 'Транспорт'];
+            const data = appData.envelopes.length ? appData.envelopes.map(e => e.spent) : [0, 0];
 
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -513,57 +518,69 @@
                         backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
                     }]
                 },
-                options: { responsive: true, plugins: { legend: { labels: { color: '#f8fafc' } } } }
+                options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
             });
         }
 
-        function applyLanguage(lang) {
-            appData.lang = lang;
-            saveData();
-            const dict = I18N[lang] || I18N.ru;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if (dict[k]) el.innerText = dict[k];
-            });
+        function renderAll() {
+            document.getElementById("totalBalance").innerText = `${appData.balance.toLocaleString()} ₴`;
+            document.getElementById("monthIncome").innerText = `+${appData.monthIncome.toLocaleString()} ₴`;
+            document.getElementById("monthExpense").innerText = `-${appData.monthExpense.toLocaleString()} ₴`;
+            document.getElementById('familyMembersCount').innerText = `${appData.familyMembers || 1} чел.`;
+
+            // Отрисовка Конвертов
+            const envContainer = document.getElementById('envelopesList');
+            if (envContainer) {
+                envContainer.innerHTML = appData.envelopes.length ? appData.envelopes.map(e => {
+                    const percent = Math.min(100, Math.round((e.spent / (e.target || 1)) * 100));
+                    return `<div class="card">
+                        <div style="display:flex; justify-content:space-between;"><b>📩 ${e.name}</b><span>${percent}%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:var(--accent);"></div></div>
+                        <div style="font-size:12px; color:var(--text-muted);">${e.spent} ₴ / ${e.target} ₴</div>
+                    </div>`;
+                }).join('') : `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:15px;">Конверты не созданы</div>`;
+            }
+
+            // Отрисовка Банок
+            const bankContainer = document.getElementById('banksList');
+            if (bankContainer) {
+                bankContainer.innerHTML = appData.banks.length ? appData.banks.map(b => {
+                    const percent = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
+                    return `<div class="card">
+                        <div style="display:flex; justify-content:space-between;"><b>🏦 ${b.name}</b><span>${percent}%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:var(--success);"></div></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                            <span style="font-size:12px; color:var(--text-muted);">${b.balance} ₴ / ${b.target} ₴</span>
+                            <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="depositBank(${b.id})">+ Пополнить</button>
+                        </div>
+                    </div>`;
+                }).join('') : `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:15px;">Банки не созданы</div>`;
+            }
+
+            // Отрисовка Истории
+            const historyContainer = document.getElementById('historyContainer');
+            if (historyContainer) {
+                historyContainer.innerHTML = appData.history.length ? appData.history.map(item => `
+                    <div class="history-item">
+                        <div class="history-left">
+                            <div class="history-icon">${item.icon}</div>
+                            <div>
+                                <div class="history-title">${item.title}</div>
+                                <div class="history-sub">${item.category} · ${item.date}</div>
+                            </div>
+                        </div>
+                        <div class="history-amount ${item.type === 'expense' ? 'exp' : 'inc'}">
+                            ${item.type === 'expense' ? '-' : '+'}${item.amount.toLocaleString()} ₴
+                        </div>
+                    </div>
+                `).join('') : `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:15px;">История пуста</div>`;
+            }
         }
 
-        function changeLanguage(lang) { 
-            applyLanguage(lang); 
-            // Подсветка активной кнопки языка
-            const buttons = document.querySelectorAll('#tab-settings .card:nth-child(4) .opt-btn');
-            buttons.forEach(btn => {
-                if(btn.getAttribute('onclick').includes(`'${lang}'`)) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
-
-        function setCurrency(curr) { appData.currency = curr; saveData(); renderAll(); }
-        function formatMoney(amount) { return `${Number(amount).toLocaleString()} ${CURRENCY_SYMBOLS[appData.currency] || '₴'}`; }
-        
-        function connectFamily() {
-            const code = document.getElementById('familyCodeInput').value;
-            if(code) alert(`Успешно подключено к семейной группе ${code}!`);
-        }
-
-        function buySub(plan) {
-            alert(`Переход к оплате подписки "${plan}"...`);
-        }
-
-        function openModal(id) { document.getElementById(id)?.classList.add('active'); }
-        function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
-
-        function switchTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(`tab-${t}`).style.display = 'block';
-            document.getElementById(`nav-${t}`)?.classList.add('active');
-            if(t === 'analytics') renderChart();
-        }
-
-        window.addEventListener('DOMContentLoaded', loadAppData);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadData();
+            renderAll();
+        });
     </script>
 </body>
 </html>

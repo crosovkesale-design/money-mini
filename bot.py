@@ -266,7 +266,7 @@ if bot:
         async def fb_get(path):
             return await fb.get(path)
             
-        async def fb_patch(path, data)
+        async def fb_patch(path, data):
             return await fb.patch(path, data)
 
 # ---------- фоновые проверки ----------

@@ -641,4 +641,163 @@ async def api_pay_preview(request: Request, uid: str = Depends(current_uid)):
 async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
     body = await request.json()
     plan = str(body.get("plan") or "")
-   
+     if plan not in TARIFFS:
+        raise HTTPException(400, "bad plan")
+    if not CRYPTOPAY_TOKEN:
+        raise HTTPException(500, "cryptopay not configured")
+
+    u = await get_user(uid)
+    free10 = max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0))
+    free20 = max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0))
+    use10 = min(int(body.get("use10") or 0), free10)
+    use20 = min(int(body.get("use20") or 0), free20)
+    final, pct, use10, use20 = apply_discount(TARIFFS[plan]["price_usd"], plan, use10, use20)
+
+    payload = json.dumps({
+        "uid": uid,
+        "plan": plan,
+        "use10": use10,
+        "use20": use20,
+        "discount": pct,
+        "base": TARIFFS[plan]["price_usd"],
+        "final": final,
+    })
+
+    resp = await cp.call("createInvoice", {
+        "asset": CRYPTOPAY_NETWORK,
+        "amount": str(final),
+        "description": f"Family Budget — {TARIFFS[plan]['name']}",
+        "payload": payload,
+        "allow_comments": False,
+        "allow_anonymous": False,
+    })
+    if not resp.get("ok"):
+        log.warning(f"cryptopay create: {resp}")
+        raise HTTPException(500, str(resp.get("error") or resp))
+
+    inv = resp["result"]
+    url = inv.get("bot_invoice_url") or inv.get("mini_app_invoice_url")
+    return {
+        "ok": True,
+        "invoiceUrl": url,
+        "invoiceId": inv.get("invoice_id"),
+        "final": final,
+        "discountPct": pct,
+    }
+
+
+@app.post("/api/pay/webhook")
+async def api_pay_webhook(request: Request):
+    raw = await request.body()
+    sig = request.headers.get("crypto-pay-api-signature", "")
+    if not verify_cryptopay_sig(raw, sig, CRYPTOPAY_TOKEN):
+        log.warning("webhook: bad signature")
+        raise HTTPException(401, "bad signature")
+
+    try:
+        body = json.loads(raw.decode("utf-8"))
+    except Exception:
+        return {"ok": True}
+
+    if body.get("update_type") != "invoice_paid":
+        return {"ok": True}
+
+    inv = body.get("payload", {})
+    try:
+        meta = json.loads(inv.get("payload") or "{}")
+    except Exception:
+        return {"ok": True}
+
+    uid = str(meta.get("uid") or "")
+    plan = meta.get("plan")
+    use10 = int(meta.get("use10") or 0)
+    use20 = int(meta.get("use20") or 0)
+    final = float(meta.get("final") or 0)
+
+    if not uid or plan not in TARIFFS:
+        return {"ok": True}
+
+    try:
+        days = TARIFFS[plan]["days"]
+        u = await get_user(uid)
+
+        cur_end = int(u.get("subEnd") or 0)
+        if 0 < cur_end < 10**11:
+            cur_end *= 1000
+        cur_end = max(cur_end, now_ms())
+        new_end = cur_end + days * 86400000
+
+        await fb.patch(f"/users/{uid}", {
+            "tariff": plan,
+            "subStart": now_ms(),
+            "subEnd": new_end,
+            "status": "active",
+            "paidAmount": (u.get("paidAmount") or 0) + final,
+            "couponsUsed10": int(u.get("couponsUsed10") or 0) + use10,
+            "couponsUsed20": int(u.get("couponsUsed20") or 0) + use20,
+            "reminderSent": 0,
+        })
+
+        # реферальное вознаграждение
+        ref = u.get("referredBy")
+        if ref:
+            refs = (await fb.get(f"/users/{ref}/referrals")) or {}
+            total = 0
+            for rid in refs:
+                ru = await get_user(rid)
+                total += ru.get("paidAmount") or 0
+            milestones = int(total // 150)
+            rbu = await get_user(ref)
+            if milestones > int(rbu.get("coupons20Earned") or 0):
+                await fb.patch(f"/users/{ref}", {"coupons20Earned": milestones})
+                if bot:
+                    try:
+                        await bot.send_message(
+                            int(ref),
+                            f"🎉 Твои рефералы купили на ${round(total)} — получил купон 20%!",
+                            parse_mode="HTML",
+                        )
+                    except Exception:
+                        pass
+
+        if bot:
+            try:
+                await bot.send_message(
+                    int(uid),
+                    "✅ <b>Оплата получена!</b>\n\n"
+                    f"Тариф: {TARIFFS[plan]['name']}\n"
+                    f"Сумма: ${final}\n"
+                    f"Активен до: {datetime.fromtimestamp(new_end / 1000, KYIV).strftime('%d.%m.%Y')}\n\n"
+                    "Открой приложение — всё готово.",
+                    parse_mode="HTML",
+                )
+            except Exception:
+                pass
+
+        if bot and ADMIN_CHAT_ID:
+            try:
+                await bot.send_message(
+                    ADMIN_CHAT_ID,
+                    f"💰 <b>Оплата</b>\nID: {uid}\n"
+                    f"Тариф: {TARIFFS[plan]['name']}\n"
+                    f"Сумма: ${final} (скидка {meta.get('discount', 0)}%)",
+                    parse_mode="HTML",
+                )
+            except Exception:
+                pass
+
+        return {"ok": True}
+    except Exception as e:
+        log.warning(f"webhook: {e}")
+        return JSONResponse({"ok": False, "err": str(e)}, status_code=500)
+
+
+# ---------- статика ----------
+
+if os.path.isdir(STATIC_DIR):
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")))

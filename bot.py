@@ -697,9 +697,8 @@ async def api_me(request: Request):
     if not uid:
         return JSONResponse({"error": "no uid"}, status_code=400)
 
-    u = fb_get("/users/" + uid) or {}
-    refs = fb_get("/users/" + uid + "/referrals") or {}
-    me = await bot.get_me() if bot else None
+    u = (await fb.get(f"/users/{uid}")) or {}
+    refs = (await fb.get(f"/users/{uid}/referrals")) or {}
     username = me.username if me else "your_bot"
 
     return {

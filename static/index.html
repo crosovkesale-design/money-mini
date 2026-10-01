@@ -1,167 +1,949 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Семейный Бюджет</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --bg-color:#0f172a; --card-bg:#1e293b; --card-border:#334155;
+  --text-main:#f8fafc; --text-muted:#94a3b8;
+  --accent:#3b82f6; --accent-hover:#2563eb;
+  --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg-color);color:var(--text-main);padding-bottom:80px}
+.container{padding:16px;max-width:500px;margin:0 auto}
+
+.balance-card{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid var(--card-border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.balance-title{font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.balance-val{font-size:32px;font-weight:800;margin:8px 0 16px;color:#fff}
+.balance-stats{display:flex;justify-content:space-between;border-top:1px solid var(--card-border);padding-top:12px}
+.stat-item{flex:1;text-align:center}
+.stat-item:first-child{border-right:1px solid var(--card-border)}
+.stat-label{font-size:11px;color:var(--text-muted)}
+.stat-amount{font-size:15px;font-weight:700;margin-top:2px}
+.stat-amount.inc{color:var(--success)}
+.stat-amount.exp{color:var(--danger)}
+
+.actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.btn{border:none;padding:12px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;color:#fff}
+.btn:active{transform:scale(.97);opacity:.9}
+.btn-success{background:var(--success)}
+.btn-danger{background:var(--danger)}
+.btn-accent{background:var(--accent)}
+.btn-outline{background:transparent;border:1px solid var(--card-border);color:var(--text-main)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%}
+
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.progress-bar{background:#334155;height:8px;border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;transition:width .3s}
+
+/* Баннер семьи */
+.family-banner{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(16,185,129,.1));border:1px solid var(--accent);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;font-size:13px}
+.family-banner .txt{flex:1;line-height:1.35}
+.family-banner .txt b{color:var(--accent)}
+.family-banner .close{background:transparent;border:0;color:var(--text-muted);font-size:18px;cursor:pointer;padding:0 4px}
+
+/* История */
+.history-list{display:flex;flex-direction:column;gap:8px}
+.history-item{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.history-left{display:flex;align-items:center;gap:12px;min-width:0}
+.history-icon{font-size:20px;background:rgba(255,255,255,.05);padding:8px;border-radius:10px;flex-shrink:0}
+.history-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-sub{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-amount{font-weight:700;font-size:15px;flex-shrink:0}
+.history-amount.inc{color:var(--success)}
+.history-amount.exp{color:#f8fafc}
+.receipt-badge{display:inline-block;font-size:10px;background:rgba(59,130,246,.2);color:var(--accent);padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle}
+
+/* Навигация */
+.nav-bar{position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid var(--card-border);display:flex;justify-content:space-around;padding:8px 0;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;color:var(--text-muted);font-size:11px;cursor:pointer;gap:4px;width:20%}
+.nav-item i{font-size:18px}
+.nav-item.active{color:var(--accent)}
+
+/* Модалки */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;z-index:1000}
+.modal.active{display:flex}
+.modal-content{background:var(--card-bg);border-radius:20px 20px 0 0;width:100%;padding:20px;max-height:88vh;overflow-y:auto;border-top:1px solid var(--card-border)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-close{font-size:22px;color:var(--text-muted);cursor:pointer;line-height:1}
+
+/* Вкладки в модалке */
+.modal-tabs{display:flex;gap:6px;background:#0f172a;border-radius:10px;padding:4px;margin-bottom:14px}
+.modal-tab{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.modal-tab.active{background:var(--accent);color:#fff}
+
+.custom-input,select.custom-input,textarea.custom-input{width:100%;background:#0f172a;border:1px solid var(--card-border);border-radius:10px;padding:12px;color:#fff;font-size:14px;margin-bottom:12px;outline:none;font-family:inherit}
+.custom-input:focus{border-color:var(--accent)}
+
+/* Сетка категорий */
+.icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;max-height:260px;overflow-y:auto;padding-right:2px}
+.icon-item{background:#0f172a;border:1px solid var(--card-border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.icon-item .emoji{font-size:20px;line-height:1}
+.icon-item .name{font-size:10px;color:var(--text-muted);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.icon-item.active{border-color:var(--accent);background:rgba(59,130,246,.15)}
+.icon-item.active .name{color:var(--accent)}
+
+/* Чек */
+.receipt-photo-box{border:1px dashed var(--card-border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px;cursor:pointer;transition:border-color .15s}
+.receipt-photo-box:hover{border-color:var(--accent)}
+.receipt-photo-box .icon{font-size:34px;margin-bottom:6px}
+.receipt-photo-box .hint{font-size:12px;color:var(--text-muted)}
+.receipt-preview{max-width:100%;max-height:200px;border-radius:10px;display:block;margin:0 auto}
+.receipt-items{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.receipt-item{display:grid;grid-template-columns:1fr 60px 80px 32px;gap:6px;align-items:center}
+.receipt-item input{background:#0f172a;border:1px solid var(--card-border);border-radius:8px;padding:8px;color:#fff;font-size:13px;margin:0;width:100%}
+.receipt-item .del{background:transparent;border:1px solid var(--card-border);border-radius:8px;color:var(--danger);cursor:pointer;padding:6px;font-size:13px}
+.receipt-total{display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--card-border);margin-bottom:12px;font-size:15px;font-weight:700}
+.pro-lock{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.pro-badge{background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Семья в настройках */
+.family-block{background:#0f172a;border-radius:12px;padding:14px;margin-top:10px}
+.family-code{display:flex;gap:8px;align-items:center;margin-top:8px}
+.family-code input{flex:1;background:#0f172a;border:1px solid var(--card-border);border-radius:10px;padding:10px;color:#fff;font-size:13px;font-family:monospace}
+.copy-btn{background:var(--card-border);color:#fff;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px}
+.family-block .row{display:flex;gap:8px;margin-top:10px}
+.family-block .row .btn{flex:1}
+.collapsed{display:none}
+
+/* Тариф */
+.sub-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--card-border)}
+.sub-row:last-child{border:0}
+.dev-toggle{display:flex;gap:6px;margin-top:8px}
+.dev-toggle button{flex:1;padding:8px;font-size:12px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-main);cursor:pointer}
+.dev-toggle button.active{background:var(--accent);border-color:var(--accent)}
+</style>
 </head>
 <body>
 
-<div id="app-loading" class="center-screen">
-  <i class="fa-solid fa-spinner fa-spin" style="font-size:32px;color:#4d9fff"></i>
-  <p class="muted" style="margin-top:12px">Загрузка…</p>
-</div>
+<div class="container">
 
-<div id="app-error" class="center-screen" style="display:none">
-  <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#ff5566"></i>
-  <p id="app-error-msg" class="muted" style="margin-top:12px"></p>
-</div>
-
-<div id="app-paywall" class="center-screen" style="display:none">
-  <div class="card" style="max-width:360px;text-align:center">
-    <i class="fa-solid fa-lock" style="font-size:28px;color:#f5c451"></i>
-    <h2 style="margin:12px 0 6px">Подписка истекла</h2>
-    <p class="muted" id="paywall-date"></p>
-    <button class="btn btn-accent" style="width:100%;margin-top:16px" onclick="openPayModal()">Продлить</button>
+  <!-- БАННЕР СЕМЬИ (показывается один раз за сессию) -->
+  <div id="familyBanner" class="family-banner" style="display:none">
+    <span style="font-size:22px">👥</span>
+    <div class="txt">Ведёте бюджет один? Можно вместе — <b>Настройки → Семья</b>.</div>
+    <button class="close" onclick="dismissFamilyBanner()">✕</button>
   </div>
-</div>
 
-<div id="app-family-setup" class="center-screen" style="display:none">
-  <div class="card" style="max-width:360px;width:100%">
-    <h2 style="margin-bottom:6px">Семейный бюджет</h2>
-    <p class="muted" style="margin-bottom:16px;font-size:12px">Создай свою семью или присоединись по коду партнёра.</p>
-    <button class="btn btn-accent" style="width:100%" onclick="createFamily()">Создать семью</button>
-    <div style="margin:16px 0;text-align:center;color:var(--text-muted);font-size:11px">— или —</div>
-    <input type="text" id="joinCodeInput" class="custom-input" placeholder="FAM-XXXXXX" style="text-transform:uppercase">
-    <button class="btn btn-outline" style="width:100%" onclick="joinFamily()">Присоединиться</button>
-  </div>
-</div>
-
-<div id="app-main" class="container" style="display:none">
-
+  <!-- ВКЛАДКА 1: ГЛАВНАЯ -->
   <div id="tab-budget" class="tab-content">
     <div class="balance-card">
       <div class="balance-title">Текущий баланс</div>
       <div class="balance-val" id="totalBalance">0 ₴</div>
       <div class="balance-stats">
-        <div class="stat-item">
-          <div class="stat-label">Доходы</div>
-          <div class="stat-amount inc" id="monthIncome">+0 ₴</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Расходы</div>
-          <div class="stat-amount exp" id="monthExpense">-0 ₴</div>
-        </div>
+        <div class="stat-item"><div class="stat-label">Доходы</div><div class="stat-amount inc" id="monthIncome">+0 ₴</div></div>
+        <div class="stat-item"><div class="stat-label">Расходы</div><div class="stat-amount exp" id="monthExpense">-0 ₴</div></div>
       </div>
     </div>
 
     <div class="actions-grid">
-      <button class="btn btn-success" onclick="openTxModal('income')"><i class="fa-solid fa-plus"></i> Доход</button>
-      <button class="btn btn-danger" onclick="openTxModal('expense')"><i class="fa-solid fa-minus"></i> Расход</button>
+      <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> Доход</button>
+      <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> Расход</button>
     </div>
 
     <h4 style="margin:16px 0 10px">История операций</h4>
     <div id="historyContainer" class="history-list"></div>
   </div>
 
+  <!-- ВКЛАДКА 2: КОНВЕРТЫ -->
   <div id="tab-envelopes" class="tab-content" style="display:none">
-    <div class="row-between">
-      <h4>Конверты</h4>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h4>Конверты расходов</h4>
       <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> Создать</button>
     </div>
     <div id="envelopesList"></div>
   </div>
 
+  <!-- ВКЛАДКА 3: БАНКИ -->
   <div id="tab-banks" class="tab-content" style="display:none">
-    <div class="row-between">
-      <h4>Накопления</h4>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h4>Накопительные банки</h4>
       <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> Создать</button>
     </div>
     <div id="banksList"></div>
   </div>
 
+  <!-- ВКЛАДКА 4: АНАЛИТИКА -->
   <div id="tab-analytics" class="tab-content" style="display:none">
     <h4>Аналитика расходов</h4>
     <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
   </div>
 
+  <!-- ВКЛАДКА 5: НАСТРОЙКИ -->
   <div id="tab-settings" class="tab-content" style="display:none">
+
+    <!-- Тариф -->
     <div class="card">
-      <h5><i class="fa-solid fa-users"></i> Семья</h5>
-      <div class="muted" style="margin:8px 0">Участников: <b id="familyCount">1</b></div>
-      <p class="muted" style="font-size:11px">Код семьи:</p>
-      <div class="copy-box">
-        <input type="text" id="myFamilyCode" class="custom-input" style="margin:0" readonly>
-        <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h5><i class="fa-solid fa-crown"></i> Тариф</h5>
+        <span id="subBadge"></span>
+      </div>
+      <div class="sub-row">
+        <span style="font-size:13px">Ручные чеки</span>
+        <span style="color:var(--success);font-size:13px">✓ Доступно</span>
+      </div>
+      <div class="sub-row">
+        <span style="font-size:13px">Чеки по фото (OCR)</span>
+        <span id="ocrStatus" style="font-size:13px"></span>
+      </div>
+      <div class="dev-toggle" id="devToggle">
+        <button data-plan="free" onclick="setPlan('free')">Free</button>
+        <button data-plan="pro" onclick="setPlan('pro')">Pro</button>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px">dev-переключатель — убрать перед публикацией.</p>
+    </div>
+
+    <!-- Семья (опционально, свёрнуто) -->
+    <div class="card">
+      <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> Семья</h5>
+      <div id="familyStatus" style="font-size:13px;color:var(--text-muted);margin-bottom:10px">Вы ведёте бюджет один.</div>
+      <button id="familyToggle" class="btn btn-outline btn-block" onclick="toggleFamilyForm()">
+        <i class="fa-solid fa-plus"></i> Присоединиться к семье
+      </button>
+
+      <div id="familyForm" class="family-block collapsed">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Введите код партнёра или поделитесь своим.</p>
+        <input type="text" id="familyCodeInput" class="custom-input" placeholder="Например: FAM-882190" style="margin-bottom:8px">
+        <button class="btn btn-accent btn-block" onclick="connectFamily()">Подключиться</button>
+
+        <p style="font-size:11px;color:var(--text-muted);margin-top:14px">Ваш код для партнёра:</p>
+        <div class="family-code">
+          <input type="text" id="myFamilyCode" readonly>
+          <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+        </div>
+      </div>
+
+      <div id="familyJoined" class="collapsed">
+        <div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:10px">
+          👥 Семья: <span id="familyMembersCount">1</span> чел.
+        </div>
+        <div class="family-code">
+          <input type="text" id="joinedCode" readonly>
+          <button class="copy-btn" onclick="copyJoinedCode()"><i class="fa-solid fa-copy"></i></button>
+        </div>
+        <div class="row">
+          <button class="btn btn-outline" onclick="leaveFamily()">Выйти из семьи</button>
+        </div>
       </div>
     </div>
-    <div class="card">
-      <h5><i class="fa-solid fa-crown"></i> Подписка</h5>
-      <div class="muted" style="margin:8px 0">Тариф: <b id="subTariff">—</b></div>
-      <div class="muted" style="margin:8px 0">Осталось: <b id="subDays">—</b></div>
-      <button class="btn btn-accent" style="width:100%;margin-top:8px" onclick="openPayModal()">Продлить</button>
-    </div>
+
   </div>
 </div>
 
-<div class="nav-bar" id="navBar" style="display:none">
-  <div class="nav-item active" data-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></div>
-  <div class="nav-item" data-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></div>
-  <div class="nav-item" data-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Банки</span></div>
-  <div class="nav-item" data-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></div>
-  <div class="nav-item" data-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
+<!-- НАВИГАЦИЯ -->
+<div class="nav-bar">
+  <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></div>
+  <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></div>
+  <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Банки</span></div>
+  <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></div>
+  <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
 </div>
 
+<!-- МОДАЛКА ТРАНЗАКЦИИ -->
 <div class="modal" id="modalTransaction">
   <div class="modal-content">
     <div class="modal-header">
       <h3 id="txModalTitle">Добавить расход</h3>
-      <span class="modal-close" onclick="closeModal('modalTransaction')">&times;</span>
+      <span class="modal-close" onclick="closeModal('modalTransaction')">×</span>
     </div>
-    <label class="lbl">Категория</label>
-    <div class="icon-grid" id="catGrid"></div>
-    <input type="number" id="txAmountInput" class="custom-input" placeholder="Сумма" inputmode="decimal">
-    <input type="text" id="txCommentInput" class="custom-input" placeholder="Комментарий">
-    <div id="txExpenseFields">
-      <label class="lbl">Конверт</label>
-      <select id="txEnvelopeSelect" class="custom-input"></select>
+
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="tabQuick" onclick="switchTxTab('quick')">⚡ Быстро</div>
+      <div class="modal-tab" id="tabReceipt" onclick="switchTxTab('receipt')">🧾 Чек</div>
     </div>
-    <button class="btn btn-accent" style="width:100%;margin-top:10px" onclick="submitTx()">Сохранить</button>
+
+    <!-- ВКЛАДКА: БЫСТРО -->
+    <div id="txPaneQuick">
+      <label style="font-size:12px;color:var(--text-muted)">Категория:</label>
+      <div id="categoryGrid" class="icon-grid"></div>
+
+      <input type="number" id="txAmountInput" class="custom-input" placeholder="Сумма" inputmode="decimal">
+      <input type="text" id="txCommentInput" class="custom-input" placeholder="Комментарий (необязательно)">
+
+      <div id="txExpenseFields">
+        <label style="font-size:12px;color:var(--text-muted)">Конверт:</label>
+        <select id="txEnvelopeSelect" class="custom-input"></select>
+      </div>
+
+      <button class="btn btn-accent btn-block" style="margin-top:10px" onclick="submitTransaction()">Сохранить</button>
+    </div>
+
+    <!-- ВКЛАДКА: ЧЕК -->
+    <div id="txPaneReceipt" style="display:none">
+      <!-- Pro: фото -->
+      <div id="receiptPhotoSection">
+        <div id="receiptPhotoUpload" class="receipt-photo-box" onclick="pickReceiptPhoto()">
+          <div class="icon">📸</div>
+          <div class="hint">Сфотографировать или загрузить чек</div>
+          <div class="hint" style="font-size:11px;margin-top:4px">только Pro</div>
+        </div>
+        <div id="receiptPreviewWrap" style="display:none;text-align:center;margin-bottom:14px">
+          <img id="receiptPreview" class="receipt-preview" alt="чек">
+          <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="resetReceiptPhoto()">Убрать фото</button>
+        </div>
+        <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display:none" onchange="onReceiptPhotoPicked(event)">
+      </div>
+
+      <!-- Free: плашка -->
+      <div id="receiptFreeNotice" class="pro-lock">
+        <span style="font-size:16px">🔒</span>
+        <span>Фото чека доступно в Pro. Здесь — ручной ввод.</span>
+      </div>
+
+      <!-- Общие поля чека -->
+      <input type="text" id="receiptStore" class="custom-input" placeholder="Магазин (например: АТБ)">
+      <input type="date" id="receiptDate" class="custom-input">
+
+      <label style="font-size:12px;color:var(--text-muted)">Позиции:</label>
+      <div id="receiptItems" class="receipt-items"></div>
+      <button class="btn btn-outline btn-block" style="margin-bottom:12px" onclick="addReceiptItem()">
+        <i class="fa-solid fa-plus"></i> Добавить позицию
+      </button>
+
+      <div class="receipt-total">
+        <span>Итого:</span>
+        <span id="receiptTotal">0 ₴</span>
+      </div>
+
+      <select id="receiptEnvelopeSelect" class="custom-input"></select>
+
+      <button class="btn btn-accent btn-block" onclick="submitReceipt()">Сохранить чек</button>
+    </div>
+
   </div>
 </div>
 
+<!-- МОДАЛКА КОНВЕРТА -->
 <div class="modal" id="modalAddEnvelope">
   <div class="modal-content">
-    <div class="modal-header"><h3>Новый конверт</h3><span class="modal-close" onclick="closeModal('modalAddEnvelope')">&times;</span></div>
-    <input type="text" id="envNameInput" class="custom-input" placeholder="Название">
-    <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит в месяц">
-    <button class="btn btn-accent" style="width:100%" onclick="saveEnvelope()">Создать</button>
+    <div class="modal-header">
+      <h3>Новый конверт</h3>
+      <span class="modal-close" onclick="closeModal('modalAddEnvelope')">×</span>
+    </div>
+    <input type="text" id="envNameInput" class="custom-input" placeholder="Название (например: Продукты)">
+    <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит в месяц" inputmode="decimal">
+    <button class="btn btn-accent btn-block" onclick="saveEnvelope()">Создать</button>
   </div>
 </div>
 
+<!-- МОДАЛКА БАНКИ -->
 <div class="modal" id="modalAddBank">
   <div class="modal-content">
-    <div class="modal-header"><h3>Новая банка</h3><span class="modal-close" onclick="closeModal('modalAddBank')">&times;</span></div>
-    <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
-    <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель">
-    <button class="btn btn-accent" style="width:100%" onclick="saveBank()">Создать</button>
+    <div class="modal-header">
+      <h3>Новая банка</h3>
+      <span class="modal-close" onclick="closeModal('modalAddBank')">×</span>
+    </div>
+    <input type="text" id="bankNameInput" class="custom-input" placeholder="Название (например: На авто)">
+    <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель накопления" inputmode="decimal">
+    <button class="btn btn-accent btn-block" onclick="saveBank()">Создать</button>
   </div>
 </div>
 
-<div class="modal" id="modalPay">
-  <div class="modal-content">
-    <div class="modal-header"><h3>Продлить подписку</h3><span class="modal-close" onclick="closeModal('modalPay')">&times;</span></div>
-    <div id="tariffsList"></div>
-    <div id="couponsBox" style="margin-top:12px"></div>
-  </div>
-</div>
+<script>
+/* ============ КАТЕГОРИИ ============ */
+const EXPENSE_CATEGORIES = [
+  { icon:'🍔', name:'Еда' },
+  { icon:'🛒', name:'Продукты' },
+  { icon:'☕', name:'Кафе' },
+  { icon:'🍕', name:'Фастфуд' },
+  { icon:'🚗', name:'Транспорт' },
+  { icon:'⛽', name:'Бензин' },
+  { icon:'🚌', name:'Общественный' },
+  { icon:'🏠', name:'Дом' },
+  { icon:'💡', name:'Коммуналка' },
+  { icon:'📱', name:'Связь' },
+  { icon:'💊', name:'Аптека' },
+  { icon:'👕', name:'Одежда' },
+  { icon:'💇', name:'Красота' },
+  { icon:'🏋️', name:'Спорт' },
+  { icon:'🎬', name:'Кино' },
+  { icon:'🎮', name:'Игры' },
+  { icon:'🎉', name:'Досуг' },
+  { icon:'🎁', name:'Подарки' },
+  { icon:'🐾', name:'Питомцы' },
+  { icon:'✈️', name:'Путешествия' },
+  { icon:'📚', name:'Образование' },
+  { icon:'🔧', name:'Ремонт' },
+  { icon:'💳', name:'Кредит' },
+  { icon:'📦', name:'Разное' },
+];
 
-<div id="toast" class="toast"></div>
+const INCOME_CATEGORIES = [
+  { icon:'💰', name:'Зарплата' },
+  { icon:'💵', name:'Аванс' },
+  { icon:'💸', name:'Кэшбэк' },
+  { icon:'📈', name:'Инвестиции' },
+  { icon:'💼', name:'Фриланс' },
+  { icon:'🏪', name:'Бизнес' },
+  { icon:'🎁', name:'Подарок' },
+  { icon:'🤝', name:'Помощь' },
+  { icon:'🏆', name:'Выигрыш' },
+  { icon:'↩️', name:'Возврат' },
+  { icon:'🪙', name:'Прочее' },
+];
 
-<script src="app.js"></script>
+/* ============ СОСТОЯНИЕ ============ */
+let activeTxType = 'expense';
+let activeTxTab = 'quick';
+let chartInstance = null;
+let pendingReceiptPhoto = null;
+
+const DEFAULT_STATE = {
+  balance: 0,
+  monthIncome: 0,
+  monthExpense: 0,
+  envelopes: [],
+  banks: [],
+  history: [],
+  familyMembers: 1,
+  joinedFamily: false,
+  familyCode: 'FAM-' + Math.floor(100000 + Math.random()*900000),
+  familyBannerShown: false,
+  selectedCategory: 'Еда',
+  currentIcon: '🍔',
+  subscription: { plan: 'free', expiresAt: null },
+  receiptItems: [],
+};
+
+let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+function loadData(){
+  const saved = localStorage.getItem('budgetAppData_v6');
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+      if(!appData.subscription) appData.subscription = { plan:'free', expiresAt:null };
+    }catch(e){}
+  }
+}
+
+function saveData(){
+  localStorage.setItem('budgetAppData_v6', JSON.stringify(appData));
+}
+
+function isPro(){
+  return appData.subscription && appData.subscription.plan === 'pro';
+}
+
+/* ============ НАВИГАЦИЯ ============ */
+function switchTab(name){
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  const target = document.getElementById('tab-' + name);
+  const nav = document.getElementById('nav-' + name);
+  if(target) target.style.display = 'block';
+  if(nav) nav.classList.add('active');
+  if(name === 'analytics') renderChart();
+}
+
+/* ============ МОДАЛКИ ============ */
+function openModal(id){ document.getElementById(id)?.classList.add('active'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('active'); }
+
+/* ============ ТРАНЗАКЦИЯ ============ */
+function openTransactionModal(type){
+  activeTxType = type;
+  switchTxTab('quick');
+
+  const title = document.getElementById('txModalTitle');
+  if(title) title.innerText = type === 'expense' ? 'Добавить расход' : 'Добавить доход';
+
+  const expFields = document.getElementById('txExpenseFields');
+  if(expFields) expFields.style.display = type === 'expense' ? 'block' : 'none';
+
+  // выбранная по умолчанию категория
+  const cats = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  appData.selectedCategory = cats[0].name;
+  appData.currentIcon = cats[0].icon;
+  renderCategoryGrid();
+
+  // конверты
+  const select = document.getElementById('txEnvelopeSelect');
+  if(select){
+    select.innerHTML = appData.envelopes.length
+      ? appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('')
+      : `<option value="">Без конверта</option>`;
+  }
+
+  // конверты для чека
+  const rSelect = document.getElementById('receiptEnvelopeSelect');
+  if(rSelect){
+    rSelect.innerHTML = appData.envelopes.length
+      ? appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('')
+      : `<option value="">Без конверта</option>`;
+  }
+
+  // поля чека
+  document.getElementById('receiptStore').value = '';
+  document.getElementById('receiptDate').value = new Date().toISOString().slice(0,10);
+  appData.receiptItems = [];
+  renderReceiptItems();
+
+  // секция фото — только для расхода и Pro
+  updateReceiptPhotoSection();
+
+  openModal('modalTransaction');
+}
+
+function switchTxTab(tab){
+  activeTxTab = tab;
+  document.getElementById('tabQuick').classList.toggle('active', tab === 'quick');
+  document.getElementById('tabReceipt').classList.toggle('active', tab === 'receipt');
+  document.getElementById('txPaneQuick').style.display = tab === 'quick' ? 'block' : 'none';
+  document.getElementById('txPaneReceipt').style.display = tab === 'receipt' ? 'block' : 'none';
+  if(tab === 'receipt') updateReceiptPhotoSection();
+}
+
+function renderCategoryGrid(){
+  const grid = document.getElementById('categoryGrid');
+  if(!grid) return;
+  const cats = activeTxType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  grid.innerHTML = cats.map((c, i) => `
+    <div class="icon-item ${i === 0 ? 'active' : ''}" data-name="${c.name}" data-icon="${c.icon}">
+      <span class="emoji">${c.icon}</span>
+      <span class="name">${c.name}</span>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.icon-item').forEach(el => {
+    el.onclick = () => {
+      grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      appData.selectedCategory = el.dataset.name;
+      appData.currentIcon = el.dataset.icon;
+    };
+  });
+}
+
+function submitTransaction(){
+  const amountInput = document.getElementById('txAmountInput');
+  const commentInput = document.getElementById('txCommentInput');
+  const amount = parseFloat(String(amountInput.value).replace(',', '.'));
+  const comment = commentInput.value.trim();
+
+  if(!amount || amount <= 0){ alert('Введите корректную сумму'); return; }
+
+  const now = new Date();
+  const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+
+  const tx = {
+    id: Date.now(),
+    type: activeTxType,
+    title: comment || appData.selectedCategory,
+    category: appData.selectedCategory,
+    icon: appData.currentIcon,
+    amount,
+    date: dateStr,
+    receipt: null,
+  };
+
+  applyTx(tx);
+  closeModal('modalTransaction');
+  amountInput.value = '';
+  commentInput.value = '';
+  renderAll();
+}
+
+function applyTx(tx){
+  if(tx.type === 'expense'){
+    appData.balance -= tx.amount;
+    appData.monthExpense += tx.amount;
+    const envSelect = document.getElementById('txEnvelopeSelect');
+    const selectedEnvId = tx.receipt ? document.getElementById('receiptEnvelopeSelect')?.value : envSelect?.value;
+    if(selectedEnvId){
+      const env = appData.envelopes.find(e => String(e.id) === String(selectedEnvId));
+      if(env) env.spent += tx.amount;
+    }
+  } else {
+    appData.balance += tx.amount;
+    appData.monthIncome += tx.amount;
+  }
+  if(!appData.history) appData.history = [];
+  appData.history.unshift(tx);
+  saveData();
+}
+
+/* ============ ЧЕК ============ */
+function updateReceiptPhotoSection(){
+  const pro = isPro();
+  const isExpense = activeTxType === 'expense';
+  document.getElementById('receiptPhotoSection').style.display = (pro && isExpense) ? 'block' : 'none';
+  document.getElementById('receiptFreeNotice').style.display = (!pro && isExpense) ? 'flex' : 'none';
+  // для дохода фото не нужно — секция скрыта, уведомление тоже
+  if(!isExpense){
+    document.getElementById('receiptPhotoSection').style.display = 'none';
+    document.getElementById('receiptFreeNotice').style.display = 'none';
+  }
+}
+
+function pickReceiptPhoto(){ document.getElementById('receiptFileInput').click(); }
+
+function onReceiptPhotoPicked(ev){
+  const file = ev.target.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingReceiptPhoto = e.target.result;
+    document.getElementById('receiptPreview').src = pendingReceiptPhoto;
+    document.getElementById('receiptPreviewWrap').style.display = 'block';
+    document.getElementById('receiptPhotoUpload').style.display = 'none';
+    simulateOcr();
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetReceiptPhoto(){
+  pendingReceiptPhoto = null;
+  document.getElementById('receiptFileInput').value = '';
+  document.getElementById('receiptPreviewWrap').style.display = 'none';
+  document.getElementById('receiptPhotoUpload').style.display = 'block';
+}
+
+// Заглушка: реальный вызов бэкенда будет здесь.
+// POST /api/receipt/ocr  { image: <base64> }  → { store, date, items:[{name,qty,price}] }
+async function simulateOcr(){
+  // когда бэкенд подключён — раскомментировать:
+  // const res = await fetch('/api/receipt/ocr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ image: pendingReceiptPhoto }) });
+  // const data = await res.json();
+  // fillReceipt(data);
+
+  // пока — заглушка с демо-данными
+  await new Promise(r => setTimeout(r, 800));
+  fillReceipt({
+    store: 'Магазин (распознан)',
+    items: [
+      { name: 'Позиция 1', qty: 1, price: 0 },
+    ],
+  });
+}
+
+function fillReceipt(data){
+  if(data.store) document.getElementById('receiptStore').value = data.store;
+  appData.receiptItems = (data.items || []).map(i => ({ name: i.name || '', qty: i.qty || 1, price: i.price || 0 }));
+  renderReceiptItems();
+}
+
+function addReceiptItem(){
+  appData.receiptItems.push({ name:'', qty:1, price:0 });
+  renderReceiptItems();
+}
+
+function removeReceiptItem(idx){
+  appData.receiptItems.splice(idx, 1);
+  renderReceiptItems();
+}
+
+function renderReceiptItems(){
+  const box = document.getElementById('receiptItems');
+  if(!box) return;
+  if(!appData.receiptItems.length){
+    box.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px 0">Позиций пока нет — добавьте вручную или через фото.</div>`;
+    updateReceiptTotal();
+    return;
+  }
+  box.innerHTML = appData.receiptItems.map((it, i) => `
+    <div class="receipt-item">
+      <input type="text" placeholder="Название" value="${escapeAttr(it.name)}" data-idx="${i}" data-field="name">
+      <input type="number" placeholder="Кол" value="${it.qty}" min="1" step="1" data-idx="${i}" data-field="qty" inputmode="decimal">
+      <input type="number" placeholder="Цена" value="${it.price}" min="0" step="0.01" data-idx="${i}" data-field="price" inputmode="decimal">
+      <button class="del" onclick="removeReceiptItem(${i})">✕</button>
+    </div>
+  `).join('');
+  box.querySelectorAll('input').forEach(inp => {
+    inp.oninput = () => {
+      const idx = +inp.dataset.idx;
+      const field = inp.dataset.field;
+      let v = inp.value;
+      if(field === 'qty' || field === 'price') v = parseFloat(String(v).replace(',','.')) || 0;
+      appData.receiptItems[idx][field] = v;
+      updateReceiptTotal();
+    };
+  });
+  updateReceiptTotal();
+}
+
+function updateReceiptTotal(){
+  const total = appData.receiptItems.reduce((s, i) => s + (i.qty || 0) * (i.price || 0), 0);
+  document.getElementById('receiptTotal').innerText = total.toLocaleString('ru-RU') + ' ₴';
+  return total;
+}
+
+function submitReceipt(){
+  const items = appData.receiptItems;
+  const total = items.reduce((s, i) => s + (i.qty || 0) * (i.price || 0), 0);
+  if(!items.length || total <= 0){ alert('Добавьте хотя бы одну позицию с ценой'); return; }
+
+  const store = document.getElementById('receiptStore').value.trim() || 'Чек';
+  const dateInput = document.getElementById('receiptDate').value;
+  const d = dateInput ? new Date(dateInput) : new Date();
+  const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+
+  const tx = {
+    id: Date.now(),
+    type: 'expense',
+    title: store,
+    category: 'Продукты',
+    icon: '🧾',
+    amount: total,
+    date: dateStr,
+    receipt: {
+      store,
+      items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
+      source: pendingReceiptPhoto ? 'ocr' : 'manual',
+      hasPhoto: !!pendingReceiptPhoto,
+    },
+  };
+
+  applyTx(tx);
+  resetReceiptPhoto();
+  closeModal('modalTransaction');
+  renderAll();
+}
+
+/* ============ КОНВЕРТЫ / БАНКИ ============ */
+function saveEnvelope(){
+  const name = document.getElementById('envNameInput').value.trim();
+  const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
+  if(!name){ alert('Введите название'); return; }
+  appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
+  saveData();
+  closeModal('modalAddEnvelope');
+  document.getElementById('envNameInput').value = '';
+  document.getElementById('envTargetInput').value = '';
+  renderAll();
+}
+
+function saveBank(){
+  const name = document.getElementById('bankNameInput').value.trim();
+  const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
+  if(!name){ alert('Введите название'); return; }
+  appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+  saveData();
+  closeModal('modalAddBank');
+  document.getElementById('bankNameInput').value = '';
+  document.getElementById('bankTargetInput').value = '';
+  renderAll();
+}
+
+function depositBank(id){
+  const val = prompt('Сумма пополнения:');
+  if(!val || isNaN(val) || parseFloat(val) <= 0) return;
+  const amount = parseFloat(val);
+  const bank = appData.banks.find(b => b.id == id);
+  if(bank){
+    bank.balance += amount;
+    appData.balance -= amount;
+    saveData();
+    renderAll();
+  }
+}
+
+/* ============ СЕМЬЯ ============ */
+function dismissFamilyBanner(){
+  document.getElementById('familyBanner').style.display = 'none';
+}
+
+function toggleFamilyForm(){
+  const form = document.getElementById('familyForm');
+  if(!form) return;
+  form.classList.toggle('collapsed');
+  const btn = document.getElementById('familyToggle');
+  const opened = !form.classList.contains('collapsed');
+  btn.innerHTML = opened
+    ? '<i class="fa-solid fa-xmark"></i> Отмена'
+    : '<i class="fa-solid fa-plus"></i> Присоединиться к семье';
+}
+
+function connectFamily(){
+  const codeInput = document.getElementById('familyCodeInput');
+  const code = codeInput.value.trim();
+  if(!code){ alert('Введите код'); return; }
+  appData.joinedFamily = true;
+  appData.familyMembers = (appData.familyMembers || 1) + 1;
+  appData.familyCode = code.toUpperCase();
+  saveData();
+  renderFamily();
+  renderAll();
+  alert('Подключено. В семье: ' + appData.familyMembers + ' чел.');
+  codeInput.value = '';
+}
+
+function leaveFamily(){
+  if(!confirm('Выйти из семьи?')) return;
+  appData.joinedFamily = false;
+  appData.familyMembers = 1;
+  saveData();
+  renderFamily();
+  renderAll();
+}
+
+function copyFamilyCode(){
+  const el = document.getElementById('myFamilyCode');
+  el.select();
+  navigator.clipboard.writeText(el.value);
+  alert('Код скопирован');
+}
+
+function copyJoinedCode(){
+  const el = document.getElementById('joinedCode');
+  el.select();
+  navigator.clipboard.writeText(el.value);
+  alert('Код скопирован');
+}
+
+function renderFamily(){
+  const status = document.getElementById('familyStatus');
+  const toggle = document.getElementById('familyToggle');
+  const form = document.getElementById('familyForm');
+  const joined = document.getElementById('familyJoined');
+  const myCode = document.getElementById('myFamilyCode');
+
+  if(myCode) myCode.value = appData.familyCode;
+
+  if(appData.joinedFamily){
+    status.innerText = 'Семейный режим включён.';
+    toggle.style.display = 'none';
+    form.classList.add('collapsed');
+    joined.classList.remove('collapsed');
+    document.getElementById('familyMembersCount').innerText = appData.familyMembers;
+    document.getElementById('joinedCode').value = appData.familyCode;
+  } else {
+    status.innerText = 'Вы ведёте бюджет один.';
+    toggle.style.display = 'flex';
+    joined.classList.add('collapsed');
+  }
+}
+
+/* ============ ПОДПИСКА ============ */
+function setPlan(plan){
+  appData.subscription.plan = plan;
+  saveData();
+  renderSubscription();
+}
+
+function renderSubscription(){
+  const plan = appData.subscription?.plan || 'free';
+  const badge = document.getElementById('subBadge');
+  const ocr = document.getElementById('ocrStatus');
+
+  if(plan === 'pro'){
+    badge.innerHTML = '<span class="pro-badge">Pro</span>';
+    ocr.innerHTML = '<span style="color:var(--success)">✓ Доступно</span>';
+  } else {
+    badge.innerHTML = '<span style="color:var(--text-muted);font-size:12px">Free</span>';
+    ocr.innerHTML = '<span style="color:var(--text-muted);font-size:12px">Только Pro</span>';
+  }
+
+  document.querySelectorAll('#devToggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.plan === plan);
+  });
+}
+
+/* ============ АНАЛИТИКА ============ */
+function renderChart(){
+  const ctx = document.getElementById('expensesChart')?.getContext('2d');
+  if(!ctx) return;
+  if(chartInstance) chartInstance.destroy();
+
+  const labels = appData.envelopes.length ? appData.envelopes.map(e => e.name) : ['Нет данных'];
+  const data = appData.envelopes.length ? appData.envelopes.map(e => e.spent) : [1];
+
+  chartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'] }],
+    },
+    options: { responsive:true, plugins:{ legend:{ labels:{ color:'#fff' } } } },
+  });
+}
+
+/* ============ РЕНДЕР ============ */
+function escapeAttr(s){
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function renderAll(){
+  document.getElementById('totalBalance').innerText = `${appData.balance.toLocaleString('ru-RU')} ₴`;
+  document.getElementById('monthIncome').innerText = `+${appData.monthIncome.toLocaleString('ru-RU')} ₴`;
+  document.getElementById('monthExpense').innerText = `-${appData.monthExpense.toLocaleString('ru-RU')} ₴`;
+
+  // Конверты
+  const envBox = document.getElementById('envelopesList');
+  if(envBox){
+    envBox.innerHTML = appData.envelopes.length ? appData.envelopes.map(e => {
+      const pct = Math.min(100, Math.round((e.spent / (e.target || 1)) * 100));
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between"><b>📩 ${escapeAttr(e.name)}</b><span>${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+        <div style="font-size:12px;color:var(--text-muted)">${e.spent.toLocaleString('ru-RU')} ₴ / ${e.target.toLocaleString('ru-RU')} ₴</div>
+      </div>`;
+    }).join('') : `<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:15px">Конверты не созданы</div>`;
+  }
+
+  // Банки
+  const bankBox = document.getElementById('banksList');
+  if(bankBox){
+    bankBox.innerHTML = appData.banks.length ? appData.banks.map(b => {
+      const pct = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between"><b>🏦 ${escapeAttr(b.name)}</b><span>${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--success)"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span style="font-size:12px;color:var(--text-muted)">${b.balance.toLocaleString('ru-RU')} ₴ / ${b.target.toLocaleString('ru-RU')} ₴</span>
+          <button class="btn btn-success btn-sm" onclick="depositBank(${b.id})">+ Пополнить</button>
+        </div>
+      </div>`;
+    }).join('') : `<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:15px">Банки не созданы</div>`;
+  }
+
+  // История
+  const histBox = document.getElementById('historyContainer');
+  if(histBox){
+    histBox.innerHTML = appData.history.length ? appData.history.map(item => {
+      const receiptBadge = item.receipt ? `<span class="receipt-badge">чек</span>` : '';
+      const sub = item.receipt
+        ? `${item.receipt.store} · ${item.receipt.items.length} поз. · ${item.date}`
+        : `${item.category} · ${item.date}`;
+      return `<div class="history-item">
+        <div class="history-left">
+          <div class="history-icon">${item.icon}</div>
+          <div style="min-width:0">
+            <div class="history-title">${escapeAttr(item.title)}${receiptBadge}</div>
+            <div class="history-sub">${escapeAttr(sub)}</div>
+          </div>
+        </div>
+        <div class="history-amount ${item.type === 'expense' ? 'exp' : 'inc'}">
+          ${item.type === 'expense' ? '-' : '+'}${item.amount.toLocaleString('ru-RU')} ₴
+        </div>
+      </div>`;
+    }).join('') : `<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:15px">История пуста</div>`;
+  }
+}
+
+/* ============ СТАРТ ============ */
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+
+  // баннер семьи — один раз за установку
+  if(!appData.familyBannerShown && !appData.joinedFamily){
+    document.getElementById('familyBanner').style.display = 'flex';
+    appData.familyBannerShown = true;
+    saveData();
+  }
+
+  renderSubscription();
+  renderFamily();
+  renderAll();
+});
+</script>
 </body>
 </html>

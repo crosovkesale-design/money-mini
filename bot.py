@@ -350,6 +350,7 @@ STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if bot:
+        await bot.delete_webhook(drop_pending_updates=True)
         task = asyncio.create_task(dp.start_polling(bot))
         reminder_task = asyncio.create_task(daily_check())
         log.info("bot started")

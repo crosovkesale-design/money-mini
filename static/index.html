@@ -1,586 +1,167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Семейный Бюджет</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --card-border: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-            --danger: #ef4444;
-            --radius: 14px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
-        .container { padding: 16px; max-width: 500px; margin: 0 auto; }
-
-        /* Баланс */
-        .balance-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius);
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .balance-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        .balance-val { font-size: 32px; font-weight: 800; margin: 8px 0 16px 0; color: #ffffff; }
-
-        .balance-stats { display: flex; justify-content: space-between; border-top: 1px solid var(--card-border); padding-top: 12px; }
-        .stat-item { flex: 1; text-align: center; }
-        .stat-item:first-child { border-right: 1px solid var(--card-border); }
-        .stat-label { font-size: 11px; color: var(--text-muted); }
-        .stat-amount { font-size: 15px; font-weight: 700; margin-top: 2px; }
-        .stat-amount.inc { color: var(--success); }
-        .stat-amount.exp { color: var(--danger); }
-
-        /* Кнопки действий */
-        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .btn {
-            border: none;
-            padding: 12px;
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        .btn-success { background-color: var(--success); color: #fff; }
-        .btn-danger { background-color: var(--danger); color: #fff; }
-        .btn-accent { background-color: var(--accent); color: #fff; }
-        .btn:active { transform: scale(0.97); opacity: 0.9; }
-
-        /* Карточки и списки */
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .progress-bar { background: #334155; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
-        .progress-fill { height: 100%; transition: width 0.3s; }
-
-        /* Лента истории */
-        .history-list { display: flex; flex-direction: column; gap: 8px; }
-        .history-item {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .history-left { display: flex; align-items: center; gap: 12px; }
-        .history-icon { font-size: 20px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px; }
-        .history-title { font-weight: 600; font-size: 14px; }
-        .history-sub { font-size: 11px; color: var(--text-muted); }
-        .history-amount { font-weight: 700; font-size: 15px; }
-        .history-amount.inc { color: var(--success); }
-        .history-amount.exp { color: #f8fafc; }
-
-        /* Нижнее меню */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #1e293b;
-            border-top: 1px solid var(--card-border);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            z-index: 100;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 11px;
-            cursor: pointer;
-            gap: 4px;
-            width: 20%;
-        }
-        .nav-item i { font-size: 18px; }
-        .nav-item.active { color: var(--accent); }
-
-        /* Модальные окна */
-        .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: flex-end;
-            z-index: 1000;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: var(--card-bg);
-            border-radius: 20px 20px 0 0;
-            width: 100%;
-            padding: 20px;
-            max-height: 85vh;
-            overflow-y: auto;
-            border-top: 1px solid var(--card-border);
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-close { font-size: 20px; color: var(--text-muted); cursor: pointer; }
-
-        /* Формы ввода */
-        .custom-input {
-            width: 100%;
-            background: #0f172a;
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 12px;
-            color: #fff;
-            font-size: 14px;
-            margin-bottom: 12px;
-            outline: none;
-        }
-        .custom-input:focus { border-color: var(--accent); }
-
-        /* Выбор иконки/категории */
-        .icon-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
-        .icon-item {
-            background: #0f172a;
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .icon-item.active { border-color: var(--accent); background: rgba(59,130,246,0.2); }
-
-        .copy-box { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-        .copy-btn { background: var(--card-border); color: #fff; border: none; padding: 12px; border-radius: 10px; cursor: pointer; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Семейный Бюджет</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="container">
-        <!-- ВКЛАДКА 1: ГЛАВНАЯ -->
-        <div id="tab-budget" class="tab-content">
-            <div class="balance-card">
-                <div class="balance-title">Текущий баланс</div>
-                <div class="balance-val" id="totalBalance">0 ₴</div>
-                <div class="balance-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Доходы</div>
-                        <div class="stat-amount inc" id="monthIncome">+0 ₴</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Расходы</div>
-                        <div class="stat-amount exp" id="monthExpense">-0 ₴</div>
-                    </div>
-                </div>
-            </div>
+<div id="app-loading" class="center-screen">
+  <i class="fa-solid fa-spinner fa-spin" style="font-size:32px;color:#4d9fff"></i>
+  <p class="muted" style="margin-top:12px">Загрузка…</p>
+</div>
 
-            <div class="actions-grid">
-                <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> Доход</button>
-                <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> Расход</button>
-            </div>
+<div id="app-error" class="center-screen" style="display:none">
+  <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#ff5566"></i>
+  <p id="app-error-msg" class="muted" style="margin-top:12px"></p>
+</div>
 
-            <h4 style="margin: 16px 0 10px 0;">История операций</h4>
-            <div id="historyContainer" class="history-list"></div>
+<div id="app-paywall" class="center-screen" style="display:none">
+  <div class="card" style="max-width:360px;text-align:center">
+    <i class="fa-solid fa-lock" style="font-size:28px;color:#f5c451"></i>
+    <h2 style="margin:12px 0 6px">Подписка истекла</h2>
+    <p class="muted" id="paywall-date"></p>
+    <button class="btn btn-accent" style="width:100%;margin-top:16px" onclick="openPayModal()">Продлить</button>
+  </div>
+</div>
+
+<div id="app-family-setup" class="center-screen" style="display:none">
+  <div class="card" style="max-width:360px;width:100%">
+    <h2 style="margin-bottom:6px">Семейный бюджет</h2>
+    <p class="muted" style="margin-bottom:16px;font-size:12px">Создай свою семью или присоединись по коду партнёра.</p>
+    <button class="btn btn-accent" style="width:100%" onclick="createFamily()">Создать семью</button>
+    <div style="margin:16px 0;text-align:center;color:var(--text-muted);font-size:11px">— или —</div>
+    <input type="text" id="joinCodeInput" class="custom-input" placeholder="FAM-XXXXXX" style="text-transform:uppercase">
+    <button class="btn btn-outline" style="width:100%" onclick="joinFamily()">Присоединиться</button>
+  </div>
+</div>
+
+<div id="app-main" class="container" style="display:none">
+
+  <div id="tab-budget" class="tab-content">
+    <div class="balance-card">
+      <div class="balance-title">Текущий баланс</div>
+      <div class="balance-val" id="totalBalance">0 ₴</div>
+      <div class="balance-stats">
+        <div class="stat-item">
+          <div class="stat-label">Доходы</div>
+          <div class="stat-amount inc" id="monthIncome">+0 ₴</div>
         </div>
-
-        <!-- ВКЛАДКА 2: КОНВЕРТЫ -->
-        <div id="tab-envelopes" class="tab-content" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4>Конверты расходов</h4>
-                <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddEnvelope')">
-                    <i class="fa-solid fa-plus"></i> Создать
-                </button>
-            </div>
-            <div id="envelopesList"></div>
+        <div class="stat-item">
+          <div class="stat-label">Расходы</div>
+          <div class="stat-amount exp" id="monthExpense">-0 ₴</div>
         </div>
-
-        <!-- ВКЛАДКА 3: БАНКИ -->
-        <div id="tab-banks" class="tab-content" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4>Накопительные банки</h4>
-                <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddBank')">
-                    <i class="fa-solid fa-plus"></i> Создать
-                </button>
-            </div>
-            <div id="banksList"></div>
-        </div>
-
-        <!-- ВКЛАДКА 4: АНАЛИТИКА -->
-        <div id="tab-analytics" class="tab-content" style="display: none;">
-            <h4>Аналитика расходов</h4>
-            <div class="card" style="margin-top: 12px;">
-                <canvas id="expensesChart"></canvas>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА 5: НАСТРОЙКИ -->
-        <div id="tab-settings" class="tab-content" style="display: none;">
-            <div class="card">
-                <h5 style="margin-bottom: 8px;"><i class="fa-solid fa-users"></i> Семейный доступ</h5>
-                <div style="font-size: 13px; color: var(--success); font-weight: 600; margin-bottom: 10px;">
-                    👥 В семье: <span id="familyMembersCount">1 чел.</span>
-                </div>
-                <p style="font-size: 11px; color: var(--text-muted);">Ваш личный код семьи:</p>
-                <div class="copy-box">
-                    <input type="text" id="myFamilyCode" class="custom-input" style="margin:0;" value="FAM-882190" readonly>
-                    <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
-                </div>
-                <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px;">Присоединиться к партнеру:</p>
-                <input type="text" id="familyCodeInput" class="custom-input" placeholder="Введите код партнера...">
-                <button class="btn btn-accent" style="width: 100%;" onclick="connectFamily()">Подключиться</button>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Нижняя Навигация -->
-    <div class="nav-bar">
-        <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></div>
-        <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></div>
-        <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Банки</span></div>
-        <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></div>
-        <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
+    <div class="actions-grid">
+      <button class="btn btn-success" onclick="openTxModal('income')"><i class="fa-solid fa-plus"></i> Доход</button>
+      <button class="btn btn-danger" onclick="openTxModal('expense')"><i class="fa-solid fa-minus"></i> Расход</button>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ТРАНЗАКЦИЯ -->
-    <div class="modal" id="modalTransaction">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="txModalTitle">Добавить Расход</h3>
-                <span class="modal-close" onclick="closeModal('modalTransaction')">&times;</span>
-            </div>
-            <label style="font-size: 12px; color: var(--text-muted);">Категория:</label>
-            <div class="icon-grid">
-                <div class="icon-item active" onclick="selectIcon(this, '🍔 Еда', '🍔')">🍔</div>
-                <div class="icon-item" onclick="selectIcon(this, '🚗 Транспорт', '🚗')">🚗</div>
-                <div class="icon-item" onclick="selectIcon(this, '🏠 Дом', '🏠')">🏠</div>
-                <div class="icon-item" onclick="selectIcon(this, '🎉 Досуг', '🎉')">🎉</div>
-                <div class="icon-item" onclick="selectIcon(this, '📦 Разное', '📦')">📦</div>
-            </div>
-            <input type="number" id="txAmountInput" class="custom-input" placeholder="Сумма">
-            <input type="text" id="txCommentInput" class="custom-input" placeholder="Комментарий">
-            <div id="txExpenseFields">
-                <label style="font-size: 12px; color: var(--text-muted);">Конверт:</label>
-                <select id="txEnvelopeSelect" class="custom-input"></select>
-            </div>
-            <button class="btn btn-accent" style="width: 100%; margin-top: 10px;" onclick="submitTransaction()">Сохранить</button>
-        </div>
+    <h4 style="margin:16px 0 10px">История операций</h4>
+    <div id="historyContainer" class="history-list"></div>
+  </div>
+
+  <div id="tab-envelopes" class="tab-content" style="display:none">
+    <div class="row-between">
+      <h4>Конверты</h4>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> Создать</button>
     </div>
+    <div id="envelopesList"></div>
+  </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: СОЗДАТЬ КОНВЕРТ -->
-    <div class="modal" id="modalAddEnvelope">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Новый конверт</h3>
-                <span class="modal-close" onclick="closeModal('modalAddEnvelope')">&times;</span>
-            </div>
-            <input type="text" id="envNameInput" class="custom-input" placeholder="Название (например: Продукты)">
-            <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит в месяц">
-            <button class="btn btn-accent" style="width: 100%;" onclick="saveEnvelope()">Создать</button>
-        </div>
+  <div id="tab-banks" class="tab-content" style="display:none">
+    <div class="row-between">
+      <h4>Накопления</h4>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> Создать</button>
     </div>
+    <div id="banksList"></div>
+  </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: СОЗДАТЬ БАНКУ -->
-    <div class="modal" id="modalAddBank">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Новая банка</h3>
-                <span class="modal-close" onclick="closeModal('modalAddBank')">&times;</span>
-            </div>
-            <input type="text" id="bankNameInput" class="custom-input" placeholder="Название (например: На авто)">
-            <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель накопления">
-            <button class="btn btn-accent" style="width: 100%;" onclick="saveBank()">Создать</button>
-        </div>
+  <div id="tab-analytics" class="tab-content" style="display:none">
+    <h4>Аналитика расходов</h4>
+    <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
+  </div>
+
+  <div id="tab-settings" class="tab-content" style="display:none">
+    <div class="card">
+      <h5><i class="fa-solid fa-users"></i> Семья</h5>
+      <div class="muted" style="margin:8px 0">Участников: <b id="familyCount">1</b></div>
+      <p class="muted" style="font-size:11px">Код семьи:</p>
+      <div class="copy-box">
+        <input type="text" id="myFamilyCode" class="custom-input" style="margin:0" readonly>
+        <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+      </div>
     </div>
+    <div class="card">
+      <h5><i class="fa-solid fa-crown"></i> Подписка</h5>
+      <div class="muted" style="margin:8px 0">Тариф: <b id="subTariff">—</b></div>
+      <div class="muted" style="margin:8px 0">Осталось: <b id="subDays">—</b></div>
+      <button class="btn btn-accent" style="width:100%;margin-top:8px" onclick="openPayModal()">Продлить</button>
+    </div>
+  </div>
+</div>
 
-    <script>
-        let activeTxType = 'expense';
-        let chartInstance = null;
+<div class="nav-bar" id="navBar" style="display:none">
+  <div class="nav-item active" data-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></div>
+  <div class="nav-item" data-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></div>
+  <div class="nav-item" data-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Банки</span></div>
+  <div class="nav-item" data-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></div>
+  <div class="nav-item" data-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
+</div>
 
-        let appData = {
-            balance: 0,
-            monthIncome: 0,
-            monthExpense: 0,
-            envelopes: [],
-            banks: [],
-            history: [],
-            familyMembers: 1,
-            selectedCategory: '🍔 Еда',
-            currentIcon: '🍔'
-        };
+<div class="modal" id="modalTransaction">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="txModalTitle">Добавить расход</h3>
+      <span class="modal-close" onclick="closeModal('modalTransaction')">&times;</span>
+    </div>
+    <label class="lbl">Категория</label>
+    <div class="icon-grid" id="catGrid"></div>
+    <input type="number" id="txAmountInput" class="custom-input" placeholder="Сумма" inputmode="decimal">
+    <input type="text" id="txCommentInput" class="custom-input" placeholder="Комментарий">
+    <div id="txExpenseFields">
+      <label class="lbl">Конверт</label>
+      <select id="txEnvelopeSelect" class="custom-input"></select>
+    </div>
+    <button class="btn btn-accent" style="width:100%;margin-top:10px" onclick="submitTx()">Сохранить</button>
+  </div>
+</div>
 
-        function loadData() {
-            const saved = localStorage.getItem('budgetAppData_v5');
-            if (saved) {
-                try {
-                    appData = Object.assign(appData, JSON.parse(saved));
-                } catch(e) {}
-            }
-        }
+<div class="modal" id="modalAddEnvelope">
+  <div class="modal-content">
+    <div class="modal-header"><h3>Новый конверт</h3><span class="modal-close" onclick="closeModal('modalAddEnvelope')">&times;</span></div>
+    <input type="text" id="envNameInput" class="custom-input" placeholder="Название">
+    <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит в месяц">
+    <button class="btn btn-accent" style="width:100%" onclick="saveEnvelope()">Создать</button>
+  </div>
+</div>
 
-        function saveData() {
-            localStorage.setItem('budgetAppData_v5', JSON.stringify(appData));
-        }
+<div class="modal" id="modalAddBank">
+  <div class="modal-content">
+    <div class="modal-header"><h3>Новая банка</h3><span class="modal-close" onclick="closeModal('modalAddBank')">&times;</span></div>
+    <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
+    <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель">
+    <button class="btn btn-accent" style="width:100%" onclick="saveBank()">Создать</button>
+  </div>
+</div>
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+<div class="modal" id="modalPay">
+  <div class="modal-content">
+    <div class="modal-header"><h3>Продлить подписку</h3><span class="modal-close" onclick="closeModal('modalPay')">&times;</span></div>
+    <div id="tariffsList"></div>
+    <div id="couponsBox" style="margin-top:12px"></div>
+  </div>
+</div>
 
-            const targetTab = document.getElementById(`tab-${tabName}`);
-            const targetNav = document.getElementById(`nav-${tabName}`);
+<div id="toast" class="toast"></div>
 
-            if (targetTab) targetTab.style.display = 'block';
-            if (targetNav) targetNav.classList.add('active');
-
-            if (tabName === 'analytics') renderChart();
-        }
-
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.remove('active');
-        }
-
-        function openTransactionModal(type) {
-            activeTxType = type;
-            const title = document.getElementById('txModalTitle');
-            const expFields = document.getElementById('txExpenseFields');
-
-            if (title) title.innerText = type === 'expense' ? 'Добавить Расход' : 'Добавить Доход';
-            if (expFields) expFields.style.display = type === 'expense' ? 'block' : 'none';
-
-            const select = document.getElementById('txEnvelopeSelect');
-            if (select) {
-                if (appData.envelopes && appData.envelopes.length > 0) {
-                    select.innerHTML = appData.envelopes.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-                } else {
-                    select.innerHTML = `<option value="">Без конверта</option>`;
-                }
-            }
-            openModal('modalTransaction');
-        }
-
-        function selectIcon(elem, catName, icon) {
-            document.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
-            elem.classList.add('active');
-            appData.selectedCategory = catName;
-            appData.currentIcon = icon;
-        }
-
-        function submitTransaction() {
-            const amountInput = document.getElementById('txAmountInput');
-            const commentInput = document.getElementById('txCommentInput');
-            const amount = parseFloat(amountInput.value);
-            const comment = commentInput.value.trim();
-
-            if (!amount || amount <= 0) {
-                alert("Введите корректную сумму!");
-                return;
-            }
-
-            const title = comment || appData.selectedCategory;
-            const now = new Date();
-            const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()}`;
-
-            const txItem = {
-                id: Date.now(),
-                type: activeTxType,
-                title: title,
-                category: appData.selectedCategory,
-                icon: appData.currentIcon || '📦',
-                amount: amount,
-                date: dateStr
-            };
-
-            if (activeTxType === 'expense') {
-                appData.balance -= amount;
-                appData.monthExpense += amount;
-                const envSelect = document.getElementById('txEnvelopeSelect');
-                if (envSelect && envSelect.value) {
-                    const env = appData.envelopes.find(e => e.id == envSelect.value);
-                    if (env) env.spent += amount;
-                }
-            } else {
-                appData.balance += amount;
-                appData.monthIncome += amount;
-            }
-
-            if (!appData.history) appData.history = [];
-            appData.history.unshift(txItem);
-
-            saveData();
-            closeModal('modalTransaction');
-            amountInput.value = '';
-            commentInput.value = '';
-            renderAll();
-        }
-
-        function saveEnvelope() {
-            const name = document.getElementById('envNameInput').value.trim();
-            const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
-
-            if (!name) return alert("Введите название!");
-            if (!appData.envelopes) appData.envelopes = [];
-            appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
-
-            saveData();
-            closeModal('modalAddEnvelope');
-            document.getElementById('envNameInput').value = '';
-            document.getElementById('envTargetInput').value = '';
-            renderAll();
-        }
-
-        function saveBank() {
-            const name = document.getElementById('bankNameInput').value.trim();
-            const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
-
-            if (!name) return alert("Введите название!");
-            if (!appData.banks) appData.banks = [];
-            appData.banks.push({ id: Date.now(), name, target, balance: 0 });
-
-            saveData();
-            closeModal('modalAddBank');
-            document.getElementById('bankNameInput').value = '';
-            document.getElementById('bankTargetInput').value = '';
-            renderAll();
-        }
-
-        function depositBank(id) {
-            const val = prompt("Введите сумму пополнения:");
-            if (!val || isNaN(val) || parseFloat(val) <= 0) return;
-            const amount = parseFloat(val);
-            const bank = appData.banks.find(b => b.id == id);
-            if (bank) {
-                bank.balance += amount;
-                appData.balance -= amount;
-                saveData();
-                renderAll();
-            }
-        }
-
-        function copyFamilyCode() {
-            const input = document.getElementById('myFamilyCode');
-            input.select();
-            navigator.clipboard.writeText(input.value);
-            alert("Код семьи скопирован!");
-        }
-
-        function connectFamily() {
-            const codeInput = document.getElementById('familyCodeInput');
-            if (codeInput.value.trim()) {
-                appData.familyMembers = (appData.familyMembers || 1) + 1;
-                saveData();
-                renderAll();
-                alert(`Успешно подключено! В семье: ${appData.familyMembers} чел.`);
-                codeInput.value = '';
-            }
-        }
-
-        function renderChart() {
-            const ctx = document.getElementById('expensesChart')?.getContext('2d');
-            if (!ctx) return;
-            if (chartInstance) chartInstance.destroy();
-
-            const labels = appData.envelopes.length ? appData.envelopes.map(e => e.name) : ['Продукты', 'Транспорт'];
-            const data = appData.envelopes.length ? appData.envelopes.map(e => e.spent) : [0, 0];
-
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
-            });
-        }
-
-        function renderAll() {
-            document.getElementById("totalBalance").innerText = `${appData.balance.toLocaleString()} ₴`;
-            document.getElementById("monthIncome").innerText = `+${appData.monthIncome.toLocaleString()} ₴`;
-            document.getElementById("monthExpense").innerText = `-${appData.monthExpense.toLocaleString()} ₴`;
-            document.getElementById('familyMembersCount').innerText = `${appData.familyMembers || 1} чел.`;
-
-            // Отрисовка Конвертов
-            const envContainer = document.getElementById('envelopesList');
-            if (envContainer) {
-                envContainer.innerHTML = appData.envelopes.length ? appData.envelopes.map(e => {
-                    const percent = Math.min(100, Math.round((e.spent / (e.target || 1)) * 100));
-                    return `<div class="card">
-                        <div style="display:flex; justify-content:space-between;"><b>📩 ${e.name}</b><span>${percent}%</span></div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:var(--accent);"></div></div>
-                        <div style="font-size:12px; color:var(--text-muted);">${e.spent} ₴ / ${e.target} ₴</div>
-                    </div>`;
-                }).join('') : `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:15px;">Конверты не созданы</div>`;
-            }
-
-            // Отрисовка Банок
-            const bankContainer = document.getElementById('banksList');
-            if (bankContainer) {
-                bankContainer.innerHTML = appData.banks.length ? appData.banks.map(b => {
-                    const percent = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
-                    return `<div class="card">
-                        <div style="display:flex; justify-content:space-between;"><b>🏦 ${b.name}</b><span>${percent}%</span></div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${percent}%; background:var(--success);"></div></div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                            <span style="font-size:12px; color:var(--text-muted);">${b.balance} ₴ / ${b.target} ₴</span>
-                            <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="depositBank(${b.id})">+ Пополнить</button>
-                        </div>
-                    </div>`;
-                }).join('') : `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:15px;">Банки не созданы</div>`;
-            }
-
-            // Отрисовка Истории
-            const historyContainer = document.getElementById('historyContainer');
-            if (historyContainer) {
-                historyContainer.innerHTML = appData.history.length ? appData.history.map(item => `
-                    <div class="history-item">
-                        <div class="history-left">
-                            <div class="history-icon">${item.icon}</div>
-                            <div>
-                                <div class="history-title">${item.title}</div>
-                                <div class="history-sub">${item.category} · ${item.date}</div>
-                            </div>
-                        </div>
-                        <div class="history-amount ${item.type === 'expense' ? 'exp' : 'inc'}">
-                            ${item.type === 'expense' ? '-' : '+'}${item.amount.toLocaleString()} ₴
-                        </div>
-                    </div>
-                `).join('') : `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:15px;">История пуста</div>`;
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            loadData();
-            renderAll();
-        });
-    </script>
+<script src="app.js"></script>
 </body>
 </html>

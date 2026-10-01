@@ -228,60 +228,66 @@ if bot:
 # ---------- фоновые проверки ----------
 
 async def daily_check():
-    """Раз в 6 часов: напоминания о подписке."""
+    """Фоновая проверка подписок: раз в 6 часов"""
     while True:
         try:
-            if bot:
-                ts = now_ms()
-                users = (await fb.get("/users")) or {}
-                for uid, u in users.items():
-                    if not isinstance(u, dict):
-                        continue
+            if not bot:
+                await asyncio.sleep(6 * 60 * 60)
+                continue
+
+            now_sec = int(datetime.utcnow().timestamp())
+            users = fb_get("/users") or {}
+
+            for uid, u in users.items():
+                if not isinstance(u, dict):
+                    continue
+
+                sub_end = u.get("subEnd") or 0
+                try:
+                    sub_end = int(sub_end)
+                except (ValueError, TypeError):
+                    continue
+
+                if sub_end > 10**11:
+                    sub_end //= 1000
+
+                if sub_end <= 0:
+                    continue
+
+                seconds_left = sub_end - now_sec
+                days = math.ceil(seconds_left / 86400)
+                sent_flag = u.get("reminderSent") or 0
+
+                msg = None
+                new_flag = None
+
+                if days == 3 and sent_flag < 3:
+                    msg = "⏰ Подписка истекает через <b>3 дн.</b>\n\nПродлить: ⚙️ Настройки → Оплатить."
+                    new_flag = 3
+                elif days == 2 and sent_flag < 2:
+                    msg = "⏰ Подписка истекает через <b>2 дн.</b>\n\nПродлить: ⚙️ Настройки → Оплатить."
+                    new_flag = 2
+                elif days == 1 and sent_flag < 1:
+                    msg = "⏰ Подписка истекает <b>завтра</b>.\n\nПродлить: ⚙️ Настройки → Оплатить."
+                    new_flag = 1
+                elif days <= 0 and sent_flag != 99:
+                    msg = "❌ <b>Ваша подписка истекла.</b>\n\nПродлить: ⚙️ Настройки → Оплатить."
+                    new_flag = 99
+
+                if msg and new_flag is not None:
                     try:
-                        await _check_subscription(uid, u, ts)
+                        await bot.send_message(str(uid), msg, parse_mode="HTML")
                     except Exception as e:
-                        log.warning(f"sub check {uid}: {e}")
+                        log.warning("reminder send " + str(uid) + ": " + str(e))
+                    patch = {"reminderSent": new_flag}
+                    if new_flag == 99:
+                        patch["status"] = "expired"
+                    fb_patch("/users/" + str(uid), patch)
+
         except Exception as e:
-            log.warning(f"daily_check: {e}")
+            log.warning("daily_check error: " + str(e))
+
         await asyncio.sleep(6 * 60 * 60)
-
-
-async def _check_subscription(uid: str, u: dict, ts: int) -> None:
-    sub_end = int(u.get("subEnd") or 0)
-    if sub_end and sub_end < 10**11:
-        sub_end *= 1000
-    if sub_end <= 0:
-        return
-
-    days = math.ceil((sub_end - ts) / 86400000)
-    flag = int(u.get("reminderSent") or 0)
-
-    msg = None
-    new_flag = None
-    if 1 <= days <= 3 and flag < days:
-        msg = (
-            f"⏰ Подписка истекает через <b>{days} дн.</b>\n\n"
-            "Продлить: открой приложение → ⚙️ Настройки → Оплатить."
-        )
-        new_flag = days
-    elif days <= 0 and flag != 99:
-        msg = (
-            "❌ <b>Ваша подписка истекла.</b>\n\n"
-            "Продлить: ⚙️ Настройки → Оплатить."
-        )
-        new_flag = 99
-
-    if msg is None:
-        return
-    try:
-        await bot.send_message(int(uid), msg, parse_mode="HTML")
-    except Exception as e:
-        log.warning(f"reminder send {uid}: {e}")
-    await fb.patch(f"/users/{uid}", {
-        "reminderSent": new_flag,
-        **({"status": "expired"} if new_flag == 99 else {}),
-    })
-
 
 # ---------- FastAPI ----------
 

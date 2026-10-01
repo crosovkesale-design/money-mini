@@ -51,17 +51,25 @@
         </button>
     </div>
 
-    <!-- ВКЛАДКА 1: БЮДЖЕТ И КОНВЕРТЫ -->
+        <!-- ВКЛАДКА 1: ГЛАВНАЯ (БАЛАНС И ИСТОРИЯ) -->
     <div id="tab-budget" class="tab-content">
+        <!-- Блок Истории Операций -->
+        <div style="margin-top: 10px;">
+            <h4 style="margin: 0 0 10px 0;">История операций</h4>
+            <div id="historyContainer" class="history-list"></div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА: КОНВЕРТЫ (ОТДЕЛЬНАЯ) -->
+    <div id="tab-envelopes" class="tab-content" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="margin:0;" data-i18n="envelope_title">Конверты расходов</h4>
+            <h4 style="margin:0;">Конверты расходов</h4>
             <button class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;" onclick="openModal('modalAddEnvelope')">
-                <i class="fa-solid fa-plus"></i> <span data-i18n="btn_create">Создать</span>
+                <i class="fa-solid fa-plus"></i> <span>Создать</span>
             </button>
         </div>
         <div id="envelopesList"></div>
     </div>
-
 
     <!-- Блок Истории Операций -->
     <div style="margin-top: 20px;">
@@ -97,12 +105,19 @@
         <!-- Семейный доступ -->
         <div class="card">
             <h5 style="margin: 0 0 8px 0;"><i class="fa-solid fa-users"></i> Семейный бюджет</h5>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Введите код партнера для объединения счета:</p>
-            <input type="text" id="familyCodeInput" class="custom-input" placeholder="Код семьи (например, FAM-1234)">
-            <button class="btn btn-accent" style="width: 100%;" onclick="connectFamily()">Подключиться</button>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
-                Ваш личный код семьи: <strong id="myFamilyCode" style="color: var(--accent);">FAM-882190</strong>
+            <div style="font-size: 12px; color: var(--success); font-weight: 600; margin-bottom: 10px;">
+                👥 В семье: <span id="familyMembersCount">1 человек</span>
             </div>
+            
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Ваш личный код семьи:</p>
+            <div class="copy-box">
+                <input type="text" id="myFamilyCode" class="custom-input" style="margin:0;" value="FAM-882190" readonly>
+                <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i> Копировать</button>
+            </div>
+
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px; margin-bottom: 4px;">Присоединиться к партнеру:</p>
+            <input type="text" id="familyCodeInput" class="custom-input" placeholder="Введите код партнера...">
+            <button class="btn btn-accent" style="width: 100%;" onclick="connectFamily()">Подключиться</button>
         </div>
 
         <!-- Тарифные планы и Подписка -->
@@ -161,13 +176,15 @@
         </div>
     </div>
 
-    <!-- Нижняя Навигация -->
+        <!-- Нижняя Навигация -->
     <div class="nav-bar">
-        <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span data-i18n="nav_budget">Бюджет</span></div>
-        <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="nav_banks">Банки</span></div>
-        <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="nav_analytics">Аналитика</span></div>
-        <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="nav_settings">Настройки</span></div>
+        <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></div>
+        <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></div>
+        <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Банки</span></div>
+        <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></div>
+        <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></div>
     </div>
+
 
     <!-- МОДАЛКА: ТРАНЗАКЦИЯ (Расход / Доход) -->
     <div class="modal" id="modalTransaction">
@@ -244,8 +261,10 @@
 
         let appData = {
             lang: 'ru', currency: 'UAH', balance: 0, monthIncome: 0, monthExpense: 0,
-            envelopes: [], banks: [], history: [], selectedCategory: '🍔 Еда', currentIcon: '🍔'
+            envelopes: [], banks: [], history: [], familyMembers: 1, familyCode: 'FAM-882190',
+            selectedCategory: '🍔 Еда', currentIcon: '🍔'
         };
+
 
         let activeTxType = 'expense';
         let chartInstance = null;
@@ -257,6 +276,34 @@
             renderAll();
         }
 
+                // Копирование семейного кода в буфер обмена
+        function copyFamilyCode() {
+            const input = document.getElementById('myFamilyCode');
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert("Код семьи скопирован!");
+            }).catch(() => {
+                // Запасной вариант для старых браузеров
+                document.execCommand('copy');
+                alert("Код семьи скопирован!");
+            });
+        }
+
+        // Подключение к семье партнера
+        function connectFamily() {
+            const codeInput = document.getElementById('familyCodeInput');
+            const code = codeInput ? codeInput.value.trim() : '';
+            if (code) {
+                appData.familyMembers = (appData.familyMembers || 1) + 1;
+                saveData();
+                renderAll();
+                alert(`Успешно подключено к группе ${code}! В семье теперь людей: ${appData.familyMembers}`);
+                codeInput.value = '';
+            } else {
+                alert("Пожалуйста, введите код семьи!");
+            }
+        }
+        
         function saveData() { localStorage.setItem("app_budget_full_v3", JSON.stringify(appData)); }
 
         function openTransactionModal(type) {
@@ -287,33 +334,50 @@
         function submitTransaction() {
             const amount = parseFloat(document.getElementById('txAmountInput').value);
             const comment = document.getElementById('txCommentInput').value.trim();
-            if (!amount || amount <= 0) return;
+            if (!amount || amount <= 0) {
+                alert("Введите корректную сумму!");
+                return;
+            }
 
             const title = comment || appData.selectedCategory;
             const now = new Date();
             const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()}`;
 
             const txItem = {
-                 id: Date.now(), 
-                type: activeTxType,                
+                id: Date.now(),
+                type: activeTxType,
                 title: title,
-                category: appData.selectedCategory.replace(/^[^\s]+\s/, ''), // Название без иконки             
+                category: appData.selectedCategory.replace(/^[^\s]+\s/, ''),
                 icon: appData.currentIcon || '📦',
-                amount: amount, 
+                amount: amount,
                 date: dateStr
             };
-            
+
             if (activeTxType === 'expense') {
                 appData.balance -= amount;
                 appData.monthExpense += amount;
-                const envId = document.getElementById('txEnvelopeSelect').value;
-                const env = appData.envelopes.find(e => e.id == envId);
-                if (env) env.spent += amount;
+                
+                // Проверяем наличие элемента перед считыванием
+                const envElem = document.getElementById('txEnvelopeSelect');
+                if (envElem && envElem.value) {
+                    const env = appData.envelopes.find(e => e.id == envElem.value);
+                    if (env) env.spent += amount;
+                }
             } else {
                 appData.balance += amount;
                 appData.monthIncome += amount;
             }
-            
+
+            if (!appData.history) appData.history = [];
+            appData.history.unshift(txItem);
+
+            saveData();
+            closeModal('modalTransaction');
+            document.getElementById('txAmountInput').value = '';
+            document.getElementById('txCommentInput').value = '';
+            renderAll();
+        }
+          
             // Сохраняем в начало истории
             appData.history.unshift(txItem);
             saveData();
@@ -402,7 +466,10 @@
                     </div>
                 </div>`;
             }).join('');
-
+            
+        const membersElem = document.getElementById('familyMembersCount');
+        if (membersElem) membersElem.innerText = `${appData.familyMembers || 1} чел.`;
+            
             renderChart();
         }
 

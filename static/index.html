@@ -122,19 +122,20 @@
             <div style="font-size: 11px; color: var(--text-muted);">Приглашено: <strong id="refCount">0 пользователей</strong></div>
         </div>
 
-        <!-- Выбор Языка -->
+                <!-- Выбор Языка с флажками -->
         <div class="card">
             <label style="font-size: 12px; color: var(--text-muted);" data-i18n="select_language">Язык интерфейса:</label>
             <div class="grid-selector">
-                <button class="opt-btn" onclick="changeLanguage('ru')">Русский</button>
-                <button class="opt-btn" onclick="changeLanguage('uk')">Українська</button>
-                <button class="opt-btn" onclick="changeLanguage('en')">English</button>
-                <button class="opt-btn" onclick="changeLanguage('es')">Español</button>
-                <button class="opt-btn" onclick="changeLanguage('de')">Deutsch</button>
-                <button class="opt-btn" onclick="changeLanguage('fr')">Français</button>
-                <button class="opt-btn" onclick="changeLanguage('pl')">Polski</button>
+                <button class="opt-btn" onclick="changeLanguage('ru')">🇷🇺 Русский</button>
+                <button class="opt-btn" onclick="changeLanguage('uk')">🇺🇦 Українська</button>
+                <button class="opt-btn" onclick="changeLanguage('en')">🇬🇧 English</button>
+                <button class="opt-btn" onclick="changeLanguage('es')">🇪🇸 Español</button>
+                <button class="opt-btn" onclick="changeLanguage('de')">🇩🇪 Deutsch</button>
+                <button class="opt-btn" onclick="changeLanguage('fr')">🇫🇷 Français</button>
+                <button class="opt-btn" onclick="changeLanguage('pl')">🇵🇱 Polski</button>
             </div>
         </div>
+
 
         <!-- Выбор Валюты -->
         <div class="card">
@@ -408,7 +409,19 @@
             });
         }
 
-        function changeLanguage(lang) { applyLanguage(lang); }
+        function changeLanguage(lang) { 
+            applyLanguage(lang); 
+            // Подсветка активной кнопки языка
+            const buttons = document.querySelectorAll('#tab-settings .card:nth-child(4) .opt-btn');
+            buttons.forEach(btn => {
+                if(btn.getAttribute('onclick').includes(`'${lang}'`)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
         function setCurrency(curr) { appData.currency = curr; saveData(); renderAll(); }
         function formatMoney(amount) { return `${Number(amount).toLocaleString()} ${CURRENCY_SYMBOLS[appData.currency] || '₴'}`; }
         

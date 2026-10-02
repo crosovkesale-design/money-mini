@@ -440,9 +440,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
         <span id="calMonthLabel"></span>
         <button class="cal-nav" onclick="calShift(1)">›</button>
       </div>
-      <div class="cal-week">
-        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
-      </div>
+      <div class="cal-week" id="calWeek"></div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
   </div>
@@ -868,6 +866,7 @@ let activeTxType = 'expense';
 let activeTxTab = 'quick';
 let chartInstance = null;
 let pendingReceiptPhoto = null;
+let editingTxId = null;
 
 const DEFAULT_STATE = {
   balance: 0, monthIncome: 0, monthExpense: 0,
@@ -880,23 +879,62 @@ const DEFAULT_STATE = {
   receiptItems: [],
   lang: 'ru', currency: 'UAH', theme: 'dark',
   selectedEnvelopeId: '', selectedEnvelopeReceiptId: '', selectedBankId: '',
-  referral: { count: 0, code: '', coupons10: 0, coupons20: 0 }
+  referral: { count: 0, code: '', link: '', coupons10: 0, coupons20: 0 },
+  currentMonth: null,
+  monthStartBalance: 0
 };
 
-let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  const now0 = new Date();
+  if(!appData.currentMonth) appData.currentMonth = now0.getFullYear() + '-' + String(now0.getMonth()+1).padStart(2,'0');
 
-function loadData(){
-  const saved = localStorage.getItem('budgetAppData_v6');
-  if(saved){
-    try{
-      const parsed = JSON.parse(saved);
-      appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-    }catch(e){}
+  function loadData(){
+    const saved = localStorage.getItem('budgetAppData_v7');
+    if(saved){
+      try{
+        const parsed = JSON.parse(saved);
+        appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+        if(!appData.currentMonth){
+          const n = new Date();
+          appData.currentMonth = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
+        }
+      }catch(e){}
+    }
   }
-}
-function saveData(){ localStorage.setItem('budgetAppData_v6', JSON.stringify(appData)); }
-function isPro(){ return appData.subscription && appData.subscription.plan === 'pro'; }
+  function saveData(){ localStorage.setItem('budgetAppData_v7', JSON.stringify(appData)); }
+  function getMonthKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
+  function currentMonthDate(){
+    const [y,m] = appData.currentMonth.split('-').map(Number);
+    return new Date(y, m-1, 1);
+  }
+  function txMonthKey(tx){
+    if(!tx.date) return null;
+    const parts = tx.date.split('.');
+    if(parts.length !== 3) return null;
+    return parts[2] + '-' + parts[1];
+  }
+  function monthTx(){ return (appData.history || []).filter(tx => txMonthKey(tx) === appData.currentMonth); }
 
+  function renderMonthBar(){
+    const d = currentMonthDate();
+    const mLabel = document.getElementById('monthLabel');
+    const yLabel = document.getElementById('yearLabel');
+    const stat = document.getElementById('monthStat');
+    if(mLabel) mLabel.textContent = t(MONTH_KEYS[d.getMonth()]);
+    if(yLabel) yLabel.textContent = d.getFullYear();
+    const count = monthTx().length;
+    if(stat) stat.textContent = count + ' txn';
+  }
+
+  function shiftMonth(dir){
+    const d = currentMonthDate();
+    d.setMonth(d.getMonth() + dir);
+    appData.currentMonth = getMonthKey(d);
+    saveData();
+    renderMonthBar();
+    renderAll();
+  }
+  
 function openPicker(kind){
   const cfg = {
     envelope:        { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
@@ -971,6 +1009,7 @@ function renderReferral(){
   const pct = next > prev ? Math.min(100, ((count - prev)/(next - prev))*100) : 100;
   const el = id => document.getElementById(id);
   if(el('refCode')) el('refCode').innerText = r.code || '—';
+  if(el('refLink')) el('refLink').value = r.link || '';
   if(el('refProgressFill')) el('refProgressFill').style.width = pct + '%';
   if(el('refProgressLabel')) el('refProgressLabel').innerText = count + ' / ' + next;
   if(el('refCount')) el('refCount').innerText = count;
@@ -978,6 +1017,22 @@ function renderReferral(){
   if(el('refC20')) el('refC20').innerText = r.coupons20 || 0;
 }
 
+  function copyRefLink(){
+    const inp = document.getElementById('refLink');
+    if(!inp || !inp.value) return;
+    inp.select();
+    try{ navigator.clipboard.writeText(inp.value); }catch(e){}
+    if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+  }
+  function shareRef(){
+    const link = document.getElementById('refLink')?.value || '';
+    if(!link) return;
+    const text = 'Family Budget — ' + link;
+    const url = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+    if(window.Telegram?.WebApp?.openTelegramLink) Telegram.WebApp.openTelegramLink(url);
+    else window.open(url, '_blank');
+  }
+  
 function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -1035,10 +1090,9 @@ function switchTxTab(tab){
   if(tab === 'receipt') updateReceiptPhotoSection();
 }
 
-function renderCategoryGrid(){
-  const grid = document.getElementById('categoryGrid');
+function renderCategoryGrid(gridId, cats, isMain){
+  const grid = document.getElementById(gridId);
   if(!grid) return;
-  const cats = activeTxType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   grid.innerHTML = cats.map((c,i) => `
     <div class="icon-item ${i===0?'active':''}" data-name="${c.name}" data-icon="${c.icon}">
       <span class="emoji">${c.icon}</span>
@@ -1049,12 +1103,14 @@ function renderCategoryGrid(){
     el.onclick = () => {
       grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
       el.classList.add('active');
-      appData.selectedCategory = el.dataset.name;
-      appData.currentIcon = el.dataset.icon;
+      if(isMain){
+        appData.selectedCategory = el.dataset.name;
+        appData.currentIcon = el.dataset.icon;
+      }
     };
   });
 }
-
+  
 function submitTransaction(){
   const amountInput = document.getElementById('txAmountInput');
   const commentInput = document.getElementById('txCommentInput');
@@ -1094,6 +1150,65 @@ function applyTx(tx){
   saveData();
 }
 
+function deleteTx(id){
+  if(!confirm(t('delete_confirm'))) return;
+  const tx = appData.history.find(x => x.id === id);
+  if(!tx) return;
+  if(tx.type === 'expense'){
+    appData.balance += tx.amount;
+    appData.monthExpense -= tx.amount;
+  } else {
+    appData.balance -= tx.amount;
+    appData.monthIncome -= tx.amount;
+  }
+  appData.history = appData.history.filter(x => x.id !== id);
+  saveData(); renderAll();
+}
+
+function openEditTx(id){
+  const tx = appData.history.find(x => x.id === id);
+  if(!tx) return;
+  editingTxId = id;
+  document.getElementById('editAmount').value = tx.amount;
+  document.getElementById('editComment').value = tx.title || '';
+  const cats = tx.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const catsArr = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  renderCategoryGrid('categoryGrid', catsArr, true);
+  setTimeout(() => {
+    const grid = document.getElementById('editCategoryGrid');
+    grid.querySelectorAll('.icon-item').forEach(el => {
+      if(el.dataset.name === tx.category) el.classList.add('active');
+      else el.classList.remove('active');
+    });
+  }, 10);
+  openModal('modalEditTx');
+}
+
+function saveEditTx(){
+  const tx = appData.history.find(x => x.id === editingTxId);
+  if(!tx) return;
+  const newAmount = parseFloat(document.getElementById('editAmount').value);
+  const newComment = document.getElementById('editComment').value.trim();
+  if(!newAmount || newAmount <= 0) return;
+  const grid = document.getElementById('editCategoryGrid');
+  const active = grid.querySelector('.icon-item.active');
+  const newCat = active ? active.dataset.name : tx.category;
+  const newIcon = active ? active.dataset.icon : tx.icon;
+  const diff = newAmount - tx.amount;
+  if(tx.type === 'expense'){
+    appData.balance -= diff;
+    appData.monthExpense += diff;
+  } else {
+    appData.balance += diff;
+    appData.monthIncome += diff;
+  }
+  tx.amount = newAmount;
+  tx.title = newComment || newCat;
+  tx.category = newCat;
+  tx.icon = newIcon;
+  saveData(); closeModal('modalEditTx'); renderAll();
+}
+  
 function updateReceiptPhotoSection(){
   const pro = isPro();
   const isExpense = activeTxType === 'expense';
@@ -1203,6 +1318,11 @@ function submitReceipt(){
   /* ============ КАЛЕНДАРЬ ============ */
 const CAL_MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 let calMonth, calYear;
+const CAL_MONTH_KEYS = MONTH_KEYS;
+function renderCalendarWeek(){
+  const el = document.getElementById('calWeek');
+  if(el) el.innerHTML = ['w_mon','w_tue','w_wed','w_thu','w_fri','w_sat','w_sun'].map(k => `<span>${t(k)}</span>`).join('');
+}
 
 function openDatePicker(){
   const cur = document.getElementById('receiptDate').value;
@@ -1218,7 +1338,7 @@ function calShift(dir){
   renderCal();
 }
 function renderCal(){
-  document.getElementById('calMonthLabel').textContent = CAL_MONTHS[calMonth] + ' ' + calYear;
+  document.getElementById('calMonthLabel').textContent = t(MONTH_KEYS[calMonth])
   const first = new Date(calYear, calMonth, 1);
   let startDay = (first.getDay() + 6) % 7;
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
@@ -1289,6 +1409,13 @@ function confirmDeposit(){
   if(!bank) return;
   bank.balance += amount;
   appData.balance -= amount;
+  const now = new Date();
+  const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  appData.history.unshift({
+    id: Date.now(), type:'expense', title: bank.name, category:'Накопления', icon:'🏦',
+    amount, date: dateStr, receipt: null
+  });
+  appData.monthExpense += amount;
   saveData(); closeModal('modalDeposit'); renderAll();
 }
 
@@ -1356,11 +1483,11 @@ function renderChart(){
   if(chartInstance) chartInstance.destroy();
 
   const byCat = {};
-  (appData.history || []).forEach(tx => {
-    if(tx.type !== 'expense') return;
-    const k = tx.category || '—';
-    byCat[k] = (byCat[k] || 0) + (tx.amount || 0);
-  });
+  monthTx().forEach(tx => {
+  if(tx.type !== 'expense') return;
+  const k = tx.category || '—';
+  byCat[k] = (byCat[k] || 0) + (tx.amount || 0);
+});
   const entries = Object.entries(byCat).filter(([k,v]) => v > 0);
   const labels = entries.length ? entries.map(e => e[0]) : [t('no_data')];
   const data = entries.length ? entries.map(e => e[1]) : [1];
@@ -1376,9 +1503,16 @@ function escapeAttr(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/"/
 
 function renderAll(){
   const el = id => document.getElementById(id);
-  if(el('totalBalance')) el('totalBalance').innerText = fmtMoney(appData.balance);
-  if(el('monthIncome')) el('monthIncome').innerText = '+' + fmtMoney(appData.monthIncome);
-  if(el('monthExpense')) el('monthExpense').innerText = '-' + fmtMoney(appData.monthExpense);
+
+  renderMonthBar();
+
+  const mtx = monthTx();
+  const inc = mtx.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const exp = mtx.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+
+  if(el('totalBalance')) el('totalBalance').innerText = fmtMoney(inc - exp);
+  if(el('monthIncome')) el('monthIncome').innerText = '+' + fmtMoney(inc);
+  if(el('monthExpense')) el('monthExpense').innerText = '-' + fmtMoney(exp);
 
   renderSettingsLabels();
   renderReferral();
@@ -1415,7 +1549,7 @@ function renderAll(){
 
   const histBox = document.getElementById('historyContainer');
   if(histBox){
-    histBox.innerHTML = appData.history.length ? appData.history.map(item => {
+    histBox.innerHTML = mtx.length ? mtx.map(item => {
       const sub = item.receipt
         ? `${escapeAttr(item.receipt.store)} · ${item.receipt.items.length} · ${item.date}`
         : `${escapeAttr(item.category)} · ${item.date}`;
@@ -1430,12 +1564,21 @@ function renderAll(){
         <div class="history-amount ${item.type === 'expense' ? 'exp' : 'inc'}">
           ${item.type === 'expense' ? '-' : '+'}${fmtMoney(item.amount)}
         </div>
+        <div class="history-tools">
+          <button onclick="openEditTx(${item.id})"><i class="fa-solid fa-pen"></i></button>
+          <button class="del" onclick="deleteTx(${item.id})"><i class="fa-solid fa-trash"></i></button>
+        </div>
       </div>`;
     }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_history')}</div>`;
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  if(!appData.currentMonth){
+    const n = new Date();
+    appData.currentMonth = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
+  }
   loadData();
   if(!appData.theme && window.Telegram?.WebApp?.colorScheme){
     appData.theme = Telegram.WebApp.colorScheme;

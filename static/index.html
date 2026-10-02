@@ -188,7 +188,17 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 
   <div id="tab-budget" class="tab-content">
-    <div class="balance-card">
+    <div class="month-bar">
+      <button onclick="shiftMonth(-1)">‹</button>
+      <div>
+        <span class="m" id="monthLabel">—</span>
+        <span class="y" id="yearLabel">—</span>
+      </div>
+      <span class="mstat" id="monthStat"></span>
+      <button onclick="shiftMonth(1)">›</button>
+    </div>
+    
+  <div class="balance-card">
       <div class="balance-title" data-i18n="balance">Текущий баланс</div>
       <div class="balance-val" id="totalBalance">0 ₴</div>
       <div class="balance-stats">
@@ -268,12 +278,19 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div class="card">
       <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> <span data-i18n="referral">Пригласи друга</span></h5>
       <div class="ref-code" id="refCode">—</div>
+      <div class="ref-link-row">
+        <input type="text" id="refLink" readonly placeholder="ссылка">
+        <button class="copy-btn" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
+      </div>
       <div class="ref-progress-bar"><div class="ref-progress-fill" id="refProgressFill"></div></div>
       <div class="ref-progress-label" id="refProgressLabel">0 / 1</div>
       <div class="ref-stats">
         <div class="ref-stat"><div class="lbl2" data-i18n="invited">Приглашено</div><div class="val" id="refCount">0</div></div>
         <div class="ref-stat"><div class="lbl2" data-i18n="c10">Купон 10%</div><div class="val" id="refC10">0</div></div>
         <div class="ref-stat"><div class="lbl2" data-i18n="c20">Купон 20%</div><div class="val" id="refC20">0</div></div>
+        <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
+          <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
+        </button>
       </div>
     </div>
 
@@ -383,7 +400,25 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
-<div class="modal" id="modalPicker">
+  <div class="modal" id="modalEditTx">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-i18n="edit_tx">Изменить</h3>
+        <span class="modal-close" onclick="closeModal('modalEditTx')">×</span>
+      </div>
+      <label class="lbl" style="margin-top:0" data-i18n="category_lbl">Категория</label>
+      <div id="editCategoryGrid" class="icon-grid"></div>
+      <label class="lbl" data-i18n="amount_lbl">Сумма</label>
+      <input type="number" id="editAmount" class="custom-input" inputmode="decimal">
+      <label class="lbl" data-i18n="comment_lbl">Комментарий</label>
+      <input type="text" id="editComment" class="custom-input">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="closeModal('modalEditTx')" data-i18n="cancel">Отмена</button>
+        <button class="btn btn-accent" style="flex:1" onclick="saveEditTx()" data-i18n="save">Сохранить</button>
+      </div>
+    </div>
+  </div>
+  
   <div class="modal-content">
     <div class="modal-header">
       <h3 id="pickerTitle">Выбрать</h3>

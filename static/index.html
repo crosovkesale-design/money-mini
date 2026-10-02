@@ -157,6 +157,22 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .cal-day.sel{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
 .cal-day.today{border-color:var(--success)}
 .cal-empty{padding:10px 0}
+
+/* month bar */
+.month-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.month-bar button{background:transparent;border:0;color:var(--text);font-size:20px;cursor:pointer;padding:4px 12px;border-radius:8px}
+.month-bar button:active{background:var(--bg)}
+.month-bar .m{font-weight:700;font-size:15px;text-transform:capitalize}
+.month-bar .y{color:var(--muted);font-size:12px;font-weight:400;margin-left:6px}
+.month-bar .mstat{margin-left:auto;font-size:11px;color:var(--muted);margin-right:8px}
+
+/* history tools */
+.history-item{gap:8px}
+.history-left{flex:1}
+.history-tools{display:flex;gap:4px;flex-shrink:0}
+.history-tools button{background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.history-tools button:hover{color:var(--accent);border-color:var(--accent)}
+.history-tools button.del:hover{color:var(--danger);border-color:var(--danger)}
 </style>
 </head>
 <body>

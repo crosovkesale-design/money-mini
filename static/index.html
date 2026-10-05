@@ -1580,12 +1580,12 @@ function renderAll(){
     histBox.innerHTML = mtx.length ? mtx.map(item => {
       const sub = item.receipt
         ? `${escapeAttr(item.receipt.store)} · ${item.receipt.items.length} · ${item.date}`
-        : `${escapeAttr(item.category)} · ${item.date}`;
+        : `${escapeAttr(tCat(item.category))} · ${item.date}`;
       return `<div class="history-item">
         <div class="history-left">
           <div class="history-icon">${item.icon}</div>
           <div style="min-width:0">
-            <div class="history-title">${escapeAttr(item.title)}</div>
+            <div class="history-title">${escapeAttr(item.title === item.category ? tCat(item.title) : item.title)}</div>
             <div class="history-sub">${sub}</div>
           </div>
         </div>
@@ -1614,6 +1614,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if(b) b.style.display = 'flex';
     appData.familyBannerShown = true;
     saveData();
+    const txm = document.getElementById('modalTransaction');
+    if(txm && txm.classList.contains('active')){
+      const cats = activeTxType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+      renderCategoryGrid('categoryGrid', cats, true);
+    }
   }
 
   if(window.Telegram?.WebApp) Telegram.WebApp.ready();

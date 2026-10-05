@@ -442,6 +442,24 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
+ <div class="modal" id="modalBankDate">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 data-i18n="bank_deadline_lbl">Срок</h3>
+      <span class="modal-close" onclick="closeModal('modalBankDate')">×</span>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="cal-nav" onclick="calBankShift(-1)">‹</button>
+        <span id="calBankMonthLabel"></span>
+        <button class="cal-nav" onclick="calBankShift(1)">›</button>
+      </div>
+      <div class="cal-week" id="calBankWeek"></div>
+      <div class="cal-grid" id="calBankGrid"></div>
+    </div>
+  </div>
+ </div>
+  
 <div class="modal" id="modalDeposit">
   <div class="modal-content">
     <div class="modal-header">
@@ -472,8 +490,19 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <h3 data-i18n="bank_new">Новая банка</h3>
       <span class="modal-close" onclick="closeModal('modalAddBank')">×</span>
     </div>
+    <label class="lbl" style="margin-top:0" data-i18n="bank_name_lbl">Название</label>
     <input type="text" id="bankNameInput" class="custom-input" placeholder="—">
+    <label class="lbl" data-i18n="bank_target_lbl">Цель накопления</label>
     <input type="number" id="bankTargetInput" class="custom-input" placeholder="—" inputmode="decimal">
+    <label class="lbl" data-i18n="bank_deadline_lbl">Срок (необязательно)</label>
+    <button type="button" class="select-fake" id="bankDeadlineBtn" onclick="openBankDeadlinePicker()">
+      <span id="bankDeadlineLabel" data-i18n="no_deadline">Без срока</span>
+      <i class="fa-solid fa-calendar"></i>
+    </button>
+    <button type="button" class="btn btn-outline btn-sm" style="margin-bottom:12px;display:none" id="bankDeadlineClear" onclick="clearBankDeadline()">
+      <i class="fa-solid fa-xmark"></i> <span data-i18n="clear_deadline">Убрать срок</span>
+    </button>
+    <input type="hidden" id="bankDeadlineInput">
     <button class="btn btn-accent" style="width:100%" onclick="saveBank()"><span data-i18n="create">Создать</span></button>
   </div>
 </div>
@@ -513,7 +542,11 @@ const I18N = {
     m_jul:'Июль', m_aug:'Август', m_sep:'Сентябрь', m_oct:'Октябрь', m_nov:'Ноябрь', m_dec:'Декабрь',
     w_mon:'Пн', w_tue:'Вт', w_wed:'Ср', w_thu:'Чт', w_fri:'Пт', w_sat:'Сб', w_sun:'Вс',
     store_ph:'Магазин', comment_ph:'Комментарий (необязательно)', amount_ph:'Сумма',
-    env_name_ph:'Название', env_target_ph:'Лимит в месяц', bank_target_ph:'Цель накопления'
+    env_name_ph:'Название', env_target_ph:'Лимит в месяц', bank_target_ph:'Цель накопления',
+    bank_name_lbl:'Название', bank_target_lbl:'Цель накопления', bank_deadline_lbl:'Срок', 
+    no_deadline:'Без срока', clear_deadline:'Убрать срок', 
+    bank_done:'✓ Цель достигнута', bank_left:'Осталось', bank_by:'к', bank_save:'откладывать по', 
+    bank_per_mo:'/мес', bank_over:'срок истёк', bank_limit:'Бесплатно — 2 цели. В Pro — без ограничений.'
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -547,7 +580,11 @@ const I18N = {
     m_jul:'Липень', m_aug:'Серпень', m_sep:'Вересень', m_oct:'Жовтень', m_nov:'Листопад', m_dec:'Грудень',
     w_mon:'Пн', w_tue:'Вт', w_wed:'Ср', w_thu:'Чт', w_fri:'Пт', w_sat:'Сб', w_sun:'Нд',
     store_ph:'Магазин', comment_ph:'Коментар (необов\'язково)', amount_ph:'Сума',
-    env_name_ph:'Назва', env_target_ph:'Ліміт на місяць', bank_target_ph:'Ціль накопичення'
+    env_name_ph:'Назва', env_target_ph:'Ліміт на місяць', bank_target_ph:'Ціль накопичення',
+    bank_name_lbl:'Назва', bank_target_lbl:'Ціль накопичення', bank_deadline_lbl:'Термін', 
+    no_deadline:'Без терміну', clear_deadline:'Прибрати термін', bank_done:'✓ Ціль досягнута', 
+    bank_left:'Залишилось', bank_by:'до', bank_save:'відкладати по', bank_per_mo:'/міс', 
+    bank_over:'термін вийшов', bank_limit:'Безкоштовно — 2 цілі. У Pro — без обмежень.'
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -581,7 +618,11 @@ const I18N = {
     m_jul:'July', m_aug:'August', m_sep:'September', m_oct:'October', m_nov:'November', m_dec:'December',
     w_mon:'Mo', w_tue:'Tu', w_wed:'We', w_thu:'Th', w_fri:'Fr', w_sat:'Sa', w_sun:'Su',
     store_ph:'Store', comment_ph:'Comment (optional)', amount_ph:'Amount',
-    env_name_ph:'Name', env_target_ph:'Monthly limit', bank_target_ph:'Savings goal'
+    env_name_ph:'Name', env_target_ph:'Monthly limit', bank_target_ph:'Savings goal',
+    bank_name_lbl:'Name', bank_target_lbl:'Savings goal', bank_deadline_lbl:'Deadline', 
+    no_deadline:'No deadline', clear_deadline:'Clear deadline', bank_done:'✓ Goal reached', 
+    bank_left:'Left', bank_by:'by', bank_save:'save', bank_per_mo:'/mo', bank_over:'deadline passed', 
+    bank_limit:'Free — 2 goals. Pro — unlimited.',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -615,7 +656,11 @@ const I18N = {
     m_jul:'Juli', m_aug:'August', m_sep:'September', m_oct:'Oktober', m_nov:'November', m_dec:'Dezember',
     w_mon:'Mo', w_tue:'Di', w_wed:'Mi', w_thu:'Do', w_fri:'Fr', w_sat:'Sa', w_sun:'So',
     store_ph:'Geschäft', comment_ph:'Kommentar (optional)', amount_ph:'Betrag',
-    env_name_ph:'Name', env_target_ph:'Monatslimit', bank_target_ph:'Sparziel'
+    env_name_ph:'Name', env_target_ph:'Monatslimit', bank_target_ph:'Sparziel',
+    bank_name_lbl:'Name', bank_target_lbl:'Savings goal', bank_deadline_lbl:'Deadline', 
+    no_deadline:'No deadline', clear_deadline:'Clear deadline', bank_done:'✓ Goal reached', 
+    bank_left:'Left', bank_by:'by', bank_save:'save', bank_per_mo:'/mo', bank_over:'deadline passed', 
+    bank_limit:'Free — 2 goals. Pro — unlimited.',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -649,7 +694,11 @@ const I18N = {
     m_jul:'Juillet', m_aug:'Août', m_sep:'Septembre', m_oct:'Octobre', m_nov:'Novembre', m_dec:'Décembre',
     w_mon:'Lu', w_tue:'Ma', w_wed:'Me', w_thu:'Je', w_fri:'Ve', w_sat:'Sa', w_sun:'Di',
     store_ph:'Magasin', comment_ph:'Commentaire (optionnel)', amount_ph:'Montant',
-    env_name_ph:'Nom', env_target_ph:'Limite mensuelle', bank_target_ph:'Objectif'
+    env_name_ph:'Nom', env_target_ph:'Limite mensuelle', bank_target_ph:'Objectif',
+    bank_name_lbl:'Nom', bank_target_lbl:'Objectif', bank_deadline_lbl:'Échéance', 
+    no_deadline:'Sans échéance', clear_deadline:'Retirer l\'échéance', bank_done:'✓ Objectif atteint', 
+    bank_left:'Restant', bank_by:'avant', bank_save:'épargner', bank_per_mo:'/mois', bank_over:'échéance dépassée', 
+    bank_limit:'Gratuit — 2 objectifs. Pro — illimité.',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -683,7 +732,11 @@ const I18N = {
     m_jul:'Julio', m_aug:'Agosto', m_sep:'Septiembre', m_oct:'Octubre', m_nov:'Noviembre', m_dec:'Diciembre',
     w_mon:'Lu', w_tue:'Ma', w_wed:'Mi', w_thu:'Ju', w_fri:'Vi', w_sat:'Sá', w_sun:'Do',
     store_ph:'Tienda', comment_ph:'Comentario (opcional)', amount_ph:'Cantidad',
-    env_name_ph:'Nombre', env_target_ph:'Límite mensual', bank_target_ph:'Meta de ahorro'
+    env_name_ph:'Nombre', env_target_ph:'Límite mensual', bank_target_ph:'Meta de ahorro',
+    bank_name_lbl:'Nombre', bank_target_lbl:'Meta de ahorro', bank_deadline_lbl:'Plazo', 
+    no_deadline:'Sin plazo', clear_deadline:'Quitar plazo', bank_done:'✓ Meta alcanzada', 
+    bank_left:'Restante', bank_by:'antes de', bank_save:'ahorrar', bank_per_mo:'/mes', bank_over:'plazo vencido', 
+    bank_limit:'Gratis — 2 metas. Pro — ilimitado.',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -717,7 +770,10 @@ const I18N = {
     m_jul:'Luglio', m_aug:'Agosto', m_sep:'Settembre', m_oct:'Ottobre', m_nov:'Novembre', m_dec:'Dicembre',
     w_mon:'Lu', w_tue:'Ma', w_wed:'Me', w_thu:'Gi', w_fri:'Ve', w_sat:'Sa', w_sun:'Do',
     store_ph:'Negozio', comment_ph:'Commento (opzionale)', amount_ph:'Importo',
-    env_name_ph:'Nome', env_target_ph:'Limite mensile', bank_target_ph:'Obiettivo'
+    env_name_ph:'Nome', env_target_ph:'Limite mensile', bank_target_ph:'Obiettivo',
+    bank_name_lbl:'Nome', bank_target_lbl:'Obiettivo', bank_deadline_lbl:'Scadenza', no_deadline:'Senza scadenza', 
+    clear_deadline:'Rimuovi scadenza', bank_done:'✓ Obiettivo raggiunto', bank_left:'Rimanente', bank_by:'entro', 
+    bank_save:'risparmiare', bank_per_mo:'/mese', bank_over:'scadenza passata', bank_limit:'Gratis — 2 obiettivi. Pro — illimitato.',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -751,7 +807,11 @@ const I18N = {
     m_jul:'Lipiec', m_aug:'Sierpień', m_sep:'Wrzesień', m_oct:'Październik', m_nov:'Listopad', m_dec:'Grudzień',
     w_mon:'Pn', w_tue:'Wt', w_wed:'Śr', w_thu:'Cz', w_fri:'Pt', w_sat:'So', w_sun:'Nd',
     store_ph:'Sklep', comment_ph:'Komentarz (opcjonalnie)', amount_ph:'Kwota',
-    env_name_ph:'Nazwa', env_target_ph:'Limit miesięczny', bank_target_ph:'Cel oszczędności'
+    env_name_ph:'Nazwa', env_target_ph:'Limit miesięczny', bank_target_ph:'Cel oszczędności',
+    bank_name_lbl:'Nazwa', bank_target_lbl:'Cel oszczędności', bank_deadline_lbl:'Termin', 
+    no_deadline:'Bez terminu', clear_deadline:'Usuń termin', bank_done:'✓ Cel osiągnięty', 
+    bank_left:'Pozostało', bank_by:'do', bank_save:'odkładać', bank_per_mo:'/mies', bank_over:'termin minął', 
+    bank_limit:'Za darmo — 2 cele. Pro — bez limitu.',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -785,7 +845,11 @@ const I18N = {
     m_jul:'Temmuz', m_aug:'Ağustos', m_sep:'Eylül', m_oct:'Ekim', m_nov:'Kasım', m_dec:'Aralık',
     w_mon:'Pt', w_tue:'Sa', w_wed:'Ça', w_thu:'Pe', w_fri:'Cu', w_sat:'Ct', w_sun:'Pz',
     store_ph:'Mağaza', comment_ph:'Yorum (isteğe bağlı)', amount_ph:'Tutar',
-    env_name_ph:'Ad', env_target_ph:'Aylık limit', bank_target_ph:'Tasarruf hedefi'
+    env_name_ph:'Ad', env_target_ph:'Aylık limit', bank_target_ph:'Tasarruf hedefi',
+    bank_name_lbl:'Ad', bank_target_lbl:'Tasarruf hedefi', bank_deadline_lbl:'Son tarih', 
+    no_deadline:'Süre yok', clear_deadline:'Süreyi kaldır', bank_done:'✓ Hedefe ulaşıldı', 
+    bank_left:'Kalan', bank_by:'tarihine kadar', bank_save:'ayır', bank_per_mo:'/ay', 
+    bank_over:'süre geçti', bank_limit:'Ücretsiz — 2 hedef. Pro — sınırsız.',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -819,7 +883,11 @@ const I18N = {
     m_jul:'七月', m_aug:'八月', m_sep:'九月', m_oct:'十月', m_nov:'十一月', m_dec:'十二月',
     w_mon:'一', w_tue:'二', w_wed:'三', w_thu:'四', w_fri:'五', w_sat:'六', w_sun:'日',
     store_ph:'商店', comment_ph:'备注（可选）', amount_ph:'金额',
-    env_name_ph:'名称', env_target_ph:'每月限额', bank_target_ph:'储蓄目标'
+    env_name_ph:'名称', env_target_ph:'每月限额', bank_target_ph:'储蓄目标',
+    bank_name_lbl:'名称', bank_target_lbl:'储蓄目标', bank_deadline_lbl:'截止日期', 
+    no_deadline:'无期限', clear_deadline:'清除期限', bank_done:'✓ 目标达成', bank_left:'剩余', 
+    bank_by:'截止', bank_save:'每月存', bank_per_mo:'/月', bank_over:'期限已过', 
+    bank_limit:'免费 — 2 个目标。Pro — 无限制。',
   }
 };
 

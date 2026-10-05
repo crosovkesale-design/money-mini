@@ -273,53 +273,146 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div class="card">
       <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> <span data-i18n="referral">Пригласи друга</span></h5>
       <div class="ref-code" id="refCode">—</div>
-      <div class="ref-link-row">
-        <input type="text" id="refLink" readonly placeholder="ссылка">
-        <button class="copy-btn" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
-      </div>
-      <div class="ref-progress-bar"><div class="ref-progress-fill" id="refProgressFill"></div></div>
-      <div class="ref-progress-label" id="refProgressLabel">0 / 1</div>
-      <div class="ref-stats">
-        <div class="ref-stat"><div class="lbl2" data-i18n="invited">Приглашено</div><div class="val" id="refCount">0</div></div>
-        <div class="ref-stat"><div class="lbl2" data-i18n="c10">Купон 10%</div><div class="val" id="refC10">0</div></div>
-        <div class="ref-stat"><div class="lbl2" data-i18n="c20">Купон 20%</div><div class="val" id="refC20">0</div></div>
-      </div>
-      <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
-        <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
-      </button>
+<div id="tab-budget" class="tab-content">
+  <div class="month-bar">
+    <button onclick="shiftMonth(-1)">‹</button>
+    <div>
+      <span class="m" id="monthLabel">—</span>
+      <span class="y" id="yearLabel">—</span>
     </div>
-
-    <div class="card">
-      <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> <span data-i18n="family">Семья</span></h5>
-      <div id="familyStatus" class="muted" style="margin-bottom:10px" data-i18n="family_alone">Вы ведёте бюджет один.</div>
-      <button id="familyToggle" class="btn btn-outline" style="width:100%" onclick="toggleFamilyForm()">
-        <i class="fa-solid fa-plus"></i> <span data-i18n="family_join">Присоединиться к семье</span>
-      </button>
-      <div id="familyForm" class="family-block collapsed">
-        <p class="muted" style="margin-bottom:8px" data-i18n="family_hint">Введите код партнёра или поделитесь своим.</p>
-        <input type="text" id="familyCodeInput" class="custom-input" placeholder="FAM-000000" style="margin-bottom:8px">
-        <button class="btn btn-accent" style="width:100%" onclick="connectFamily()"><span data-i18n="connect">Подключиться</span></button>
-        <p class="muted" style="margin-top:14px" data-i18n="your_code">Ваш код для партнёра:</p>
-        <div class="family-code">
-          <input type="text" id="myFamilyCode" readonly>
-          <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
-        </div>
-      </div>
-      <div id="familyJoined" class="collapsed">
-        <div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:10px">
-          👥 <span data-i18n="family">Семья</span>: <span id="familyMembersCount">1</span>
-        </div>
-        <div class="family-code">
-          <input type="text" id="joinedCode" readonly>
-          <button class="copy-btn" onclick="copyJoinedCode()"><i class="fa-solid fa-copy"></i></button>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn btn-outline" onclick="leaveFamily()"><span data-i18n="leave">Выйти из семьи</span></button>
-        </div>
-      </div>
-    </div>
-
+    <span class="mstat" id="monthStat"></span>
+    <button onclick="shiftMonth(1)">›</button>
   </div>
+
+  <div class="balance-card">
+    <div class="balance-title" data-i18n="balance">Текущий баланс</div>
+    <div class="balance-val" id="totalBalance">0 ₴</div>
+    <div id="carryIn" style="display:none;font-size:12px;font-weight:600;margin-bottom:10px"></div>
+    <div class="balance-stats">
+      <div class="stat-item"><div class="stat-label" data-i18n="income">Доходы</div><div class="stat-amount inc" id="monthIncome">+0 ₴</div></div>
+      <div class="stat-item"><div class="stat-label" data-i18n="expense">Расходы</div><div class="stat-amount exp" id="monthExpense">-0 ₴</div></div>
+    </div>
+  </div>
+  <div class="actions-grid">
+    <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_income">Доход</span></button>
+    <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> <span data-i18n="btn_expense">Расход</span></button>
+  </div>
+  <h4 style="margin:16px 0 10px" data-i18n="history">История операций</h4>
+  <div id="historyContainer" class="history-list"></div>
+</div>
+
+<div id="tab-envelopes" class="tab-content" style="display:none">
+  <div class="row-between">
+    <h4 data-i18n="env_title">Конверты расходов</h4>
+    <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
+  </div>
+  <div id="envelopesList"></div>
+</div>
+
+<div id="tab-banks" class="tab-content" style="display:none">
+  <div class="row-between">
+    <h4 data-i18n="bank_title">Накопительные банки</h4>
+    <button class="btn btn-accent btn-sm" onclick="resetBankForm();openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
+  </div>
+  <div id="banksList"></div>
+</div>
+
+<div id="tab-analytics" class="tab-content" style="display:none">
+  <h4 data-i18n="analytics_title">Аналитика расходов</h4>
+  <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
+  <h4 style="margin:20px 0 10px" data-i18n="months_chart_title">Динамика по месяцам</h4>
+  <div class="card" style="margin-top:12px"><canvas id="monthsChart"></canvas></div>
+</div>
+
+<div id="tab-settings" class="tab-content" style="display:none">
+
+  <div class="card">
+    <div class="row-between">
+      <h5><i class="fa-solid fa-crown"></i> <span data-i18n="tariff">Тариф</span></h5>
+      <span id="subBadge"></span>
+    </div>
+    <div class="sub-row">
+      <span style="font-size:13px" data-i18n="manual_receipts">Ручные чеки</span>
+      <span style="color:var(--success);font-size:13px">✓ <span data-i18n="available">Доступно</span></span>
+    </div>
+    <div class="sub-row">
+      <span style="font-size:13px" data-i18n="photo_receipts">Чеки по фото (OCR)</span>
+      <span id="ocrStatus" style="font-size:13px"></span>
+    </div>
+    <div class="dev-toggle" id="devToggle">
+      <button data-plan="free" onclick="setPlan('free')">Free</button>
+      <button data-plan="pro" onclick="setPlan('pro')">Pro</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h5 style="margin-bottom:12px"><i class="fa-solid fa-globe"></i> <span data-i18n="lang_currency">Язык и валюта</span></h5>
+    <label class="lbl" style="margin-top:0" data-i18n="language">Язык</label>
+    <button type="button" class="select-fake" onclick="openPicker('language')">
+      <span id="langLabel">🇷🇺 Русский</span>
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <label class="lbl" data-i18n="currency">Валюта</label>
+    <button type="button" class="select-fake" onclick="openPicker('currency')">
+      <span id="currLabel">₴ Гривня</span>
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <h5 style="margin:16px 0 8px 0"><i class="fa-solid fa-palette"></i> <span data-i18n="theme">Тема</span></h5>
+    <div class="seg">
+      <button class="seg-btn" data-theme-btn="dark" onclick="setTheme('dark')"><span data-i18n="dark">🌙 Тёмная</span></button>
+      <button class="seg-btn" data-theme-btn="light" onclick="setTheme('light')"><span data-i18n="light">☀️ Светлая</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> <span data-i18n="referral">Пригласи друга</span></h5>
+    <div class="ref-code" id="refCode">—</div>
+    <div class="ref-link-row">
+      <input type="text" id="refLink" readonly placeholder="ссылка">
+      <button class="copy-btn" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
+    </div>
+    <div class="ref-progress-bar"><div class="ref-progress-fill" id="refProgressFill"></div></div>
+    <div class="ref-progress-label" id="refProgressLabel">0 / 1</div>
+    <div class="ref-stats">
+      <div class="ref-stat"><div class="lbl2" data-i18n="invited">Приглашено</div><div class="val" id="refCount">0</div></div>
+      <div class="ref-stat"><div class="lbl2" data-i18n="c10">Купон 10%</div><div class="val" id="refC10">0</div></div>
+      <div class="ref-stat"><div class="lbl2" data-i18n="c20">Купон 20%</div><div class="val" id="refC20">0</div></div>
+    </div>
+    <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
+      <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
+    </button>
+  </div>
+
+  <div class="card">
+    <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> <span data-i18n="family">Семья</span></h5>
+    <div id="familyStatus" class="muted" style="margin-bottom:10px" data-i18n="family_alone">Вы ведёте бюджет один.</div>
+    <button id="familyToggle" class="btn btn-outline" style="width:100%" onclick="toggleFamilyForm()">
+      <i class="fa-solid fa-plus"></i> <span data-i18n="family_join">Присоединиться к семье</span>
+    </button>
+    <div id="familyForm" class="family-block collapsed">
+      <p class="muted" style="margin-bottom:8px" data-i18n="family_hint">Введите код партнёра или поделитесь своим.</p>
+      <input type="text" id="familyCodeInput" class="custom-input" placeholder="FAM-000000" style="margin-bottom:8px">
+      <button class="btn btn-accent" style="width:100%" onclick="connectFamily()"><span data-i18n="connect">Подключиться</span></button>
+      <p class="muted" style="margin-top:14px" data-i18n="your_code">Ваш код для партнёра:</p>
+      <div class="family-code">
+        <input type="text" id="myFamilyCode" readonly>
+        <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+      </div>
+    </div>
+    <div id="familyJoined" class="collapsed">
+      <div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:10px">
+        👥 <span data-i18n="family">Семья</span>: <span id="familyMembersCount">1</span>
+      </div>
+      <div class="family-code">
+        <input type="text" id="joinedCode" readonly>
+        <button class="copy-btn" onclick="copyJoinedCode()"><i class="fa-solid fa-copy"></i></button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-outline" onclick="leaveFamily()"><span data-i18n="leave">Выйти из семьи</span></button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="nav-bar">
@@ -484,6 +577,20 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
+<div class="modal" id="modalConfirm">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="confirmTitle" data-i18n="confirm_title">Подтверждение</h3>
+      <span class="modal-close" onclick="confirmCancel()">×</span>
+    </div>
+    <p id="confirmText" style="font-size:14px;margin-bottom:18px;line-height:1.4"></p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="flex:1" onclick="confirmCancel()" data-i18n="cancel">Отмена</button>
+      <button class="btn btn-danger" style="flex:1" onclick="confirmOk()" data-i18n="delete_btn">Удалить</button>
+    </div>
+  </div>
+</div>
+  
 <div class="modal" id="modalAddBank">
   <div class="modal-content">
     <div class="modal-header">
@@ -546,7 +653,8 @@ const I18N = {
     bank_name_lbl:'Название', bank_target_lbl:'Цель накопления', bank_deadline_lbl:'Срок', 
     no_deadline:'Без срока', clear_deadline:'Убрать срок', 
     bank_done:'✓ Цель достигнута', bank_left:'Осталось', bank_by:'к', bank_save:'откладывать по', 
-    bank_per_mo:'/мес', bank_over:'срок истёк', bank_limit:'Бесплатно — 2 цели. В Pro — без ограничений.'
+    bank_per_mo:'/мес', bank_over:'срок истёк', bank_limit:'Бесплатно — 2 цели. В Pro — без ограничений.',
+    confirm_title:'Подтверждение', delete_btn:'Удалить',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -584,7 +692,8 @@ const I18N = {
     bank_name_lbl:'Назва', bank_target_lbl:'Ціль накопичення', bank_deadline_lbl:'Термін', 
     no_deadline:'Без терміну', clear_deadline:'Прибрати термін', bank_done:'✓ Ціль досягнута', 
     bank_left:'Залишилось', bank_by:'до', bank_save:'відкладати по', bank_per_mo:'/міс', 
-    bank_over:'термін вийшов', bank_limit:'Безкоштовно — 2 цілі. У Pro — без обмежень.'
+    bank_over:'термін вийшов', bank_limit:'Безкоштовно — 2 цілі. У Pro — без обмежень.',
+    confirm_title:'Підтвердження', delete_btn:'Видалити'
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -622,7 +731,7 @@ const I18N = {
     bank_name_lbl:'Name', bank_target_lbl:'Savings goal', bank_deadline_lbl:'Deadline', 
     no_deadline:'No deadline', clear_deadline:'Clear deadline', bank_done:'✓ Goal reached', 
     bank_left:'Left', bank_by:'by', bank_save:'save', bank_per_mo:'/mo', bank_over:'deadline passed', 
-    bank_limit:'Free — 2 goals. Pro — unlimited.',
+    bank_limit:'Free — 2 goals. Pro — unlimited.', confirm_title:'Confirmation', delete_btn:'Delete',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -660,7 +769,7 @@ const I18N = {
     bank_name_lbl:'Name', bank_target_lbl:'Savings goal', bank_deadline_lbl:'Deadline', 
     no_deadline:'No deadline', clear_deadline:'Clear deadline', bank_done:'✓ Goal reached', 
     bank_left:'Left', bank_by:'by', bank_save:'save', bank_per_mo:'/mo', bank_over:'deadline passed', 
-    bank_limit:'Free — 2 goals. Pro — unlimited.',
+    bank_limit:'Free — 2 goals. Pro — unlimited.', confirm_title:'Bestätigung', delete_btn:'Löschen',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -698,7 +807,7 @@ const I18N = {
     bank_name_lbl:'Nom', bank_target_lbl:'Objectif', bank_deadline_lbl:'Échéance', 
     no_deadline:'Sans échéance', clear_deadline:'Retirer l\'échéance', bank_done:'✓ Objectif atteint', 
     bank_left:'Restant', bank_by:'avant', bank_save:'épargner', bank_per_mo:'/mois', bank_over:'échéance dépassée', 
-    bank_limit:'Gratuit — 2 objectifs. Pro — illimité.',
+    bank_limit:'Gratuit — 2 objectifs. Pro — illimité.', confirm_title:'Confirmation', delete_btn:'Supprimer',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -736,7 +845,7 @@ const I18N = {
     bank_name_lbl:'Nombre', bank_target_lbl:'Meta de ahorro', bank_deadline_lbl:'Plazo', 
     no_deadline:'Sin plazo', clear_deadline:'Quitar plazo', bank_done:'✓ Meta alcanzada', 
     bank_left:'Restante', bank_by:'antes de', bank_save:'ahorrar', bank_per_mo:'/mes', bank_over:'plazo vencido', 
-    bank_limit:'Gratis — 2 metas. Pro — ilimitado.',
+    bank_limit:'Gratis — 2 metas. Pro — ilimitado.', confirm_title:'Confirmación', delete_btn:'Eliminar',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -774,6 +883,7 @@ const I18N = {
     bank_name_lbl:'Nome', bank_target_lbl:'Obiettivo', bank_deadline_lbl:'Scadenza', no_deadline:'Senza scadenza', 
     clear_deadline:'Rimuovi scadenza', bank_done:'✓ Obiettivo raggiunto', bank_left:'Rimanente', bank_by:'entro', 
     bank_save:'risparmiare', bank_per_mo:'/mese', bank_over:'scadenza passata', bank_limit:'Gratis — 2 obiettivi. Pro — illimitato.',
+    confirm_title:'Conferma', delete_btn:'Elimina',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -811,7 +921,7 @@ const I18N = {
     bank_name_lbl:'Nazwa', bank_target_lbl:'Cel oszczędności', bank_deadline_lbl:'Termin', 
     no_deadline:'Bez terminu', clear_deadline:'Usuń termin', bank_done:'✓ Cel osiągnięty', 
     bank_left:'Pozostało', bank_by:'do', bank_save:'odkładać', bank_per_mo:'/mies', bank_over:'termin minął', 
-    bank_limit:'Za darmo — 2 cele. Pro — bez limitu.',
+    bank_limit:'Za darmo — 2 cele. Pro — bez limitu.', confirm_title:'Potwierdzenie', delete_btn:'Usuń',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -850,6 +960,7 @@ const I18N = {
     no_deadline:'Süre yok', clear_deadline:'Süreyi kaldır', bank_done:'✓ Hedefe ulaşıldı', 
     bank_left:'Kalan', bank_by:'tarihine kadar', bank_save:'ayır', bank_per_mo:'/ay', 
     bank_over:'süre geçti', bank_limit:'Ücretsiz — 2 hedef. Pro — sınırsız.',
+    confirm_title:'Onay', delete_btn:'Sil',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -887,7 +998,7 @@ const I18N = {
     bank_name_lbl:'名称', bank_target_lbl:'储蓄目标', bank_deadline_lbl:'截止日期', 
     no_deadline:'无期限', clear_deadline:'清除期限', bank_done:'✓ 目标达成', bank_left:'剩余', 
     bank_by:'截止', bank_save:'每月存', bank_per_mo:'/月', bank_over:'期限已过', 
-    bank_limit:'免费 — 2 个目标。Pro — 无限制。',
+    bank_limit:'免费 — 2 个目标。Pro — 无限制。', confirm_title:'确认', delete_btn:'删除',
   }
 };
 
@@ -933,6 +1044,7 @@ function applyLang(){
   'Образование':  {en:'Education', uk:'Освіта', de:'Bildung', fr:'Éducation', es:'Educación', it:'Istruzione', pl:'Edukacja', tr:'Eğitim', zh:'教育'},
   'Ремонт':       {en:'Repairs', uk:'Ремонт', de:'Reparatur', fr:'Réparations', es:'Reparaciones', it:'Riparazioni', pl:'Naprawy', tr:'Tamir', zh:'维修'},
   'Кредит':       {en:'Loan', uk:'Кредит', de:'Kredit', fr:'Crédit', es:'Crédito', it:'Prestito', pl:'Kredyt', tr:'Kredi', zh:'贷款'},
+  'Алименты':     {en:'Alimony', uk:'Аліменти', de:'Unterhalt', fr:'Pension', es:'Pensión', it:'Alimenti', pl:'Alimenty', tr:'Nafaka', zh:'抚养费'},
   'Разное':       {en:'Other', uk:'Різне', de:'Sonstiges', fr:'Divers', es:'Varios', it:'Altro', pl:'Inne', tr:'Diğer', zh:'其他'},
   'Зарплата':     {en:'Salary', uk:'Зарплата', de:'Gehalt', fr:'Salaire', es:'Salario', it:'Stipendio', pl:'Wynagrodzenie', tr:'Maaş', zh:'工资'},
   'Аванс':        {en:'Advance', uk:'Аванс', de:'Vorschuss', fr:'Avance', es:'Anticipo', it:'Anticipo', pl:'Zaliczka', tr:'Avans', zh:'预支'},
@@ -960,7 +1072,7 @@ function tCat(name){
   {icon:'💡',name:'Коммуналка'},{icon:'📱',name:'Связь'},{icon:'💊',name:'Аптека'},{icon:'👕',name:'Одежда'},
   {icon:'💇',name:'Красота'},{icon:'🏋️',name:'Спорт'},{icon:'🎬',name:'Кино'},{icon:'🎮',name:'Игры'},
   {icon:'🎉',name:'Досуг'},{icon:'🎁',name:'Подарки'},{icon:'🐾',name:'Питомцы'},{icon:'✈️',name:'Путешествия'},
-  {icon:'📚',name:'Образование'},{icon:'🔧',name:'Ремонт'},{icon:'💳',name:'Кредит'},{icon:'📦',name:'Разное'}
+  {icon:'📚',name:'Образование'},{icon:'💳',name:'Кредит'},{icon:'👨‍👧',name:'Алименты'},{icon:'📦',name:'Разное'}
 ];
 const INCOME_CATEGORIES = [
   {icon:'💰',name:'Зарплата'},{icon:'💵',name:'Аванс'},{icon:'💸',name:'Кэшбэк'},{icon:'📈',name:'Инвестиции'},
@@ -1194,6 +1306,25 @@ function resetBankForm(){
 }
   
 function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('active'); }
+
+let _confirmCb = null;
+function askConfirm(text, cb){
+  const el = document.getElementById('confirmText');
+  if(el) el.innerText = text;
+  _confirmCb = cb;
+  openModal('modalConfirm');
+}
+function confirmOk(){
+  closeModal('modalConfirm');
+  const cb = _confirmCb;
+  _confirmCb = null;
+  if(cb) cb();
+}
+function confirmCancel(){
+  closeModal('modalConfirm');
+  _confirmCb = null;
+}
+  
 function closeModal(id){ const m = document.getElementById(id); if(m) m.classList.remove('active'); }
 
 function openTransactionModal(type){
@@ -1221,10 +1352,14 @@ function openTransactionModal(type){
   if(envRLabel) envRLabel.innerText = envR ? envR.name : '—';
 
   document.getElementById('receiptStore').value = '';
-  const today = new Date();
-  document.getElementById('receiptDate').value = today.toISOString().slice(0,10);
+  const now = new Date();
+  const [yy, mm] = appData.currentMonth.split('-').map(Number);
+  const isCurrent = yy === now.getFullYear() && (mm-1) === now.getMonth();
+  const day = isCurrent ? now.getDate() : Math.min(now.getDate(), new Date(yy, mm, 0).getDate());
+  const isoDate = yy + '-' + String(mm).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+  document.getElementById('receiptDate').value = isoDate;
   document.getElementById('receiptDateLabel').innerText =
-    String(today.getDate()).padStart(2,'0') + '.' + String(today.getMonth()+1).padStart(2,'0') + '.' + today.getFullYear();
+    String(day).padStart(2,'0') + '.' + String(mm).padStart(2,'0') + '.' + yy;
   appData.receiptItems = [];
   renderReceiptItems();
   updateReceiptPhotoSection();
@@ -1267,8 +1402,13 @@ function submitTransaction(){
   const amount = parseFloat(String(amountInput.value).replace(',', '.'));
   const comment = commentInput.value.trim();
   if(!amount || amount <= 0) return;
+
   const now = new Date();
-  const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  const [yy, mm] = appData.currentMonth.split('-').map(Number);
+  const isCurrentMonth = yy === now.getFullYear() && (mm - 1) === now.getMonth();
+  const day = isCurrentMonth ? now.getDate() : Math.min(now.getDate(), new Date(yy, mm, 0).getDate());
+  const dateStr = String(day).padStart(2,'0') + '.' + String(mm).padStart(2,'0') + '.' + yy;
+
   const tx = {
     id: Date.now(), type: activeTxType,
     title: comment || appData.selectedCategory,
@@ -1301,18 +1441,19 @@ function applyTx(tx){
 }
 
 function deleteTx(id){
-  if(!confirm(t('delete_confirm'))) return;
-  const tx = appData.history.find(x => x.id === id);
-  if(!tx) return;
-  if(tx.type === 'expense'){
-    appData.balance += tx.amount;
-    appData.monthExpense -= tx.amount;
-  } else {
-    appData.balance -= tx.amount;
-    appData.monthIncome -= tx.amount;
-  }
-  appData.history = appData.history.filter(x => x.id !== id);
-  saveData(); renderAll();
+  askConfirm(t('delete_confirm'), () => {
+    const tx = appData.history.find(x => x.id === id);
+    if(!tx) return;
+    if(tx.type === 'expense'){
+      appData.balance += tx.amount;
+      appData.monthExpense -= tx.amount;
+    } else {
+      appData.balance -= tx.amount;
+      appData.monthIncome -= tx.amount;
+    }
+    appData.history = appData.history.filter(x => x.id !== id);
+    saveData(); renderAll();
+  });
 }
 
 function openEditTx(id){
@@ -1585,15 +1726,18 @@ function saveBank(){
   renderAll();
 }
 function deleteEnvelope(id){
-  if(!confirm(t('delete_confirm'))) return;
-  appData.envelopes = appData.envelopes.filter(e => e.id != id);
-  saveData(); renderAll();
+  askConfirm(t('delete_confirm'), () => {
+    appData.envelopes = appData.envelopes.filter(e => e.id != id);
+    saveData(); renderAll();
+  });
 }
 function deleteBank(id){
-  if(!confirm(t('delete_confirm'))) return;
-  appData.banks = appData.banks.filter(b => b.id != id);
-  saveData(); renderAll();
+  askConfirm(t('delete_confirm'), () => {
+    appData.banks = appData.banks.filter(b => b.id != id);
+    saveData(); renderAll();
+  });
 }
+  
 function depositBank(id){
   appData.selectedBankId = id;
   const bank = appData.banks.find(b => b.id == id);
@@ -1635,10 +1779,11 @@ function connectFamily(){
   codeInput.value = '';
 }
 function leaveFamily(){
-  if(!confirm(t('delete_confirm'))) return;
-  appData.joinedFamily = false;
-  appData.familyMembers = 1;
-  saveData(); renderFamily(); renderAll();
+  askConfirm(t('delete_confirm'), () => {
+    appData.joinedFamily = false;
+    appData.familyMembers = 1;
+    saveData(); renderFamily(); renderAll();
+  });
 }
 function copyFamilyCode(){ const el = document.getElementById('myFamilyCode'); el.select(); try{navigator.clipboard.writeText(el.value);}catch(e){} }
 function copyJoinedCode(){ const el = document.getElementById('joinedCode'); el.select(); try{navigator.clipboard.writeText(el.value);}catch(e){} }

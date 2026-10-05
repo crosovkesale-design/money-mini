@@ -200,6 +200,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
         <div class="stat-item"><div class="stat-label" data-i18n="expense">Расходы</div><div class="stat-amount exp" id="monthExpense">-0 ₴</div></div>
       </div>
     </div>
+
     <div class="actions-grid">
       <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_income">Доход</span></button>
       <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> <span data-i18n="btn_expense">Расход</span></button>
@@ -211,9 +212,17 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   <div id="tab-envelopes" class="tab-content" style="display:none">
     <div class="row-between">
       <h4 data-i18n="env_title">Конверты расходов</h4>
-      <button class="btn btn-accent btn-sm" onclick="resetBankForm();openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
     </div>
     <div id="envelopesList"></div>
+  </div>
+
+  <div id="tab-banks" class="tab-content" style="display:none">
+    <div class="row-between">
+      <h4 data-i18n="bank_title">Накопительные банки</h4>
+      <button class="btn btn-accent btn-sm" onclick="resetBankForm();openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
+    </div>
+    <div id="banksList"></div>
   </div>
 
   <div id="tab-analytics" class="tab-content" style="display:none">
@@ -221,13 +230,6 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
     <h4 style="margin:20px 0 10px" data-i18n="months_chart_title">Динамика по месяцам</h4>
     <div class="card" style="margin-top:12px"><canvas id="monthsChart"></canvas></div>
-  </div>
-    <div id="banksList"></div>
-  </div>
-
-  <div id="tab-analytics" class="tab-content" style="display:none">
-    <h4 data-i18n="analytics_title">Аналитика расходов</h4>
-    <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
   </div>
 
   <div id="tab-settings" class="tab-content" style="display:none">
@@ -273,147 +275,55 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div class="card">
       <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> <span data-i18n="referral">Пригласи друга</span></h5>
       <div class="ref-code" id="refCode">—</div>
-<div id="tab-budget" class="tab-content">
-  <div class="month-bar">
-    <button onclick="shiftMonth(-1)">‹</button>
-    <div>
-      <span class="m" id="monthLabel">—</span>
-      <span class="y" id="yearLabel">—</span>
+      <div class="ref-link-row">
+        <input type="text" id="refLink" readonly placeholder="ссылка">
+        <button class="copy-btn" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
+      </div>
+      <div class="ref-progress-bar"><div class="ref-progress-fill" id="refProgressFill"></div></div>
+      <div class="ref-progress-label" id="refProgressLabel">0 / 1</div>
+      <div class="ref-stats">
+        <div class="ref-stat"><div class="lbl2" data-i18n="invited">Приглашено</div><div class="val" id="refCount">0</div></div>
+        <div class="ref-stat"><div class="lbl2" data-i18n="c10">Купон 10%</div><div class="val" id="refC10">0</div></div>
+        <div class="ref-stat"><div class="lbl2" data-i18n="c20">Купон 20%</div><div class="val" id="refC20">0</div></div>
+      </div>
+      <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
+        <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
+      </button>
     </div>
-    <span class="mstat" id="monthStat"></span>
-    <button onclick="shiftMonth(1)">›</button>
-  </div>
 
-  <div class="balance-card">
-    <div class="balance-title" data-i18n="balance">Текущий баланс</div>
-    <div class="balance-val" id="totalBalance">0 ₴</div>
-    <div id="carryIn" style="display:none;font-size:12px;font-weight:600;margin-bottom:10px"></div>
-    <div class="balance-stats">
-      <div class="stat-item"><div class="stat-label" data-i18n="income">Доходы</div><div class="stat-amount inc" id="monthIncome">+0 ₴</div></div>
-      <div class="stat-item"><div class="stat-label" data-i18n="expense">Расходы</div><div class="stat-amount exp" id="monthExpense">-0 ₴</div></div>
-    </div>
-  </div>
-  <div class="actions-grid">
-    <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_income">Доход</span></button>
-    <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> <span data-i18n="btn_expense">Расход</span></button>
-  </div>
-  <h4 style="margin:16px 0 10px" data-i18n="history">История операций</h4>
-  <div id="historyContainer" class="history-list"></div>
-</div>
-
-<div id="tab-envelopes" class="tab-content" style="display:none">
-  <div class="row-between">
-    <h4 data-i18n="env_title">Конверты расходов</h4>
-    <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
-  </div>
-  <div id="envelopesList"></div>
-</div>
-
-<div id="tab-banks" class="tab-content" style="display:none">
-  <div class="row-between">
-    <h4 data-i18n="bank_title">Накопительные банки</h4>
-    <button class="btn btn-accent btn-sm" onclick="resetBankForm();openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
-  </div>
-  <div id="banksList"></div>
-</div>
-
-<div id="tab-analytics" class="tab-content" style="display:none">
-  <h4 data-i18n="analytics_title">Аналитика расходов</h4>
-  <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
-  <h4 style="margin:20px 0 10px" data-i18n="months_chart_title">Динамика по месяцам</h4>
-  <div class="card" style="margin-top:12px"><canvas id="monthsChart"></canvas></div>
-</div>
-
-<div id="tab-settings" class="tab-content" style="display:none">
-
-  <div class="card">
-    <div class="row-between">
-      <h5><i class="fa-solid fa-crown"></i> <span data-i18n="tariff">Тариф</span></h5>
-      <span id="subBadge"></span>
-    </div>
-    <div class="sub-row">
-      <span style="font-size:13px" data-i18n="manual_receipts">Ручные чеки</span>
-      <span style="color:var(--success);font-size:13px">✓ <span data-i18n="available">Доступно</span></span>
-    </div>
-    <div class="sub-row">
-      <span style="font-size:13px" data-i18n="photo_receipts">Чеки по фото (OCR)</span>
-      <span id="ocrStatus" style="font-size:13px"></span>
-    </div>
-    <div class="dev-toggle" id="devToggle">
-      <button data-plan="free" onclick="setPlan('free')">Free</button>
-      <button data-plan="pro" onclick="setPlan('pro')">Pro</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h5 style="margin-bottom:12px"><i class="fa-solid fa-globe"></i> <span data-i18n="lang_currency">Язык и валюта</span></h5>
-    <label class="lbl" style="margin-top:0" data-i18n="language">Язык</label>
-    <button type="button" class="select-fake" onclick="openPicker('language')">
-      <span id="langLabel">🇷🇺 Русский</span>
-      <i class="fa-solid fa-chevron-down"></i>
-    </button>
-    <label class="lbl" data-i18n="currency">Валюта</label>
-    <button type="button" class="select-fake" onclick="openPicker('currency')">
-      <span id="currLabel">₴ Гривня</span>
-      <i class="fa-solid fa-chevron-down"></i>
-    </button>
-    <h5 style="margin:16px 0 8px 0"><i class="fa-solid fa-palette"></i> <span data-i18n="theme">Тема</span></h5>
-    <div class="seg">
-      <button class="seg-btn" data-theme-btn="dark" onclick="setTheme('dark')"><span data-i18n="dark">🌙 Тёмная</span></button>
-      <button class="seg-btn" data-theme-btn="light" onclick="setTheme('light')"><span data-i18n="light">☀️ Светлая</span></button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> <span data-i18n="referral">Пригласи друга</span></h5>
-    <div class="ref-code" id="refCode">—</div>
-    <div class="ref-link-row">
-      <input type="text" id="refLink" readonly placeholder="ссылка">
-      <button class="copy-btn" onclick="copyRefLink()"><i class="fa-solid fa-copy"></i></button>
-    </div>
-    <div class="ref-progress-bar"><div class="ref-progress-fill" id="refProgressFill"></div></div>
-    <div class="ref-progress-label" id="refProgressLabel">0 / 1</div>
-    <div class="ref-stats">
-      <div class="ref-stat"><div class="lbl2" data-i18n="invited">Приглашено</div><div class="val" id="refCount">0</div></div>
-      <div class="ref-stat"><div class="lbl2" data-i18n="c10">Купон 10%</div><div class="val" id="refC10">0</div></div>
-      <div class="ref-stat"><div class="lbl2" data-i18n="c20">Купон 20%</div><div class="val" id="refC20">0</div></div>
-    </div>
-    <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
-      <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
-    </button>
-  </div>
-
-  <div class="card">
-    <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> <span data-i18n="family">Семья</span></h5>
-    <div id="familyStatus" class="muted" style="margin-bottom:10px" data-i18n="family_alone">Вы ведёте бюджет один.</div>
-    <button id="familyToggle" class="btn btn-outline" style="width:100%" onclick="toggleFamilyForm()">
-      <i class="fa-solid fa-plus"></i> <span data-i18n="family_join">Присоединиться к семье</span>
-    </button>
-    <div id="familyForm" class="family-block collapsed">
-      <p class="muted" style="margin-bottom:8px" data-i18n="family_hint">Введите код партнёра или поделитесь своим.</p>
-      <input type="text" id="familyCodeInput" class="custom-input" placeholder="FAM-000000" style="margin-bottom:8px">
-      <button class="btn btn-accent" style="width:100%" onclick="connectFamily()"><span data-i18n="connect">Подключиться</span></button>
-      <p class="muted" style="margin-top:14px" data-i18n="your_code">Ваш код для партнёра:</p>
-      <div class="family-code">
-        <input type="text" id="myFamilyCode" readonly>
-        <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+    <div class="card">
+      <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> <span data-i18n="family">Семья</span></h5>
+      <div id="familyStatus" class="muted" style="margin-bottom:10px" data-i18n="family_alone">Вы ведёте бюджет один.</div>
+      <button id="familyToggle" class="btn btn-outline" style="width:100%" onclick="toggleFamilyForm()">
+        <i class="fa-solid fa-plus"></i> <span data-i18n="family_join">Присоединиться к семье</span>
+      </button>
+      <div id="familyForm" class="family-block collapsed">
+        <p class="muted" style="margin-bottom:8px" data-i18n="family_hint">Введите код партнёра или поделитесь своим.</p>
+        <input type="text" id="familyCodeInput" class="custom-input" placeholder="FAM-000000" style="margin-bottom:8px">
+        <button class="btn btn-accent" style="width:100%" onclick="connectFamily()"><span data-i18n="connect">Подключиться</span></button>
+        <p class="muted" style="margin-top:14px" data-i18n="your_code">Ваш код для партнёра:</p>
+        <div class="family-code">
+          <input type="text" id="myFamilyCode" readonly>
+          <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
+        </div>
+      </div>
+      <div id="familyJoined" class="collapsed">
+        <div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:10px">
+          👥 <span data-i18n="family">Семья</span>: <span id="familyMembersCount">1</span>
+        </div>
+        <div class="family-code">
+          <input type="text" id="joinedCode" readonly>
+          <button class="copy-btn" onclick="copyJoinedCode()"><i class="fa-solid fa-copy"></i></button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-outline" onclick="leaveFamily()"><span data-i18n="leave">Выйти из семьи</span></button>
+        </div>
       </div>
     </div>
-    <div id="familyJoined" class="collapsed">
-      <div style="font-size:13px;color:var(--success);font-weight:600;margin-bottom:10px">
-        👥 <span data-i18n="family">Семья</span>: <span id="familyMembersCount">1</span>
-      </div>
-      <div class="family-code">
-        <input type="text" id="joinedCode" readonly>
-        <button class="copy-btn" onclick="copyJoinedCode()"><i class="fa-solid fa-copy"></i></button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn btn-outline" onclick="leaveFamily()"><span data-i18n="leave">Выйти из семьи</span></button>
-      </div>
-    </div>
-  </div>
 
+  </div>
 </div>
+
 <div class="nav-bar">
   <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span data-i18n="nav_home">Главная</span></div>
   <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span data-i18n="nav_env">Конверты</span></div>
@@ -534,7 +444,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
- <div class="modal" id="modalBankDate">
+<div class="modal" id="modalBankDate">
   <div class="modal-content">
     <div class="modal-header">
       <h3 data-i18n="bank_deadline_lbl">Срок</h3>
@@ -550,8 +460,8 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <div class="cal-grid" id="calBankGrid"></div>
     </div>
   </div>
- </div>
-  
+</div>
+
 <div class="modal" id="modalDeposit">
   <div class="modal-content">
     <div class="modal-header">
@@ -589,7 +499,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     </div>
   </div>
 </div>
-  
+
 <div class="modal" id="modalAddBank">
   <div class="modal-content">
     <div class="modal-header">
@@ -612,6 +522,9 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <button class="btn btn-accent" style="width:100%" onclick="saveBank()"><span data-i18n="create">Создать</span></button>
   </div>
 </div>
+
+</body>
+
 
 <script>
 

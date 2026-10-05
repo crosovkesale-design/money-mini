@@ -94,6 +94,9 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;z-index:1000}
 .modal.active{display:flex}
+#modalBankDate{z-index:1100}
+#modalDate{z-index:1100}
+#modalConfirm{z-index:1200}
 .modal-content{background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px;max-height:88vh;overflow-y:auto;border-top:1px solid var(--border)}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .modal-close{font-size:24px;color:var(--muted);cursor:pointer;line-height:1}
@@ -1594,8 +1597,7 @@ function renderBankCal(){
   document.getElementById('calBankGrid').innerHTML = html;
 }
 function pickBankDate(y,m,d){
-  const dt = new Date(y, m, d);
-  const iso = dt.toISOString().slice(0,10);
+  const iso = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
   document.getElementById('bankDeadlineInput').value = iso;
   document.getElementById('bankDeadlineLabel').textContent =
     String(d).padStart(2,'0') + '.' + String(m+1).padStart(2,'0') + '.' + y;

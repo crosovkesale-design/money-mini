@@ -1151,9 +1151,10 @@ function shiftMonth(dir){
   d.setMonth(d.getMonth() + dir);
   appData.currentMonth = getMonthKey(d);
   saveData();
+  processRecurring();
   renderMonthBar();
   renderAll();
-  }
+}
 
   function openPicker(kind){
   const cfg = {
@@ -2006,6 +2007,7 @@ if(carryEl){
   renderSettingsLabels();
   renderReferral();
   renderSubscription();
+  renderRecurring();
 
   const envBox = document.getElementById('envelopesList');
   if(envBox){
@@ -2081,6 +2083,7 @@ if(bankBox){
 
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
+  processRecurring();
   if(!appData.theme && window.Telegram?.WebApp?.colorScheme){
     appData.theme = Telegram.WebApp.colorScheme;
   }

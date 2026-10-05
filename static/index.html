@@ -29,7 +29,14 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;position:relative}
 .card-del{position:absolute;top:8px;right:8px;background:transparent;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px}
-.card-del:hover{color:var(--danger);background:rgba(239,68,68,.1)}
+.card-del:active{color:var(--danger);background:rgba(239,68,68,.1)}
+
+.month-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.month-bar button{background:transparent;border:0;color:var(--text);font-size:20px;cursor:pointer;padding:4px 12px;border-radius:8px}
+.month-bar button:active{background:var(--bg)}
+.month-bar .m{font-weight:700;font-size:15px;text-transform:capitalize}
+.month-bar .y{color:var(--muted);font-size:12px;font-weight:400;margin-left:6px}
+.month-bar .mstat{margin-left:auto;font-size:11px;color:var(--muted);margin-right:8px}
 
 .balance-card{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px}
 [data-theme="light"] .balance-card{background:linear-gradient(135deg,#ffffff 0%,#eef2ff 100%)}
@@ -66,8 +73,8 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .progress-fill{height:100%;transition:width .3s}
 
 .history-list{display:flex;flex-direction:column;gap:8px}
-.history-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-.history-left{display:flex;align-items:center;gap:12px;min-width:0}
+.history-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.history-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
 .history-icon{font-size:20px;background:rgba(255,255,255,.05);padding:8px;border-radius:10px;flex-shrink:0}
 [data-theme="light"] .history-icon{background:rgba(0,0,0,.04)}
 .history-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -75,6 +82,10 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .history-amount{font-weight:700;font-size:15px;flex-shrink:0}
 .history-amount.inc{color:var(--success)}
 .history-amount.exp{color:var(--text)}
+.history-tools{display:flex;gap:4px;flex-shrink:0}
+.history-tools button{background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.history-tools button:active{color:var(--accent);border-color:var(--accent)}
+.history-tools button.del:active{color:var(--danger);border-color:var(--danger)}
 
 .nav-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0;z-index:100}
 .nav-item{display:flex;flex-direction:column;align-items:center;color:var(--muted);font-size:11px;cursor:pointer;gap:4px;width:20%}
@@ -87,7 +98,6 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .modal-close{font-size:24px;color:var(--muted);cursor:pointer;line-height:1}
 
-.copy-box{display:flex;gap:8px;align-items:center;margin-top:6px}
 .copy-btn{background:var(--border);color:var(--text);border:none;padding:12px;border-radius:10px;cursor:pointer}
 
 .receipt-photo-box{border:1px dashed var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:14px;cursor:pointer}
@@ -136,6 +146,8 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .seg-btn.active{background:var(--accent);color:#fff}
 
 .ref-code{font:700 22px/1 ui-monospace,monospace;color:var(--accent);letter-spacing:2px;margin-bottom:8px;text-align:center}
+.ref-link-row{display:flex;gap:8px;align-items:center;margin:8px 0}
+.ref-link-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);font-size:12px;font-family:monospace;margin:0;overflow:hidden;text-overflow:ellipsis}
 .ref-progress-bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin:12px 0 6px}
 .ref-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));transition:width .4s;width:0}
 .ref-progress-label{font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px}
@@ -144,7 +156,6 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .ref-stat .lbl2{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .ref-stat .val{font-size:20px;font-weight:800;color:var(--text);margin-top:4px}
 
-/* Calendar */
 .cal-wrap{padding:4px 0}
 .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .cal-head #calMonthLabel{font-weight:700;font-size:15px;text-transform:capitalize}
@@ -157,34 +168,15 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .cal-day.sel{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
 .cal-day.today{border-color:var(--success)}
 .cal-empty{padding:10px 0}
-
-/* month bar */
-.month-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px}
-.month-bar button{background:transparent;border:0;color:var(--text);font-size:20px;cursor:pointer;padding:4px 12px;border-radius:8px}
-.month-bar button:active{background:var(--bg)}
-.month-bar .m{font-weight:700;font-size:15px;text-transform:capitalize}
-.month-bar .y{color:var(--muted);font-size:12px;font-weight:400;margin-left:6px}
-.month-bar .mstat{margin-left:auto;font-size:11px;color:var(--muted);margin-right:8px}
-
-/* history tools */
-.history-item{gap:8px}
-.history-left{flex:1}
-.history-tools{display:flex;gap:4px;flex-shrink:0}
-.history-tools button{background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
-.history-tools button:hover{color:var(--accent);border-color:var(--accent)}
-.history-tools button.del:hover{color:var(--danger);border-color:var(--danger)}
-.ref-link-row{display:flex;gap:8px;align-items:center;margin:8px 0}
-.ref-link-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);font-size:12px;font-family:monospace;margin:0;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
-  <div id="debugBox" style="position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font:12px monospace;padding:8px;z-index:99999;white-space:pre-wrap;max-height:40vh;overflow:auto">JS still loading...</div>
 <body>
 
 <div class="container">
 
   <div id="familyBanner" class="family-banner" style="display:none">
     <span style="font-size:22px">👥</span>
-    <div class="txt">Ведёте бюджет один? Можно вместе — <b>Настройки → Семья</b>.</div>
+    <div class="txt" data-i18n="family_banner">Ведёте бюджет один? Можно вместе — Настройки → Семья.</div>
     <button class="close" onclick="dismissFamilyBanner()">✕</button>
   </div>
 
@@ -198,8 +190,8 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <span class="mstat" id="monthStat"></span>
       <button onclick="shiftMonth(1)">›</button>
     </div>
-    
-  <div class="balance-card">
+
+    <div class="balance-card">
       <div class="balance-title" data-i18n="balance">Текущий баланс</div>
       <div class="balance-val" id="totalBalance">0 ₴</div>
       <div class="balance-stats">
@@ -289,10 +281,10 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
         <div class="ref-stat"><div class="lbl2" data-i18n="invited">Приглашено</div><div class="val" id="refCount">0</div></div>
         <div class="ref-stat"><div class="lbl2" data-i18n="c10">Купон 10%</div><div class="val" id="refC10">0</div></div>
         <div class="ref-stat"><div class="lbl2" data-i18n="c20">Купон 20%</div><div class="val" id="refC20">0</div></div>
-        <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
-          <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
-        </button>
       </div>
+      <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="shareRef()">
+        <i class="fa-solid fa-share"></i> <span data-i18n="share_link">Поделиться ссылкой</span>
+      </button>
     </div>
 
     <div class="card">
@@ -302,10 +294,10 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
         <i class="fa-solid fa-plus"></i> <span data-i18n="family_join">Присоединиться к семье</span>
       </button>
       <div id="familyForm" class="family-block collapsed">
-        <p class="muted" style="margin-bottom:8px">Введите код партнёра или поделитесь своим.</p>
-        <input type="text" id="familyCodeInput" class="custom-input" placeholder="Например: FAM-882190" style="margin-bottom:8px">
+        <p class="muted" style="margin-bottom:8px" data-i18n="family_hint">Введите код партнёра или поделитесь своим.</p>
+        <input type="text" id="familyCodeInput" class="custom-input" placeholder="FAM-000000" style="margin-bottom:8px">
         <button class="btn btn-accent" style="width:100%" onclick="connectFamily()"><span data-i18n="connect">Подключиться</span></button>
-        <p class="muted" style="margin-top:14px">Ваш код для партнёра:</p>
+        <p class="muted" style="margin-top:14px" data-i18n="your_code">Ваш код для партнёра:</p>
         <div class="family-code">
           <input type="text" id="myFamilyCode" readonly>
           <button class="copy-btn" onclick="copyFamilyCode()"><i class="fa-solid fa-copy"></i></button>
@@ -339,7 +331,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 <div class="modal" id="modalTransaction">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 id="txModalTitle">Добавить расход</h3>
+      <h3 id="txModalTitle">—</h3>
       <span class="modal-close" onclick="closeModal('modalTransaction')">×</span>
     </div>
     <div class="modal-tabs">
@@ -350,12 +342,12 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div id="txPaneQuick">
       <label class="lbl" style="margin-top:0" data-i18n="category_lbl">Категория</label>
       <div id="categoryGrid" class="icon-grid"></div>
-      <input type="number" id="txAmountInput" class="custom-input" placeholder="Сумма" inputmode="decimal">
-      <input type="text" id="txCommentInput" class="custom-input" placeholder="Комментарий (необязательно)">
+      <input type="number" id="txAmountInput" class="custom-input" placeholder="—" inputmode="decimal">
+      <input type="text" id="txCommentInput" class="custom-input" placeholder="—">
       <div id="txExpenseFields">
         <label class="lbl" data-i18n="envelope">Конверт</label>
         <button type="button" class="select-fake" onclick="openPicker('envelope')">
-          <span id="envSelectLabel">Без конверта</span>
+          <span id="envSelectLabel">—</span>
           <i class="fa-solid fa-chevron-down"></i>
         </button>
       </div>
@@ -366,19 +358,19 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <div id="receiptPhotoSection">
         <div id="receiptPhotoUpload" class="receipt-photo-box" onclick="pickReceiptPhoto()">
           <div class="icon">📸</div>
-          <div class="hint">Сфотографировать или загрузить чек</div>
+          <div class="hint" data-i18n="receipt_photo_hint">Сфотографировать или загрузить чек</div>
         </div>
         <div id="receiptPreviewWrap" style="display:none;text-align:center;margin-bottom:14px">
-          <img id="receiptPreview" class="receipt-preview" alt="чек">
-          <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="resetReceiptPhoto()">Убрать фото</button>
+          <img id="receiptPreview" class="receipt-preview" alt="">
+          <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="resetReceiptPhoto()" data-i18n="receipt_remove_photo">Убрать фото</button>
         </div>
         <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display:none" onchange="onReceiptPhotoPicked(event)">
       </div>
       <div id="receiptFreeNotice" class="pro-lock">
         <span style="font-size:16px">🔒</span>
-        <span>Фото чека доступно в Pro. Здесь — ручной ввод.</span>
+        <span data-i18n="receipt_pro_only">Фото чека доступно в Pro.</span>
       </div>
-      <input type="text" id="receiptStore" class="custom-input" placeholder="Магазин (например: АТБ)">
+      <input type="text" id="receiptStore" class="custom-input" placeholder="—">
       <label class="lbl" data-i18n="date_lbl">Дата</label>
       <button type="button" class="select-fake" onclick="openDatePicker()">
         <span id="receiptDateLabel">—</span>
@@ -393,7 +385,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <div class="receipt-total"><span data-i18n="receipt_total">Итого:</span><span id="receiptTotal">0 ₴</span></div>
       <label class="lbl" data-i18n="envelope">Конверт</label>
       <button type="button" class="select-fake" onclick="openPicker('envelopeReceipt')">
-        <span id="envReceiptLabel">Без конверта</span>
+        <span id="envReceiptLabel">—</span>
         <i class="fa-solid fa-chevron-down"></i>
       </button>
       <button class="btn btn-accent" style="width:100%" onclick="submitReceipt()"><span data-i18n="receipt_save">Сохранить чек</span></button>
@@ -401,28 +393,29 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
-  <div class="modal" id="modalEditTx">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 data-i18n="edit_tx">Изменить</h3>
-        <span class="modal-close" onclick="closeModal('modalEditTx')">×</span>
-      </div>
-      <label class="lbl" style="margin-top:0" data-i18n="category_lbl">Категория</label>
-      <div id="editCategoryGrid" class="icon-grid"></div>
-      <label class="lbl" data-i18n="amount_lbl">Сумма</label>
-      <input type="number" id="editAmount" class="custom-input" inputmode="decimal">
-      <label class="lbl" data-i18n="comment_lbl">Комментарий</label>
-      <input type="text" id="editComment" class="custom-input">
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline" style="flex:1" onclick="closeModal('modalEditTx')" data-i18n="cancel">Отмена</button>
-        <button class="btn btn-accent" style="flex:1" onclick="saveEditTx()" data-i18n="save">Сохранить</button>
-      </div>
-    </div>
-  </div>
-  
+<div class="modal" id="modalEditTx">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 id="pickerTitle">Выбрать</h3>
+      <h3 data-i18n="edit_tx">Изменить</h3>
+      <span class="modal-close" onclick="closeModal('modalEditTx')">×</span>
+    </div>
+    <label class="lbl" style="margin-top:0" data-i18n="category_lbl">Категория</label>
+    <div id="editCategoryGrid" class="icon-grid"></div>
+    <label class="lbl" data-i18n="amount_lbl">Сумма</label>
+    <input type="number" id="editAmount" class="custom-input" inputmode="decimal">
+    <label class="lbl" data-i18n="comment_lbl">Комментарий</label>
+    <input type="text" id="editComment" class="custom-input">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal('modalEditTx')" data-i18n="cancel">Отмена</button>
+      <button class="btn btn-accent" style="flex:1" onclick="saveEditTx()" data-i18n="save">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalPicker">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="pickerTitle">—</h3>
       <span class="modal-close" onclick="closeModal('modalPicker')">×</span>
     </div>
     <div id="pickerList" class="picker-list"></div>
@@ -450,11 +443,11 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 <div class="modal" id="modalDeposit">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 id="depositTitle">Пополнить банку</h3>
+      <h3 id="depositTitle">—</h3>
       <span class="modal-close" onclick="closeModal('modalDeposit')">×</span>
     </div>
-    <input type="number" id="depositAmount" class="custom-input" placeholder="Сумма" inputmode="decimal">
-    <input type="text" id="depositNote" class="custom-input" placeholder="Комментарий">
+    <input type="number" id="depositAmount" class="custom-input" placeholder="—" inputmode="decimal">
+    <input type="text" id="depositNote" class="custom-input" placeholder="—">
     <button class="btn btn-accent" style="width:100%" onclick="confirmDeposit()"><span data-i18n="top_up">Пополнить</span></button>
   </div>
 </div>
@@ -465,8 +458,8 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <h3 data-i18n="env_new">Новый конверт</h3>
       <span class="modal-close" onclick="closeModal('modalAddEnvelope')">×</span>
     </div>
-    <input type="text" id="envNameInput" class="custom-input" placeholder="Название">
-    <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит в месяц" inputmode="decimal">
+    <input type="text" id="envNameInput" class="custom-input" placeholder="—">
+    <input type="number" id="envTargetInput" class="custom-input" placeholder="—" inputmode="decimal">
     <button class="btn btn-accent" style="width:100%" onclick="saveEnvelope()"><span data-i18n="create">Создать</span></button>
   </div>
 </div>
@@ -477,354 +470,366 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
       <h3 data-i18n="bank_new">Новая банка</h3>
       <span class="modal-close" onclick="closeModal('modalAddBank')">×</span>
     </div>
-    <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
-    <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель накопления" inputmode="decimal">
+    <input type="text" id="bankNameInput" class="custom-input" placeholder="—">
+    <input type="number" id="bankTargetInput" class="custom-input" placeholder="—" inputmode="decimal">
     <button class="btn btn-accent" style="width:100%" onclick="saveBank()"><span data-i18n="create">Создать</span></button>
+  </div>
 </div>
-  
 
 <script>
-/* ============ I18N ============ */
-  const I18N = {
-    ru: {
-      nav_home:'Главная', nav_env:'Конверты', nav_bank:'Банки', nav_an:'Аналитика', nav_set:'Настройки',
-      balance:'Текущий баланс', income:'Доходы', expense:'Расходы', history:'История операций',
-      btn_income:'Доход', btn_expense:'Расход',
-      add_expense:'Добавить расход', add_income:'Добавить доход',
-      tab_quick:'⚡ Быстро', tab_receipt:'🧾 Чек',
-      category_lbl:'Категория', envelope:'Конверт', save:'Сохранить', cancel:'Отмена',
-      amount_lbl:'Сумма', comment_lbl:'Комментарий',
-      tariff:'Тариф', manual_receipts:'Ручные чеки', photo_receipts:'Чеки по фото (OCR)', available:'Доступно',
-     lang_currency:'Язык и валюта', language:'Язык', currency:'Валюта', theme:'Тема',
-      dark:'🌙 Тёмная', light:'☀️ Светлая',
-      referral:'Пригласи друга', invited:'Приглашено', c10:'Купон 10%', c20:'Купон 20%',
-      share_link:'Поделиться ссылкой',
-      family:'Семья', family_alone:'Вы ведёте бюджет один.', family_join:'Присоединиться к семье',
-      family_hint:'Введите код партнёра или поделитесь своим.', your_code:'Ваш код для партнёра:',
-      connect:'Подключиться', leave:'Выйти из семьи',
-      env_title:'Конверты расходов', bank_title:'Накопительные банки', create:'Создать',
-      env_new:'Новый конверт', bank_new:'Новая банка',
-      no_env:'Конверты не созданы', no_bank:'Банки не созданы', no_history:'История пуста',
-      analytics_title:'Аналитика расходов', no_data:'Нет данных',
-      date_lbl:'Дата', receipt_items:'Позиции', receipt_add:'Добавить позицию',
-      receipt_total:'Итого:', receipt_save:'Сохранить чек',
-      receipt_photo_hint:'Сфотографировать или загрузить чек', receipt_remove_photo:'Убрать фото',
-      receipt_pro_only:'Фото чека доступно в Pro.',
-      top_up:'Пополнить', topup_title:'Пополнить',
-      edit_tx:'Изменить', delete_confirm:'Удалить?',
-      m_jan:'Январь', m_feb:'Февраль', m_mar:'Март', m_apr:'Апрель', m_may:'Май', m_jun:'Июнь',
-      m_jul:'Июль', m_aug:'Август', m_sep:'Сентябрь', m_oct:'Октябрь', m_nov:'Ноябрь', m_dec:'Декабрь',
-      w_mon:'Пн', w_tue:'Вт', w_wed:'Ср', w_thu:'Чт', w_fri:'Пт', w_sat:'Сб', w_sun:'Вс',
-      store_ph:'Магазин', comment_ph:'Комментарий (необязательно)', amount_ph:'Сумма',
-      env_name_ph:'Название', env_target_ph:'Лимит в месяц', bank_target_ph:'Цель накопления'
-    },
-    uk: {
-      nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
-      balance:'Поточний баланс', income:'Доходи', expense:'Витрати', history:'Історія операцій',
-      btn_income:'Дохід', btn_expense:'Витрата',
-      add_expense:'Додати витрату', add_income:'Додати дохід',
-      tab_quick:'⚡ Швидко', tab_receipt:'🧾 Чек',
-      category_lbl:'Категорія', envelope:'Конверт', save:'Зберегти', cancel:'Скасувати',
-      amount_lbl:'Сума', comment_lbl:'Коментар',
-      tariff:'Тариф', manual_receipts:'Ручні чеки', photo_receipts:'Чеки по фото (OCR)', available:'Доступно',
-      lang_currency:'Мова та валюта', language:'Мова', currency:'Валюта', theme:'Тема',
-      dark:'🌙 Темна', light:'☀️ Світла',
-      referral:'Запросити друга', invited:'Запрошено', c10:'Купон 10%', c20:'Купон 20%',
-      share_link:'Поділитися посиланням',
-      family:'Родина', family_alone:'Ви ведете бюджет самостійно.', family_join:'Приєднатися до родини',
-      family_hint:'Введіть код партнера або поділіться своїм.', your_code:'Ваш код для партнера:',
-      connect:'Підключитися', leave:'Вийти з родини',
-      env_title:'Конверти витрат', bank_title:'Накопичувальні банки', create:'Створити',
-      env_new:'Новий конверт', bank_new:'Нова банка',
-      no_env:'Конверти не створені', no_bank:'Банки не створені', no_history:'Історія порожня',
-      analytics_title:'Аналітика витрат', no_data:'Немає даних',
-      date_lbl:'Дата', receipt_items:'Позиції', receipt_add:'Додати позицію',
-      receipt_total:'Разом:', receipt_save:'Зберегти чек',
-      receipt_photo_hint:'Сфотографувати або завантажити чек', receipt_remove_photo:'Прибрати фото',
-      receipt_pro_only:'Фото чека доступне в Pro.',
-      top_up:'Поповнити', topup_title:'Поповнити',
-      edit_tx:'Змінити', delete_confirm:'Видалити?',
-      m_jan:'Січень', m_feb:'Лютий', m_mar:'Березень', m_apr:'Квітень', m_may:'Травень', m_jun:'Червень',
-      m_jul:'Липень', m_aug:'Серпень', m_sep:'Вересень', m_oct:'Жовтень', m_nov:'Листопад', m_dec:'Грудень',
-      w_mon:'Пн', w_tue:'Вт', w_wed:'Ср', w_thu:'Чт', w_fri:'Пт', w_sat:'Сб', w_sun:'Нд',
-      store_ph:'Магазин', comment_ph:'Коментар (необов\'язково)', amount_ph:'Сума',
-      env_name_ph:'Назва', env_target_ph:'Ліміт на місяць', bank_target_ph:'Ціль накопичення'
-    },
-    en: {
-      nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
-      balance:'Current balance', income:'Income', expense:'Expenses', history:'Transaction history',
-      btn_income:'Income', btn_expense:'Expense',
-      add_expense:'Add expense', add_income:'Add income',
-      tab_quick:'⚡ Quick', tab_receipt:'🧾 Receipt',
-      category_lbl:'Category', envelope:'Envelope', save:'Save', cancel:'Cancel',
-      amount_lbl:'Amount', comment_lbl:'Comment',
-      tariff:'Plan', manual_receipts:'Manual receipts', photo_receipts:'Photo receipts (OCR)', available:'Available',
-      lang_currency:'Language & currency', language:'Language', currency:'Currency', theme:'Theme',
-      dark:'🌙 Dark', light:'☀️ Light',
-      referral:'Invite a friend', invited:'Invited', c10:'Coupon 10%', c20:'Coupon 20%',
-      share_link:'Share link',
-      family:'Family', family_alone:'You are budgeting alone.', family_join:'Join a family',
-      family_hint:'Enter partner code or share yours.', your_code:'Your code for partner:',
-      connect:'Connect', leave:'Leave family',
-      env_title:'Expense envelopes', bank_title:'Savings banks', create:'Create',
-      env_new:'New envelope', bank_new:'New bank',
-      no_env:'No envelopes', no_bank:'No banks', no_history:'No history',
-      analytics_title:'Expense analytics', no_data:'No data',
-      date_lbl:'Date', receipt_items:'Items', receipt_add:'Add item',
-      receipt_total:'Total:', receipt_save:'Save receipt',
-      receipt_photo_hint:'Take a photo or upload a receipt', receipt_remove_photo:'Remove photo',
-      receipt_pro_only:'Photo receipt available in Pro.',
-      top_up:'Top up', topup_title:'Top up',
-      edit_tx:'Edit', delete_confirm:'Delete?',
-      m_jan:'January', m_feb:'February', m_mar:'March', m_apr:'April', m_may:'May', m_jun:'June',
-      m_jul:'July', m_aug:'August', m_sep:'September', m_oct:'October', m_nov:'November', m_dec:'December',
-      w_mon:'Mo', w_tue:'Tu', w_wed:'We', w_thu:'Th', w_fri:'Fr', w_sat:'Sa', w_sun:'Su',
-      store_ph:'Store', comment_ph:'Comment (optional)', amount_ph:'Amount',
-      env_name_ph:'Name', env_target_ph:'Monthly limit', bank_target_ph:'Savings goal'
-    },
-    de: {
-      nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
-      balance:'Aktueller Saldo', income:'Einnahmen', expense:'Ausgaben', history:'Transaktionsverlauf',
-      btn_income:'Einnahme', btn_expense:'Ausgabe',
-      add_expense:'Ausgabe hinzufügen', add_income:'Einnahme hinzufügen',
-      tab_quick:'⚡ Schnell', tab_receipt:'🧾 Beleg',
-      category_lbl:'Kategorie', envelope:'Umschlag', save:'Speichern', cancel:'Abbrechen',
-      amount_lbl:'Betrag', comment_lbl:'Kommentar',
-      tariff:'Tarif', manual_receipts:'Manuelle Belege', photo_receipts:'Foto-Belege (OCR)', available:'Verfügbar',
-      lang_currency:'Sprache & Währung', language:'Sprache', currency:'Währung', theme:'Thema',
-      dark:'🌙 Dunkel', light:'☀️ Hell',
-      referral:'Freund einladen', invited:'Eingeladen', c10:'Gutschein 10%', c20:'Gutschein 20%',
-      share_link:'Link teilen',
-      family:'Familie', family_alone:'Sie budgetieren allein.', family_join:'Familie beitreten',
-      family_hint:'Partner-Code eingeben oder eigenen teilen.', your_code:'Ihr Code für Partner:',
-      connect:'Verbinden', leave:'Familie verlassen',
-      env_title:'Ausgaben-Umschläge', bank_title:'Sparkassen', create:'Erstellen',
-      env_new:'Neuer Umschlag', bank_new:'Neue Bank',
-      no_env:'Keine Umschläge', no_bank:'Keine Banken', no_history:'Kein Verlauf',
-      analytics_title:'Ausgabenanalyse', no_data:'Keine Daten',
-      date_lbl:'Datum', receipt_items:'Positionen', receipt_add:'Position hinzufügen',
-      receipt_total:'Gesamt:', receipt_save:'Beleg speichern',
-      receipt_photo_hint:'Beleg fotografieren oder hochladen', receipt_remove_photo:'Foto entfernen',
-      receipt_pro_only:'Foto-Beleg in Pro verfügbar.',
-      top_up:'Aufladen', topup_title:'Aufladen',
-      edit_tx:'Bearbeiten', delete_confirm:'Löschen?',
-      m_jan:'Januar', m_feb:'Februar', m_mar:'März', m_apr:'April', m_may:'Mai', m_jun:'Juni',
-      m_jul:'Juli', m_aug:'August', m_sep:'September', m_oct:'Oktober', m_nov:'November', m_dec:'Dezember',
-      w_mon:'Mo', w_tue:'Di', w_wed:'Mi', w_thu:'Do', w_fri:'Fr', w_sat:'Sa', w_sun:'So',
-      store_ph:'Geschäft', comment_ph:'Kommentar (optional)', amount_ph:'Betrag',
-      env_name_ph:'Name', env_target_ph:'Monatslimit', bank_target_ph:'Sparziel'
-    },
-    fr: {
-      nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
-      balance:'Solde actuel', income:'Revenus', expense:'Dépenses', history:'Historique',
-      btn_income:'Revenu', btn_expense:'Dépense',
-      add_expense:'Ajouter dépense', add_income:'Ajouter revenu',
-      tab_quick:'⚡ Rapide', tab_receipt:'🧾 Reçu',
-      category_lbl:'Catégorie', envelope:'Enveloppe', save:'Enregistrer', cancel:'Annuler',
-      amount_lbl:'Montant', comment_lbl:'Commentaire',
-      tariff:'Forfait', manual_receipts:'Reçus manuels', photo_receipts:'Reçus photo (OCR)', available:'Disponible',
-      lang_currency:'Langue & devise', language:'Langue', currency:'Devise', theme:'Thème',
-      dark:'🌙 Sombre', light:'☀️ Clair',
-      referral:'Inviter un ami', invited:'Invités', c10:'Coupon 10%', c20:'Coupon 20%',
-      share_link:'Partager le lien',
-      family:'Famille', family_alone:'Vous budgétez seul.', family_join:'Rejoindre une famille',
-      family_hint:'Entrez le code partenaire ou partagez le vôtre.', your_code:'Votre code partenaire:',
-      connect:'Connecter', leave:'Quitter la famille',
-      env_title:'Enveloppes de dépenses', bank_title:'Banques d\'épargne', create:'Créer',
-      env_new:'Nouvelle enveloppe', bank_new:'Nouvelle banque',
-      no_env:'Aucune enveloppe', no_bank:'Aucune banque', no_history:'Historique vide',
-      analytics_title:'Analyse des dépenses', no_data:'Aucune donnée',
-      date_lbl:'Date', receipt_items:'Articles', receipt_add:'Ajouter article',
-      receipt_total:'Total:', receipt_save:'Enregistrer reçu',
-      receipt_photo_hint:'Prendre une photo ou charger un reçu', receipt_remove_photo:'Retirer la photo',
-      receipt_pro_only:'Reçu photo disponible en Pro.',
-      top_up:'Recharger', topup_title:'Recharger',
-      edit_tx:'Modifier', delete_confirm:'Supprimer ?',
-      m_jan:'Janvier', m_feb:'Février', m_mar:'Mars', m_apr:'Avril', m_may:'Mai', m_jun:'Juin',
-      m_jul:'Juillet', m_aug:'Août', m_sep:'Septembre', m_oct:'Octobre', m_nov:'Novembre', m_dec:'Décembre',
-      w_mon:'Lu', w_tue:'Ma', w_wed:'Me', w_thu:'Je', w_fri:'Ve', w_sat:'Sa', w_sun:'Di',
-      store_ph:'Magasin', comment_ph:'Commentaire (optionnel)', amount_ph:'Montant',
-      env_name_ph:'Nom', env_target_ph:'Limite mensuelle', bank_target_ph:'Objectif'
-    },
-    es: {
-      nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
-      balance:'Saldo actual', income:'Ingresos', expense:'Gastos', history:'Historial',
-      btn_income:'Ingreso', btn_expense:'Gasto',
-      add_expense:'Añadir gasto', add_income:'Añadir ingreso',
-      tab_quick:'⚡ Rápido', tab_receipt:'🧾 Recibo',
-      category_lbl:'Categoría', envelope:'Sobre', save:'Guardar', cancel:'Cancelar',
-       amount_lbl:'Cantidad', comment_lbl:'Comentario',
-      tariff:'Plan', manual_receipts:'Recibos manuales', photo_receipts:'Recibos foto (OCR)', available:'Disponible',
-      lang_currency:'Idioma y moneda', language:'Idioma', currency:'Moneda', theme:'Tema',
-      dark:'🌙 Oscuro', light:'☀️ Claro',
-      referral:'Invitar amigo', invited:'Invitados', c10:'Cupón 10%', c20:'Cupón 20%',
-      share_link:'Compartir enlace',
-      family:'Familia', family_alone:'Presupuesta solo.', family_join:'Unirse a familia',
-      family_hint:'Ingrese el código o comparta el suyo.', your_code:'Su código para el socio:',
-      connect:'Conectar', leave:'Salir de familia',
-      env_title:'Sobres de gastos', bank_title:'Bancos de ahorro', create:'Crear',
-      env_new:'Nuevo sobre', bank_new:'Nuevo banco',
-      no_env:'Sin sobres', no_bank:'Sin bancos', no_history:'Sin historial',
-      analytics_title:'Análisis de gastos', no_data:'Sin datos',
-      date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'Añadir artículo',
-      receipt_total:'Total:', receipt_save:'Guardar recibo',
-      receipt_photo_hint:'Fotografiar o subir recibo', receipt_remove_photo:'Quitar foto',
-      receipt_pro_only:'Recibo por foto solo en Pro.',
-      top_up:'Recargar', topup_title:'Recargar',
-      edit_tx:'Editar', delete_confirm:'¿Eliminar?',
-      m_jan:'Enero', m_feb:'Febrero', m_mar:'Marzo', m_apr:'Abril', m_may:'Mayo', m_jun:'Junio',
-      m_jul:'Julio', m_aug:'Agosto', m_sep:'Septiembre', m_oct:'Octubre', m_nov:'Noviembre', m_dec:'Diciembre',
-      w_mon:'Lu', w_tue:'Ma', w_wed:'Mi', w_thu:'Ju', w_fri:'Vi', w_sat:'Sá', w_sun:'Do',
-      store_ph:'Tienda', comment_ph:'Comentario (opcional)', amount_ph:'Cantidad',
-      env_name_ph:'Nombre', env_target_ph:'Límite mensual', bank_target_ph:'Meta de ahorro'
-    },
-    it: {
-      nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
-      balance:'Saldo attuale', income:'Entrate', expense:'Spese', history:'Cronologia',
-      btn_income:'Entrata', btn_expense:'Spesa',
-      add_expense:'Aggiungi spesa', add_income:'Aggiungi entrata',
-      tab_quick:'⚡ Veloce', tab_receipt:'🧾 Ricevuta',
-      category_lbl:'Categoria', envelope:'Busta', save:'Salva', cancel:'Annulla',
-      amount_lbl:'Importo', comment_lbl:'Commento',
-      tariff:'Piano', manual_receipts:'Ricevute manuali', photo_receipts:'Ricevute foto (OCR)', available:'Disponibile',
-      lang_currency:'Lingua e valuta', language:'Lingua', currency:'Valuta', theme:'Tema',
-      dark:'🌙 Scuro', light:'☀️ Chiaro',
-      referral:'Invita amico', invited:'Invitati', c10:'Coupon 10%', c20:'Coupon 20%',
-      share_link:'Condividi link',
-      family:'Famiglia', family_alone:'Stai bilanciando da solo.', family_join:'Unisciti a famiglia',
-      family_hint:'Inserisci codice o condividi il tuo.', your_code:'Il tuo codice per il partner:',
-      connect:'Connetti', leave:'Esci dalla famiglia',
-      env_title:'Buste di spesa', bank_title:'Banche di risparmio', create:'Crea',
-      env_new:'Nuova busta', bank_new:'Nuova banca',
-      no_env:'Nessuna busta', no_bank:'Nessuna banca', no_history:'Cronologia vuota',
-      analytics_title:'Analisi delle spese', no_data:'Nessun dato',
-      date_lbl:'Data', receipt_items:'Voci', receipt_add:'Aggiungi voce',
-      receipt_total:'Totale:', receipt_save:'Salva ricevuta',
-      receipt_photo_hint:'Scatta o carica ricevuta', receipt_remove_photo:'Rimuovi foto',
-      receipt_pro_only:'Ricevuta foto solo in Pro.',
-      top_up:'Ricarica', topup_title:'Ricarica',
-      edit_tx:'Modifica', delete_confirm:'Eliminare?',
-      m_jan:'Gennaio', m_feb:'Febbraio', m_mar:'Marzo', m_apr:'Aprile', m_may:'Maggio', m_jun:'Giugno',
-      m_jul:'Luglio', m_aug:'Agosto', m_sep:'Settembre', m_oct:'Ottobre', m_nov:'Novembre', m_dec:'Dicembre',
-      w_mon:'Lu', w_tue:'Ma', w_wed:'Me', w_thu:'Gi', w_fri:'Ve', w_sat:'Sa', w_sun:'Do',
-      store_ph:'Negozio', comment_ph:'Commento (opzionale)', amount_ph:'Importo',
-      env_name_ph:'Nome', env_target_ph:'Limite mensile', bank_target_ph:'Obiettivo'
-    },
-    pl: {
-      nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
-      balance:'Aktualne saldo', income:'Dochody', expense:'Wydatki', history:'Historia',
-      btn_income:'Dochód', btn_expense:'Wydatek',
-      add_expense:'Dodaj wydatek', add_income:'Dodaj dochód',
-      tab_quick:'⚡ Szybko', tab_receipt:'🧾 Paragon',
-      category_lbl:'Kategoria', envelope:'Koperta', save:'Zapisz', cancel:'Anuluj',
-      amount_lbl:'Kwota', comment_lbl:'Komentarz',
-      tariff:'Plan', manual_receipts:'Ręczne paragony', photo_receipts:'Paragony foto (OCR)', available:'Dostępne',
-      lang_currency:'Język i waluta', language:'Język', currency:'Waluta', theme:'Motyw',
-      dark:'🌙 Ciemny', light:'☀️ Jasny',
-      referral:'Zaproś znajomego', invited:'Zaproszeni', c10:'Kupon 10%', c20:'Kupon 20%',
-      share_link:'Udostępnij link',
-      family:'Rodzina', family_alone:'Budżetujesz sam.', family_join:'Dołącz do rodziny',
-      family_hint:'Wpisz kod partnera lub udostępnij swój.', your_code:'Twój kod dla partnera:',
-      connect:'Połącz', leave:'Opuść rodzinę',
-      env_title:'Koperty wydatków', bank_title:'Banki oszczędności', create:'Utwórz',
-      env_new:'Nowa koperta', bank_new:'Nowy bank',
-      no_env:'Brak kopert', no_bank:'Brak banków', no_history:'Brak historii',
-      analytics_title:'Analiza wydatków', no_data:'Brak danych',
-      date_lbl:'Data', receipt_items:'Pozycje', receipt_add:'Dodaj pozycję',
-      receipt_total:'Razem:', receipt_save:'Zapisz paragon',
-      receipt_photo_hint:'Zrób lub wgraj paragon', receipt_remove_photo:'Usuń zdjęcie',
-      receipt_pro_only:'Paragon foto tylko w Pro.',
-      top_up:'Zasil', topup_title:'Zasil',
-      edit_tx:'Edytuj', delete_confirm:'Usunąć?',
-      m_jan:'Styczeń', m_feb:'Luty', m_mar:'Marzec', m_apr:'Kwiecień', m_may:'Maj', m_jun:'Czerwiec',
-      m_jul:'Lipiec', m_aug:'Sierpień', m_sep:'Wrzesień', m_oct:'Październik', m_nov:'Listopad', m_dec:'Grudzień',
-      w_mon:'Pn', w_tue:'Wt', w_wed:'Śr', w_thu:'Cz', w_fri:'Pt', w_sat:'So', w_sun:'Nd',
-      store_ph:'Sklep', comment_ph:'Komentarz (opcjonalnie)', amount_ph:'Kwota',
-      env_name_ph:'Nazwa', env_target_ph:'Limit miesięczny', bank_target_ph:'Cel oszczędności'
-    },
-    tr: {
-      nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
-      balance:'Mevcut bakiye', income:'Gelir', expense:'Gider', history:'İşlem geçmişi',
-      btn_income:'Gelir', btn_expense:'Gider',
-      add_expense:'Gider ekle', add_income:'Gelir ekle',
-      tab_quick:'⚡ Hızlı', tab_receipt:'🧾 Fiş',
-      category_lbl:'Kategori', envelope:'Zarf', save:'Kaydet', cancel:'İptal',
-      amount_lbl:'Tutar', comment_lbl:'Yorum',
-      tariff:'Plan', manual_receipts:'Manuel fişler', photo_receipts:'Foto fişler (OCR)', available:'Mevcut',
-      lang_currency:'Dil ve para birimi', language:'Dil', currency:'Para birimi', theme:'Tema',
-      dark:'🌙 Koyu', light:'☀️ Açık',
-      referral:'Arkadaşını davet et', invited:'Davet edilen', c10:'Kupon %10', c20:'Kupon %20',
-      share_link:'Bağlantıyı paylaş',
-      family:'Aile', family_alone:'Tek başına bütçeliyorsun.', family_join:'Aileye katıl',
-      family_hint:'Ortak kodunu gir veya kendininkini paylaş.', your_code:'Ortak için kodun:',
-      connect:'Bağlan', leave:'Aileden ayrıl',
-      env_title:'Gider zarfları', bank_title:'Tasarruf bankaları', create:'Oluştur',
-      env_new:'Yeni zarf', bank_new:'Yeni banka',
-      no_env:'Zarf yok', no_bank:'Banka yok', no_history:'Geçmiş yok',
-      analytics_title:'Gider analizi', no_data:'Veri yok',
-      date_lbl:'Tarih', receipt_items:'Öğeler', receipt_add:'Öğe ekle',
-      receipt_total:'Toplam:', receipt_save:'Fişi kaydet',
-      receipt_photo_hint:'Fiş çek veya yükle', receipt_remove_photo:'Fotoğrafı kaldır',
-      receipt_pro_only:'Foto fiş Pro\'da.',
-      top_up:'Yükle', topup_title:'Yükle',
-      edit_tx:'Düzenle', delete_confirm:'Silinsin mi?',
-      m_jan:'Ocak', m_feb:'Şubat', m_mar:'Mart', m_apr:'Nisan', m_may:'Mayıs', m_jun:'Haziran',
-      m_jul:'Temmuz', m_aug:'Ağustos', m_sep:'Eylül', m_oct:'Ekim', m_nov:'Kasım', m_dec:'Aralık',
-      w_mon:'Pt', w_tue:'Sa', w_wed:'Ça', w_thu:'Pe', w_fri:'Cu', w_sat:'Ct', w_sun:'Pz',
-      store_ph:'Mağaza', comment_ph:'Yorum (isteğe bağlı)', amount_ph:'Tutar',
-      env_name_ph:'Ad', env_target_ph:'Aylık limit', bank_target_ph:'Tasarruf hedefi'
-    },
-    zh: {
-      nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
-      balance:'当前余额', income:'收入', expense:'支出', history:'交易历史',
-      btn_income:'收入', btn_expense:'支出',
-       add_expense:'添加支出', add_income:'添加收入',
-      tab_quick:'⚡ 快速', tab_receipt:'🧾 收据',
-      category_lbl:'类别', envelope:'信封', save:'保存', cancel:'取消',
-      amount_lbl:'金额', comment_lbl:'备注',
-      tariff:'套餐', manual_receipts:'手动收据', photo_receipts:'照片收据 (OCR)', available:'可用',
-      lang_currency:'语言与货币', language:'语言', currency:'货币', theme:'主题',
-      dark:'🌙 深色', light:'☀️ 浅色',
-      referral:'邀请朋友', invited:'已邀请', c10:'优惠券 10%', c20:'优惠券 20%',
-      share_link:'分享链接',
-      family:'家庭', family_alone:'您单独记账。', family_join:'加入家庭',
-      family_hint:'输入伙伴代码或分享您的代码。', your_code:'您的伙伴代码：',
-      connect:'连接', leave:'离开家庭',
-      env_title:'支出信封', bank_title:'储蓄银行', create:'创建',
-      env_new:'新信封', bank_new:'新银行',
-      no_env:'没有信封', no_bank:'没有银行', no_history:'没有历史',
-      analytics_title:'支出分析', no_data:'没有数据',
-      date_lbl:'日期', receipt_items:'项目', receipt_add:'添加项目',
-      receipt_total:'合计:', receipt_save:'保存收据',
-      receipt_photo_hint:'拍照或上传收据', receipt_remove_photo:'移除照片',
-      receipt_pro_only:'照片收据仅限 Pro。',
-      top_up:'充值', topup_title:'充值',
-      edit_tx:'编辑', delete_confirm:'删除？',
-      m_jan:'一月', m_feb:'二月', m_mar:'三月', m_apr:'四月', m_may:'五月', m_jun:'六月',
-      m_jul:'七月', m_aug:'八月', m_sep:'九月', m_oct:'十月', m_nov:'十一月', m_dec:'十二月',
-      w_mon:'一', w_tue:'二', w_wed:'三', w_thu:'四', w_fri:'五', w_sat:'六', w_sun:'日',
-      store_ph:'商店', comment_ph:'备注（可选）', amount_ph:'金额',
-      env_name_ph:'名称', env_target_ph:'每月限额', bank_target_ph:'储蓄目标'
-    }
-  };
-  const MONTH_KEYS = ['m_jan','m_feb','m_mar','m_apr','m_may','m_jun','m_jul','m_aug','m_sep','m_oct','m_nov','m_dec'];
-  function t(k){ return ((I18N[appData.lang] || I18N.ru)[k]) || k; }
-  function applyLang(){
-    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
-    renderCalendarWeek();
-    document.getElementById('receiptStore').placeholder = t('store_ph');
-    document.getElementById('txCommentInput').placeholder = t('comment_ph');
-    document.getElementById('txAmountInput').placeholder = t('amount_ph');
-    document.getElementById('envNameInput').placeholder = t('env_name_ph');
-    document.getElementById('envTargetInput').placeholder = t('env_target_ph');
-    document.getElementById('bankNameInput').placeholder = t('env_name_ph');
-    document.getElementById('bankTargetInput').placeholder = t('bank_target_ph');
-    document.getElementById('depositAmount').placeholder = t('amount_ph');
-    document.getElementById('depositNote').placeholder = t('comment_ph');
+
+const I18N = {
+  ru: {
+    nav_home:'Главная', nav_env:'Конверты', nav_bank:'Банки', nav_an:'Аналитика', nav_set:'Настройки',
+    balance:'Текущий баланс', income:'Доходы', expense:'Расходы', history:'История операций',
+    btn_income:'Доход', btn_expense:'Расход',
+    add_expense:'Добавить расход', add_income:'Добавить доход',
+    tab_quick:'⚡ Быстро', tab_receipt:'🧾 Чек',
+    category_lbl:'Категория', envelope:'Конверт', save:'Сохранить', cancel:'Отмена',
+    amount_lbl:'Сумма', comment_lbl:'Комментарий',
+    tariff:'Тариф', manual_receipts:'Ручные чеки', photo_receipts:'Чеки по фото (OCR)', available:'Доступно',
+    lang_currency:'Язык и валюта', language:'Язык', currency:'Валюта', theme:'Тема',
+    dark:'🌙 Тёмная', light:'☀️ Светлая',
+    referral:'Пригласи друга', invited:'Приглашено', c10:'Купон 10%', c20:'Купон 20%',
+    share_link:'Поделиться ссылкой',
+    family:'Семья', family_alone:'Вы ведёте бюджет один.', family_join:'Присоединиться к семье',
+    family_hint:'Введите код партнёра или поделитесь своим.', your_code:'Ваш код для партнёра:',
+    family_banner:'Ведёте бюджет один? Можно вместе — Настройки → Семья.',
+    connect:'Подключиться', leave:'Выйти из семьи',
+    env_title:'Конверты расходов', bank_title:'Накопительные банки', create:'Создать',
+    env_new:'Новый конверт', bank_new:'Новая банка',
+    no_env:'Конверты не созданы', no_bank:'Банки не созданы', no_history:'История пуста',
+    analytics_title:'Аналитика расходов', no_data:'Нет данных',
+    date_lbl:'Дата', receipt_items:'Позиции', receipt_add:'Добавить позицию',
+    receipt_total:'Итого:', receipt_save:'Сохранить чек',
+    receipt_photo_hint:'Сфотографировать или загрузить чек', receipt_remove_photo:'Убрать фото',
+    receipt_pro_only:'Фото чека доступно в Pro.',
+    top_up:'Пополнить', topup_title:'Пополнить',
+    edit_tx:'Изменить', delete_confirm:'Удалить?',
+    m_jan:'Январь', m_feb:'Февраль', m_mar:'Март', m_apr:'Апрель', m_may:'Май', m_jun:'Июнь',
+    m_jul:'Июль', m_aug:'Август', m_sep:'Сентябрь', m_oct:'Октябрь', m_nov:'Ноябрь', m_dec:'Декабрь',
+    w_mon:'Пн', w_tue:'Вт', w_wed:'Ср', w_thu:'Чт', w_fri:'Пт', w_sat:'Сб', w_sun:'Вс',
+    store_ph:'Магазин', comment_ph:'Комментарий (необязательно)', amount_ph:'Сумма',
+    env_name_ph:'Название', env_target_ph:'Лимит в месяц', bank_target_ph:'Цель накопления'
+  },
+  uk: {
+    nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
+    balance:'Поточний баланс', income:'Доходи', expense:'Витрати', history:'Історія операцій',
+    btn_income:'Дохід', btn_expense:'Витрата',
+    add_expense:'Додати витрату', add_income:'Додати дохід',
+    tab_quick:'⚡ Швидко', tab_receipt:'🧾 Чек',
+    category_lbl:'Категорія', envelope:'Конверт', save:'Зберегти', cancel:'Скасувати',
+    amount_lbl:'Сума', comment_lbl:'Коментар',
+    tariff:'Тариф', manual_receipts:'Ручні чеки', photo_receipts:'Чеки по фото (OCR)', available:'Доступно',
+    lang_currency:'Мова та валюта', language:'Мова', currency:'Валюта', theme:'Тема',
+    dark:'🌙 Темна', light:'☀️ Світла',
+    referral:'Запросити друга', invited:'Запрошено', c10:'Купон 10%', c20:'Купон 20%',
+    share_link:'Поділитися посиланням',
+    family:'Родина', family_alone:'Ви ведете бюджет самостійно.', family_join:'Приєднатися до родини',
+    family_hint:'Введіть код партнера або поділіться своїм.', your_code:'Ваш код для партнера:',
+    family_banner:'Ведете бюджет самі? Можна разом — Налаштування → Родина.',
+    connect:'Підключитися', leave:'Вийти з родини',
+    env_title:'Конверти витрат', bank_title:'Накопичувальні банки', create:'Створити',
+    env_new:'Новий конверт', bank_new:'Нова банка',
+    no_env:'Конверти не створені', no_bank:'Банки не створені', no_history:'Історія порожня',
+    analytics_title:'Аналітика витрат', no_data:'Немає даних',
+    date_lbl:'Дата', receipt_items:'Позиції', receipt_add:'Додати позицію',
+    receipt_total:'Разом:', receipt_save:'Зберегти чек',
+    receipt_photo_hint:'Сфотографувати або завантажити чек', receipt_remove_photo:'Прибрати фото',
+    receipt_pro_only:'Фото чека доступне в Pro.',
+    top_up:'Поповнити', topup_title:'Поповнити',
+    edit_tx:'Змінити', delete_confirm:'Видалити?',
+    m_jan:'Січень', m_feb:'Лютий', m_mar:'Березень', m_apr:'Квітень', m_may:'Травень', m_jun:'Червень',
+    m_jul:'Липень', m_aug:'Серпень', m_sep:'Вересень', m_oct:'Жовтень', m_nov:'Листопад', m_dec:'Грудень',
+    w_mon:'Пн', w_tue:'Вт', w_wed:'Ср', w_thu:'Чт', w_fri:'Пт', w_sat:'Сб', w_sun:'Нд',
+    store_ph:'Магазин', comment_ph:'Коментар (необов\'язково)', amount_ph:'Сума',
+    env_name_ph:'Назва', env_target_ph:'Ліміт на місяць', bank_target_ph:'Ціль накопичення'
+  },
+  en: {
+    nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
+    balance:'Current balance', income:'Income', expense:'Expenses', history:'Transaction history',
+    btn_income:'Income', btn_expense:'Expense',
+    add_expense:'Add expense', add_income:'Add income',
+    tab_quick:'⚡ Quick', tab_receipt:'🧾 Receipt',
+    category_lbl:'Category', envelope:'Envelope', save:'Save', cancel:'Cancel',
+    amount_lbl:'Amount', comment_lbl:'Comment',
+    tariff:'Plan', manual_receipts:'Manual receipts', photo_receipts:'Photo receipts (OCR)', available:'Available',
+    lang_currency:'Language & currency', language:'Language', currency:'Currency', theme:'Theme',
+    dark:'🌙 Dark', light:'☀️ Light',
+    referral:'Invite a friend', invited:'Invited', c10:'Coupon 10%', c20:'Coupon 20%',
+    share_link:'Share link',
+    family:'Family', family_alone:'You are budgeting alone.', family_join:'Join a family',
+    family_hint:'Enter partner code or share yours.', your_code:'Your code for partner:',
+    family_banner:'Budgeting alone? Do it together — Settings → Family.',
+    connect:'Connect', leave:'Leave family',
+    env_title:'Expense envelopes', bank_title:'Savings banks', create:'Create',
+    env_new:'New envelope', bank_new:'New bank',
+    no_env:'No envelopes', no_bank:'No banks', no_history:'No history',
+    analytics_title:'Expense analytics', no_data:'No data',
+    date_lbl:'Date', receipt_items:'Items', receipt_add:'Add item',
+    receipt_total:'Total:', receipt_save:'Save receipt',
+    receipt_photo_hint:'Take a photo or upload a receipt', receipt_remove_photo:'Remove photo',
+    receipt_pro_only:'Photo receipt available in Pro.',
+    top_up:'Top up', topup_title:'Top up',
+    edit_tx:'Edit', delete_confirm:'Delete?',
+    m_jan:'January', m_feb:'February', m_mar:'March', m_apr:'April', m_may:'May', m_jun:'June',
+    m_jul:'July', m_aug:'August', m_sep:'September', m_oct:'October', m_nov:'November', m_dec:'December',
+    w_mon:'Mo', w_tue:'Tu', w_wed:'We', w_thu:'Th', w_fri:'Fr', w_sat:'Sa', w_sun:'Su',
+    store_ph:'Store', comment_ph:'Comment (optional)', amount_ph:'Amount',
+    env_name_ph:'Name', env_target_ph:'Monthly limit', bank_target_ph:'Savings goal'
+  },
+  de: {
+    nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
+    balance:'Aktueller Saldo', income:'Einnahmen', expense:'Ausgaben', history:'Transaktionsverlauf',
+    btn_income:'Einnahme', btn_expense:'Ausgabe',
+    add_expense:'Ausgabe hinzufügen', add_income:'Einnahme hinzufügen',
+    tab_quick:'⚡ Schnell', tab_receipt:'🧾 Beleg',
+    category_lbl:'Kategorie', envelope:'Umschlag', save:'Speichern', cancel:'Abbrechen',
+    amount_lbl:'Betrag', comment_lbl:'Kommentar',
+    tariff:'Tarif', manual_receipts:'Manuelle Belege', photo_receipts:'Foto-Belege (OCR)', available:'Verfügbar',
+    lang_currency:'Sprache & Währung', language:'Sprache', currency:'Währung', theme:'Thema',
+    dark:'🌙 Dunkel', light:'☀️ Hell',
+    referral:'Freund einladen', invited:'Eingeladen', c10:'Gutschein 10%', c20:'Gutschein 20%',
+    share_link:'Link teilen',
+    family:'Familie', family_alone:'Sie budgetieren allein.', family_join:'Familie beitreten',
+    family_hint:'Partner-Code eingeben oder eigenen teilen.', your_code:'Ihr Code für Partner:',
+    family_banner:'Allein budgetieren? Zusammen geht es besser — Einstellungen → Familie.',
+    connect:'Verbinden', leave:'Familie verlassen',
+    env_title:'Ausgaben-Umschläge', bank_title:'Sparkassen', create:'Erstellen',
+    env_new:'Neuer Umschlag', bank_new:'Neue Bank',
+    no_env:'Keine Umschläge', no_bank:'Keine Banken', no_history:'Kein Verlauf',
+    analytics_title:'Ausgabenanalyse', no_data:'Keine Daten',
+    date_lbl:'Datum', receipt_items:'Positionen', receipt_add:'Position hinzufügen',
+    receipt_total:'Gesamt:', receipt_save:'Beleg speichern',
+    receipt_photo_hint:'Beleg fotografieren oder hochladen', receipt_remove_photo:'Foto entfernen',
+    receipt_pro_only:'Foto-Beleg in Pro verfügbar.',
+    top_up:'Aufladen', topup_title:'Aufladen',
+    edit_tx:'Bearbeiten', delete_confirm:'Löschen?',
+    m_jan:'Januar', m_feb:'Februar', m_mar:'März', m_apr:'April', m_may:'Mai', m_jun:'Juni',
+    m_jul:'Juli', m_aug:'August', m_sep:'September', m_oct:'Oktober', m_nov:'November', m_dec:'Dezember',
+    w_mon:'Mo', w_tue:'Di', w_wed:'Mi', w_thu:'Do', w_fri:'Fr', w_sat:'Sa', w_sun:'So',
+    store_ph:'Geschäft', comment_ph:'Kommentar (optional)', amount_ph:'Betrag',
+    env_name_ph:'Name', env_target_ph:'Monatslimit', bank_target_ph:'Sparziel'
+  },
+  fr: {
+    nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
+    balance:'Solde actuel', income:'Revenus', expense:'Dépenses', history:'Historique',
+    btn_income:'Revenu', btn_expense:'Dépense',
+    add_expense:'Ajouter dépense', add_income:'Ajouter revenu',
+    tab_quick:'⚡ Rapide', tab_receipt:'🧾 Reçu',
+    category_lbl:'Catégorie', envelope:'Enveloppe', save:'Enregistrer', cancel:'Annuler',
+    amount_lbl:'Montant', comment_lbl:'Commentaire',
+    tariff:'Forfait', manual_receipts:'Reçus manuels', photo_receipts:'Reçus photo (OCR)', available:'Disponible',
+    lang_currency:'Langue & devise', language:'Langue', currency:'Devise', theme:'Thème',
+    dark:'🌙 Sombre', light:'☀️ Clair',
+    referral:'Inviter un ami', invited:'Invités', c10:'Coupon 10%', c20:'Coupon 20%',
+    share_link:'Partager le lien',
+    family:'Famille', family_alone:'Vous budgétez seul.', family_join:'Rejoindre une famille',
+    family_hint:'Entrez le code partenaire ou partagez le vôtre.', your_code:'Votre code partenaire:',
+    family_banner:'Seul ? Faites-le ensemble — Paramètres → Famille.',
+    connect:'Connecter', leave:'Quitter la famille',
+    env_title:'Enveloppes de dépenses', bank_title:'Banques d\'épargne', create:'Créer',
+    env_new:'Nouvelle enveloppe', bank_new:'Nouvelle banque',
+    no_env:'Aucune enveloppe', no_bank:'Aucune banque', no_history:'Historique vide',
+    analytics_title:'Analyse des dépenses', no_data:'Aucune donnée',
+    date_lbl:'Date', receipt_items:'Articles', receipt_add:'Ajouter article',
+    receipt_total:'Total:', receipt_save:'Enregistrer reçu',
+    receipt_photo_hint:'Prendre une photo ou charger un reçu', receipt_remove_photo:'Retirer la photo',
+    receipt_pro_only:'Reçu photo disponible en Pro.',
+    top_up:'Recharger', topup_title:'Recharger',
+    edit_tx:'Modifier', delete_confirm:'Supprimer ?',
+    m_jan:'Janvier', m_feb:'Février', m_mar:'Mars', m_apr:'Avril', m_may:'Mai', m_jun:'Juin',
+    m_jul:'Juillet', m_aug:'Août', m_sep:'Septembre', m_oct:'Octobre', m_nov:'Novembre', m_dec:'Décembre',
+    w_mon:'Lu', w_tue:'Ma', w_wed:'Me', w_thu:'Je', w_fri:'Ve', w_sat:'Sa', w_sun:'Di',
+    store_ph:'Magasin', comment_ph:'Commentaire (optionnel)', amount_ph:'Montant',
+    env_name_ph:'Nom', env_target_ph:'Limite mensuelle', bank_target_ph:'Objectif'
+  },
+  es: {
+    nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
+    balance:'Saldo actual', income:'Ingresos', expense:'Gastos', history:'Historial',
+    btn_income:'Ingreso', btn_expense:'Gasto',
+    add_expense:'Añadir gasto', add_income:'Añadir ingreso',
+    tab_quick:'⚡ Rápido', tab_receipt:'🧾 Recibo',
+    category_lbl:'Categoría', envelope:'Sobre', save:'Guardar', cancel:'Cancelar',
+    amount_lbl:'Cantidad', comment_lbl:'Comentario',
+    tariff:'Plan', manual_receipts:'Recibos manuales', photo_receipts:'Recibos foto (OCR)', available:'Disponible',
+    lang_currency:'Idioma y moneda', language:'Idioma', currency:'Moneda', theme:'Tema',
+    dark:'🌙 Oscuro', light:'☀️ Claro',
+    referral:'Invitar amigo', invited:'Invitados', c10:'Cupón 10%', c20:'Cupón 20%',
+    share_link:'Compartir enlace',
+    family:'Familia', family_alone:'Presupuesta solo.', family_join:'Unirse a familia',
+    family_hint:'Ingrese el código o comparta el suyo.', your_code:'Su código para el socio:',
+    family_banner:'¿Solo? Háganlo juntos — Ajustes → Familia.',
+    connect:'Conectar', leave:'Salir de familia',
+    env_title:'Sobres de gastos', bank_title:'Bancos de ahorro', create:'Crear',
+    env_new:'Nuevo sobre', bank_new:'Nuevo banco',
+    no_env:'Sin sobres', no_bank:'Sin bancos', no_history:'Sin historial',
+    analytics_title:'Análisis de gastos', no_data:'Sin datos',
+    date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'Añadir artículo',
+    receipt_total:'Total:', receipt_save:'Guardar recibo',
+    receipt_photo_hint:'Fotografiar o subir recibo', receipt_remove_photo:'Quitar foto',
+    receipt_pro_only:'Recibo por foto solo en Pro.',
+    top_up:'Recargar', topup_title:'Recargar',
+    edit_tx:'Editar', delete_confirm:'¿Eliminar?',
+    m_jan:'Enero', m_feb:'Febrero', m_mar:'Marzo', m_apr:'Abril', m_may:'Mayo', m_jun:'Junio',
+    m_jul:'Julio', m_aug:'Agosto', m_sep:'Septiembre', m_oct:'Octubre', m_nov:'Noviembre', m_dec:'Diciembre',
+    w_mon:'Lu', w_tue:'Ma', w_wed:'Mi', w_thu:'Ju', w_fri:'Vi', w_sat:'Sá', w_sun:'Do',
+    store_ph:'Tienda', comment_ph:'Comentario (opcional)', amount_ph:'Cantidad',
+    env_name_ph:'Nombre', env_target_ph:'Límite mensual', bank_target_ph:'Meta de ahorro'
+  },
+  it: {
+    nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
+    balance:'Saldo attuale', income:'Entrate', expense:'Spese', history:'Cronologia',
+    btn_income:'Entrata', btn_expense:'Spesa',
+    add_expense:'Aggiungi spesa', add_income:'Aggiungi entrata',
+    tab_quick:'⚡ Veloce', tab_receipt:'🧾 Ricevuta',
+    category_lbl:'Categoria', envelope:'Busta', save:'Salva', cancel:'Annulla',
+    amount_lbl:'Importo', comment_lbl:'Commento',
+    tariff:'Piano', manual_receipts:'Ricevute manuali', photo_receipts:'Ricevute foto (OCR)', available:'Disponibile',
+    lang_currency:'Lingua e valuta', language:'Lingua', currency:'Valuta', theme:'Tema',
+    dark:'🌙 Scuro', light:'☀️ Chiaro',
+    referral:'Invita amico', invited:'Invitati', c10:'Coupon 10%', c20:'Coupon 20%',
+    share_link:'Condividi link',
+    family:'Famiglia', family_alone:'Stai bilanciando da solo.', family_join:'Unisciti a famiglia',
+    family_hint:'Inserisci codice o condividi il tuo.', your_code:'Il tuo codice per il partner:',
+    family_banner:'Da solo? Fatelo insieme — Impostazioni → Famiglia.',
+    connect:'Connetti', leave:'Esci dalla famiglia',
+    env_title:'Buste di spesa', bank_title:'Banche di risparmio', create:'Crea',
+    env_new:'Nuova busta', bank_new:'Nuova banca',
+    no_env:'Nessuna busta', no_bank:'Nessuna banca', no_history:'Cronologia vuota',
+    analytics_title:'Analisi delle spese', no_data:'Nessun dato',
+    date_lbl:'Data', receipt_items:'Voci', receipt_add:'Aggiungi voce',
+    receipt_total:'Totale:', receipt_save:'Salva ricevuta',
+    receipt_photo_hint:'Scatta o carica ricevuta', receipt_remove_photo:'Rimuovi foto',
+    receipt_pro_only:'Ricevuta foto solo in Pro.',
+    top_up:'Ricarica', topup_title:'Ricarica',
+    edit_tx:'Modifica', delete_confirm:'Eliminare?',
+    m_jan:'Gennaio', m_feb:'Febbraio', m_mar:'Marzo', m_apr:'Aprile', m_may:'Maggio', m_jun:'Giugno',
+    m_jul:'Luglio', m_aug:'Agosto', m_sep:'Settembre', m_oct:'Ottobre', m_nov:'Novembre', m_dec:'Dicembre',
+    w_mon:'Lu', w_tue:'Ma', w_wed:'Me', w_thu:'Gi', w_fri:'Ve', w_sat:'Sa', w_sun:'Do',
+    store_ph:'Negozio', comment_ph:'Commento (opzionale)', amount_ph:'Importo',
+    env_name_ph:'Nome', env_target_ph:'Limite mensile', bank_target_ph:'Obiettivo'
+  },
+  pl: {
+    nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
+    balance:'Aktualne saldo', income:'Dochody', expense:'Wydatki', history:'Historia',
+    btn_income:'Dochód', btn_expense:'Wydatek',
+    add_expense:'Dodaj wydatek', add_income:'Dodaj dochód',
+    tab_quick:'⚡ Szybko', tab_receipt:'🧾 Paragon',
+    category_lbl:'Kategoria', envelope:'Koperta', save:'Zapisz', cancel:'Anuluj',
+    amount_lbl:'Kwota', comment_lbl:'Komentarz',
+    tariff:'Plan', manual_receipts:'Ręczne paragony', photo_receipts:'Paragony foto (OCR)', available:'Dostępne',
+    lang_currency:'Język i waluta', language:'Język', currency:'Waluta', theme:'Motyw',
+    dark:'🌙 Ciemny', light:'☀️ Jasny',
+    referral:'Zaproś znajomego', invited:'Zaproszeni', c10:'Kupon 10%', c20:'Kupon 20%',
+    share_link:'Udostępnij link',
+    family:'Rodzina', family_alone:'Budżetujesz sam.', family_join:'Dołącz do rodziny',
+    family_hint:'Wpisz kod partnera lub udostępnij swój.', your_code:'Twój kod dla partnera:',
+    family_banner:'Sam? Zróbcie to razem — Ustawienia → Rodzina.',
+    connect:'Połącz', leave:'Opuść rodzinę',
+    env_title:'Koperty wydatków', bank_title:'Banki oszczędności', create:'Utwórz',
+    env_new:'Nowa koperta', bank_new:'Nowy bank',
+    no_env:'Brak kopert', no_bank:'Brak banków', no_history:'Brak historii',
+    analytics_title:'Analiza wydatków', no_data:'Brak danych',
+    date_lbl:'Data', receipt_items:'Pozycje', receipt_add:'Dodaj pozycję',
+    receipt_total:'Razem:', receipt_save:'Zapisz paragon',
+    receipt_photo_hint:'Zrób lub wgraj paragon', receipt_remove_photo:'Usuń zdjęcie',
+    receipt_pro_only:'Paragon foto tylko w Pro.',
+    top_up:'Zasil', topup_title:'Zasil',
+    edit_tx:'Edytuj', delete_confirm:'Usunąć?',
+    m_jan:'Styczeń', m_feb:'Luty', m_mar:'Marzec', m_apr:'Kwiecień', m_may:'Maj', m_jun:'Czerwiec',
+    m_jul:'Lipiec', m_aug:'Sierpień', m_sep:'Wrzesień', m_oct:'Październik', m_nov:'Listopad', m_dec:'Grudzień',
+    w_mon:'Pn', w_tue:'Wt', w_wed:'Śr', w_thu:'Cz', w_fri:'Pt', w_sat:'So', w_sun:'Nd',
+    store_ph:'Sklep', comment_ph:'Komentarz (opcjonalnie)', amount_ph:'Kwota',
+    env_name_ph:'Nazwa', env_target_ph:'Limit miesięczny', bank_target_ph:'Cel oszczędności'
+  },
+  tr: {
+    nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
+    balance:'Mevcut bakiye', income:'Gelir', expense:'Gider', history:'İşlem geçmişi',
+    btn_income:'Gelir', btn_expense:'Gider',
+    add_expense:'Gider ekle', add_income:'Gelir ekle',
+    tab_quick:'⚡ Hızlı', tab_receipt:'🧾 Fiş',
+    category_lbl:'Kategori', envelope:'Zarf', save:'Kaydet', cancel:'İptal',
+    amount_lbl:'Tutar', comment_lbl:'Yorum',
+    tariff:'Plan', manual_receipts:'Manuel fişler', photo_receipts:'Foto fişler (OCR)', available:'Mevcut',
+    lang_currency:'Dil ve para birimi', language:'Dil', currency:'Para birimi', theme:'Tema',
+    dark:'🌙 Koyu', light:'☀️ Açık',
+    referral:'Arkadaşını davet et', invited:'Davet edilen', c10:'Kupon %10', c20:'Kupon %20',
+    share_link:'Bağlantıyı paylaş',
+    family:'Aile', family_alone:'Tek başına bütçeliyorsun.', family_join:'Aileye katıl',
+    family_hint:'Ortak kodunu gir veya kendininkini paylaş.', your_code:'Ortak için kodun:',
+    family_banner:'Yalnız mı? Birlikte yapın — Ayarlar → Aile.',
+    connect:'Bağlan', leave:'Aileden ayrıl',
+    env_title:'Gider zarfları', bank_title:'Tasarruf bankaları', create:'Oluştur',
+    env_new:'Yeni zarf', bank_new:'Yeni banka',
+    no_env:'Zarf yok', no_bank:'Banka yok', no_history:'Geçmiş yok',
+    analytics_title:'Gider analizi', no_data:'Veri yok',
+    date_lbl:'Tarih', receipt_items:'Öğeler', receipt_add:'Öğe ekle',
+    receipt_total:'Toplam:', receipt_save:'Fişi kaydet',
+    receipt_photo_hint:'Fiş çek veya yükle', receipt_remove_photo:'Fotoğrafı kaldır',
+    receipt_pro_only:'Foto fiş Pro\'da.',
+    top_up:'Yükle', topup_title:'Yükle',
+    edit_tx:'Düzenle', delete_confirm:'Silinsin mi?',
+    m_jan:'Ocak', m_feb:'Şubat', m_mar:'Mart', m_apr:'Nisan', m_may:'Mayıs', m_jun:'Haziran',
+    m_jul:'Temmuz', m_aug:'Ağustos', m_sep:'Eylül', m_oct:'Ekim', m_nov:'Kasım', m_dec:'Aralık',
+    w_mon:'Pt', w_tue:'Sa', w_wed:'Ça', w_thu:'Pe', w_fri:'Cu', w_sat:'Ct', w_sun:'Pz',
+    store_ph:'Mağaza', comment_ph:'Yorum (isteğe bağlı)', amount_ph:'Tutar',
+    env_name_ph:'Ad', env_target_ph:'Aylık limit', bank_target_ph:'Tasarruf hedefi'
+  },
+  zh: {
+    nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
+    balance:'当前余额', income:'收入', expense:'支出', history:'交易历史',
+    btn_income:'收入', btn_expense:'支出',
+    add_expense:'添加支出', add_income:'添加收入',
+    tab_quick:'⚡ 快速', tab_receipt:'🧾 收据',
+    category_lbl:'类别', envelope:'信封', save:'保存', cancel:'取消',
+    amount_lbl:'金额', comment_lbl:'备注',
+    tariff:'套餐', manual_receipts:'手动收据', photo_receipts:'照片收据 (OCR)', available:'可用',
+    lang_currency:'语言与货币', language:'语言', currency:'货币', theme:'主题',
+    dark:'🌙 深色', light:'☀️ 浅色',
+    referral:'邀请朋友', invited:'已邀请', c10:'优惠券 10%', c20:'优惠券 20%',
+    share_link:'分享链接',
+    family:'家庭', family_alone:'您单独记账。', family_join:'加入家庭',
+    family_hint:'输入伙伴代码或分享您的代码。', your_code:'您的伙伴代码：',
+    family_banner:'独自记账？可以一起 — 设置 → 家庭。',
+    connect:'连接', leave:'离开家庭',
+    env_title:'支出信封', bank_title:'储蓄银行', create:'创建',
+    env_new:'新信封', bank_new:'新银行',
+    no_env:'没有信封', no_bank:'没有银行', no_history:'没有历史',
+    analytics_title:'支出分析', no_data:'没有数据',
+    date_lbl:'日期', receipt_items:'项目', receipt_add:'添加项目',
+    receipt_total:'合计:', receipt_save:'保存收据',
+    receipt_photo_hint:'拍照或上传收据', receipt_remove_photo:'移除照片',
+    receipt_pro_only:'照片收据仅限 Pro。',
+    top_up:'充值', topup_title:'充值',
+    edit_tx:'编辑', delete_confirm:'删除？',
+    m_jan:'一月', m_feb:'二月', m_mar:'三月', m_apr:'四月', m_may:'五月', m_jun:'六月',
+    m_jul:'七月', m_aug:'八月', m_sep:'九月', m_oct:'十月', m_nov:'十一月', m_dec:'十二月',
+    w_mon:'一', w_tue:'二', w_wed:'三', w_thu:'四', w_fri:'五', w_sat:'六', w_sun:'日',
+    store_ph:'商店', comment_ph:'备注（可选）', amount_ph:'金额',
+    env_name_ph:'名称', env_target_ph:'每月限额', bank_target_ph:'储蓄目标'
+  }
+};
+
+const MONTH_KEYS = ['m_jan','m_feb','m_mar','m_apr','m_may','m_jun','m_jul','m_aug','m_sep','m_oct','m_nov','m_dec'];
+
+function t(k){ return ((I18N[appData.lang] || I18N.ru)[k]) || k; }
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  renderCalendarWeek();
+  const setPh = (id, key) => { const e = document.getElementById(id); if(e) e.placeholder = t(key); };
+  setPh('receiptStore', 'store_ph');
+  setPh('txCommentInput', 'comment_ph');
+  setPh('txAmountInput', 'amount_ph');
+  setPh('envNameInput', 'env_name_ph');
+  setPh('envTargetInput', 'env_target_ph');
+  setPh('bankNameInput', 'env_name_ph');
+  setPh('bankTargetInput', 'bank_target_ph');
+  setPh('depositAmount', 'amount_ph');
+  setPh('depositNote', 'comment_ph');
   }
 
-/* ============ КАТЕГОРИИ ============ */
-const EXPENSE_CATEGORIES = [
+  const EXPENSE_CATEGORIES = [
   {icon:'🍔',name:'Еда'},{icon:'🛒',name:'Продукты'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
   {icon:'🚗',name:'Транспорт'},{icon:'⛽',name:'Бензин'},{icon:'🚌',name:'Общественный'},{icon:'🏠',name:'Дом'},
   {icon:'💡',name:'Коммуналка'},{icon:'📱',name:'Связь'},{icon:'💊',name:'Аптека'},{icon:'👕',name:'Одежда'},
@@ -839,27 +844,15 @@ const INCOME_CATEGORIES = [
 ];
 
 const LANGS = [
-  {id:'ru',flag:'🇷🇺',label:'Русский'},
-  {id:'uk',flag:'🇺🇦',label:'Українська'},
-  {id:'en',flag:'🇬🇧',label:'English'},
-  {id:'de',flag:'🇩🇪',label:'Deutsch'},
-  {id:'fr',flag:'🇫🇷',label:'Français'},
-  {id:'es',flag:'🇪🇸',label:'Español'},
-  {id:'it',flag:'🇮🇹',label:'Italiano'},
-  {id:'pl',flag:'🇵🇱',label:'Polski'},
-  {id:'tr',flag:'🇹🇷',label:'Türkçe'},
+  {id:'ru',flag:'🇷🇺',label:'Русский'},{id:'uk',flag:'🇺🇦',label:'Українська'},{id:'en',flag:'🇬🇧',label:'English'},
+  {id:'de',flag:'🇩🇪',label:'Deutsch'},{id:'fr',flag:'🇫🇷',label:'Français'},{id:'es',flag:'🇪🇸',label:'Español'},
+  {id:'it',flag:'🇮🇹',label:'Italiano'},{id:'pl',flag:'🇵🇱',label:'Polski'},{id:'tr',flag:'🇹🇷',label:'Türkçe'},
   {id:'zh',flag:'🇨🇳',label:'中文'}
 ];
 const CURRENCIES = [
-  {id:'UAH',sym:'₴',label:'Гривня'},
-  {id:'USD',sym:'$',label:'Доллар США'},
-  {id:'EUR',sym:'€',label:'Евро'},
-  {id:'PLN',sym:'zł',label:'Злотый'},
-  {id:'GBP',sym:'£',label:'Фунт'},
-  {id:'TRY',sym:'₺',label:'Лира'},
-  {id:'CHF',sym:'₣',label:'Франк'},
-  {id:'CZK',sym:'Kč',label:'Крона'},
-  {id:'JPY',sym:'¥',label:'Иена'},
+  {id:'UAH',sym:'₴',label:'Гривня'},{id:'USD',sym:'$',label:'Доллар США'},{id:'EUR',sym:'€',label:'Евро'},
+  {id:'PLN',sym:'zł',label:'Злотый'},{id:'GBP',sym:'£',label:'Фунт'},{id:'TRY',sym:'₺',label:'Лира'},
+  {id:'CHF',sym:'₣',label:'Франк'},{id:'CZK',sym:'Kč',label:'Крона'},{id:'JPY',sym:'¥',label:'Иена'},
   {id:'CNY',sym:'元',label:'Юань'}
 ];
 
@@ -869,6 +862,7 @@ let chartInstance = null;
 let pendingReceiptPhoto = null;
 let editingTxId = null;
 
+const now0 = new Date();
 const DEFAULT_STATE = {
   balance: 0, monthIncome: 0, monthExpense: 0,
   envelopes: [], banks: [], history: [],
@@ -881,62 +875,61 @@ const DEFAULT_STATE = {
   lang: 'ru', currency: 'UAH', theme: 'dark',
   selectedEnvelopeId: '', selectedEnvelopeReceiptId: '', selectedBankId: '',
   referral: { count: 0, code: '', link: '', coupons10: 0, coupons20: 0 },
-  currentMonth: null,
-  monthStartBalance: 0
+  currentMonth: now0.getFullYear() + '-' + String(now0.getMonth()+1).padStart(2,'0')
 };
 
-  let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
-  const now0 = new Date();
-  if(!appData.currentMonth) appData.currentMonth = now0.getFullYear() + '-' + String(now0.getMonth()+1).padStart(2,'0');
+let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
-  function loadData(){
-    const saved = localStorage.getItem('budgetAppData_v7');
-    if(saved){
-      try{
-        const parsed = JSON.parse(saved);
-        appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-        if(!appData.currentMonth){
-          const n = new Date();
-          appData.currentMonth = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
-        }
-      }catch(e){}
-    }
+function loadData(){
+  const saved = localStorage.getItem('budgetAppData_v7');
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+      if(!appData.currentMonth){
+        const n = new Date();
+        appData.currentMonth = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
+      }
+    }catch(e){}
   }
-  function saveData(){ localStorage.setItem('budgetAppData_v7', JSON.stringify(appData)); }
-  function getMonthKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
-  function currentMonthDate(){
-    const [y,m] = appData.currentMonth.split('-').map(Number);
-    return new Date(y, m-1, 1);
-  }
-  function txMonthKey(tx){
-    if(!tx.date) return null;
-    const parts = tx.date.split('.');
-    if(parts.length !== 3) return null;
-    return parts[2] + '-' + parts[1];
-  }
-  function monthTx(){ return (appData.history || []).filter(tx => txMonthKey(tx) === appData.currentMonth); }
+}
+function saveData(){ localStorage.setItem('budgetAppData_v7', JSON.stringify(appData)); }
+function isPro(){ return appData.subscription && appData.subscription.plan === 'pro'; }
 
-  function renderMonthBar(){
-    const d = currentMonthDate();
-    const mLabel = document.getElementById('monthLabel');
-    const yLabel = document.getElementById('yearLabel');
-    const stat = document.getElementById('monthStat');
-    if(mLabel) mLabel.textContent = t(MONTH_KEYS[d.getMonth()]);
-    if(yLabel) yLabel.textContent = d.getFullYear();
-    const count = monthTx().length;
-    if(stat) stat.textContent = count + ' txn';
+function getMonthKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
+function currentMonthDate(){
+  const [y,m] = appData.currentMonth.split('-').map(Number);
+  return new Date(y, m-1, 1);
+}
+function txMonthKey(tx){
+  if(!tx.date) return null;
+  const parts = tx.date.split('.');
+  if(parts.length !== 3) return null;
+  return parts[2] + '-' + parts[1];
+}
+function monthTx(){ return (appData.history || []).filter(tx => txMonthKey(tx) === appData.currentMonth); }
+
+function renderMonthBar(){
+  const d = currentMonthDate();
+  const mLabel = document.getElementById('monthLabel');
+  const yLabel = document.getElementById('yearLabel');
+  const stat = document.getElementById('monthStat');
+  if(mLabel) mLabel.textContent = t(MONTH_KEYS[d.getMonth()]);
+  if(yLabel) yLabel.textContent = d.getFullYear();
+  const count = monthTx().length;
+  if(stat) stat.textContent = count + ' txn';
+}
+
+function shiftMonth(dir){
+  const d = currentMonthDate();
+  d.setMonth(d.getMonth() + dir);
+  appData.currentMonth = getMonthKey(d);
+  saveData();
+  renderMonthBar();
+  renderAll();
   }
 
-  function shiftMonth(dir){
-    const d = currentMonthDate();
-    d.setMonth(d.getMonth() + dir);
-    appData.currentMonth = getMonthKey(d);
-    saveData();
-    renderMonthBar();
-    renderAll();
-  }
-  
-function openPicker(kind){
+  function openPicker(kind){
   const cfg = {
     envelope:        { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
     envelopeReceipt: { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
@@ -1018,22 +1011,22 @@ function renderReferral(){
   if(el('refC20')) el('refC20').innerText = r.coupons20 || 0;
 }
 
-  function copyRefLink(){
-    const inp = document.getElementById('refLink');
-    if(!inp || !inp.value) return;
-    inp.select();
-    try{ navigator.clipboard.writeText(inp.value); }catch(e){}
-    if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-  }
-  function shareRef(){
-    const link = document.getElementById('refLink')?.value || '';
-    if(!link) return;
-    const text = 'Family Budget — ' + link;
-    const url = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
-    if(window.Telegram?.WebApp?.openTelegramLink) Telegram.WebApp.openTelegramLink(url);
-    else window.open(url, '_blank');
-  }
-  
+function copyRefLink(){
+  const inp = document.getElementById('refLink');
+  if(!inp || !inp.value) return;
+  inp.select();
+  try{ navigator.clipboard.writeText(inp.value); }catch(e){}
+  if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+}
+function shareRef(){
+  const link = document.getElementById('refLink')?.value || '';
+  if(!link) return;
+  const text = 'Family Budget — ' + link;
+  const url = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+  if(window.Telegram?.WebApp?.openTelegramLink) Telegram.WebApp.openTelegramLink(url);
+  else window.open(url, '_blank');
+}
+
 function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -1058,7 +1051,7 @@ function openTransactionModal(type){
   const cats = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   appData.selectedCategory = cats[0].name;
   appData.currentIcon = cats[0].icon;
-  renderCategoryGrid();
+  renderCategoryGrid('categoryGrid', cats, true);
 
   if(appData.envelopes.length && !appData.selectedEnvelopeId){
     appData.selectedEnvelopeId = appData.envelopes[0].id;
@@ -1111,13 +1104,13 @@ function renderCategoryGrid(gridId, cats, isMain){
     };
   });
 }
-  
+
 function submitTransaction(){
   const amountInput = document.getElementById('txAmountInput');
   const commentInput = document.getElementById('txCommentInput');
   const amount = parseFloat(String(amountInput.value).replace(',', '.'));
   const comment = commentInput.value.trim();
-  if(!amount || amount <= 0){ alert('—'); return; }
+  if(!amount || amount <= 0) return;
   const now = new Date();
   const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
   const tx = {
@@ -1173,8 +1166,7 @@ function openEditTx(id){
   document.getElementById('editAmount').value = tx.amount;
   document.getElementById('editComment').value = tx.title || '';
   const cats = tx.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  const catsArr = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  renderCategoryGrid('categoryGrid', catsArr, true);
+  renderCategoryGrid('editCategoryGrid', cats, false);
   setTimeout(() => {
     const grid = document.getElementById('editCategoryGrid');
     grid.querySelectorAll('.icon-item').forEach(el => {
@@ -1209,7 +1201,7 @@ function saveEditTx(){
   tx.icon = newIcon;
   saveData(); closeModal('modalEditTx'); renderAll();
 }
-  
+
 function updateReceiptPhotoSection(){
   const pro = isPro();
   const isExpense = activeTxType === 'expense';
@@ -1273,7 +1265,7 @@ function renderReceiptItems(){
   }
   box.innerHTML = appData.receiptItems.map((it,i) => `
     <div class="receipt-item">
-      <input type="text" placeholder="" value="${escapeAttr(it.name)}" data-idx="${i}" data-field="name">
+      <input type="text" value="${escapeAttr(it.name)}" data-idx="${i}" data-field="name">
       <input type="number" value="${it.qty}" min="1" step="1" data-idx="${i}" data-field="qty" inputmode="decimal">
       <input type="number" value="${it.price}" min="0" step="0.01" data-idx="${i}" data-field="price" inputmode="decimal">
       <button class="del" onclick="removeReceiptItem(${i})">✕</button>
@@ -1290,18 +1282,16 @@ function renderReceiptItems(){
   });
   updateReceiptTotal();
 }
-
 function updateReceiptTotal(){
   const total = appData.receiptItems.reduce((s,i) => s + (i.qty||0)*(i.price||0), 0);
   const el = document.getElementById('receiptTotal');
   if(el) el.innerText = fmtMoney(total);
   return total;
 }
-
 function submitReceipt(){
   const items = appData.receiptItems;
   const total = items.reduce((s,i) => s + (i.qty||0)*(i.price||0), 0);
-  if(!items.length || total <= 0){ alert('—'); return; }
+  if(!items.length || total <= 0) return;
   const store = document.getElementById('receiptStore').value.trim() || '—';
   const dateInput = document.getElementById('receiptDate').value;
   const d = dateInput ? new Date(dateInput) : new Date();
@@ -1315,16 +1305,13 @@ function submitReceipt(){
   resetReceiptPhoto();
   closeModal('modalTransaction');
   renderAll();
-  }
-  /* ============ КАЛЕНДАРЬ ============ */
-const CAL_MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+}
+
 let calMonth, calYear;
-const CAL_MONTH_KEYS = MONTH_KEYS;
 function renderCalendarWeek(){
   const el = document.getElementById('calWeek');
   if(el) el.innerHTML = ['w_mon','w_tue','w_wed','w_thu','w_fri','w_sat','w_sun'].map(k => `<span>${t(k)}</span>`).join('');
 }
-
 function openDatePicker(){
   const cur = document.getElementById('receiptDate').value;
   const d = cur ? new Date(cur) : new Date();
@@ -1339,7 +1326,7 @@ function calShift(dir){
   renderCal();
 }
 function renderCal(){
-  document.getElementById('calMonthLabel').textContent = t(MONTH_KEYS[calMonth])
+  document.getElementById('calMonthLabel').textContent = t(MONTH_KEYS[calMonth]) + ' ' + calYear;
   const first = new Date(calYear, calMonth, 1);
   let startDay = (first.getDay() + 6) % 7;
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
@@ -1364,7 +1351,6 @@ function pickDate(y,m,d){
   closeModal('modalDate');
 }
 
-/* ============ КОНВЕРТЫ / БАНКИ ============ */
 function saveEnvelope(){
   const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
@@ -1386,12 +1372,12 @@ function saveBank(){
   renderAll();
 }
 function deleteEnvelope(id){
-  if(!confirm('Удалить?')) return;
+  if(!confirm(t('delete_confirm'))) return;
   appData.envelopes = appData.envelopes.filter(e => e.id != id);
   saveData(); renderAll();
 }
 function deleteBank(id){
-  if(!confirm('Удалить?')) return;
+  if(!confirm(t('delete_confirm'))) return;
   appData.banks = appData.banks.filter(b => b.id != id);
   saveData(); renderAll();
 }
@@ -1420,7 +1406,6 @@ function confirmDeposit(){
   saveData(); closeModal('modalDeposit'); renderAll();
 }
 
-/* ============ СЕМЬЯ ============ */
 function dismissFamilyBanner(){ const el = document.getElementById('familyBanner'); if(el) el.style.display='none'; }
 function toggleFamilyForm(){
   const form = document.getElementById('familyForm'); if(!form) return;
@@ -1437,7 +1422,7 @@ function connectFamily(){
   codeInput.value = '';
 }
 function leaveFamily(){
-  if(!confirm('?')) return;
+  if(!confirm(t('delete_confirm'))) return;
   appData.joinedFamily = false;
   appData.familyMembers = 1;
   saveData(); renderFamily(); renderAll();
@@ -1477,18 +1462,16 @@ function renderSubscription(){
   document.querySelectorAll('#devToggle button').forEach(b => b.classList.toggle('active', b.dataset.plan === plan));
 }
 
-/* ============ АНАЛИТИКА ============ */
 function renderChart(){
   const ctx = document.getElementById('expensesChart')?.getContext('2d');
   if(!ctx) return;
   if(chartInstance) chartInstance.destroy();
-
   const byCat = {};
   monthTx().forEach(tx => {
-  if(tx.type !== 'expense') return;
-  const k = tx.category || '—';
-  byCat[k] = (byCat[k] || 0) + (tx.amount || 0);
-});
+    if(tx.type !== 'expense') return;
+    const k = tx.category || '—';
+    byCat[k] = (byCat[k] || 0) + (tx.amount || 0);
+  });
   const entries = Object.entries(byCat).filter(([k,v]) => v > 0);
   const labels = entries.length ? entries.map(e => e[0]) : [t('no_data')];
   const data = entries.length ? entries.map(e => e[1]) : [1];
@@ -1504,7 +1487,6 @@ function escapeAttr(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/"/
 
 function renderAll(){
   const el = id => document.getElementById(id);
-
   renderMonthBar();
 
   const mtx = monthTx();
@@ -1576,11 +1558,6 @@ function renderAll(){
 
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
-  if(!appData.currentMonth){
-    const n = new Date();
-    appData.currentMonth = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
-  }
-  loadData();
   if(!appData.theme && window.Telegram?.WebApp?.colorScheme){
     appData.theme = Telegram.WebApp.colorScheme;
   }
@@ -1602,7 +1579,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   if(tgUser?.id){
     appData.referral = Object.assign(appData.referral || {}, {
-      code: 'FAM-' + String(tgUser.id).slice(-6).toUpperCase()
+      code: 'FAM-' + String(tgUser.id).slice(-6).toUpperCase(),
+      link: 'https://t.me/moneyfamilybudget_bot?start=ref_' + tgUser.id
     });
     renderReferral();
   }

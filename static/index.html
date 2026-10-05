@@ -177,6 +177,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .ref-link-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);font-size:12px;font-family:monospace;margin:0;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
+  <div id="debugBox" style="position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font:12px monospace;padding:8px;z-index:99999;white-space:pre-wrap;max-height:40vh;overflow:auto">JS still loading...</div>
 <body>
 
 <div class="container">
@@ -479,8 +480,8 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
     <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель накопления" inputmode="decimal">
     <button class="btn btn-accent" style="width:100%" onclick="saveBank()"><span data-i18n="create">Создать</span></button>
-  </div>
 </div>
+  
 
 <script>
 /* ============ I18N ============ */

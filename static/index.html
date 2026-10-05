@@ -211,7 +211,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   <div id="tab-envelopes" class="tab-content" style="display:none">
     <div class="row-between">
       <h4 data-i18n="env_title">Конверты расходов</h4>
-      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
+      <button class="btn btn-accent btn-sm" onclick="resetBankForm();openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
     </div>
     <div id="envelopesList"></div>
   </div>
@@ -1187,6 +1187,12 @@ function switchTab(name){
   if(name === 'analytics') renderChart();
 }
 
+function resetBankForm(){
+  document.getElementById('bankNameInput').value = '';
+  document.getElementById('bankTargetInput').value = '';
+  clearBankDeadline();
+}
+  
 function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('active'); }
 function closeModal(id){ const m = document.getElementById(id); if(m) m.classList.remove('active'); }
 
@@ -1501,6 +1507,57 @@ function pickDate(y,m,d){
   closeModal('modalDate');
 }
 
+let calBankMonth, calBankYear;
+
+function openBankDeadlinePicker(){
+  const cur = document.getElementById('bankDeadlineInput').value;
+  const d = cur ? new Date(cur) : new Date();
+  calBankMonth = d.getMonth();
+  calBankYear = d.getFullYear();
+  renderBankCal();
+  openModal('modalBankDate');
+}
+function calBankShift(dir){
+  calBankMonth += dir;
+  if(calBankMonth < 0){ calBankMonth = 11; calBankYear--; }
+  if(calBankMonth > 11){ calBankMonth = 0; calBankYear++; }
+  renderBankCal();
+}
+function renderBankCal(){
+  const week = document.getElementById('calBankWeek');
+  if(week) week.innerHTML = ['w_mon','w_tue','w_wed','w_thu','w_fri','w_sat','w_sun'].map(k => `<span>${t(k)}</span>`).join('');
+  document.getElementById('calBankMonthLabel').textContent = t(MONTH_KEYS[calBankMonth]) + ' ' + calBankYear;
+  const first = new Date(calBankYear, calBankMonth, 1);
+  const startDay = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(calBankYear, calBankMonth+1, 0).getDate();
+  const sel = document.getElementById('bankDeadlineInput').value;
+  const selDate = sel ? new Date(sel) : null;
+  let html = '';
+  for(let i = 0; i < startDay; i++) html += '<span class="cal-empty"></span>';
+  for(let d = 1; d <= daysInMonth; d++){
+    const isSel = selDate && selDate.getFullYear()===calBankYear && selDate.getMonth()===calBankMonth && selDate.getDate()===d;
+    html += `<button class="cal-day ${isSel?'sel':''}" onclick="pickBankDate(${calBankYear},${calBankMonth},${d})">${d}</button>`;
+  }
+  document.getElementById('calBankGrid').innerHTML = html;
+}
+function pickBankDate(y,m,d){
+  const dt = new Date(y, m, d);
+  const iso = dt.toISOString().slice(0,10);
+  document.getElementById('bankDeadlineInput').value = iso;
+  document.getElementById('bankDeadlineLabel').textContent =
+    String(d).padStart(2,'0') + '.' + String(m+1).padStart(2,'0') + '.' + y;
+  document.getElementById('bankDeadlineClear').style.display = 'flex';
+  closeModal('modalBankDate');
+}
+function clearBankDeadline(){
+  const inp = document.getElementById('bankDeadlineInput');
+  if(inp) inp.value = '';
+  const lbl = document.getElementById('bankDeadlineLabel');
+  if(lbl) lbl.textContent = t('no_deadline');
+  const btn = document.getElementById('bankDeadlineClear');
+  if(btn) btn.style.display = 'none';
+}
+  
 function saveEnvelope(){
   const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
@@ -1515,10 +1572,16 @@ function saveBank(){
   const name = document.getElementById('bankNameInput').value.trim();
   const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
   if(!name) return;
-  appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+  if(!isPro() && appData.banks.length >= 2){
+    alert(t('bank_limit'));
+    return;
+  }
+  const deadline = document.getElementById('bankDeadlineInput').value || null;
+  appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline, createdAt: new Date().toISOString().slice(0,10) });
   saveData(); closeModal('modalAddBank');
   document.getElementById('bankNameInput').value = '';
   document.getElementById('bankTargetInput').value = '';
+  clearBankDeadline();
   renderAll();
 }
 function deleteEnvelope(id){
@@ -1722,21 +1785,38 @@ if(carryEl){
   }
 
   const bankBox = document.getElementById('banksList');
-  if(bankBox){
-    bankBox.innerHTML = appData.banks.length ? appData.banks.map(b => {
-      const pct = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
-      return `<div class="card">
-        <button class="card-del" onclick="deleteBank(${b.id})">✕</button>
-        <div class="row-between" style="padding-right:24px"><b>🏦 ${escapeAttr(b.name)}</b><span>${pct}%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--success)"></div></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-          <span class="muted">${fmtMoney(b.balance)} / ${fmtMoney(b.target)}</span>
-          <button class="btn btn-success btn-sm" onclick="depositBank(${b.id})">+ ${t('top_up')}</button>
-        </div>
-      </div>`;
-    }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_bank')}</div>`;
-  }
-
+if(bankBox){
+  bankBox.innerHTML = appData.banks.length ? appData.banks.map(b => {
+    const pct = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
+    const done = b.balance >= b.target && b.target > 0;
+    const doneBadge = done ? `<span style="color:var(--success);font-size:11px;font-weight:700">${t('bank_done')}</span>` : '';
+    let deadlineLine = '';
+    if(b.deadline && !done){
+      const now = new Date();
+      const dl = new Date(b.deadline);
+      const monthsLeft = Math.max(0, (dl.getFullYear() - now.getFullYear()) * 12 + (dl.getMonth() - now.getMonth()));
+      const remaining = Math.max(0, b.target - b.balance);
+      const perMonth = monthsLeft > 0 ? Math.ceil(remaining / monthsLeft) : remaining;
+      const fmtDl = String(dl.getDate()).padStart(2,'0') + '.' + String(dl.getMonth()+1).padStart(2,'0') + '.' + dl.getFullYear();
+      if(monthsLeft > 0){
+        deadlineLine = `<div class="muted" style="margin-top:4px;font-size:11px">${t('bank_left')} ${fmtMoney(remaining)} ${t('bank_by')} ${fmtDl} · ${t('bank_save')} ${fmtMoney(perMonth)}${t('bank_per_mo')}</div>`;
+      } else {
+        deadlineLine = `<div style="margin-top:4px;font-size:11px;color:var(--danger)">${t('bank_over')} · ${t('bank_left')} ${fmtMoney(remaining)}</div>`;
+      }
+    }
+    return `<div class="card">
+      <button class="card-del" onclick="deleteBank(${b.id})">✕</button>
+      <div class="row-between" style="padding-right:24px"><b>🏦 ${escapeAttr(b.name)}</b><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${done ? 'var(--success)' : 'var(--success)'}"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span class="muted">${fmtMoney(b.balance)} / ${fmtMoney(b.target)}</span>
+        <button class="btn btn-success btn-sm" onclick="depositBank(${b.id})">+ ${t('top_up')}</button>
+      </div>
+      ${doneBadge ? `<div style="margin-top:6px">${doneBadge}</div>` : ''}
+      ${deadlineLine}
+    </div>`;
+  }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_bank')}</div>`;
+}
   const histBox = document.getElementById('historyContainer');
   if(histBox){
     histBox.innerHTML = mtx.length ? mtx.map(item => {

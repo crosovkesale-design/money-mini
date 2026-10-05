@@ -194,6 +194,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div class="balance-card">
       <div class="balance-title" data-i18n="balance">Текущий баланс</div>
       <div class="balance-val" id="totalBalance">0 ₴</div>
+      <div id="carryIn" style="display:none;font-size:12px;font-weight:600;margin-bottom:10px"></div>
       <div class="balance-stats">
         <div class="stat-item"><div class="stat-label" data-i18n="income">Доходы</div><div class="stat-amount inc" id="monthIncome">+0 ₴</div></div>
         <div class="stat-item"><div class="stat-label" data-i18n="expense">Расходы</div><div class="stat-amount exp" id="monthExpense">-0 ₴</div></div>
@@ -215,11 +216,12 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div id="envelopesList"></div>
   </div>
 
-  <div id="tab-banks" class="tab-content" style="display:none">
-    <div class="row-between">
-      <h4 data-i18n="bank_title">Накопительные банки</h4>
-      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> <span data-i18n="create">Создать</span></button>
-    </div>
+  <div id="tab-analytics" class="tab-content" style="display:none">
+    <h4 data-i18n="analytics_title">Аналитика расходов</h4>
+    <div class="card" style="margin-top:12px"><canvas id="expensesChart"></canvas></div>
+    <h4 style="margin:20px 0 10px" data-i18n="months_chart_title">Динамика по месяцам</h4>
+    <div class="card" style="margin-top:12px"><canvas id="monthsChart"></canvas></div>
+  </div>
     <div id="banksList"></div>
   </div>
 
@@ -500,6 +502,7 @@ const I18N = {
     env_new:'Новый конверт', bank_new:'Новая банка',
     no_env:'Конверты не созданы', no_bank:'Банки не созданы', no_history:'История пуста',
     analytics_title:'Аналитика расходов', no_data:'Нет данных',
+    months_chart_title:'Динамика по месяцам',
     date_lbl:'Дата', receipt_items:'Позиции', receipt_add:'Добавить позицию',
     receipt_total:'Итого:', receipt_save:'Сохранить чек',
     receipt_photo_hint:'Сфотографировать или загрузить чек', receipt_remove_photo:'Убрать фото',
@@ -533,6 +536,7 @@ const I18N = {
     env_new:'Новий конверт', bank_new:'Нова банка',
     no_env:'Конверти не створені', no_bank:'Банки не створені', no_history:'Історія порожня',
     analytics_title:'Аналітика витрат', no_data:'Немає даних',
+    months_chart_title:'Динаміка по місяцях',
     date_lbl:'Дата', receipt_items:'Позиції', receipt_add:'Додати позицію',
     receipt_total:'Разом:', receipt_save:'Зберегти чек',
     receipt_photo_hint:'Сфотографувати або завантажити чек', receipt_remove_photo:'Прибрати фото',
@@ -566,6 +570,7 @@ const I18N = {
     env_new:'New envelope', bank_new:'New bank',
     no_env:'No envelopes', no_bank:'No banks', no_history:'No history',
     analytics_title:'Expense analytics', no_data:'No data',
+    months_chart_title:'Monthly dynamics',
     date_lbl:'Date', receipt_items:'Items', receipt_add:'Add item',
     receipt_total:'Total:', receipt_save:'Save receipt',
     receipt_photo_hint:'Take a photo or upload a receipt', receipt_remove_photo:'Remove photo',
@@ -599,6 +604,7 @@ const I18N = {
     env_new:'Neuer Umschlag', bank_new:'Neue Bank',
     no_env:'Keine Umschläge', no_bank:'Keine Banken', no_history:'Kein Verlauf',
     analytics_title:'Ausgabenanalyse', no_data:'Keine Daten',
+    months_chart_title:'Monatliche Dynamik',
     date_lbl:'Datum', receipt_items:'Positionen', receipt_add:'Position hinzufügen',
     receipt_total:'Gesamt:', receipt_save:'Beleg speichern',
     receipt_photo_hint:'Beleg fotografieren oder hochladen', receipt_remove_photo:'Foto entfernen',
@@ -632,6 +638,7 @@ const I18N = {
     env_new:'Nouvelle enveloppe', bank_new:'Nouvelle banque',
     no_env:'Aucune enveloppe', no_bank:'Aucune banque', no_history:'Historique vide',
     analytics_title:'Analyse des dépenses', no_data:'Aucune donnée',
+    months_chart_title:'Dynamique mensuelle',
     date_lbl:'Date', receipt_items:'Articles', receipt_add:'Ajouter article',
     receipt_total:'Total:', receipt_save:'Enregistrer reçu',
     receipt_photo_hint:'Prendre une photo ou charger un reçu', receipt_remove_photo:'Retirer la photo',
@@ -665,6 +672,7 @@ const I18N = {
     env_new:'Nuevo sobre', bank_new:'Nuevo banco',
     no_env:'Sin sobres', no_bank:'Sin bancos', no_history:'Sin historial',
     analytics_title:'Análisis de gastos', no_data:'Sin datos',
+    months_chart_title:'Dinámica mensual',
     date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'Añadir artículo',
     receipt_total:'Total:', receipt_save:'Guardar recibo',
     receipt_photo_hint:'Fotografiar o subir recibo', receipt_remove_photo:'Quitar foto',
@@ -698,6 +706,7 @@ const I18N = {
     env_new:'Nuova busta', bank_new:'Nuova banca',
     no_env:'Nessuna busta', no_bank:'Nessuna banca', no_history:'Cronologia vuota',
     analytics_title:'Analisi delle spese', no_data:'Nessun dato',
+    months_chart_title:'Dinamica mensile',
     date_lbl:'Data', receipt_items:'Voci', receipt_add:'Aggiungi voce',
     receipt_total:'Totale:', receipt_save:'Salva ricevuta',
     receipt_photo_hint:'Scatta o carica ricevuta', receipt_remove_photo:'Rimuovi foto',
@@ -731,6 +740,7 @@ const I18N = {
     env_new:'Nowa koperta', bank_new:'Nowy bank',
     no_env:'Brak kopert', no_bank:'Brak banków', no_history:'Brak historii',
     analytics_title:'Analiza wydatków', no_data:'Brak danych',
+    months_chart_title:'Dynamika miesięczna',
     date_lbl:'Data', receipt_items:'Pozycje', receipt_add:'Dodaj pozycję',
     receipt_total:'Razem:', receipt_save:'Zapisz paragon',
     receipt_photo_hint:'Zrób lub wgraj paragon', receipt_remove_photo:'Usuń zdjęcie',
@@ -764,6 +774,7 @@ const I18N = {
     env_new:'Yeni zarf', bank_new:'Yeni banka',
     no_env:'Zarf yok', no_bank:'Banka yok', no_history:'Geçmiş yok',
     analytics_title:'Gider analizi', no_data:'Veri yok',
+    months_chart_title:'Aylık dinamik',
     date_lbl:'Tarih', receipt_items:'Öğeler', receipt_add:'Öğe ekle',
     receipt_total:'Toplam:', receipt_save:'Fişi kaydet',
     receipt_photo_hint:'Fiş çek veya yükle', receipt_remove_photo:'Fotoğrafı kaldır',
@@ -797,6 +808,7 @@ const I18N = {
     env_new:'新信封', bank_new:'新银行',
     no_env:'没有信封', no_bank:'没有银行', no_history:'没有历史',
     analytics_title:'支出分析', no_data:'没有数据',
+    months_chart_title:'月度动态',
     date_lbl:'日期', receipt_items:'项目', receipt_add:'添加项目',
     receipt_total:'合计:', receipt_save:'保存收据',
     receipt_photo_hint:'拍照或上传收据', receipt_remove_photo:'移除照片',
@@ -904,6 +916,7 @@ const CURRENCIES = [
 let activeTxType = 'expense';
 let activeTxTab = 'quick';
 let chartInstance = null;
+let monthsChartInstance = null;
 let pendingReceiptPhoto = null;
 let editingTxId = null;
 
@@ -952,6 +965,30 @@ function txMonthKey(tx){
   if(parts.length !== 3) return null;
   return parts[2] + '-' + parts[1];
 }
+function cumulativeBalance(monthKey){
+  let bal = 0;
+  (appData.history || []).forEach(tx => {
+    const k = txMonthKey(tx);
+    if(!k) return;
+    if(k <= monthKey){
+      bal += tx.type === 'income' ? tx.amount : -tx.amount;
+    }
+  });
+  return bal;
+}
+
+function carryInFor(monthKey){
+  let bal = 0;
+  (appData.history || []).forEach(tx => {
+    const k = txMonthKey(tx);
+    if(!k) return;
+    if(k < monthKey){
+      bal += tx.type === 'income' ? tx.amount : -tx.amount;
+    }
+  });
+  return bal;
+}
+  
 function monthTx(){ return (appData.history || []).filter(tx => txMonthKey(tx) === appData.currentMonth); }
 
 function renderMonthBar(){
@@ -1509,23 +1546,68 @@ function renderSubscription(){
 
 function renderChart(){
   const ctx = document.getElementById('expensesChart')?.getContext('2d');
-  if(!ctx) return;
-  if(chartInstance) chartInstance.destroy();
-  const byCat = {};
-  monthTx().forEach(tx => {
-    if(tx.type !== 'expense') return;
-    const k = tx.category || '—';
-    byCat[k] = (byCat[k] || 0) + (tx.amount || 0);
-  });
-  const entries = Object.entries(byCat).filter(([k,v]) => v > 0);
-  const labels = entries.length ? entries.map(e => e[0]) : [t('no_data')];
-  const data = entries.length ? entries.map(e => e[1]) : [1];
-  const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#a855f7'];
-  chartInstance = new Chart(ctx, {
-    type:'doughnut',
-    data:{ labels, datasets:[{ data, backgroundColor: colors.slice(0, data.length) }] },
-    options:{ responsive:true, plugins:{ legend:{ labels:{ color: getComputedStyle(document.body).color } } } }
-  });
+  if(ctx){
+    if(chartInstance) chartInstance.destroy();
+    const byCat = {};
+    monthTx().forEach(tx => {
+      if(tx.type !== 'expense') return;
+      const k = tx.category || '—';
+      byCat[k] = (byCat[k] || 0) + (tx.amount || 0);
+    });
+    const entries = Object.entries(byCat).filter(([k,v]) => v > 0);
+    const labels = entries.length ? entries.map(e => tCat(e[0])) : [t('no_data')];
+    const data = entries.length ? entries.map(e => e[1]) : [1];
+    const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#a855f7'];
+    chartInstance = new Chart(ctx, {
+      type:'doughnut',
+      data:{ labels, datasets:[{ data, backgroundColor: colors.slice(0, data.length) }] },
+      options:{ responsive:true, plugins:{ legend:{ labels:{ color: getComputedStyle(document.body).color } } } }
+    });
+  }
+
+  const ctx2 = document.getElementById('monthsChart')?.getContext('2d');
+  if(ctx2){
+    if(monthsChartInstance) monthsChartInstance.destroy();
+    const last6 = [];
+    const base = currentMonthDate();
+    for(let i = 5; i >= 0; i--){
+      const d = new Date(base.getFullYear(), base.getMonth() - i, 1);
+      last6.push({ key: getMonthKey(d), d });
+    }
+    const incomeData = [];
+    const expenseData = [];
+    last6.forEach(m => {
+      let inc = 0, exp = 0;
+      (appData.history || []).forEach(tx => {
+        if(txMonthKey(tx) !== m.key) return;
+        if(tx.type === 'income') inc += tx.amount;
+        else exp += tx.amount;
+      });
+      incomeData.push(inc);
+      expenseData.push(exp);
+    });
+    const labels = last6.map(m => t(MONTH_KEYS[m.d.getMonth()]).slice(0,3));
+    const gridColor = getComputedStyle(document.body).getPropertyValue('--border').trim() || '#334155';
+    const textColor = getComputedStyle(document.body).color;
+    monthsChartInstance = new Chart(ctx2, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          { label: t('income'), data: incomeData, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,.15)', tension:.35, fill:true, borderWidth:2, pointRadius:3 },
+          { label: t('expense'), data: expenseData, borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.15)', tension:.35, fill:true, borderWidth:2, pointRadius:3 }
+        ]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{ labels:{ color: textColor } } },
+        scales:{
+          x:{ ticks:{ color: textColor }, grid:{ color: gridColor } },
+          y:{ ticks:{ color: textColor }, grid:{ color: gridColor }, beginAtZero:true }
+        }
+      }
+    });
+  }
 }
 
 function escapeAttr(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -1535,13 +1617,25 @@ function renderAll(){
   renderMonthBar();
 
   const mtx = monthTx();
-  const inc = mtx.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
-  const exp = mtx.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+const inc = mtx.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+const exp = mtx.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+const carryIn = carryInFor(appData.currentMonth);
+const totalBalance = carryIn + inc - exp;
 
-  if(el('totalBalance')) el('totalBalance').innerText = fmtMoney(inc - exp);
-  if(el('monthIncome')) el('monthIncome').innerText = '+' + fmtMoney(inc);
-  if(el('monthExpense')) el('monthExpense').innerText = '-' + fmtMoney(exp);
+if(el('totalBalance')) el('totalBalance').innerText = fmtMoney(totalBalance);
+if(el('monthIncome')) el('monthIncome').innerText = '+' + fmtMoney(inc);
+if(el('monthExpense')) el('monthExpense').innerText = '-' + fmtMoney(exp);
 
+const carryEl = document.getElementById('carryIn');
+if(carryEl){
+  if(carryIn !== 0){
+    carryEl.style.display = 'block';
+    carryEl.innerText = (carryIn > 0 ? '↑ ' : '↓ ') + fmtMoney(Math.abs(carryIn)) + ' с прошлых месяцев';
+    carryEl.style.color = carryIn > 0 ? 'var(--success)' : 'var(--danger)';
+  } else {
+    carryEl.style.display = 'none';
+  }
+}
   renderSettingsLabels();
   renderReferral();
   renderSubscription();

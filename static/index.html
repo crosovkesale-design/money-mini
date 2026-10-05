@@ -257,6 +257,14 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     </div>
 
     <div class="card">
+      <div class="row-between">
+        <h5><i class="fa-solid fa-rotate"></i> <span data-i18n="recurring_title">Автоплатежи</span></h5>
+        <button class="btn btn-accent btn-sm" onclick="openModal('modalAddRecurring')"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div id="recurringList" class="muted" style="font-size:12px"></div>
+    </div>
+    
+    <div class="card">
       <h5 style="margin-bottom:12px"><i class="fa-solid fa-globe"></i> <span data-i18n="lang_currency">Язык и валюта</span></h5>
       <label class="lbl" style="margin-top:0" data-i18n="language">Язык</label>
       <button type="button" class="select-fake" onclick="openPicker('language')">
@@ -489,6 +497,28 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
+<div class="modal" id="modalAddRecurring">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 data-i18n="recurring_new">Новое правило</h3>
+      <span class="modal-close" onclick="closeModal('modalAddRecurring')">×</span>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="recTabExpense" onclick="switchRecType('expense')"><span data-i18n="btn_expense">Расход</span></div>
+      <div class="modal-tab" id="recTabIncome" onclick="switchRecType('income')"><span data-i18n="btn_income">Доход</span></div>
+    </div>
+    <label class="lbl" style="margin-top:0" data-i18n="rec_name">Название</label>
+    <input type="text" id="recName" class="custom-input" placeholder="—">
+    <label class="lbl" data-i18n="amount_lbl">Сумма</label>
+    <input type="number" id="recAmount" class="custom-input" placeholder="—" inputmode="decimal">
+    <label class="lbl" data-i18n="rec_day">День месяца</label>
+    <input type="number" id="recDay" class="custom-input" min="1" max="31" value="1" inputmode="numeric">
+    <label class="lbl" data-i18n="category_lbl">Категория</label>
+    <div id="recCategoryGrid" class="icon-grid"></div>
+    <button class="btn btn-accent" style="width:100%;margin-top:10px" onclick="saveRecurring()"><span data-i18n="save">Сохранить</span></button>
+  </div>
+</div>
+  
 <div class="modal" id="modalConfirm">
   <div class="modal-content">
     <div class="modal-header">
@@ -570,6 +600,8 @@ const I18N = {
     bank_done:'✓ Цель достигнута', bank_left:'Осталось', bank_by:'к', bank_save:'откладывать по', 
     bank_per_mo:'/мес', bank_over:'срок истёк', bank_limit:'Бесплатно — 2 цели. В Pro — без ограничений.',
     confirm_title:'Подтверждение', delete_btn:'Удалить',
+    recurring_title:'Автоплатежи', recurring_new:'Новое правило', rec_name:'Название', rec_day:'День месяца', 
+    rec_none:'Правил нет', rec_active:'Активно', rec_paused:'Пауза', rec_limit:'Бесплатно — 2 правила. Pro — без ограничений.',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -608,7 +640,9 @@ const I18N = {
     no_deadline:'Без терміну', clear_deadline:'Прибрати термін', bank_done:'✓ Ціль досягнута', 
     bank_left:'Залишилось', bank_by:'до', bank_save:'відкладати по', bank_per_mo:'/міс', 
     bank_over:'термін вийшов', bank_limit:'Безкоштовно — 2 цілі. У Pro — без обмежень.',
-    confirm_title:'Підтвердження', delete_btn:'Видалити'
+    confirm_title:'Підтвердження', delete_btn:'Видалити',
+    recurring_title:'Автоплатежі', recurring_new:'Нове правило', rec_name:'Назва', rec_day:'День місяця', 
+    rec_none:'Правил немає', rec_active:'Активно', rec_paused:'Пауза', rec_limit:'Безкоштовно — 2 правила. Pro — без обмежень.',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -647,6 +681,8 @@ const I18N = {
     no_deadline:'No deadline', clear_deadline:'Clear deadline', bank_done:'✓ Goal reached', 
     bank_left:'Left', bank_by:'by', bank_save:'save', bank_per_mo:'/mo', bank_over:'deadline passed', 
     bank_limit:'Free — 2 goals. Pro — unlimited.', confirm_title:'Confirmation', delete_btn:'Delete',
+    recurring_title:'Recurring', recurring_new:'New rule', rec_name:'Name', rec_day:'Day of month', 
+    rec_none:'No rules', rec_active:'Active', rec_paused:'Paused', rec_limit:'Free — 2 rules. Pro — unlimited.',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -723,6 +759,8 @@ const I18N = {
     no_deadline:'Sans échéance', clear_deadline:'Retirer l\'échéance', bank_done:'✓ Objectif atteint', 
     bank_left:'Restant', bank_by:'avant', bank_save:'épargner', bank_per_mo:'/mois', bank_over:'échéance dépassée', 
     bank_limit:'Gratuit — 2 objectifs. Pro — illimité.', confirm_title:'Confirmation', delete_btn:'Supprimer',
+    recurring_title:'Récurrents', recurring_new:'Nouvelle règle', rec_name:'Nom', rec_day:'Jour du mois', rec_none:'Aucune règle', 
+    rec_active:'Actif', rec_paused:'Pause', rec_limit:'Gratuit — 2 règles. Pro — illimité.',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -761,6 +799,8 @@ const I18N = {
     no_deadline:'Sin plazo', clear_deadline:'Quitar plazo', bank_done:'✓ Meta alcanzada', 
     bank_left:'Restante', bank_by:'antes de', bank_save:'ahorrar', bank_per_mo:'/mes', bank_over:'plazo vencido', 
     bank_limit:'Gratis — 2 metas. Pro — ilimitado.', confirm_title:'Confirmación', delete_btn:'Eliminar',
+    recurring_title:'Recurrentes', recurring_new:'Nueva regla', rec_name:'Nombre', rec_day:'Día del mes', 
+    rec_none:'Sin reglas', rec_active:'Activo', rec_paused:'Pausa', rec_limit:'Gratis — 2 reglas. Pro — ilimitado.',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -799,6 +839,8 @@ const I18N = {
     clear_deadline:'Rimuovi scadenza', bank_done:'✓ Obiettivo raggiunto', bank_left:'Rimanente', bank_by:'entro', 
     bank_save:'risparmiare', bank_per_mo:'/mese', bank_over:'scadenza passata', bank_limit:'Gratis — 2 obiettivi. Pro — illimitato.',
     confirm_title:'Conferma', delete_btn:'Elimina',
+    recurring_title:'Ricorrenti', recurring_new:'Nuova regola', rec_name:'Nome', rec_day:'Giorno del mese', rec_none:'Nessuna regola', 
+    rec_active:'Attivo', rec_paused:'Pausa', rec_limit:'Gratis — 2 regole. Pro — illimitato.',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -837,6 +879,8 @@ const I18N = {
     no_deadline:'Bez terminu', clear_deadline:'Usuń termin', bank_done:'✓ Cel osiągnięty', 
     bank_left:'Pozostało', bank_by:'do', bank_save:'odkładać', bank_per_mo:'/mies', bank_over:'termin minął', 
     bank_limit:'Za darmo — 2 cele. Pro — bez limitu.', confirm_title:'Potwierdzenie', delete_btn:'Usuń',
+    recurring_title:'Cykliczne', recurring_new:'Nowa reguła', rec_name:'Nazwa', rec_day:'Dzień miesiąca', 
+    rec_none:'Brak reguł', rec_active:'Aktywne', rec_paused:'Pauza', rec_limit:'Za darmo — 2 reguły. Pro — bez limitu.',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -876,6 +920,8 @@ const I18N = {
     bank_left:'Kalan', bank_by:'tarihine kadar', bank_save:'ayır', bank_per_mo:'/ay', 
     bank_over:'süre geçti', bank_limit:'Ücretsiz — 2 hedef. Pro — sınırsız.',
     confirm_title:'Onay', delete_btn:'Sil',
+    recurring_title:'Tekrarlayan', recurring_new:'Yeni kural', rec_name:'Ad', rec_day:'Ayın günü', 
+    rec_none:'Kural yok', rec_active:'Aktif', rec_paused:'Duraklatıldı', rec_limit:'Ücretsiz — 2 kural. Pro — sınırsız.',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -914,6 +960,8 @@ const I18N = {
     no_deadline:'无期限', clear_deadline:'清除期限', bank_done:'✓ 目标达成', bank_left:'剩余', 
     bank_by:'截止', bank_save:'每月存', bank_per_mo:'/月', bank_over:'期限已过', 
     bank_limit:'免费 — 2 个目标。Pro — 无限制。', confirm_title:'确认', delete_btn:'删除',
+    recurring_title:'定期交易', recurring_new:'新规则', rec_name:'名称', rec_day:'每月日期', 
+    rec_none:'无规则', rec_active:'启用', rec_paused:'暂停', rec_limit:'免费 — 2 条规则。Pro — 无限制。',
   }
 };
 
@@ -1028,6 +1076,7 @@ const DEFAULT_STATE = {
   lang: 'ru', currency: 'UAH', theme: 'dark',
   selectedEnvelopeId: '', selectedEnvelopeReceiptId: '', selectedBankId: '',
   referral: { count: 0, code: '', link: '', coupons10: 0, coupons20: 0 },
+  recurring: [],
   currentMonth: now0.getFullYear() + '-' + String(now0.getMonth()+1).padStart(2,'0')
 };
 
@@ -1644,6 +1693,134 @@ function deleteEnvelope(id){
     appData.envelopes = appData.envelopes.filter(e => e.id != id);
     saveData(); renderAll();
   });
+}
+let recType = 'expense';
+let recCategory = null;
+
+function switchRecType(type){
+  recType = type;
+  document.getElementById('recTabExpense').classList.toggle('active', type === 'expense');
+  document.getElementById('recTabIncome').classList.toggle('active', type === 'income');
+  const cats = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  recCategory = cats[0];
+  renderCategoryGrid('recCategoryGrid', cats, false);
+}
+
+function saveRecurring(){
+  const name = document.getElementById('recName').value.trim();
+  const amount = parseFloat(document.getElementById('recAmount').value);
+  const day = Math.max(1, Math.min(31, parseInt(document.getElementById('recDay').value) || 1));
+  if(!name || !amount || amount <= 0) return;
+  if(!isPro() && (appData.recurring || []).length >= 2){
+    alert(t('rec_limit'));
+    return;
+  }
+  const grid = document.getElementById('recCategoryGrid');
+  const active = grid.querySelector('.icon-item.active');
+  const cat = active ? active.dataset.name : (recCategory ? recCategory.name : 'Разное');
+  const icon = active ? active.dataset.icon : (recCategory ? recCategory.icon : '🔄');
+
+  if(!appData.recurring) appData.recurring = [];
+  appData.recurring.push({
+    id: Date.now(),
+    type: recType,
+    name,
+    amount,
+    dayOfMonth: day,
+    category: cat,
+    icon,
+    active: true,
+    lastFired: null
+  });
+  saveData();
+  closeModal('modalAddRecurring');
+  document.getElementById('recName').value = '';
+  document.getElementById('recAmount').value = '';
+  document.getElementById('recDay').value = '1';
+  processRecurring();
+  renderAll();
+}
+
+function toggleRecurring(id){
+  const r = (appData.recurring || []).find(x => x.id === id);
+  if(!r) return;
+  r.active = !r.active;
+  saveData();
+  renderAll();
+}
+
+function deleteRecurring(id){
+  askConfirm(t('delete_confirm'), () => {
+    appData.recurring = (appData.recurring || []).filter(x => x.id !== id);
+    saveData();
+    renderAll();
+  });
+}
+
+function processRecurring(){
+  if(!appData.recurring || !appData.recurring.length) return;
+  const [cy, cm] = appData.currentMonth.split('-').map(Number);
+  const currentKey = appData.currentMonth;
+  const now = new Date();
+  const todayKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  let changed = false;
+
+  appData.recurring.forEach(rule => {
+    if(!rule.active) return;
+    if(rule.lastFired === currentKey) return;
+
+    const daysInMonth = new Date(cy, cm, 0).getDate();
+    const day = Math.min(rule.dayOfMonth, daysInMonth);
+    const fireDate = new Date(cy, cm-1, day);
+
+    if(currentKey > todayKey) return;
+    if(currentKey === todayKey && fireDate > now) return;
+
+    const dateStr = String(day).padStart(2,'0') + '.' + String(cm).padStart(2,'0') + '.' + cy;
+    const tx = {
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      type: rule.type,
+      title: rule.name,
+      category: rule.category,
+      icon: rule.icon || '🔄',
+      amount: rule.amount,
+      date: dateStr,
+      receipt: null,
+      recurring: true
+    };
+    if(!appData.history) appData.history = [];
+    appData.history.unshift(tx);
+    rule.lastFired = currentKey;
+    changed = true;
+  });
+
+  if(changed) saveData();
+}
+
+function renderRecurring(){
+  const box = document.getElementById('recurringList');
+  if(!box) return;
+  if(!appData.recurring || !appData.recurring.length){
+    box.innerHTML = `<div style="text-align:center;padding:8px 0">${t('rec_none')}</div>`;
+    return;
+  }
+  box.innerHTML = appData.recurring.map(r => {
+    const cls = r.type === 'expense' ? 'exp' : 'inc';
+    const sign = r.type === 'expense' ? '-' : '+';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px">${r.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeAttr(r.name)}</div>
+        <div style="font-size:11px;color:var(--muted)">${sign}${fmtMoney(r.amount)} · ${r.dayOfMonth} · ${r.active ? t('rec_active') : t('rec_paused')}</div>
+      </div>
+      <button class="card-del" style="position:static;padding:4px 8px" onclick="toggleRecurring(${r.id})" title="${r.active ? t('rec_paused') : t('rec_active')}">
+        <i class="fa-solid ${r.active ? 'fa-pause' : 'fa-play'}" style="font-size:11px"></i>
+      </button>
+      <button class="card-del" style="position:static;padding:4px 8px" onclick="deleteRecurring(${r.id})">
+        <i class="fa-solid fa-xmark" style="font-size:11px"></i>
+      </button>
+    </div>`;
+  }).join('');
 }
 function deleteBank(id){
   askConfirm(t('delete_confirm'), () => {

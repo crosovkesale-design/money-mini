@@ -210,7 +210,8 @@ if bot:
             "/start — открыть бюджет\n"
             "/help — справка\n"
             "/status — подписка\n"
-            "/referrals — мои рефералы"
+            "/referrals — мои рефералы\n"
+            "/stats — сколько нас"
         )
 
     @dp.message(Command("status"))
@@ -230,6 +231,28 @@ if bot:
             parse_mode="HTML",
         )
 
+    @dp.message(Command("stats"))
+    async def cmd_stats(message: Message):
+        users = await fb.get("/users") or {}
+        total = len(users)
+        paid = 0
+        trial = 0
+        for uid, u in users.items():
+            if not isinstance(u, dict):
+                continue
+            tariff = u.get("tariff") or "trial"
+            if tariff == "trial":
+                trial += 1
+            else:
+                paid += 1
+                await message.answer(
+                    "📊 <b>Family Budget</b>\n\n"
+                    "👥 Пользуются: <b>" + str(total) + "</b> человек\n"
+                    "🎁 На триале: " + str(trial) + "\n"
+                    "💎 С подпиской: " + str(paid),
+                    parse_mode="HTML"
+                )
+    
     @dp.message(Command("referrals"))
     async def cmd_referrals(message: Message):
         uid = str(message.from_user.id)

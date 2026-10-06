@@ -330,6 +330,9 @@ body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,
     <div class="card">
       <h5 style="margin-bottom:8px"><i class="fa-solid fa-users"></i> <span data-i18n="family">Семья</span></h5>
       <div id="familyStatus" class="muted" style="margin-bottom:10px" data-i18n="family_alone">Вы ведёте бюджет один.</div>
+      <button class="btn btn-accent" style="width:100%;margin-bottom:8px" onclick="createFamily()">
+        <i class="fa-solid fa-plus"></i> <span data-i18n="family_create">Создать семью</span>
+      </button>
       <button id="familyToggle" class="btn btn-outline" style="width:100%" onclick="toggleFamilyForm()">
         <i class="fa-solid fa-plus"></i> <span data-i18n="family_join">Присоединиться к семье</span>
       </button>
@@ -645,6 +648,7 @@ const I18N = {
     rec_none:'Правил нет', rec_active:'Активно', rec_paused:'Пауза', rec_limit:'Бесплатно — 2 правила. Pro — без ограничений.',
     alert_title:'Уведомление', rec_edit_title:'Изменить правило', no_envelope:'Без конверта',
     wallpaper:'Обои', wallpaper_pro_only:'Свои обои доступны в Pro.', wallpaper_upload:'Загрузить', wallpaper_clear:'Убрать',
+    family_create:'Создать семью',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -689,6 +693,7 @@ const I18N = {
     alert_title:'Повідомлення', rec_edit_title:'Змінити правило', no_envelope:'Без конверта',
     wallpaper:'Шпалери', wallpaper_pro_only:'Свої шпалери доступні в Pro.', wallpaper_upload:'Завантажити', 
     wallpaper_clear:'Прибрати', wallpaper_hint:'Рекомендуємо вертикальне фото до 3 МБ.',
+    family_create:'Створити родину',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -732,6 +737,7 @@ const I18N = {
     alert_title:'Notice', rec_edit_title:'Edit rule', no_envelope:'No envelope',
     wallpaper:'Wallpaper', wallpaper_pro_only:'Custom wallpaper is Pro.', wallpaper_upload:'Upload', 
     wallpaper_clear:'Remove', wallpaper_hint:'Vertical photo up to 3 MB recommended.',
+    family_create:'Create family',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -773,6 +779,7 @@ const I18N = {
     alert_title:'Hinweis', rec_edit_title:'Regel bearbeiten', no_envelope:'Kein Umschlag',
     wallpaper:'Hintergrund', wallpaper_pro_only:'Eigener Hintergrund in Pro.', wallpaper_upload:'Hochladen', 
     wallpaper_clear:'Entfernen', wallpaper_hint:'Vertikales Foto bis 3 MB empfohlen.',
+    family_create:'Familie erstellen',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -815,7 +822,7 @@ const I18N = {
     rec_active:'Actif', rec_paused:'Pause', rec_limit:'Gratuit — 2 règles. Pro — illimité.',
     alert_title:'Notification', rec_edit_title:'Modifier la règle', no_envelope:'Sans enveloppe',
     wallpaper:'Fond', wallpaper_pro_only:'Fond personnalisé en Pro.', wallpaper_upload:'Charger', wallpaper_clear:'Retirer', 
-    wallpaper_hint:'Photo verticale jusqu\'à 3 Mo recommandée.',
+    wallpaper_hint:'Photo verticale jusqu\'à 3 Mo recommandée.', family_create:'Créer une famille',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -858,7 +865,7 @@ const I18N = {
     rec_none:'Sin reglas', rec_active:'Activo', rec_paused:'Pausa', rec_limit:'Gratis — 2 reglas. Pro — ilimitado.',
     alert_title:'Aviso', rec_edit_title:'Editar regla', no_envelope:'Sin sobre',
     wallpaper:'Fondo', wallpaper_pro_only:'Fondo personalizado en Pro.', wallpaper_upload:'Subir', wallpaper_clear:'Quitar', 
-    wallpaper_hint:'Foto vertical hasta 3 MB.',
+    wallpaper_hint:'Foto vertical hasta 3 MB.', family_create:'Crear familia',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -901,7 +908,7 @@ const I18N = {
     rec_active:'Attivo', rec_paused:'Pausa', rec_limit:'Gratis — 2 regole. Pro — illimitato.',
     alert_title:'Avviso', rec_edit_title:'Modifica regola', no_envelope:'Senza busta',
     wallpaper:'Sfondo', wallpaper_pro_only:'Sfondo personalizzato in Pro.', wallpaper_upload:'Carica', 
-    wallpaper_clear:'Rimuovi', wallpaper_hint:'Foto verticale fino a 3 MB.',
+    wallpaper_clear:'Rimuovi', wallpaper_hint:'Foto verticale fino a 3 MB.', family_create:'Crea famiglia',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -944,7 +951,7 @@ const I18N = {
     rec_none:'Brak reguł', rec_active:'Aktywne', rec_paused:'Pauza', rec_limit:'Za darmo — 2 reguły. Pro — bez limitu.',
     alert_title:'Powiadomienie', rec_edit_title:'Edytuj regułę', no_envelope:'Bez koperty',
     wallpaper:'Tapeta', wallpaper_pro_only:'Własna tapeta w Pro.', wallpaper_upload:'Wgraj', wallpaper_clear:'Usuń', 
-    wallpaper_hint:'Zalecane zdjęcie pionowe do 3 MB.',
+    wallpaper_hint:'Zalecane zdjęcie pionowe do 3 MB.', family_create:'Utwórz rodzinę',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -988,7 +995,7 @@ const I18N = {
     rec_none:'Kural yok', rec_active:'Aktif', rec_paused:'Duraklatıldı', rec_limit:'Ücretsiz — 2 kural. Pro — sınırsız.',
     alert_title:'Uyarı', rec_edit_title:'Kuralı düzenle', no_envelope:'Zarf yok',
     wallpaper:'Duvar kağıdı', wallpaper_pro_only:'Özel duvar kağıdı Pro\'da.', wallpaper_upload:'Yükle', wallpaper_clear:'Kaldır', 
-    wallpaper_hint:'3 MB\'a kadar dikey fotoğraf.',
+    wallpaper_hint:'3 MB\'a kadar dikey fotoğraf.', family_create:'Aile oluştur',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1031,7 +1038,7 @@ const I18N = {
     rec_none:'无规则', rec_active:'启用', rec_paused:'暂停', rec_limit:'免费 — 2 条规则。Pro — 无限制。',
     alert_title:'提示', rec_edit_title:'编辑规则', no_envelope:'无信封',
     wallpaper:'壁纸', wallpaper_pro_only:'自定义壁纸仅限 Pro。', wallpaper_upload:'上传', wallpaper_clear:'移除', 
-    wallpaper_hint:'建议竖版照片，不超过 3 MB。',
+    wallpaper_hint:'建议竖版照片，不超过 3 MB。', family_create:'创建家庭',
   }
 };
 
@@ -1113,6 +1120,115 @@ function tCat(name){
   const e = CAT_I18N[name];
   return (e && e[lang]) || name;
 }
+  const API = {
+    headers: {},
+    async _fetch(path, opts = {}){
+      opts.headers = Object.assign({}, this.headers, opts.headers || {});
+      const r = await fetch(path, opts);
+      let j = null;
+      try { j = await r.json(); } catch(e){}
+      if(!r.ok){
+        const msg = (j && (j.detail || j.error)) || ('HTTP ' + r.status);
+        throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      }
+      return j;
+    },
+    get(path){ return this._fetch(path, {method:'GET'}); },
+    post(path, body){ return this._fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})}); },
+    del(path){ return this._fetch(path, {method:'DELETE'}); }
+  };
+  
+  function hasInitData(){
+    return !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
+  }
+
+  function tsToDate(ts){
+    if(!ts) return '';
+    const d = new Date(ts);
+    return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear();
+  }
+
+  function dateToTs(dateStr){
+    if(!dateStr) return Date.now();
+    const p = String(dateStr).split('.');
+    if(p.length !== 3) return Date.now();
+    return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])).getTime();
+  }
+
+  function normalizeTx(t){
+    return {
+      id: t.id || t.txid || ('srv_' + Math.random().toString(36).slice(2)),
+      serverId: t.txid || t.id || null,
+      type: t.type || 'expense',
+      title: t.note || t.title || t.category || '—',
+      category: t.category || 'Разное',
+      icon: t.icon || (t.type === 'income' ? '💰' : '📦'),
+      amount: Number(t.amount) || 0,
+      date: t.date || tsToDate(t.ts),
+      ts: t.ts || (t.date ? dateToTs(t.date) : Date.now()),
+      envelopeId: t.envelopeId || null,
+      recurring: !!t.recurring,
+      receipt: t.receipt || null
+    };
+  }
+
+  function applyFamilyData(fam){
+    if(!fam) return;
+    if(fam.transactions && typeof fam.transactions === 'object'){
+      const list = Object.keys(fam.transactions).map(k => {
+        const t = Object.assign({}, fam.transactions[k]);
+        t.txid = k;
+        return normalizeTx(t);
+      });
+      appData.history = list.sort((a,b) => (b.ts||0) - (a.ts||0));
+    } else {
+      appData.history = [];
+    }
+    if(fam.envelopes && typeof fam.envelopes === 'object'){
+      appData.envelopes = Object.keys(fam.envelopes).map(k => {
+        const e = fam.envelopes[k] || {};
+        return { id: k, name: e.name || '—', target: Number(e.target)||0, spent: 0 };
+      });
+    } else {
+      appData.envelopes = [];
+    }
+    if(fam.banks && typeof fam.banks === 'object'){
+      appData.banks = Object.keys(fam.banks).map(k => {
+        const b = fam.banks[k] || {};
+        return { id: k, name: b.name || '—', target: Number(b.target)||0, balance: Number(b.balance)||0, deadline: b.deadline || null };
+      });
+    } else {
+      appData.banks = [];
+    }
+    saveData();
+    renderAll();
+  }
+
+  function loadFamilyFromServer(){
+    if(!hasInitData()) return Promise.resolve(null);
+    API.headers['X-Init-Data'] = window.Telegram.WebApp.initData;
+    return API.post('/api/init', {}).then(res => {
+      if(res && res.family && res.family.id){
+        appData.joinedFamily = true;
+        appData.familyCode = res.family.code || appData.familyCode;
+        appData.familyMembers = res.family.memberCount || 1;
+        return API.get('/api/family').then(fam => {
+          applyFamilyData(fam);
+          renderFamily();
+          return fam;
+        });
+      } else {
+        appData.joinedFamily = false;
+        appData.familyMembers = 1;
+        renderFamily();
+        return null;
+      }
+    }).catch(err => {
+      console.warn('family load failed:', err.message);
+      return null;
+    });
+  }
+  
    const EXPENSE_CATEGORIES = [
   {icon:'🍔',name:'Еда'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
   {icon:'🚗',name:'Транспорт'},{icon:'🚕',name:'Такси'},{icon:'⛽',name:'Бензин'},
@@ -1531,6 +1647,21 @@ function submitTransaction(){
     envelopeId: activeTxType === 'expense' ? (appData.selectedEnvelopeId || null) : null
   };
   applyTx(tx);
+  if(hasInitData() && appData.joinedFamily){
+    API.post('/api/tx', {
+      type: tx.type,
+      amount: tx.amount,
+      category: tx.category,
+      note: tx.title,
+      envelopeId: tx.envelopeId || ''
+    }).then(res => {
+      if(res && res.id){
+        const local = appData.history.find(x => x.id === tx.id);
+        if(local) local.serverId = res.id;
+        saveData();
+      }
+    }).catch(err => console.warn('tx sync failed:', err.message));
+  }
   closeModal('modalTransaction');
   amountInput.value = ''; commentInput.value = '';
   renderAll();
@@ -1578,6 +1709,9 @@ function deleteTx(id){
   askConfirm(t('delete_confirm'), () => {
     const tx = appData.history.find(x => x.id === id);
     if(!tx) return;
+    if(hasInitData() && tx.serverId){
+      API.del('/api/tx/' + tx.serverId).catch(err => console.warn('tx delete failed:', err.message));
+    }
     appData.history = appData.history.filter(x => x.id !== id);
     saveData(); renderAll();
   });
@@ -1831,8 +1965,19 @@ function saveEnvelope(){
   const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
   if(!name) return;
-  appData.envelopes.push({ id: Date.now(), name, target, spent: 0 });
-  saveData(); closeModal('modalAddEnvelope');
+  const env = { id: Date.now(), name, target, spent: 0 };
+  appData.envelopes.push(env);
+  saveData();
+  if(hasInitData() && appData.joinedFamily){
+    API.post('/api/envelope', { name, target }).then(res => {
+      if(res && res.id){
+        const local = appData.envelopes.find(e => String(e.id) === String(env.id));
+        if(local) local.id = res.id;
+        saveData(); renderAll();
+      }
+    }).catch(err => console.warn('env sync failed:', err.message));
+  }
+  closeModal('modalAddEnvelope');
   document.getElementById('envNameInput').value = '';
   document.getElementById('envTargetInput').value = '';
   renderAll();
@@ -1846,6 +1991,25 @@ function saveBank(){
     return;
   }
   const deadline = document.getElementById('bankDeadlineInput').value || null;
+  const bank = { id: Date.now(), name, target, balance: 0, deadline, createdAt: new Date().toISOString().slice(0,10) };
+  appData.banks.push(bank);
+  saveData();
+  if(hasInitData() && appData.joinedFamily){
+    API.post('/api/bank', { name, target }).then(res => {
+      if(res && res.id){
+        const local = appData.banks.find(b => String(b.id) === String(bank.id));
+        if(local) local.id = res.id;
+        saveData(); renderAll();
+      }
+    }).catch(err => console.warn('bank sync failed:', err.message));
+  }
+  closeModal('modalAddBank');
+  document.getElementById('bankNameInput').value = '';
+  document.getElementById('bankTargetInput').value = '';
+  clearBankDeadline();
+  renderAll();
+}
+  const deadline = document.getElementById('bankDeadlineInput').value || null;
   appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline, createdAt: new Date().toISOString().slice(0,10) });
   saveData(); closeModal('modalAddBank');
   document.getElementById('bankNameInput').value = '';
@@ -1855,6 +2019,9 @@ function saveBank(){
 }
 function deleteEnvelope(id){
   askConfirm(t('delete_confirm'), () => {
+    if(hasInitData() && String(id).length > 10){
+      API.del('/api/envelope/' + id).catch(err => console.warn('env delete failed:', err.message));
+    }
     appData.envelopes = appData.envelopes.filter(e => e.id != id);
     saveData(); renderAll();
   });
@@ -2054,6 +2221,9 @@ function renderRecurring(){
 }
 function deleteBank(id){
   askConfirm(t('delete_confirm'), () => {
+    if(hasInitData() && String(id).length > 10){
+      API.del('/api/bank/' + id).catch(err => console.warn('bank delete failed:', err.message));
+    }
     appData.banks = appData.banks.filter(b => b.id != id);
     saveData(); renderAll();
   });
@@ -2070,17 +2240,27 @@ function depositBank(id){
 function confirmDeposit(){
   const amount = parseFloat(document.getElementById('depositAmount').value);
   if(!amount || amount <= 0) return;
-  const bank = appData.banks.find(b => b.id == appData.selectedBankId);
+  const bank = appData.banks.find(b => String(b.id) === String(appData.selectedBankId));
   if(!bank) return;
+
+  if(hasInitData() && appData.joinedFamily && String(bank.id).length > 10){
+    API.post('/api/bank/' + bank.id + '/deposit', { amount }).then(res => {
+      if(res && res.balance != null){
+        bank.balance = Number(res.balance);
+        saveData(); renderAll();
+      }
+    }).catch(err => console.warn('deposit failed:', err.message));
+    closeModal('modalDeposit');
+    return;
+  }
+
   bank.balance += amount;
-  appData.balance -= amount;
   const now = new Date();
-  const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  const dateStr = String(now.getDate()).padStart(2,'0') + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + now.getFullYear();
   appData.history.unshift({
     id: Date.now(), type:'expense', title: bank.name, category:'Накопления', icon:'🏦',
-    amount, date: dateStr, receipt: null
+    amount, date: dateStr, receipt: null, envelopeId: null
   });
-  appData.monthExpense += amount;
   saveData(); closeModal('modalDeposit'); renderAll();
 }
 
@@ -2093,11 +2273,32 @@ function connectFamily(){
   const codeInput = document.getElementById('familyCodeInput');
   const code = codeInput.value.trim();
   if(!code) return;
-  appData.joinedFamily = true;
-  appData.familyMembers = (appData.familyMembers || 1) + 1;
-  appData.familyCode = code.toUpperCase();
-  saveData(); renderFamily(); renderAll();
-  codeInput.value = '';
+
+  if(!hasInitData()){
+    showAlert('Открой через Telegram');
+    return;
+  }
+
+  API.post('/api/family/join', { code: code.toUpperCase() }).then(() => {
+    return loadFamilyFromServer();
+  }).then(() => {
+    codeInput.value = '';
+  }).catch(err => {
+    showAlert('Не удалось присоединиться: ' + err.message);
+  });
+}
+
+function createFamily(){
+  if(!hasInitData()){
+    showAlert('Открой через Telegram');
+    return;
+  }
+  API.post('/api/family/create', {}).then(() => {
+    return loadFamilyFromServer();
+  }).catch(err => {
+    showAlert('Не удалось создать: ' + err.message);
+  });
+}
 }
 function leaveFamily(){
   askConfirm(t('delete_confirm'), () => {
@@ -2325,6 +2526,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setTheme(appData.theme || 'dark');
   applyLang();
   applyWallpaper();
+  if(hasInitData()){
+    loadFamilyFromServer();
+  }
 
   if(!appData.familyBannerShown && !appData.joinedFamily){
     const b = document.getElementById('familyBanner');

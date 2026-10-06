@@ -2300,7 +2300,7 @@ function createFamily(){
     showAlert('Не удалось создать: ' + err.message);
   });
 }
-}
+
 function leaveFamily(){
   askConfirm(t('delete_confirm'), () => {
     appData.joinedFamily = false;

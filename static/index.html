@@ -2018,14 +2018,7 @@ function saveBank(){
   clearBankDeadline();
   renderAll();
 }
-  const deadline = document.getElementById('bankDeadlineInput').value || null;
-  appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline, createdAt: new Date().toISOString().slice(0,10) });
-  saveData(); closeModal('modalAddBank');
-  document.getElementById('bankNameInput').value = '';
-  document.getElementById('bankTargetInput').value = '';
-  clearBankDeadline();
-  renderAll();
-}
+  
 function deleteEnvelope(id){
   askConfirm(t('delete_confirm'), () => {
     if(hasInitData() && String(id).length > 10){

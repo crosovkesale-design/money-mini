@@ -1443,11 +1443,26 @@ function submitTransaction(){
     amount, date: dateStr, receipt: null
   };
   applyTx(tx);
-  closeModal('modalTransaction');
-  amountInput.value = ''; commentInput.value = '';
-  renderAll();
+closeModal('modalTransaction');
+amountInput.value = ''; commentInput.value = '';
+renderAll();
+checkEnvelopeAfterTx(tx);
 }
 
+function checkEnvelopeAfterTx(tx){
+  if(tx.type !== 'expense') return;
+  const envId = tx.envelopeId || appData.selectedEnvelopeId;
+  if(!envId) return;
+  const env = appData.envelopes.find(e => String(e.id) === String(envId));
+  if(!env || !env.target) return;
+  const pct = (env.spent / env.target) * 100;
+  if(pct >= 100){
+    setTimeout(() => showAlert('🔴 «' + env.name + '» — лимит пробит: ' + fmtMoney(env.spent) + ' из ' + fmtMoney(env.target)), 350);
+  } else if(pct >= 80){
+    setTimeout(() => showAlert('🟡 «' + env.name + '» — уже ' + Math.round(pct) + '% от лимита (' + fmtMoney(env.spent) + ' из ' + fmtMoney(env.target) + ')'), 350);
+  }
+}
+  
 function applyTx(tx){
   if(tx.type === 'expense'){
     appData.balance -= tx.amount;
@@ -1636,6 +1651,7 @@ function submitReceipt(){
   resetReceiptPhoto();
   closeModal('modalTransaction');
   renderAll();
+  checkEnvelopeAfterTx(tx);
 }
 
 let calMonth, calYear;

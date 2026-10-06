@@ -1217,22 +1217,26 @@ function shiftMonth(dir){
 function pick(kind, id){
   if(kind === 'envelope'){
     appData.selectedEnvelopeId = id;
-    const env = appData.envelopes.find(e => String(e.id)===String(id));
-    const el = document.getElementById('envSelectLabel');
-    if(el) el.innerText = env ? env.name : '—';
+    const e1 = appData.envelopes.find(x => String(x.id)===String(id));
+    const el1 = document.getElementById('envSelectLabel');
+    if(el1) el1.innerText = e1 ? e1.name : '—';
   } else if(kind === 'envelopeReceipt'){
+    appData.selectedEnvelopeReceiptId = id;
+    const e2 = appData.envelopes.find(x => String(x.id)===String(id));
+    const el2 = document.getElementById('envReceiptLabel');
+    if(el2) el2.innerText = e2 ? e2.name : '—';
   } else if(kind === 'recurringEnvelope'){
     appData.recEnvelopeId = id;
-    const env = appData.envelopes.find(e => String(e.id)===String(id));
-    const el = document.getElementById('recEnvelopeLabel');
-    if(el) el.innerText = env ? env.name : t('no_envelope');
-    appData.selectedEnvelopeReceiptId = id;
-    const env = appData.envelopes.find(e => String(e.id)===String(id));
-    const el = document.getElementById('envReceiptLabel');
-    if(el) el.innerText = env ? env.name : '—';
-  } else if(kind === 'language'){ appData.lang = id; }
-  else if(kind === 'currency'){ appData.currency = id; }
-  saveData(); closeModal('modalPicker');
+    const e3 = appData.envelopes.find(x => String(x.id)===String(id));
+    const el3 = document.getElementById('recEnvelopeLabel');
+    if(el3) el3.innerText = e3 ? e3.name : t('no_envelope');
+  } else if(kind === 'language'){
+    appData.lang = id;
+  } else if(kind === 'currency'){
+    appData.currency = id;
+  }
+  saveData();
+  closeModal('modalPicker');
   if(kind === 'language') applyLang();
   renderAll();
 }

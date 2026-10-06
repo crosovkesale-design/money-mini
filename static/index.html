@@ -2131,7 +2131,12 @@ function renderFamily(){
   }
 }
 
-function setPlan(plan){ appData.subscription.plan = plan; saveData(); renderSubscription(); }
+function setPlan(plan){
+  appData.subscription.plan = plan;
+  saveData();
+  renderSubscription();
+  applyWallpaper();
+}
 function renderSubscription(){
   const plan = appData.subscription?.plan || 'free';
   const badge = document.getElementById('subBadge');
@@ -2319,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setTheme(appData.theme || 'dark');
   applyLang();
+  applyWallpaper();
 
   if(!appData.familyBannerShown && !appData.joinedFamily){
     const b = document.getElementById('familyBanner');

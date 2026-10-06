@@ -1139,6 +1139,7 @@ function loadData(){
     try{
       const parsed = JSON.parse(saved);
       appData = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+      (appData.envelopes || []).forEach(e => { e.spent = 0; e.warned = {}; });
       if(!appData.currentMonth){
         const n = new Date();
         appData.currentMonth = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
@@ -1440,13 +1441,14 @@ function submitTransaction(){
     title: comment || appData.selectedCategory,
     category: appData.selectedCategory,
     icon: appData.currentIcon,
-    amount, date: dateStr, receipt: null
+    amount, date: dateStr, receipt: null,
+    envelopeId: activeTxType === 'expense' ? (appData.selectedEnvelopeId || null) : null
   };
   applyTx(tx);
-closeModal('modalTransaction');
-amountInput.value = ''; commentInput.value = '';
-renderAll();
-checkEnvelopeAfterTx(tx);
+  closeModal('modalTransaction');
+  amountInput.value = ''; commentInput.value = '';
+  renderAll();
+  checkEnvelopeAfterTx(tx);
 }
 
 function checkEnvelopeAfterTx(tx){
@@ -1455,27 +1457,32 @@ function checkEnvelopeAfterTx(tx){
   if(!envId) return;
   const env = appData.envelopes.find(e => String(e.id) === String(envId));
   if(!env || !env.target) return;
-  const pct = (env.spent / env.target) * 100;
-  if(pct >= 100){
-    setTimeout(() => showAlert('🔴 «' + env.name + '» — лимит пробит: ' + fmtMoney(env.spent) + ' из ' + fmtMoney(env.target)), 350);
-  } else if(pct >= 80){
-    setTimeout(() => showAlert('🟡 «' + env.name + '» — уже ' + Math.round(pct) + '% от лимита (' + fmtMoney(env.spent) + ' из ' + fmtMoney(env.target) + ')'), 350);
+
+  const spent = envelopeSpent(env.id);
+  const pct = (spent / env.target) * 100;
+  if(!env.warned) env.warned = {};
+
+  if(pct >= 100 && env.warned['100_' + appData.currentMonth] !== true){
+    env.warned['100_' + appData.currentMonth] = true;
+    setTimeout(() => showAlert('🔴 «' + env.name + '» — лимит пробит: ' + fmtMoney(spent) + ' из ' + fmtMoney(env.target)), 350);
+  } else if(pct >= 80 && env.warned['80_' + appData.currentMonth] !== true){
+    env.warned['80_' + appData.currentMonth] = true;
+    setTimeout(() => showAlert('🟡 «' + env.name + '» — ' + Math.round(pct) + '% от лимита (' + fmtMoney(spent) + ' из ' + fmtMoney(env.target) + ')'), 350);
   }
+  saveData();
+}
+
+function envelopeSpent(envId, monthKey){
+  if(!monthKey) monthKey = appData.currentMonth;
+  return (appData.history || []).filter(tx =>
+    tx.type === 'expense' &&
+    tx.envelopeId &&
+    String(tx.envelopeId) === String(envId) &&
+    txMonthKey(tx) === monthKey
+  ).reduce((s,t) => s + t.amount, 0);
 }
   
 function applyTx(tx){
-  if(tx.type === 'expense'){
-    appData.balance -= tx.amount;
-    appData.monthExpense += tx.amount;
-    const selectedEnvId = tx.receipt ? appData.selectedEnvelopeReceiptId : appData.selectedEnvelopeId;
-    if(selectedEnvId){
-      const env = appData.envelopes.find(e => String(e.id) === String(selectedEnvId));
-      if(env) env.spent += tx.amount;
-    }
-  } else {
-    appData.balance += tx.amount;
-    appData.monthIncome += tx.amount;
-  }
   if(!appData.history) appData.history = [];
   appData.history.unshift(tx);
   saveData();
@@ -1485,21 +1492,6 @@ function deleteTx(id){
   askConfirm(t('delete_confirm'), () => {
     const tx = appData.history.find(x => x.id === id);
     if(!tx) return;
-    if(tx.type === 'expense'){
-      appData.balance += tx.amount;
-      appData.monthExpense -= tx.amount;
-      // вернуть сумму в конверт, если это автотранзакция
-      if(tx.recurring){
-        const rule = (appData.recurring || []).find(r => r.name === tx.title && r.envelopeId);
-        if(rule){
-          const env = appData.envelopes.find(e => String(e.id) === String(rule.envelopeId));
-          if(env) env.spent = Math.max(0, (env.spent || 0) - tx.amount);
-        }
-      }
-    } else {
-      appData.balance -= tx.amount;
-      appData.monthIncome -= tx.amount;
-    }
     appData.history = appData.history.filter(x => x.id !== id);
     saveData(); renderAll();
   });
@@ -1645,8 +1637,9 @@ function submitReceipt(){
   const tx = {
     id: Date.now(), type:'expense', title: store, category:'Еда', icon:'🧾',
     amount: total, date: dateStr,
+    envelopeId: appData.selectedEnvelopeReceiptId || null,
     receipt: { store, items: items.map(i=>({name:i.name,qty:i.qty,price:i.price})), source: pendingReceiptPhoto?'ocr':'manual', hasPhoto: !!pendingReceiptPhoto }
-  };
+};
   applyTx(tx);
   resetReceiptPhoto();
   closeModal('modalTransaction');
@@ -2162,12 +2155,13 @@ if(carryEl){
   const envBox = document.getElementById('envelopesList');
   if(envBox){
     envBox.innerHTML = appData.envelopes.length ? appData.envelopes.map(e => {
-      const pct = Math.min(100, Math.round((e.spent / (e.target || 1)) * 100));
+      const spent = envelopeSpent(e.id);
+      const pct = Math.min(100, Math.round((spent / (e.target || 1)) * 100));
       return `<div class="card">
         <button class="card-del" onclick="deleteEnvelope(${e.id})">✕</button>
         <div class="row-between" style="padding-right:24px"><b>📩 ${escapeAttr(e.name)}</b><span>${pct}%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
-        <div class="muted">${fmtMoney(e.spent)} / ${fmtMoney(e.target)}</div>
+        <div class="muted">${fmtMoney(spent)} / ${fmtMoney(e.target)}</div>
       </div>`;
     }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_env')}</div>`;
   }

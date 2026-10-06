@@ -251,23 +251,30 @@ if bot:
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
         users = await fb.get("/users") or {}
-        total = len(users)
-        paid = 0
+        total = 0
         trial = 0
+        paid = 0
+        now = now_ms()
         for uid, u in users.items():
             if not isinstance(u, dict):
                 continue
-                tariff = u.get("tariff") or "trial"
-                if tariff == "trial":
-                    trial += 1
-                else:
-                    paid += 1
+            total += 1
+            tariff = (u.get("tariff") or "").lower()
+            sub_end = int(u.get("subEnd") or 0)
+            if sub_end < 10**11:
+                sub_end *= 1000
+            if tariff.startswith("trial"):
+                trial += 1
+            elif sub_end > now:
+                paid += 1
+            else:
+                trial += 1
         await message.answer(
-                "📊 <b>Family Budget</b>\n\n"
-                "👥 Пользуются: <b>" + str(total) + "</b> человек\n"
-                "🎁 На триале: " + str(trial) + "\n"
-                "💎 С подпиской: " + str(paid),
-                parse_mode="HTML"
+            "📊 <b>Family Budget</b>\n\n"
+            "👥 Пользуются: <b>" + str(total) + "</b> человек\n"
+            "🎁 На триале: " + str(trial) + "\n"
+            "💎 С подпиской: " + str(paid),
+            parse_mode="HTML"
         )
     
     @dp.message(Command("referrals"))

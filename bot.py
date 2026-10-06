@@ -165,12 +165,29 @@ if bot:
                 await grant_rewards(ref_id, len(refs))
 
         existing = await get_user(uid)
+        # автоязык по языку клиента Telegram — только при первом входе
+        detected_lang = None
+        if not existing.get("lang"):
+            lc = (message.from_user.language_code or "").lower()
+            if lc.startswith("ru"): detected_lang = "ru"
+            elif lc.startswith("uk"): detected_lang = "uk"     
+            elif lc.startswith("de"): detected_lang = "de"
+            elif lc.startswith("fr"): detected_lang = "fr"
+            elif lc.startswith("es"): detected_lang = "es"
+            elif lc.startswith("it"): detected_lang = "it"
+            elif lc.startswith("pl"): detected_lang = "pl"
+            elif lc.startswith("tr"): detected_lang = "tr"
+            elif lc.startswith("zh"): detected_lang = "zh"
+            else: detected_lang = "en"
+
         upd = {
             "name": message.from_user.first_name or "Гость",
             "username": message.from_user.username or "",
             "tgId": uid,
             "lastSeen": ts,
         }
+        if detected_lang:
+            upd["lang"] = detected_lang
         if not existing.get("firstSeen"):
             upd.update({
                 "firstSeen": ts,

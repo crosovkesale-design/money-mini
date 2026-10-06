@@ -1213,28 +1213,34 @@ function tCat(name){
   }
 
   function loadFamilyFromServer(){
-    if(!hasInitData()) return Promise.resolve(null);
-    API.headers['X-Init-Data'] = window.Telegram.WebApp.initData;
-    return API.post('/api/init', {}).then(res => {
-      if(res && res.family && res.family.id){
-        appData.joinedFamily = true;
-        appData.familyCode = res.family.code || appData.familyCode;
-        appData.familyMembers = res.family.memberCount || 1;
-        return API.get('/api/family').then(fam => {
-          applyFamilyData(fam);
-          renderFamily();
-          return fam;
-        });
-      } else {
-        appData.joinedFamily = false;
-        appData.familyMembers = 1;
+  if(!hasInitData()) return Promise.resolve(null);
+
+  // Не перечитываем сервер в течение 5 секунд после выхода
+  if(appData._leftAt && Date.now() - appData._leftAt < 5000){
+    return Promise.resolve(null);
+  }
+
+  API.headers['X-Init-Data'] = window.Telegram.WebApp.initData;
+  return API.post('/api/init', {}).then(res => {
+    if(res && res.family && res.family.id){
+      appData.joinedFamily = true;
+      appData.familyCode = res.family.code || appData.familyCode;
+      appData.familyMembers = res.family.memberCount || 1;
+      return API.get('/api/family').then(fam => {
+        applyFamilyData(fam);
         renderFamily();
-        return null;
-      }
-    }).catch(err => {
-      console.warn('family load failed:', err.message);
+        return fam;
+      });
+    } else {
+      appData.joinedFamily = false;
+      appData.familyMembers = 1;
+      renderFamily();
       return null;
-    });
+    }
+  }).catch(err => {
+    console.warn('family load failed:', err.message);
+    return null;
+  });
   }
   
    const EXPENSE_CATEGORIES = [
@@ -2302,10 +2308,33 @@ function createFamily(){
 }
 
 function leaveFamily(){
-  askConfirm(t('delete_confirm'), () => {
-    appData.joinedFamily = false;
-    appData.familyMembers = 1;
-    saveData(); renderFamily(); renderAll();
+  askConfirm(t('leave_family_confirm') || 'Выйти из семьи?', () => {
+    if(hasInitData() && appData.joinedFamily){
+      API.post('/api/family/leave', {}).then(res => {
+        appData.joinedFamily = false;
+        appData.familyMembers = 1;
+        appData.familyCode = 'FAM-' + Math.floor(100000 + Math.random()*900000);
+        appData.history = [];
+        appData.envelopes = [];
+        appData.banks = [];
+        saveData();
+        renderFamily();
+        renderAll();
+        // НЕ перечитываем сервер сразу — иначе race с Firebase
+      }).catch(err => {
+        showAlert('Не удалось выйти: ' + err.message);
+      });
+    } else {
+      appData.joinedFamily = false;
+      appData._leftAt = Date.now();
+      appData.familyMembers = 1;
+      appData.history = [];
+      appData.envelopes = [];
+      appData.banks = [];
+      saveData();
+      renderFamily();
+      renderAll();
+    }
   });
 }
 function copyFamilyCode(){ const el = document.getElementById('myFamilyCode'); el.select(); try{navigator.clipboard.writeText(el.value);}catch(e){} }

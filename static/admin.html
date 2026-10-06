@@ -75,8 +75,10 @@ tr:last-child td{border:0}
     <div class="tab" data-tab="refs" onclick="switchTab('refs')">🎁 Рефералы</div>
   </div>
 
-  <div class="filters">
-    <label>Регистрация с</label>
+  <div class="stats" id="totals"></div>
+
+<div class="filters">
+  <label>Регистрация с</label>
     <input type="date" id="dateFrom">
     <label>по</label>
     <input type="date" id="dateTo">
@@ -84,6 +86,7 @@ tr:last-child td{border:0}
     <button class="btn" onclick="clearFilters()">Сбросить</button>
   </div>
 
+  <div class="stats" id="revenue"></div>
   <div class="stats" id="stats"></div>
   <div class="err" id="err" style="display:none"></div>
 
@@ -217,7 +220,46 @@ function clearFilters(){
   render();
 }
 
+function renderTotals(){
+  var total = users.length;
+  var paid = 0;
+  var trial = 0;
+  var expired = 0;
+  var totalRefs = 0;
+  var totalPaidRefs = 0;
+  var totalRevenue = 0;
+
+  users.forEach(function(u){
+    var s = getStatus(u);
+    if(s === "trial") trial++;
+    else if(s === "expired") expired++;
+    else paid++;
+
+    var amount = parseFloat(u.paidAmount) || 0;
+    totalRevenue += amount;
+
+    var refs = Object.keys(u.referrals || {});
+    totalRefs += refs.length;
+    refs.forEach(function(rid){
+      var ru = users.find(function(x){ return x.key === rid; });
+      if(ru && isPaidUser(ru)) totalPaidRefs++;
+    });
+  });
+
+  var h = '';
+  h += '<div class="stat"><div class="lbl">📦 Всего в базе</div><div class="val b">' + total + '</div></div>';
+  h += '<div class="stat"><div class="lbl">💎 Платных</div><div class="val g">' + paid + '</div></div>';
+  h += '<div class="stat"><div class="lbl">🎁 Trial</div><div class="val">' + trial + '</div></div>';
+  h += '<div class="stat"><div class="lbl">❌ Истекло</div><div class="val">' + expired + '</div></div>';
+  h += '<div class="stat"><div class="lbl">👥 Рефералов всего</div><div class="val b">' + totalRefs + '</div></div>';
+  h += '<div class="stat"><div class="lbl">✅ Купили из реф.</div><div class="val g">' + totalPaidRefs + '</div></div>';
+  h += '<div class="stat"><div class="lbl">💰 Общая выручка</div><div class="val g">' + totalRevenue.toLocaleString() + ' ₴</div></div>';
+
+  document.getElementById('totals').innerHTML = h;
+}
+
 function render(){
+  renderTotals();
   var filtered = users.filter(userInRange);
   var total = filtered.length;
   var paid = 0, trial = 0, expired = 0;
@@ -247,11 +289,54 @@ function render(){
   h += '<div class="stat"><div class="lbl">Рефералов</div><div class="val b">' + totalReferrals + '</div></div>';
   h += '<div class="stat"><div class="lbl">Купили из реф.</div><div class="val g">' + totalPaidRefs + '</div></div>';
   document.getElementById('stats').innerHTML = h;
+  renderRevenue(filtered);
 
   if(currentTab === 'users') renderUsersTab(filtered);
   else renderRefsTab(filtered);
 }
 
+function renderRevenue(list){
+  var now = new Date();
+  var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+  var allSum = 0;
+  var todaySum = 0;
+  var monthSum = 0;
+  var allCount = 0;
+  var todayCount = 0;
+  var monthCount = 0;
+  var paidUsers = 0;
+
+  list.forEach(function(u){
+    var amount = parseFloat(u.paidAmount) || 0;
+    var when = u.subStart || 0;
+    if(amount > 0){
+      allSum += amount;
+      allCount += 1;
+      paidUsers += 1;
+    }
+    if(amount > 0 && when >= todayStart){
+      todaySum += amount;
+      todayCount += 1;
+    }
+    if(amount > 0 && when >= monthStart){
+      monthSum += amount;
+      monthCount += 1;
+    }
+  });
+
+  var avg = paidUsers > 0 ? Math.round(allSum / paidUsers) : 0;
+
+  var h = '';
+  h += '<div class="stat"><div class="lbl">💰 За всё время</div><div class="val g">' + allSum.toLocaleString() + ' ₴</div><div class="muted" style="margin-top:4px">' + allCount + ' оплат</div></div>';
+  h += '<div class="stat"><div class="lbl">📅 За этот месяц</div><div class="val b">' + monthSum.toLocaleString() + ' ₴</div><div class="muted" style="margin-top:4px">' + monthCount + ' оплат</div></div>';
+  h += '<div class="stat"><div class="lbl">🔥 Сегодня</div><div class="val">' + todaySum.toLocaleString() + ' ₴</div><div class="muted" style="margin-top:4px">' + todayCount + ' оплат</div></div>';
+  h += '<div class="stat"><div class="lbl">📊 Средний чек</div><div class="val b">' + avg.toLocaleString() + ' ₴</div></div>';
+
+  document.getElementById('revenue').innerHTML = h;
+}
+  
 function renderUsersTab(list){
   list.sort(function(a,b){ return (b.lastSeen||0) - (a.lastSeen||0); });
 

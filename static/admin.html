@@ -13,15 +13,23 @@ h1{font-size:20px;margin-bottom:14px}
 .card input{width:100%;background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:10px;padding:12px;font:inherit;margin-bottom:12px}
 .card button{width:100%;background:#4d9fff;color:#fff;border:0;border-radius:10px;padding:14px;font:inherit;font-weight:700;cursor:pointer}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;background:#1d222d;border-radius:10px;padding:4px;margin-bottom:16px}
+.tab{flex:1;text-align:center;padding:10px;border-radius:8px;font-size:13px;font-weight:600;color:#8a92a4;cursor:pointer}
+.tab.active{background:#4d9fff;color:#fff}
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filters label{font-size:11px;color:#8a92a4;text-transform:uppercase;letter-spacing:.5px}
+.filters input{background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
 .stat{background:#161a22;border:1px solid #242a37;border-radius:12px;padding:14px}
 .stat .lbl{font-size:11px;color:#8a92a4;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
 .stat .val{font-size:22px;font-weight:900;color:#f5c451}
+.stat .val.g{color:#35d07f}
+.stat .val.b{color:#4d9fff}
 .btn{background:#1d222d;color:#e8ecf5;border:1px solid #242a37;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;font-size:13px}
 .btn.primary{background:#4d9fff;border:0;color:#fff}
 table{width:100%;border-collapse:collapse;font-size:12px;background:#161a22;border-radius:12px;overflow:hidden}
 th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #242a37}
-th{color:#8a92a4;font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+th{color:#8a92a4;font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;position:sticky;top:0;background:#161a22;z-index:5}
 tr:last-child td{border:0}
 .tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap}
 .tag.trial{background:rgba(245,196,81,.15);color:#f5c451}
@@ -29,7 +37,8 @@ tr:last-child td{border:0}
 .tag.expired{background:rgba(255,85,102,.15);color:#ff5566}
 .muted{color:#8a92a4;font-size:11px}
 .err{background:#3a1218;color:#ff5566;padding:12px;border-radius:10px;margin:12px 0;font-family:monospace;font-size:12px;word-break:break-all}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+.modal.active{display:flex}
 .sheet{background:#161a22;border:1px solid #242a37;border-radius:16px;padding:20px;max-width:400px;width:100%}
 .sheet h2{font-size:16px;margin-bottom:14px}
 .sheet label{display:block;font-size:11px;color:#8a92a4;text-transform:uppercase;margin-bottom:6px;margin-top:12px}
@@ -39,6 +48,7 @@ tr:last-child td{border:0}
 .sheet .row .save{background:#4d9fff;color:#fff}
 .sheet .row .cancel{background:#1d222d;color:#e8ecf5;border:1px solid #242a37}
 .action{background:#4d9fff;color:#fff;border:0;border-radius:6px;padding:5px 10px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.scroll{max-height:70vh;overflow:auto;border-radius:12px}
 </style>
 </head>
 <body>
@@ -59,9 +69,28 @@ tr:last-child td{border:0}
       <button class="btn primary" id="export">Excel (CSV)</button>
     </div>
   </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="users" onclick="switchTab('users')">👤 Пользователи</div>
+    <div class="tab" data-tab="refs" onclick="switchTab('refs')">🎁 Рефералы</div>
+  </div>
+
+  <div class="filters">
+    <label>Регистрация с</label>
+    <input type="date" id="dateFrom">
+    <label>по</label>
+    <input type="date" id="dateTo">
+    <button class="btn" onclick="applyFilters()">Применить</button>
+    <button class="btn" onclick="clearFilters()">Сбросить</button>
+  </div>
+
   <div class="stats" id="stats"></div>
   <div class="err" id="err" style="display:none"></div>
-  <div id="table-wrap"></div>
+
+  <div class="scroll">
+    <div id="table-users"></div>
+    <div id="table-refs" style="display:none"></div>
+  </div>
 </div>
 
 </div>
@@ -82,31 +111,17 @@ var db = firebase.database();
 
 var ADMIN_PASSWORD = "Max07kolen";
 var users = [];
+var currentTab = 'users';
+var filter = { from: null, to: null };
 
 var TARIFF_NAMES = {
-  "trial":"Trial 30 дней",
-  "trial7":"Trial 7 дней",
-  "1month":"1 месяц",
-  "3months":"3 месяца",
-  "6months":"6 месяцев",
-  "12months":"12 месяцев",
-  "pro1":"Pro 1 мес",
-  "pro3":"Pro 3 мес",
-  "pro12":"Pro 12 мес",
-  "review":"Разбор финансов"
+  "trial":"Trial","trial7":"Trial 7 дней",
+  "1month":"1 месяц","3months":"3 месяца","6months":"6 месяцев","12months":"12 месяцев",
+  "pro1":"Pro 1 мес","pro3":"Pro 3 мес","pro12":"Pro 12 мес","review":"Разбор"
 };
-
 var TARIFF_DAYS = {
-  "trial":30,
-  "trial7":7,
-  "1month":30,
-  "3months":90,
-  "6months":180,
-  "12months":365,
-  "pro1":30,
-  "pro3":90,
-  "pro12":365,
-  "review":0
+  "trial":30,"trial7":7,"1month":30,"3months":90,"6months":180,
+  "12months":365,"pro1":30,"pro3":90,"pro12":365,"review":0
 };
 
 function showErr(id, msg){
@@ -116,8 +131,7 @@ function showErr(id, msg){
 }
 
 document.getElementById("enter").onclick = function(){
-  var p = document.getElementById("pass").value;
-  if(p !== ADMIN_PASSWORD){
+  if(document.getElementById("pass").value !== ADMIN_PASSWORD){
     showErr("login-err", "Неверный пароль");
     return;
   }
@@ -125,7 +139,6 @@ document.getElementById("enter").onclick = function(){
   document.getElementById("panel").style.display = "block";
   load();
 };
-
 document.getElementById("refresh").onclick = load;
 
 function load(){
@@ -134,7 +147,9 @@ function load(){
     users = [];
     for(var k in v){
       var u = v[k];
+      if(!u || typeof u !== "object") continue;
       u.key = k;
+      u.referrals = u.referrals || {};
       users.push(u);
     }
     render();
@@ -144,51 +159,104 @@ function load(){
 }
 
 function pad(n){ return n < 10 ? "0" + n : "" + n; }
-
 function fmtDate(ts){
   if(!ts) return "—";
   var d = new Date(ts);
   return pad(d.getDate()) + "." + pad(d.getMonth()+1) + "." + d.getFullYear();
 }
-
 function daysLeft(ts){
   if(!ts) return 0;
   return Math.ceil((ts - Date.now()) / 86400000);
 }
-
 function getStatus(u){
   if(u.status === "expired") return "expired";
   if(!u.subEnd) return "expired";
   if(u.subEnd < Date.now()) return "expired";
-  if(u.tariff === "trial") return "trial";
+  if((u.tariff || "").indexOf("trial") === 0) return "trial";
   return "paid";
 }
-
 function getTariffLabel(u){
   var key = u.tariff || "trial";
   return TARIFF_NAMES[key] || key;
 }
+function isPaidUser(u){
+  var s = getStatus(u);
+  return s === "paid";
+}
+
+function userInRange(u){
+  if(!filter.from && !filter.to) return true;
+  var first = u.firstSeen || 0;
+  if(filter.from && first < filter.from) return false;
+  if(filter.to && first > filter.to) return false;
+  return true;
+}
+
+function switchTab(name){
+  currentTab = name;
+  document.querySelectorAll('.tab').forEach(function(el){
+    el.classList.toggle('active', el.dataset.tab === name);
+  });
+  document.getElementById('table-users').style.display = name === 'users' ? 'block' : 'none';
+  document.getElementById('table-refs').style.display = name === 'refs' ? 'block' : 'none';
+  render();
+}
+
+function applyFilters(){
+  var f = document.getElementById('dateFrom').value;
+  var t = document.getElementById('dateTo').value;
+  filter.from = f ? new Date(f + 'T00:00:00').getTime() : null;
+  filter.to = t ? new Date(t + 'T23:59:59').getTime() : null;
+  render();
+}
+function clearFilters(){
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  filter.from = null;
+  filter.to = null;
+  render();
+}
 
 function render(){
-  var total = users.length, paid = 0, trial = 0, expired = 0;
-  users.forEach(function(u){
+  var filtered = users.filter(userInRange);
+  var total = filtered.length;
+  var paid = 0, trial = 0, expired = 0;
+  filtered.forEach(function(u){
     var s = getStatus(u);
     if(s === "trial") trial++;
     else if(s === "expired") expired++;
     else paid++;
   });
 
+  var totalReferrals = 0;
+  var totalPaidRefs = 0;
+  filtered.forEach(function(u){
+    var refs = Object.keys(u.referrals || {});
+    totalReferrals += refs.length;
+    refs.forEach(function(rid){
+      var ru = users.find(function(x){ return x.key === rid; });
+      if(ru && isPaidUser(ru)) totalPaidRefs++;
+    });
+  });
+
   var h = '';
-  h += '<div class="stat"><div class="lbl">Всего</div><div class="val">' + total + '</div></div>';
-  h += '<div class="stat"><div class="lbl">Платных</div><div class="val">' + paid + '</div></div>';
+  h += '<div class="stat"><div class="lbl">Всего</div><div class="val b">' + total + '</div></div>';
+  h += '<div class="stat"><div class="lbl">Платных</div><div class="val g">' + paid + '</div></div>';
   h += '<div class="stat"><div class="lbl">Trial</div><div class="val">' + trial + '</div></div>';
   h += '<div class="stat"><div class="lbl">Истёк</div><div class="val">' + expired + '</div></div>';
-  document.getElementById("stats").innerHTML = h;
+  h += '<div class="stat"><div class="lbl">Рефералов</div><div class="val b">' + totalReferrals + '</div></div>';
+  h += '<div class="stat"><div class="lbl">Купили из реф.</div><div class="val g">' + totalPaidRefs + '</div></div>';
+  document.getElementById('stats').innerHTML = h;
 
-  users.sort(function(a,b){ return (b.lastSeen||0) - (a.lastSeen||0); });
+  if(currentTab === 'users') renderUsersTab(filtered);
+  else renderRefsTab(filtered);
+}
+
+function renderUsersTab(list){
+  list.sort(function(a,b){ return (b.lastSeen||0) - (a.lastSeen||0); });
 
   var rows = '';
-  users.forEach(function(u){
+  list.forEach(function(u){
     var s = getStatus(u);
     var lbl = getTariffLabel(u);
     var dl = daysLeft(u.subEnd);
@@ -197,6 +265,8 @@ function render(){
     var tgid = u.tgId || u.key || "—";
     var name = u.name || "—";
     var sum = u.paidAmount ? (u.paidAmount + " ₴") : "—";
+    var refsCount = Object.keys(u.referrals || {}).length;
+    var refBy = u.referredBy || "";
 
     rows += '<tr>';
     rows += '<td>' + name + '</td>';
@@ -207,15 +277,19 @@ function render(){
     rows += '<td>' + fmtDate(u.subStart) + '</td>';
     rows += '<td>' + fmtDate(u.subEnd) + '</td>';
     rows += '<td>' + dlTxt + '</td>';
-    rows += '<td class="muted">' + fmtDate(u.lastSeen) + '</td>';
+    rows += '<td>' + fmtDate(u.firstSeen) + '</td>';
+    rows += '<td>' + fmtDate(u.lastSeen) + '</td>';
+    rows += '<td>' + (refsCount > 0 ? '<b style="color:#4d9fff">' + refsCount + '</b>' : '—') + '</td>';
+    rows += '<td class="muted">' + (refBy ? 'от ' + refBy : '—') + '</td>';
     rows += '<td><button class="action" data-key="' + u.key + '">Изм.</button></td>';
     rows += '</tr>';
   });
 
-  document.getElementById("table-wrap").innerHTML =
+  document.getElementById('table-users').innerHTML =
     '<table><thead><tr>' +
     '<th>Имя</th><th>Username</th><th>TG ID</th><th>Тариф</th><th>Сумма</th>' +
-    '<th>Начало</th><th>Конец</th><th>Осталось</th><th>Визит</th><th></th>' +
+    '<th>Начало</th><th>Конец</th><th>Осталось</th><th>Регистрация</th><th>Визит</th>' +
+    '<th>Реф.</th><th>Кто пригласил</th><th></th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table>';
 
   document.querySelectorAll(".action").forEach(function(b){
@@ -223,7 +297,57 @@ function render(){
   });
 }
 
-/* ============ РЕДАКТОР ТАРИФА ============ */
+function renderRefsTab(list){
+  var items = [];
+  list.forEach(function(u){
+    var refs = Object.keys(u.referrals || {});
+    if(refs.length === 0) return;
+    var paidCount = 0;
+    refs.forEach(function(rid){
+      var ru = users.find(function(x){ return x.key === rid; });
+      if(ru && isPaidUser(ru)) paidCount++;
+    });
+    items.push({
+      key: u.key,
+      name: u.name || "—",
+      username: u.username ? ("@" + u.username) : "—",
+      count: refs.length,
+      paid: paidCount,
+      earned: u.couponsEarned || 0,
+      earned20: u.coupons20Earned || 0
+    });
+  });
+  items.sort(function(a,b){ return b.count - a.count; });
+
+  if(items.length === 0){
+    document.getElementById('table-refs').innerHTML =
+      '<div style="padding:30px;text-align:center;color:#8a92a4">Пока никто никого не пригласил</div>';
+    return;
+  }
+
+  var rows = '';
+  items.forEach(function(it, i){
+    var conv = it.count > 0 ? Math.round(it.paid / it.count * 100) : 0;
+    rows += '<tr>';
+    rows += '<td>' + (i+1) + '</td>';
+    rows += '<td>' + it.name + '</td>';
+    rows += '<td>' + it.username + '</td>';
+    rows += '<td><b style="color:#4d9fff">' + it.count + '</b></td>';
+    rows += '<td><b style="color:#35d07f">' + it.paid + '</b></td>';
+    rows += '<td>' + conv + '%</td>';
+    rows += '<td>' + it.earned + ' / ' + it.earned20 + '</td>';
+    rows += '<td class="muted">' + it.key + '</td>';
+    rows += '</tr>';
+  });
+
+  document.getElementById('table-refs').innerHTML =
+    '<table><thead><tr>' +
+    '<th>#</th><th>Имя</th><th>Username</th><th>Привёл</th><th>Из них купили</th>' +
+    '<th>Конверсия</th><th>Купоны 10/20</th><th>TG ID</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+/* ====== РЕДАКТОР ТАРИФА ====== */
 function openEdit(key){
   var u = users.find(function(x){ return x.key === key; });
   if(!u) return;
@@ -235,7 +359,7 @@ function openEdit(key){
   }
 
   var modal = document.createElement("div");
-  modal.className = "modal";
+  modal.className = "modal active";
   modal.innerHTML =
     '<div class="sheet">' +
     '<h2>' + (u.name || "Пользователь") + '</h2>' +
@@ -248,19 +372,16 @@ function openEdit(key){
     '<div class="row">' +
     '<button class="cancel" data-act="cancel">Отмена</button>' +
     '<button class="save" data-act="save">Сохранить</button>' +
-    '</div>' +
-    '</div>';
+    '</div></div>';
   document.body.appendChild(modal);
 
   modal.querySelector('[data-act="cancel"]').onclick = function(){ modal.remove(); };
 
   modal.querySelector("#ed-tariff").onchange = function(){
-    var k = this.value;
-    var days = TARIFF_DAYS[k] || 30;
-    var endEl = modal.querySelector("#ed-end");
+    var days = TARIFF_DAYS[this.value] || 30;
     var d = new Date();
     d.setDate(d.getDate() + days);
-    endEl.value = d.toISOString().slice(0,10);
+    modal.querySelector("#ed-end").value = d.toISOString().slice(0,10);
   };
 
   modal.querySelector('[data-act="save"]').onclick = function(){
@@ -285,11 +406,12 @@ function openEdit(key){
   };
 }
 
-/* ============ ЭКСПОРТ ============ */
+/* ====== ЭКСПОРТ ====== */
 document.getElementById("export").onclick = function(){
-  if(!users.length){ alert("Нет данных"); return; }
-  var rows = [["Имя","Username","TG ID","Тариф","Сумма","Начало","Конец","Осталось дней","Последний визит","Первый визит","Статус"]];
-  users.forEach(function(u){
+  var filtered = users.filter(userInRange);
+  if(!filtered.length){ alert("Нет данных"); return; }
+  var rows = [["Имя","Username","TG ID","Тариф","Сумма","Начало","Конец","Осталось дней","Первый визит","Последний визит","Статус","Рефералов","Кто пригласил"]];
+  filtered.forEach(function(u){
     rows.push([
       u.name || "",
       u.username || "",
@@ -299,13 +421,15 @@ document.getElementById("export").onclick = function(){
       fmtDate(u.subStart),
       fmtDate(u.subEnd),
       daysLeft(u.subEnd),
-      fmtDate(u.lastSeen),
       fmtDate(u.firstSeen),
-      getStatus(u)
+      fmtDate(u.lastSeen),
+      getStatus(u),
+      Object.keys(u.referrals || {}).length,
+      u.referredBy || ""
     ]);
   });
   var csv = rows.map(function(row){
-    return row.map(function(x){ return '"' + String(x).replace(/"/g,'""') + '"' }).join(",");
+    return row.map(function(x){ return '"' + String(x).replace(/"/g,'""') + '"'; }).join(",");
   }).join("\n");
   var blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8"});
   var url = URL.createObjectURL(blob);

@@ -544,7 +544,30 @@ async def api_family_join(request: Request, uid: str = Depends(current_uid)):
     await fb.patch(f"/users/{uid}", {"familyId": fid})
     return {"ok": True, "id": fid, "code": f.get("code", code)}
 
+@app.post("/api/family/leave")
+async def api_family_leave(uid: str = Depends(current_uid)):
+    u = await get_user(uid)
+    fid = u.get("familyId")
+    if not fid:
+        return {"ok": True, "alreadyLeft": True}
 
+    # пустая строка, НЕ None — иначе fb.patch съедает поле
+    await fb.patch(f"/users/{uid}", {"familyId": ""})
+    log.info("user " + uid + " left family " + str(fid))
+
+    try:
+        members = await fb.get(f"/families/{fid}/members") or {}
+        if isinstance(members, dict) and uid in members:
+            members.pop(uid)
+        if members:
+            await fb.put(f"/families/{fid}/members", members)
+        else:
+            await fb.patch(f"/families/{fid}", {"members": ""})
+    except Exception as e:
+        log.warning("leave family cleanup " + uid + ": " + str(e))
+
+    return {"ok": True, "leftFrom": fid}
+    
 # ---------- /api/tx ----------
 
 @app.post("/api/tx")

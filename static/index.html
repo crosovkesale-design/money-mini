@@ -1133,8 +1133,14 @@ const DEFAULT_STATE = {
 
 let appData = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
+function getUserStorageKey(){
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const uid = tgUser?.id ? String(tgUser.id) : 'anon';
+  return 'budgetAppData_v7_' + uid;
+}
+
 function loadData(){
-  const saved = localStorage.getItem('budgetAppData_v7');
+  const saved = localStorage.getItem(getUserStorageKey());
   if(saved){
     try{
       const parsed = JSON.parse(saved);
@@ -1147,7 +1153,7 @@ function loadData(){
     }catch(e){}
   }
 }
-function saveData(){ localStorage.setItem('budgetAppData_v7', JSON.stringify(appData)); }
+function saveData(){ localStorage.setItem(getUserStorageKey(), JSON.stringify(appData)); }
 function isPro(){ return appData.subscription && appData.subscription.plan === 'pro'; }
 
 function getMonthKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }

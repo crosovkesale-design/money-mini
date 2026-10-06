@@ -551,20 +551,42 @@ async def api_family_leave(uid: str = Depends(current_uid)):
     if not fid:
         return {"ok": True, "alreadyLeft": True}
 
-    # пустая строка, НЕ None — иначе fb.patch съедает поле
-    await fb.patch(f"/users/{uid}", {"familyId": ""})
-    log.info("user " + uid + " left family " + str(fid))
+    # 1. удаляем поле familyId напрямую через DELETE
+    try:
+        await fb.delete(f"/users/{uid}/familyId")
+    except Exception as e:
+        log.warning("leave familyId delete " + uid + ": " + str(e))
 
+    # 2. проверяем что удалилось
+    check = await get_user(uid)
+    if check.get("familyId"):
+        # не удалилось — пробуем через put нулевое значение
+        try:
+            await fb.patch(f"/users/{uid}", {"familyId": "_left_" + str(now_ms())})
+        except Exception as e:
+            log.warning("leave fallback patch " + uid + ": " + str(e))
+
+    log.info("USER LEFT FAMILY uid=" + uid + " fid=" + str(fid))
+
+    # 3. чистим members
     try:
         members = await fb.get(f"/families/{fid}/members") or {}
         if isinstance(members, dict) and uid in members:
             members.pop(uid)
-        if members:
-            await fb.put(f"/families/{fid}/members", members)
-        else:
-            await fb.patch(f"/families/{fid}", {"members": ""})
+            if members:
+                await fb.put(f"/families/{fid}/members", members)
+            else:
+                await fb.delete(f"/families/{fid}")
+                try:
+                    codes = await fb.get("/family_codes") or {}
+                    for code, cid in list(codes.items()):
+                        if cid == fid:
+                            codes.pop(code, None)
+                    await fb.put("/family_codes", codes)
+                except Exception:
+                    pass
     except Exception as e:
-        log.warning("leave family cleanup " + uid + ": " + str(e))
+        log.warning("leave cleanup " + str(fid) + ": " + str(e))
 
     return {"ok": True, "leftFrom": fid}
     

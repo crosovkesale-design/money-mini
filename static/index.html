@@ -1048,7 +1048,21 @@ function applyLang(){
   'Выигрыш':      {en:'Win', uk:'Виграш', de:'Gewinn', fr:'Gain', es:'Premio', it:'Vincita', pl:'Wygrana', tr:'Kazanç', zh:'奖金'},
   'Возврат':      {en:'Refund', uk:'Повернення', de:'Rückerstattung', fr:'Remboursement', es:'Devolución', it:'Rimborso', pl:'Zwrot', tr:'İade', zh:'退款'},
   'Прочее':       {en:'Other', uk:'Інше', de:'Sonstiges', fr:'Autre', es:'Otros', it:'Altro', pl:'Inne', tr:'Diğer', zh:'其他'},
-  'Накопления':   {en:'Savings', uk:'Накопичення', de:'Ersparnisse', fr:'Épargne', es:'Ahorros', it:'Risparmi', pl:'Oszczędności', tr:'Tasarruf', zh:'储蓄'}
+  'Накопления':   {en:'Savings', uk:'Накопичення', de:'Ersparnisse', fr:'Épargne', es:'Ahorros', it:'Risparmi', pl:'Oszczędności', tr:'Tasarruf', zh:'储蓄'},
+  'Такси':        {en:'Taxi', uk:'Таксі', de:'Taxi'},
+  'Интернет':     {en:'Internet', uk:'Інтернет', de:'Internet'},
+  'Подписки':     {en:'Subscriptions', uk:'Підписки', de:'Abos'},
+  'Обувь':        {en:'Shoes', uk:'Взуття', de:'Schuhe'},
+  'Хозтовары':    {en:'Household', uk:'Госптовари', de:'Haushalt'},
+  'Алкоголь':     {en:'Alcohol', uk:'Алкоголь', de:'Alkohol'},
+  'Сигареты':     {en:'Cigarettes', uk:'Цигарки', de:'Zigaretten'},
+  'Маркетплейсы': {en:'Marketplaces', uk:'Маркетплейси', de:'Marktplätze'},
+  'Банк/комиссия': {en:'Bank/Fees', uk:'Банк/комісія', de:'Bank/Gebühren'},
+  'Премия':       {en:'Bonus', uk:'Премія', de:'Bonus'},
+  'Дивиденды':    {en:'Dividends', uk:'Дивіденди', de:'Dividenden'},
+  'Продажа':      {en:'Sale', uk:'Продаж', de:'Verkauf'},
+  'Стипендия':    {en:'Scholarship', uk:'Стипендія', de:'Stipendium'},
+  'Пенсия':       {en:'Pension', uk:'Пенсія', de:'Rente'},
 };
 
 function tCat(name){
@@ -1057,18 +1071,26 @@ function tCat(name){
   const e = CAT_I18N[name];
   return (e && e[lang]) || name;
 }
-  const EXPENSE_CATEGORIES = [
-  {icon:'🍔',name:'Еда'},{icon:'🛒',name:'Продукты'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
-  {icon:'🚗',name:'Транспорт'},{icon:'⛽',name:'Бензин'},{icon:'🚌',name:'Общественный'},{icon:'🏠',name:'Дом'},
-  {icon:'💡',name:'Коммуналка'},{icon:'📱',name:'Связь'},{icon:'💊',name:'Аптека'},{icon:'👕',name:'Одежда'},
-  {icon:'💇',name:'Красота'},{icon:'🏋️',name:'Спорт'},{icon:'🎬',name:'Кино'},{icon:'🎮',name:'Игры'},
-  {icon:'🎉',name:'Досуг'},{icon:'🎁',name:'Подарки'},{icon:'🐾',name:'Питомцы'},{icon:'✈️',name:'Путешествия'},
-  {icon:'📚',name:'Образование'},{icon:'💳',name:'Кредит'},{icon:'👨‍👧',name:'Алименты'},{icon:'📦',name:'Разное'}
+   const EXPENSE_CATEGORIES = [
+  {icon:'🍔',name:'Еда'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
+  {icon:'🚗',name:'Транспорт'},{icon:'🚕',name:'Такси'},{icon:'⛽',name:'Бензин'},
+  {icon:'🚌',name:'Общественный'},{icon:'🏠',name:'Дом'},{icon:'💡',name:'Коммуналка'},
+  {icon:'📱',name:'Связь'},{icon:'🌐',name:'Интернет'},{icon:'📺',name:'Подписки'},
+  {icon:'💊',name:'Аптека'},{icon:'👕',name:'Одежда'},{icon:'👟',name:'Обувь'},
+  {icon:'💇',name:'Красота'},{icon:'🏋️',name:'Спорт'},{icon:'🎬',name:'Кино'},
+  {icon:'🎮',name:'Игры'},{icon:'🎉',name:'Досуг'},{icon:'🎁',name:'Подарки'},
+  {icon:'🐾',name:'Питомцы'},{icon:'✈️',name:'Путешествия'},{icon:'📚',name:'Образование'},
+  {icon:'🔧',name:'Ремонт'},{icon:'🧴',name:'Хозтовары'},{icon:'💳',name:'Кредит'},
+  {icon:'👨‍👧',name:'Алименты'},{icon:'🍷',name:'Алкоголь'},{icon:'🚬',name:'Сигареты'},
+  {icon:'🛍️',name:'Маркетплейсы'},{icon:'🏦',name:'Банк/комиссия'},{icon:'📦',name:'Разное'}
 ];
 const INCOME_CATEGORIES = [
-  {icon:'💰',name:'Зарплата'},{icon:'💵',name:'Аванс'},{icon:'💸',name:'Кэшбэк'},{icon:'📈',name:'Инвестиции'},
-  {icon:'💼',name:'Фриланс'},{icon:'🏪',name:'Бизнес'},{icon:'🎁',name:'Подарок'},{icon:'🤝',name:'Помощь'},
-  {icon:'🏆',name:'Выигрыш'},{icon:'↩️',name:'Возврат'},{icon:'🪙',name:'Прочее'}
+  {icon:'💰',name:'Зарплата'},{icon:'💵',name:'Аванс'},{icon:'🏆',name:'Премия'},
+  {icon:'💸',name:'Кэшбэк'},{icon:'📈',name:'Инвестиции'},{icon:'📊',name:'Дивиденды'},
+  {icon:'💼',name:'Фриланс'},{icon:'🏪',name:'Бизнес'},{icon:'🎯',name:'Продажа'},
+  {icon:'🎁',name:'Подарок'},{icon:'🤝',name:'Помощь'},{icon:'🥇',name:'Выигрыш'},
+  {icon:'↩️',name:'Возврат'},{icon:'🎓',name:'Стипендия'},{icon:'👴',name:'Пенсия'},
+  {icon:'🪙',name:'Прочее'}
 ];
 
 const LANGS = [
@@ -1606,7 +1628,7 @@ function submitReceipt(){
   const d = dateInput ? new Date(dateInput) : new Date();
   const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
   const tx = {
-    id: Date.now(), type:'expense', title: store, category:'Продукты', icon:'🧾',
+    id: Date.now(), type:'expense', title: store, category:'Еда', icon:'🧾',
     amount: total, date: dateStr,
     receipt: { store, items: items.map(i=>({name:i.name,qty:i.qty,price:i.price})), source: pendingReceiptPhoto?'ocr':'manual', hasPhoto: !!pendingReceiptPhoto }
   };

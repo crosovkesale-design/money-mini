@@ -729,11 +729,12 @@ async def check_envelope_limit(fid: str, uid: str, envelope_id: str, category: s
                                 month_key = now.strftime("%Y-%m")
                                 env_key = str(envelope_id)
                                 u = await get_user(uid)
-                                
-                                warned_80 = u.get("envWarn80") or {}
-                                warned_100 = u.get("envWarn100") or {}
-                                if not isinstance(warned_80, dict): warned_80 = {}
-                                    if not isinstance(warned_100, dict): warned_100 = {}
+    warned_80 = u.get("envWarn80") or {}
+    warned_100 = u.get("envWarn100") or {}
+    if not isinstance(warned_80, dict):
+        warned_80 = {}
+    if not isinstance(warned_100, dict):
+        warned_100 = {}
                                         
                                 name = env.get("name") or "—"
                                 if pct >= 100 and warned_100.get(env_key) != month_key:

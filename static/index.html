@@ -1753,10 +1753,13 @@ function startPayment(){
       btn.disabled = false;
       btn.innerHTML = oldText;
       if(!res || !res.invoice_url){ showAlert('Ошибка счёта'); return; }
-      if(window.Telegram?.WebApp?.openLink){
-        Telegram.WebApp.openLink(res.invoice_url);
+      const url = res.mini_app_invoice_url || res.invoice_url;
+      if(url.includes('t.me') && window.Telegram?.WebApp?.openTelegramLink){
+        Telegram.WebApp.openTelegramLink(url);
+      } else if(window.Telegram?.WebApp?.openLink){
+        Telegram.WebApp.openLink(url);
       } else {
-        window.open(res.invoice_url, '_blank');
+        window.open(url, '_blank');
       }
     }).catch(err => {
       btn.disabled = false;

@@ -239,49 +239,49 @@ if bot:
     async def on_stars_paid(message: Message):
         sp = message.successful_payment
         try:
-        meta = json.loads(sp.invoice_payload or "{}")
-    except Exception:
-    return
-    uid = meta.get("uid")
-    plan = meta.get("plan")
-    if not uid or plan not in TARIFFS:
-        return
-    days = TARIFFS[plan]["days"]
-    now_ts = now_ms()
-    u = await get_user(uid)
-    cur_end = int(u.get("subEnd") or 0)
-    if cur_end < 10**11:
-        cur_end *= 1000
-    if cur_end < now_ts:
-        cur_end = now_ts
-    new_end = cur_end + days * 86400000
-    await fb.patch(f"/users/{uid}", {
-        "tariff": plan,
-        "subStart": now_ts,
-        "subEnd": new_end,
-        "status": "active",
-        "starsTotalPaid": (u.get("starsTotalPaid") or 0) + (sp.total_amount or 0),
-        "reminderSent": 0,
-    })
-    try:
-        await bot.send_message(
-            int(uid),
-            "✅ <b>Оплата через Telegram Stars прошла!</b>\n\n"
-            "Тариф: " + TARIFFS[plan]["name"] + "\n"
-            "Активен до: " + datetime.fromtimestamp(new_end / 1000).strftime("%d.%m.%Y"),
-            parse_mode="HTML"
-        )
-    except Exception:
-        pass
-    if ADMIN_CHAT_ID:
-        try:
-            await bot.send_message(
-                ADMIN_CHAT_ID,
-                "⭐ <b>Оплата Stars</b>\nID: " + str(uid) + "\nТариф: " + TARIFFS[plan]["name"] + "\nЗвёзд: " + str(sp.total_amount),
-                parse_mode="HTML"
-            )
+            meta = json.loads(sp.invoice_payload or "{}")
         except Exception:
-            pass
+            return
+        uid = meta.get("uid")
+        plan = meta.get("plan")
+        if not uid or plan not in TARIFFS:
+            return
+            days = TARIFFS[plan]["days"]
+            now_ts = now_ms()
+            u = await get_user(uid)
+            cur_end = int(u.get("subEnd") or 0)
+            if cur_end < 10**11:
+                cur_end *= 1000
+                if cur_end < now_ts:
+                    cur_end = now_ts
+                    new_end = cur_end + days * 86400000
+                    await fb.patch(f"/users/{uid}", {
+                        "tariff": plan,
+                        "subStart": now_ts,
+                        "subEnd": new_end,
+                        "status": "active",
+                        "starsTotalPaid": (u.get("starsTotalPaid") or 0) + (sp.total_amount or 0),
+                        "reminderSent": 0,
+                    })
+                    try:
+                        await bot.send_message(
+                            int(uid),
+                            "✅ <b>Оплата через Telegram Stars прошла!</b>\n\n"
+                            "Тариф: " + TARIFFS[plan]["name"] + "\n"
+                            "Активен до: " + datetime.fromtimestamp(new_end / 1000).strftime("%d.%m.%Y"),
+                            parse_mode="HTML"
+                        )
+                    except Exception:
+                        pass
+                        if ADMIN_CHAT_ID:
+                            try:
+                                await bot.send_message(
+                                    ADMIN_CHAT_ID,
+                                    "⭐ <b>Оплата Stars</b>\nID: " + str(uid) + "\nТариф: " + TARIFFS[plan]["name"] + "\nЗвёзд: " + str(sp.total_amount),
+                                    parse_mode="HTML"
+                                )
+                            except Exception:
+                                pass
             
     @dp.message(Command("help"))
     async def cmd_help(message: Message):

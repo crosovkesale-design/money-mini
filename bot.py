@@ -8,12 +8,14 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    LabeledPrice,
     Message,
+    PreCheckoutQuery,
     WebAppInfo,
 )
 from dotenv import load_dotenv
@@ -56,6 +58,14 @@ TARIFFS = {
     "pro12":    {"days": 365, "price_usd": 75, "name": "Pro 12 месяцев"},
 }
 BIG_TARIFFS = {"6months", "12months", "pro1", "pro12"}
+STARS_PRICES = {
+    "1month":   500,
+    "3months":  1300,
+    "6months":  2300,
+    "12months": 3900,
+    "pro1":     1000,
+    "pro12":    7500,
+}
 
 FAMILY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -221,6 +231,58 @@ if bot:
     reply_markup=kb,
     parse_mode="HTML"
         )
+    @dp.pre_checkout_query()
+async def pre_checkout(query: PreCheckoutQuery):
+    await query.answer(ok=True)
+
+@dp.message(F.successful_payment)
+async def on_stars_paid(message: Message):
+    sp = message.successful_payment
+    try:
+        meta = json.loads(sp.invoice_payload or "{}")
+    except Exception:
+        return
+    uid = meta.get("uid")
+    plan = meta.get("plan")
+    if not uid or plan not in TARIFFS:
+        return
+    days = TARIFFS[plan]["days"]
+    now_ts = now_ms()
+    u = await get_user(uid)
+    cur_end = int(u.get("subEnd") or 0)
+    if cur_end < 10**11:
+        cur_end *= 1000
+    if cur_end < now_ts:
+        cur_end = now_ts
+    new_end = cur_end + days * 86400000
+    await fb.patch(f"/users/{uid}", {
+        "tariff": plan,
+        "subStart": now_ts,
+        "subEnd": new_end,
+        "status": "active",
+        "starsTotalPaid": (u.get("starsTotalPaid") or 0) + (sp.total_amount or 0),
+        "reminderSent": 0,
+    })
+    try:
+        await bot.send_message(
+            int(uid),
+            "✅ <b>Оплата через Telegram Stars прошла!</b>\n\n"
+            "Тариф: " + TARIFFS[plan]["name"] + "\n"
+            "Активен до: " + datetime.fromtimestamp(new_end / 1000).strftime("%d.%m.%Y"),
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
+    if ADMIN_CHAT_ID:
+        try:
+            await bot.send_message(
+                ADMIN_CHAT_ID,
+                "⭐ <b>Оплата Stars</b>\nID: " + str(uid) + "\nТариф: " + TARIFFS[plan]["name"] + "\nЗвёзд: " + str(sp.total_amount),
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+            
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         await message.answer(
@@ -817,7 +879,36 @@ async def api_me(request: Request):
             "coupons20": max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0)),
         },
     }
-    
+
+@app.post("/api/pay/stars")
+async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "bad json")
+    plan = str(body.get("plan") or "")
+    if plan not in TARIFFS:
+        raise HTTPException(400, "bad plan")
+    stars = STARS_PRICES.get(plan)
+    if not stars:
+        raise HTTPException(400, "no stars price")
+    if not bot:
+        raise HTTPException(500, "bot not configured")
+
+    payload = json.dumps({"uid": uid, "plan": plan, "method": "stars"})
+    try:
+        link = await bot.create_invoice_link(
+            title="Family Budget — " + TARIFFS[plan]["name"],
+            description="Подписка " + TARIFFS[plan]["name"],
+            payload=payload,
+            currency="XTR",
+            prices=[LabeledPrice(label=TARIFFS[plan]["name"], amount=stars)],
+        )
+    except Exception as e:
+        log.warning("create stars invoice: " + str(e))
+        raise HTTPException(500, "stars invoice failed")
+
+    return {"ok": True, "invoice_url": link, "stars": stars, "plan": plan}
 @app.post("/api/pay/create")
 async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
     body = await request.json()

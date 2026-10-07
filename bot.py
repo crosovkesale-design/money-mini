@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import (
+    CallbackQuery
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     LabeledPrice,
@@ -209,12 +210,16 @@ if bot:
             })
         await fb.patch(f"/users/{uid}", upd)
 
-        kb = InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(
-                text="Открыть бюджет",
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="📊 Открыть бюджет",
                 web_app=WebAppInfo(url=MINI_APP_URL),
-            )
-        ]])
+            )],
+            [InlineKeyboardButton(
+                text="🎁 Пригласить друга",
+                callback_data="ref_link",
+            )],
+        ])
         await message.answer(
     "👋 Привет! Это <b>Family Budget</b> — семейный учёт доходов и расходов.\n\n"
     "<b>Что умеет:</b>\n"
@@ -310,6 +315,73 @@ if bot:
             parse_mode="HTML",
         )
 
+@dp.callback_query(F.data == "ref_link")
+async def cb_ref_link(callback: CallbackQuery):
+    uid = str(callback.from_user.id)
+    me = await bot.get_me()
+    bot_username = me.username or "moneyfamilybudget_bot"
+    link = "https://t.me/" + bot_username + "?start=ref_" + uid
+
+    text = (
+        "🎁 <b>Приглашай друзей — получай купоны</b>\n\n"
+        "За каждого друга, который зайдёт по твоей ссылке:\n"
+        "• 1 друг → купон 10%\n"
+        "• 5 друзей → купон 20%\n"
+        "• 10 друзей → ещё купоны\n\n"
+        "Твоя ссылка:\n"
+        "<code>" + link + "</code>\n\n"
+        "Отправь её другу — купон зачислится автоматически."
+    )
+
+    share_url = "https://t.me/share/url?url=" + link + "&text=" + "Family Budget — семейный бюджет в Telegram. Заходи по моей ссылке"
+
+    try:
+        await callback.message.edit_text(
+            text,
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(
+                    text="📤 Поделиться ссылкой",
+                    url=share_url,
+                )],
+                [InlineKeyboardButton(
+                    text="👥 Мои рефералы",
+                    callback_data="my_refs",
+                )],
+            ])
+        )
+    except Exception as e:
+        log.warning("ref_link: " + str(e))
+    await callback.answer()
+
+@dp.callback_query(F.data == "my_refs")
+async def cb_my_refs(callback: CallbackQuery):
+    uid = str(callback.from_user.id)
+    u = await get_user(uid)
+    refs = u.get("referrals") or {}
+    count = len(refs)
+    c10 = u.get("couponsEarned") or 0
+    c20 = u.get("coupons20Earned") or 0
+
+    text = (
+        "👥 <b>Твои рефералы</b>\n\n"
+        "Приглашено: <b>" + str(count) + "</b>\n"
+        "Купонов 10%: <b>" + str(c10) + "</b>\n"
+        "Купонов 20%: <b>" + str(c20) + "</b>"
+    )
+
+    try:
+        await callback.message.edit_text(
+            text,
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="⬅️ Назад", callback_data="ref_link")],
+            ])
+        )
+    except Exception as e:
+        log.warning("my_refs: " + str(e))
+    await callback.answer()
+    
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
         users = await fb.get("/users") or {}

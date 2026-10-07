@@ -271,11 +271,7 @@ window.addEventListener('error', e => {
       <button class="btn btn-accent" style="width:100%;margin-top:8px" onclick="openTariffs()">
         <i class="fa-solid fa-crown"></i> <span data-i18n="upgrade_to">Улучшить</span>
       </button>
-      <div class="dev-toggle" id="devToggle">
-        <button data-plan="free" onclick="setPlan('free')">Free</button>
-        <button data-plan="pro" onclick="setPlan('pro')">Pro</button>
-      </div>
-    </div>
+      
 
     <div class="card">
       <div class="row-between">
@@ -2709,7 +2705,6 @@ function renderSubscription(){
   const ocr = document.getElementById('ocrStatus');
   if(badge) badge.innerHTML = plan === 'pro' ? '<span class="pro-badge">Pro</span>' : '<span class="muted">Free</span>';
   if(ocr) ocr.innerHTML = plan === 'pro' ? '<span style="color:var(--success)">✓ ' + t('available') + '</span>' : '<span class="muted">Pro</span>';
-  document.querySelectorAll('#devToggle button').forEach(b => b.classList.toggle('active', b.dataset.plan === plan));
 }
 
 function renderChart(){

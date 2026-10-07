@@ -263,6 +263,9 @@ window.addEventListener('error', e => {
         <span style="font-size:13px" data-i18n="photo_receipts">Чеки по фото (OCR)</span>
         <span id="ocrStatus" style="font-size:13px"></span>
       </div>
+      <button class="btn btn-accent" style="width:100%;margin-top:8px" onclick="openTariffs()">
+        <i class="fa-solid fa-crown"></i> <span data-i18n="upgrade_to">Улучшить</span>
+      </button>
       <div class="dev-toggle" id="devToggle">
         <button data-plan="free" onclick="setPlan('free')">Free</button>
         <button data-plan="pro" onclick="setPlan('pro')">Pro</button>

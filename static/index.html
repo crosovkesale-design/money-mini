@@ -570,6 +570,29 @@ window.addEventListener('error', e => {
     <button class="btn btn-accent" style="width:100%" onclick="alertOk()">OK</button>
   </div>
 </div>
+
+<div class="modal" id="modalTrialGate">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 data-i18n="trial_over_title">Пробный период закончился</h3>
+    </div>
+    <p style="font-size:14px;line-height:1.5;margin-bottom:14px" data-i18n="trial_over_text">
+      Твои данные и история сохранены. Чтобы продолжить добавлять траты и пользоваться аналитикой — оформи подписку.
+    </p>
+    <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px;line-height:1.6">
+      <div style="margin-bottom:6px"><b data-i18n="trial_over_base">Базовая</b> — 500 ⭐ / мес</div>
+      <div style="color:var(--muted);font-size:11px" data-i18n="trial_over_base_list">Безлимит конвертов, банок, автоплатежей. Прогнозы. Экспорт. Семья до 4</div>
+      <div style="margin:10px 0 6px"><b data-i18n="trial_over_pro">Pro</b> — 1000 ⭐ / мес</div>
+      <div style="color:var(--muted);font-size:11px" data-i18n="trial_over_pro_list">Всё из базовой + OCR чеков, AI-ассистент, Monobank, свои категории, семья до 6</div>
+    </div>
+    <button class="btn btn-accent" style="width:100%" onclick="closeModal('modalTrialGate');openTariffs()">
+      <i class="fa-solid fa-crown"></i> <span data-i18n="trial_over_cta">Оформить подписку</span>
+    </button>
+    <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="closeModal('modalTrialGate')">
+      <span data-i18n="trial_over_later">Позже</span>
+    </button>
+  </div>
+</div>
   
 <div class="modal" id="modalConfirm">
   <div class="modal-content">
@@ -656,7 +679,10 @@ const I18N = {
     rec_none:'Правил нет', rec_active:'Активно', rec_paused:'Пауза', rec_limit:'Бесплатно — 2 правила. Pro — без ограничений.',
     alert_title:'Уведомление', rec_edit_title:'Изменить правило', no_envelope:'Без конверта',
     wallpaper:'Обои', wallpaper_pro_only:'Свои обои доступны в Pro.', wallpaper_upload:'Загрузить', wallpaper_clear:'Убрать',
-    family_create:'Создать семью',
+    family_create:'Создать семью', trial_over_title:'Пробный период закончился', trial_over_text:'Твои данные и история сохранены. Чтобы продолжить — оформи подписку.', 
+    trial_over_base:'Базовая', trial_over_base_list:'Безлимит конвертов, банок, автоплатежей. Прогнозы. Экспорт. Семья до 4', trial_over_pro:'Pro', 
+    trial_over_pro_list:'Всё из базовой + OCR чеков, AI-ассистент, Monobank, свои категории, семья до 6', trial_over_cta:'Оформить подписку', trial_over_later:'Позже', 
+    ro_banner:'Пробный период закончился.', ro_banner_cta:'Оформи подписку — данные сохранены.',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -701,7 +727,10 @@ const I18N = {
     alert_title:'Повідомлення', rec_edit_title:'Змінити правило', no_envelope:'Без конверта',
     wallpaper:'Шпалери', wallpaper_pro_only:'Свої шпалери доступні в Pro.', wallpaper_upload:'Завантажити', 
     wallpaper_clear:'Прибрати', wallpaper_hint:'Рекомендуємо вертикальне фото до 3 МБ.',
-    family_create:'Створити родину',
+    family_create:'Створити родину', trial_over_title:'Пробний період закінчився', trial_over_text:'Твої дані та історія збережені. Щоб продовжити — оформи підписку.', 
+    trial_over_base:'Базова', trial_over_base_list:'Безліміт конвертів, банок, автоплатежів. Прогнози. Експорт. Родина до 4', 
+    trial_over_pro:'Pro', trial_over_pro_list:'Все з базової + OCR чеків, AI-асистент, Monobank, власні категорії, родина до 6', 
+    trial_over_cta:'Оформити підписку', trial_over_later:'Пізніше', ro_banner:'Пробний період закінчився.', ro_banner_cta:'Оформи підписку — дані збережені.',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -745,7 +774,10 @@ const I18N = {
     alert_title:'Notice', rec_edit_title:'Edit rule', no_envelope:'No envelope',
     wallpaper:'Wallpaper', wallpaper_pro_only:'Custom wallpaper is Pro.', wallpaper_upload:'Upload', 
     wallpaper_clear:'Remove', wallpaper_hint:'Vertical photo up to 3 MB recommended.',
-    family_create:'Create family',
+    family_create:'Create family', trial_over_title:'Trial ended', trial_over_text:'Your data and history are saved. Subscribe to continue.', 
+    trial_over_base:'Base', trial_over_base_list:'Unlimited envelopes, banks, recurring. Forecasts. Export. Family up to 4', 
+    trial_over_pro:'Pro', trial_over_pro_list:'All Base + receipt OCR, AI assistant, Monobank, custom categories, family up to 6', 
+    trial_over_cta:'Subscribe', trial_over_later:'Later', ro_banner:'Trial ended.', ro_banner_cta:'Subscribe — your data is saved.',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -787,7 +819,10 @@ const I18N = {
     alert_title:'Hinweis', rec_edit_title:'Regel bearbeiten', no_envelope:'Kein Umschlag',
     wallpaper:'Hintergrund', wallpaper_pro_only:'Eigener Hintergrund in Pro.', wallpaper_upload:'Hochladen', 
     wallpaper_clear:'Entfernen', wallpaper_hint:'Vertikales Foto bis 3 MB empfohlen.',
-    family_create:'Familie erstellen',
+    family_create:'Familie erstellen', trial_over_title:'Testphase beendet', trial_over_text:'Deine Daten sind gespeichert. Abonniere zum Fortfahren.', 
+    trial_over_base:'Basis', trial_over_base_list:'Unbegrenzte Umschläge, Banken, Daueraufträge. Prognosen. Export. Familie bis 4', trial_over_pro:'Pro', 
+    trial_over_pro_list:'Alles aus Basis + Beleg-OCR, KI-Assistent, Monobank, eigene Kategorien, Familie bis 6', trial_over_cta:'Abonnieren', 
+    trial_over_later:'Später', ro_banner:'Testphase beendet.', ro_banner_cta:'Abonniere — Daten sind gespeichert.',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -831,6 +866,10 @@ const I18N = {
     alert_title:'Notification', rec_edit_title:'Modifier la règle', no_envelope:'Sans enveloppe',
     wallpaper:'Fond', wallpaper_pro_only:'Fond personnalisé en Pro.', wallpaper_upload:'Charger', wallpaper_clear:'Retirer', 
     wallpaper_hint:'Photo verticale jusqu\'à 3 Mo recommandée.', family_create:'Créer une famille',
+    trial_over_title:'Essai terminé', trial_over_text:'Vos données sont sauvegardées. Abonnez-vous pour continuer.', trial_over_base:'Base', 
+    trial_over_base_list:'Enveloppes, banques, récurrents illimités. Prévisions. Export. Famille jusqu\'à 4', trial_over_pro:'Pro', 
+    trial_over_pro_list:'Tout Base + OCR reçus, IA, Monobank, catégories perso, famille jusqu\'à 6', trial_over_cta:'S\'abonner', 
+    trial_over_later:'Plus tard', ro_banner:'Essai terminé.', ro_banner_cta:'Abonnez-vous — données sauvegardées.',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -874,6 +913,10 @@ const I18N = {
     alert_title:'Aviso', rec_edit_title:'Editar regla', no_envelope:'Sin sobre',
     wallpaper:'Fondo', wallpaper_pro_only:'Fondo personalizado en Pro.', wallpaper_upload:'Subir', wallpaper_clear:'Quitar', 
     wallpaper_hint:'Foto vertical hasta 3 MB.', family_create:'Crear familia',
+    trial_over_title:'Prueba terminada', trial_over_text:'Tus datos están guardados. Suscríbete para continuar.', 
+    trial_over_base:'Base', trial_over_base_list:'Sobres, bancos, recurrentes ilimitados. Pronósticos. Exportar. Familia hasta 4', 
+    trial_over_pro:'Pro', trial_over_pro_list:'Todo Base + OCR recibos, IA, Monobank, categorías propias, familia hasta 6', trial_over_cta:'Suscribirse', 
+    trial_over_later:'Después', ro_banner:'Prueba terminada.', ro_banner_cta:'Suscríbete — datos guardados.',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -917,6 +960,10 @@ const I18N = {
     alert_title:'Avviso', rec_edit_title:'Modifica regola', no_envelope:'Senza busta',
     wallpaper:'Sfondo', wallpaper_pro_only:'Sfondo personalizzato in Pro.', wallpaper_upload:'Carica', 
     wallpaper_clear:'Rimuovi', wallpaper_hint:'Foto verticale fino a 3 MB.', family_create:'Crea famiglia',
+    trial_over_title:'Prova terminata', trial_over_text:'I tuoi dati sono salvati. Abbonati per continuare.', 
+    trial_over_base:'Base', trial_over_base_list:'Buste, banche, ricorrenti illimitati. Previsioni. Export. Famiglia fino a 4', 
+    trial_over_pro:'Pro', trial_over_pro_list:'Tutto Base + OCR ricevute, IA, Monobank, categorie personali, famiglia fino a 6', 
+    trial_over_cta:'Abbonati', trial_over_later:'Dopo', ro_banner:'Prova terminata.', ro_banner_cta:'Abbonati — dati salvati.',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -960,6 +1007,10 @@ const I18N = {
     alert_title:'Powiadomienie', rec_edit_title:'Edytuj regułę', no_envelope:'Bez koperty',
     wallpaper:'Tapeta', wallpaper_pro_only:'Własna tapeta w Pro.', wallpaper_upload:'Wgraj', wallpaper_clear:'Usuń', 
     wallpaper_hint:'Zalecane zdjęcie pionowe do 3 MB.', family_create:'Utwórz rodzinę',
+    trial_over_title:'Okres próbny zakończony', trial_over_text:'Twoje dane są zapisane. Wykup subskrypcję.', 
+    trial_over_base:'Podstawowy', trial_over_base_list:'Bez limitu kopert, banków, cyklicznych. Prognozy. Eksport. Rodzina do 4', 
+    trial_over_pro:'Pro', trial_over_pro_list:'Wszystko z Podstawowego + OCR paragonów, AI, Monobank, własne kategorie, rodzina do 6', 
+    trial_over_cta:'Wykup subskrypcję', trial_over_later:'Później', ro_banner:'Okres próbny zakończony.', ro_banner_cta:'Wykup subskrypcję — dane zapisane.',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1004,6 +1055,10 @@ const I18N = {
     alert_title:'Uyarı', rec_edit_title:'Kuralı düzenle', no_envelope:'Zarf yok',
     wallpaper:'Duvar kağıdı', wallpaper_pro_only:'Özel duvar kağıdı Pro\'da.', wallpaper_upload:'Yükle', wallpaper_clear:'Kaldır', 
     wallpaper_hint:'3 MB\'a kadar dikey fotoğraf.', family_create:'Aile oluştur',
+    trial_over_title:'Deneme bitti', trial_over_text:'Verilerin kaydedildi. Devam etmek için abone ol.', trial_over_base:'Temel', 
+    trial_over_base_list:'Sınırsız zarf, banka, tekrarlayan. Tahminler. Dışa aktar. Aile 4\'e kadar', trial_over_pro:'Pro', 
+    trial_over_pro_list:'Tüm Temel + fiş OCR, AI, Monobank, özel kategoriler, aile 6\'ya kadar', trial_over_cta:'Abone ol', 
+    trial_over_later:'Sonra', ro_banner:'Deneme bitti.', ro_banner_cta:'Abone ol — veriler kayıtlı.',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1047,6 +1102,10 @@ const I18N = {
     alert_title:'提示', rec_edit_title:'编辑规则', no_envelope:'无信封',
     wallpaper:'壁纸', wallpaper_pro_only:'自定义壁纸仅限 Pro。', wallpaper_upload:'上传', wallpaper_clear:'移除', 
     wallpaper_hint:'建议竖版照片，不超过 3 MB。', family_create:'创建家庭',
+    trial_over_title:'试用已结束', trial_over_text:'数据已保存。订阅后可继续使用。', trial_over_base:'基础', 
+    trial_over_base_list:'无限信封、银行、定期。预测。导出。家庭最多4人', trial_over_pro:'Pro',
+    trial_over_pro_list:'基础全部 + 收据OCR、AI助手、Monobank、自定义分类、家庭最多6人', trial_over_cta:'订阅', 
+    trial_over_later:'稍后', ro_banner:'试用已结束。', ro_banner_cta:'订阅 — 数据已保存。',
   }
 };
 
@@ -1215,13 +1274,27 @@ function tCat(name){
   function loadFamilyFromServer(){
   if(!hasInitData()) return Promise.resolve(null);
 
-  // Не перечитываем сервер в течение 5 секунд после выхода
   if(appData._leftAt && Date.now() - appData._leftAt < 5000){
     return Promise.resolve(null);
   }
 
   API.headers['X-Init-Data'] = window.Telegram.WebApp.initData;
   return API.post('/api/init', {}).then(res => {
+    // обновляем подписку из Firebase
+    if(res && res.subscription){
+      appData.subscription = {
+        plan: res.subscription.status === 'active' && (res.subscription.tariff || '').startsWith('pro') ? 'pro'
+              : res.subscription.status === 'active' ? 'base'
+              : 'free',
+        tariff: res.subscription.tariff || 'trial',
+        subEnd: res.subscription.subEnd || 0,
+        status: res.subscription.status || 'active',
+        daysLeft: res.subscription.daysLeft || 0
+      };
+      saveData();
+      renderSubscription();
+      applyWallpaper();
+    }
     if(res && res.family && res.family.id){
       appData.joinedFamily = true;
       appData.familyCode = res.family.code || appData.familyCode;
@@ -1229,12 +1302,14 @@ function tCat(name){
       return API.get('/api/family').then(fam => {
         applyFamilyData(fam);
         renderFamily();
+        renderTrialGate();
         return fam;
       });
     } else {
       appData.joinedFamily = false;
       appData.familyMembers = 1;
       renderFamily();
+      renderTrialGate();
       return null;
     }
   }).catch(err => {
@@ -1327,8 +1402,38 @@ function loadData(){
   }
 }
 function saveData(){ localStorage.setItem(getUserStorageKey(), JSON.stringify(appData)); }
-function isPro(){ return appData.subscription && appData.subscription.plan === 'pro'; }
+function isPro(){
+  return appData.subscription && appData.subscription.plan === 'pro';
+}
 
+function isBase(){
+  return appData.subscription && appData.subscription.plan === 'base';
+}
+
+function hasPaidSub(){
+  return isPro() || isBase();
+}
+
+function isTrial(){
+  const s = appData.subscription || {};
+  if(!s.tariff) return true;
+  if((s.tariff || '').startsWith('trial')) return true;
+  return false;
+}
+
+function isReadOnly(){
+  const s = appData.subscription || {};
+  if(!s.subEnd) return false;
+  if(s.status === 'expired') return true;
+  return s.subEnd < Date.now() && !hasPaidSub();
+}
+
+function activePlan(){
+  if(isPro()) return 'pro';
+  if(isBase()) return 'base';
+  if(isTrial() && !isReadOnly()) return 'trial';
+  return 'expired';
+}
 function getMonthKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
 function currentMonthDate(){
   const [y,m] = appData.currentMonth.split('-').map(Number);
@@ -2556,6 +2661,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTheme(appData.theme || 'dark');
   applyLang();
   applyWallpaper();
+  renderTrialGate();
   if(hasInitData()){
     loadFamilyFromServer();
   }

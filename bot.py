@@ -449,7 +449,55 @@ async def daily_check():
             log.warning("daily_check error: " + str(e))
 
         await asyncio.sleep(6 * 60 * 60)
+        }
+        async def daily_reminder():
+            """Каждый вечер напоминает записать траты"""
+            while True:
+                try:
+                    if not bot:
+                        await asyncio.sleep(3600)
+                        continue
 
+            kyiv_now = datetime.now(ZoneInfo("Europe/Kyiv"))
+            # напоминаем в окне 19:00–21:00 по Киеву
+            if 19 <= kyiv_now.hour <= 21:
+                today = kyiv_now.strftime("%Y-%m-%d")
+                users = await fb.get("/users") or {}
+                now_ms_val = now_ms()
+                sent = 0
+
+                for uid, u in users.items():
+                    if not isinstance(u, dict):
+                        continue
+                    if u.get("lastDailyRemind") == today:
+                        continue
+
+                    sub_end = int(u.get("subEnd") or 0)
+                    if sub_end < 10**11:
+                        sub_end *= 1000
+                    if sub_end <= now_ms_val:
+                        continue
+
+                    try:
+                        await bot.send_message(
+                            int(uid),
+                            "📝 <b>Не забудь записать траты за сегодня!</b>\n\n"
+                            "Открой приложение — займёт минуту.",
+                            parse_mode="HTML"
+                        )
+                        await fb.patch(f"/users/{uid}", {"lastDailyRemind": today})
+                        sent += 1
+                    except Exception as e:
+                        log.warning("daily remind " + str(uid) + ": " + str(e))
+
+                    if sent >= 200:
+                        break
+
+        except Exception as e:
+            log.warning("daily_reminder error: " + str(e))
+
+        await asyncio.sleep(3600)
+        
 # ---------- FastAPI ----------
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -463,9 +511,10 @@ async def lifespan(app: FastAPI):
         await bot.delete_webhook(drop_pending_updates=True)
         polling_task = asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types()))
         reminder_task = asyncio.create_task(daily_check())
+        remind_daily_task = asyncio.create_task(daily_reminder())
         log.info("bot started")
     yield
-    for t in (polling_task, reminder_task):
+    for t in (polling_task, reminder_task, remind_daily_task):
         if t:
             t.cancel()
             try:
@@ -653,6 +702,71 @@ async def api_family_leave(uid: str = Depends(current_uid)):
     return {"ok": True, "leftFrom": fid}
     
 # ---------- /api/tx ----------
+    async def check_envelope_limit(fid: str, uid: str, envelope_id: str, category: str):
+        env = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
+        if not env or not isinstance(env, dict):
+            return
+        target = float(env.get("target") or 0)
+        if target <= 0:
+            return
+
+        txs = await fb.get(f"/families/{fid}/transactions") or {}
+        now = datetime.now(timezone.utc)
+        month_start = int(datetime(now.year, now.month, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        spent = 0.0
+        for k, t in txs.items():
+            if not isinstance(t, dict):
+                continue
+            if t.get("type") != "expense":
+                continue
+            if str(t.get("envelopeId") or "") != str(envelope_id):
+                continue
+            ts = int(t.get("ts") or 0)
+            if ts < month_start:
+                continue
+            spent += float(t.get("amount") or 0)
+
+        pct = (spent / target) * 100
+        month_key = now.strftime("%Y-%m")
+        env_key = str(envelope_id)
+        u = await get_user(uid)
+
+        warned_80 = u.get("envWarn80") or {}
+        warned_100 = u.get("envWarn100") or {}
+        if not isinstance(warned_80, dict): warned_80 = {}
+        if not isinstance(warned_100, dict): warned_100 = {}
+
+        name = env.get("name") or "—"
+
+        if pct >= 100 and warned_100.get(env_key) != month_key:
+            warned_100[env_key] = month_key
+            await fb.patch(f"/users/{uid}", {"envWarn100": warned_100})
+            if bot:
+                try:
+                    await bot.send_message(
+                        int(uid),
+                        "🔴 <b>Лимит пробит</b>\n\n"
+                        "Конверт «" + str(name) + "»\n"
+                        "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴\n"
+                        "Категория: " + str(category),
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
+            elif pct >= 80 and warned_80.get(env_key) != month_key:
+                warned_80[env_key] = month_key
+                await fb.patch(f"/users/{uid}", {"envWarn80": warned_80})
+               if bot:
+                   try:
+                       await bot.send_message(
+                           int(uid),
+                           "🟡 <b>Конверт «" + str(name) + "» — " + str(round(pct)) + "%</b>\n\n"
+                           "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴",
+                           parse_mode="HTML"
+                       )
+                   except Exception:
+                       pass
+
 
 @app.post("/api/tx")
 async def api_tx_create(request: Request, uid: str = Depends(current_uid)):
@@ -682,8 +796,15 @@ async def api_tx_create(request: Request, uid: str = Depends(current_uid)):
         "ts": now_ms(),
     }
     txid = await fb.push(f"/families/{fid}/transactions", tx)
-    return {"ok": True, "id": txid}
 
+    # проверка лимита конверта
+    if type_ == "expense" and tx["envelopeId"]:
+        try:
+            await check_envelope_limit(fid, uid, tx["envelopeId"], tx["category"])
+        except Exception as e:
+            log.warning("envelope check: " + str(e))
+            
+    return {"ok": True, "id": txid}
 
 @app.delete("/api/tx/{txid}")
 async def api_tx_delete(txid: str, uid: str = Depends(current_uid)):

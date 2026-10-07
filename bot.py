@@ -1150,7 +1150,53 @@ async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
         "discountPct": pct,
     }
 
+@app.post("/api/admin/grant-coupon")
+async def api_admin_grant_coupon(request: Request):
+    key = request.headers.get("X-Admin-Key", "")
+    if not TEST_WEBHOOK_KEY or key != TEST_WEBHOOK_KEY:
+        raise HTTPException(401, "bad admin key")
 
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "bad json")
+
+    uid = str(body.get("uid") or "").strip()
+    kind = str(body.get("kind") or "").strip()
+    if not uid:
+        raise HTTPException(400, "no uid")
+    if kind not in ("c10", "c20"):
+        raise HTTPException(400, "bad kind")
+
+    u = await get_user(uid)
+    if kind == "c10":
+        cur = int(u.get("couponsEarned") or 0)
+        new = cur + 1
+        await fb.patch(f"/users/{uid}", {"couponsEarned": new})
+        label = "10%"
+        field = "couponsEarned"
+    else:
+        cur = int(u.get("coupons20Earned") or 0)
+        new = cur + 1
+        await fb.patch(f"/users/{uid}", {"coupons20Earned": new})
+        label = "20%"
+        field = "coupons20Earned"
+
+    if bot:
+        try:
+            await bot.send_message(
+                int(uid),
+                "🎁 <b>Тебе выдан купон " + label + "!</b>\n\n"
+                "Примени его при оплате тарифа — скидка сработает автоматически.\n\n"
+                "Всего купонов " + label + ": <b>" + str(new) + "</b>\n\n"
+                "Открой: Настройки → Улучшить",
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            log.warning("grant coupon notify " + uid + ": " + str(e))
+
+    return {"ok": True, "field": field, "value": new}
+    
 @app.post("/api/pay/webhook")
 async def api_pay_webhook(request: Request):
     raw = await request.body()

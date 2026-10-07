@@ -450,16 +450,15 @@ async def daily_check():
 
         await asyncio.sleep(6 * 60 * 60)
     
-        async def daily_reminder():
-            """Каждый вечер напоминает записать траты"""
-            while True:
-                try:
-                    if not bot:
-                        await asyncio.sleep(3600)
-                        continue
+async def daily_reminder():
+    """Каждый вечер напоминает записать траты"""
+    while True:
+        try:
+            if not bot:
+                await asyncio.sleep(3600)
+                continue
 
             kyiv_now = datetime.now(ZoneInfo("Europe/Kyiv"))
-            # напоминаем в окне 19:00–21:00 по Киеву
             if 19 <= kyiv_now.hour <= 21:
                 today = kyiv_now.strftime("%Y-%m-%d")
                 users = await fb.get("/users") or {}

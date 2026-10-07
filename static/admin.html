@@ -366,6 +366,10 @@ function renderUsersTab(list){
     rows += '<td>' + fmtDate(u.lastSeen) + '</td>';
     rows += '<td>' + (refsCount > 0 ? '<b style="color:#4d9fff">' + refsCount + '</b>' : '—') + '</td>';
     rows += '<td class="muted">' + (refBy ? 'от ' + refBy : '—') + '</td>';
+    var c10 = u.couponsEarned || 0;
+    var c20 = u.coupons20Earned || 0;
+    var cupStr = (c10 > 0 || c20 > 0) ? '<b style="color:#f5c451">' + c10 + '</b>/<b style="color:#35d07f">' + c20 + '</b>' : '—';
+    rows += '<td>' + cupStr + '</td>';
     rows += '<td><button class="action" data-key="' + u.key + '">Изм.</button></td>';
     rows += '</tr>';
   });
@@ -374,7 +378,7 @@ function renderUsersTab(list){
     '<table><thead><tr>' +
     '<th>Имя</th><th>Username</th><th>TG ID</th><th>Тариф</th><th>Сумма</th>' +
     '<th>Начало</th><th>Конец</th><th>Осталось</th><th>Регистрация</th><th>Визит</th>' +
-    '<th>Реф.</th><th>Кто пригласил</th><th></th>' +
+    '<th>Реф.</th><th>Кто пригласил</th><th>🎁 10/20</th><th></th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table>';
 
   document.querySelectorAll(".action").forEach(function(b){
@@ -455,13 +459,33 @@ function openEdit(key){
     '<label>Дата окончания</label>' +
     '<input type="date" id="ed-end" value="' + (u.subEnd ? new Date(u.subEnd).toISOString().slice(0,10) : "") + '">' +
     '<div class="row">' +
-    '<button class="cancel" data-act="cancel">Отмена</button>' +
-    '<button class="save" data-act="save">Сохранить</button>' +
-    '</div></div>';
+   '<button class="cancel" data-act="cancel">Отмена</button>' +
+   '<button class="save" data-act="save">Сохранить</button>' +
+   '</div>' +
+   '<div style="display:flex;gap:8px;margin-top:8px">' +
+   '<button data-act="c10" style="flex:1;background:#1d222d;color:#f5c451;border:1px solid #242a37;border-radius:10px;padding:10px;cursor:pointer;font-weight:700">🎁 Купон 10%</button>' +
+   '<button data-act="c20" style="flex:1;background:#1d222d;color:#35d07f;border:1px solid #242a37;border-radius:10px;padding:10px;cursor:pointer;font-weight:700">🎁 Купон 20%</button>' +
+   '</div></div>';
   document.body.appendChild(modal);
 
   modal.querySelector('[data-act="cancel"]').onclick = function(){ modal.remove(); };
+  modal.querySelector('[data-act="c10"]').onclick = function(){
+    var cur = u.couponsEarned || 0;
+    db.ref("users/" + key).update({ couponsEarned: cur + 1 }).then(function(){
+      alert("Купон 10% выдан. Всего: " + (cur + 1));
+      modal.remove();
+      load();
+    });
+  };
 
+  modal.querySelector('[data-act="c20"]').onclick = function(){
+    var cur = u.coupons20Earned || 0;
+    db.ref("users/" + key).update({ coupons20Earned: cur + 1 }).then(function(){
+      alert("Купон 20% выдан. Всего: " + (cur + 1));
+      modal.remove();
+      load();
+    });
+  };
   modal.querySelector("#ed-tariff").onchange = function(){
     var days = TARIFF_DAYS[this.value] || 30;
     var d = new Date();

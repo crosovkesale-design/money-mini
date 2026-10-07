@@ -935,7 +935,6 @@ async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
         "final": final,
     })
 
-    log.warning(f"cryptopay request: asset={CRYPTOPAY_NETWORK} amount={final}")
     resp = await cp.call("createInvoice", {
         "asset": CRYPTOPAY_NETWORK,
         "amount": str(final),
@@ -943,16 +942,15 @@ async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
         "payload": payload,
         "expires_in": 3600,
     })
-    log.warning(f"cryptopay response: {resp}")
     if not resp.get("ok"):
         log.warning(f"cryptopay create: {resp}")
         raise HTTPException(500, str(resp.get("error") or resp))
 
     inv = resp["result"]
-    url = inv.get("bot_invoice_url") or inv.get("mini_app_invoice_url")
     return {
         "ok": True,
-        "invoiceUrl": url,
+        "invoice_url": inv.get("bot_invoice_url"),
+        "mini_app_invoice_url": inv.get("mini_app_invoice_url"),
         "invoiceId": inv.get("invoice_id"),
         "final": final,
         "discountPct": pct,

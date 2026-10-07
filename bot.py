@@ -449,7 +449,7 @@ async def daily_check():
             log.warning("daily_check error: " + str(e))
 
         await asyncio.sleep(6 * 60 * 60)
-        }
+    
         async def daily_reminder():
             """Каждый вечер напоминает записать траты"""
             while True:

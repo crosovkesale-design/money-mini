@@ -232,16 +232,16 @@ if bot:
     parse_mode="HTML"
         )
     @dp.pre_checkout_query()
-async def pre_checkout(query: PreCheckoutQuery):
-    await query.answer(ok=True)
+    async def pre_checkout(query: PreCheckoutQuery):
+        await query.answer(ok=True)
 
-@dp.message(F.successful_payment)
-async def on_stars_paid(message: Message):
-    sp = message.successful_payment
-    try:
+    @dp.message(F.successful_payment)
+    async def on_stars_paid(message: Message):
+        sp = message.successful_payment
+        try:
         meta = json.loads(sp.invoice_payload or "{}")
     except Exception:
-        return
+    return
     uid = meta.get("uid")
     plan = meta.get("plan")
     if not uid or plan not in TARIFFS:

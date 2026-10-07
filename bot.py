@@ -701,70 +701,69 @@ async def api_family_leave(uid: str = Depends(current_uid)):
     return {"ok": True, "leftFrom": fid}
     
 # ---------- /api/tx ----------
-    async def check_envelope_limit(fid: str, uid: str, envelope_id: str, category: str):
-        env = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
-        if not env or not isinstance(env, dict):
-            return
+async def check_envelope_limit(fid: str, uid: str, envelope_id: str, category: str):
+    env = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
+    if not env or not isinstance(env, dict):
+        return
         target = float(env.get("target") or 0)
         if target <= 0:
             return
-
-        txs = await fb.get(f"/families/{fid}/transactions") or {}
-        now = datetime.now(timezone.utc)
-        month_start = int(datetime(now.year, now.month, 1, tzinfo=timezone.utc).timestamp() * 1000)
-        spent = 0.0
-        for k, t in txs.items():
-            if not isinstance(t, dict):
-                continue
-            if t.get("type") != "expense":
-                continue
-            if str(t.get("envelopeId") or "") != str(envelope_id):
-                continue
-            ts = int(t.get("ts") or 0)
-            if ts < month_start:
-                continue
-            spent += float(t.get("amount") or 0)
-
-        pct = (spent / target) * 100
-        month_key = now.strftime("%Y-%m")
-        env_key = str(envelope_id)
-        u = await get_user(uid)
-
-        warned_80 = u.get("envWarn80") or {}
-        warned_100 = u.get("envWarn100") or {}
-        if not isinstance(warned_80, dict): warned_80 = {}
-        if not isinstance(warned_100, dict): warned_100 = {}
-
-        name = env.get("name") or "—"
-
-        if pct >= 100 and warned_100.get(env_key) != month_key:
-            warned_100[env_key] = month_key
-            await fb.patch(f"/users/{uid}", {"envWarn100": warned_100})
-            if bot:
-                try:
-                    await bot.send_message(
-                        int(uid),
-                        "🔴 <b>Лимит пробит</b>\n\n"
-                        "Конверт «" + str(name) + "»\n"
-                        "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴\n"
-                        "Категория: " + str(category),
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
-            elif pct >= 80 and warned_80.get(env_key) != month_key:
-                warned_80[env_key] = month_key
-                await fb.patch(f"/users/{uid}", {"envWarn80": warned_80})
-               if bot:
-                   try:
-                       await bot.send_message(
-                           int(uid),
-                           "🟡 <b>Конверт «" + str(name) + "» — " + str(round(pct)) + "%</b>\n\n"
-                           "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴",
-                           parse_mode="HTML"
-                       )
-                   except Exception:
-                       pass
+            
+            txs = await fb.get(f"/families/{fid}/transactions") or {}
+            now = datetime.now(timezone.utc)
+            month_start = int(datetime(now.year, now.month, 1, tzinfo=timezone.utc).timestamp() * 1000)
+            spent = 0.0
+            for k, t in txs.items():
+                if not isinstance(t, dict):
+                    continue
+                    if t.get("type") != "expense":
+                        continue
+                        if str(t.get("envelopeId") or "") != str(envelope_id):
+                            continue
+                            ts = int(t.get("ts") or 0)
+                            if ts < month_start:
+                                continue
+                                spent += float(t.get("amount") or 0)
+                                
+                                pct = (spent / target) * 100
+                                month_key = now.strftime("%Y-%m")
+                                env_key = str(envelope_id)
+                                u = await get_user(uid)
+                                
+                                warned_80 = u.get("envWarn80") or {}
+                                warned_100 = u.get("envWarn100") or {}
+                                if not isinstance(warned_80, dict): warned_80 = {}
+                                    if not isinstance(warned_100, dict): warned_100 = {}
+                                        
+                                name = env.get("name") or "—"
+                                if pct >= 100 and warned_100.get(env_key) != month_key:
+                                    warned_100[env_key] = month_key
+                                    await fb.patch(f"/users/{uid}", {"envWarn100": warned_100})
+                                    if bot:
+                                        try:
+                                            await bot.send_message(
+                                                int(uid),
+                                                "🔴 <b>Лимит пробит</b>\n\n"
+                                                "Конверт «" + str(name) + "»\n"
+                                                "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴\n"
+                                                "Категория: " + str(category),
+                                                parse_mode="HTML"
+                                            )                
+                                        except Exception:
+                                            pass
+                                    elif pct >= 80 and warned_80.get(env_key) != month_key:
+                                        warned_80[env_key] = month_key
+                                        await fb.patch(f"/users/{uid}", {"envWarn80": warned_80})
+                                        if bot:
+                                            try:
+                                                await bot.send_message(
+                                                int(uid),
+                                                    "🟡 <b>Конверт «" + str(name) + "» — " + str(round(pct)) + "%</b>\n\n"
+                                                    "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴",
+                                                    parse_mode="HTML"
+                                                )
+                                            except Exception:
+                                                pass
 
 
 @app.post("/api/tx")

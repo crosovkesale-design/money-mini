@@ -463,6 +463,29 @@ window.addEventListener('error', e => {
   </div>
 </div>
 
+<div class="modal" id="modalTariffs">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 data-i18n="tariffs_title">Выбери тариф</h3>
+      <span class="modal-close" onclick="closeModal('modalTariffs')">×</span>
+    </div>
+    <div class="seg" id="tariffSeg">
+      <button class="seg-btn active" data-tier="base" onclick="switchTier('base')"><span data-i18n="tier_base">Базовая</span></button>
+      <button class="seg-btn" data-tier="pro" onclick="switchTier('pro')"><span data-i18n="tier_pro">Pro</span></button>
+    </div>
+    <div id="tariffList"></div>
+    <h5 style="margin:16px 0 8px 0" data-i18n="pay_method">Способ оплаты</h5>
+    <div class="seg" id="methodSeg">
+      <button class="seg-btn active" data-method="stars" onclick="switchPayMethod('stars')">⭐ <span data-i18n="pay_stars">Telegram Stars</span></button>
+      <button class="seg-btn" data-method="crypto" onclick="switchPayMethod('crypto')">🪙 <span data-i18n="pay_crypto">Крипта</span></button>
+    </div>
+    <p class="muted" style="font-size:11px;margin-bottom:14px" id="methodHint"></p>
+    <button class="btn btn-accent" style="width:100%" id="payBtn" onclick="startPayment()">
+      <span data-i18n="pay_go">Оплатить</span>
+    </button>
+  </div>
+</div>
+  
 <div class="modal" id="modalPicker">
   <div class="modal-content">
     <div class="modal-header">
@@ -683,6 +706,10 @@ const I18N = {
     trial_over_base:'Базовая', trial_over_base_list:'Безлимит конвертов, банок, автоплатежей. Прогнозы. Экспорт. Семья до 4', trial_over_pro:'Pro', 
     trial_over_pro_list:'Всё из базовой + OCR чеков, AI-ассистент, Monobank, свои категории, семья до 6', trial_over_cta:'Оформить подписку', trial_over_later:'Позже', 
     ro_banner:'Пробный период закончился.', ro_banner_cta:'Оформи подписку — данные сохранены.',
+    tariffs_title:'Выбери тариф', tier_base:'Базовая', tier_pro:'Pro', pay_method:'Способ оплаты', 
+    pay_stars:'Telegram Stars', pay_crypto:'Крипта', pay_go:'Оплатить', pay_stars_hint:'Оплата в один тап, без карты', 
+    pay_crypto_hint:'USDT, TON, BTC — откроется в браузере', pay_success:'Оплата прошла! Спасибо.', pay_cancelled:'Оплата отменена', 
+    upgrade_to:'Улучшить',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -731,6 +758,9 @@ const I18N = {
     trial_over_base:'Базова', trial_over_base_list:'Безліміт конвертів, банок, автоплатежів. Прогнози. Експорт. Родина до 4', 
     trial_over_pro:'Pro', trial_over_pro_list:'Все з базової + OCR чеків, AI-асистент, Monobank, власні категорії, родина до 6', 
     trial_over_cta:'Оформити підписку', trial_over_later:'Пізніше', ro_banner:'Пробний період закінчився.', ro_banner_cta:'Оформи підписку — дані збережені.',
+    tariffs_title:'Обери тариф', tier_base:'Базова', tier_pro:'Pro', pay_method:'Спосіб оплати', pay_stars:'Telegram Stars', pay_crypto:'Крипта', pay_go:'Сплатити', 
+    pay_stars_hint:'Оплата в один тап', pay_crypto_hint:'USDT, TON, BTC — відкриється у браузері', pay_success:'Оплата пройшла!', pay_cancelled:'Оплату скасовано', 
+    upgrade_to:'Покращити',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -778,6 +808,9 @@ const I18N = {
     trial_over_base:'Base', trial_over_base_list:'Unlimited envelopes, banks, recurring. Forecasts. Export. Family up to 4', 
     trial_over_pro:'Pro', trial_over_pro_list:'All Base + receipt OCR, AI assistant, Monobank, custom categories, family up to 6', 
     trial_over_cta:'Subscribe', trial_over_later:'Later', ro_banner:'Trial ended.', ro_banner_cta:'Subscribe — your data is saved.',
+    tariffs_title:'Choose plan', tier_base:'Base', tier_pro:'Pro', pay_method:'Payment', pay_stars:'Telegram Stars', pay_crypto:'Crypto', 
+    pay_go:'Pay', pay_stars_hint:'One-tap, no card', pay_crypto_hint:'USDT, TON, BTC — opens in browser', pay_success:'Payment complete!', 
+    pay_cancelled:'Payment cancelled', upgrade_to:'Upgrade',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -823,6 +856,9 @@ const I18N = {
     trial_over_base:'Basis', trial_over_base_list:'Unbegrenzte Umschläge, Banken, Daueraufträge. Prognosen. Export. Familie bis 4', trial_over_pro:'Pro', 
     trial_over_pro_list:'Alles aus Basis + Beleg-OCR, KI-Assistent, Monobank, eigene Kategorien, Familie bis 6', trial_over_cta:'Abonnieren', 
     trial_over_later:'Später', ro_banner:'Testphase beendet.', ro_banner_cta:'Abonniere — Daten sind gespeichert.',
+    tariffs_title:'Tarif', tier_base:'Basis', tier_pro:'Pro', pay_method:'Zahlung', pay_stars:'Telegram Stars', pay_crypto:'Krypto', 
+    pay_go:'Bezahlen', pay_stars_hint:'Ein-Tap, keine Karte', pay_crypto_hint:'USDT, TON, BTC — im Browser', pay_success:'Zahlung erfolgreich!', 
+    pay_cancelled:'Abgebrochen', upgrade_to:'Upgrade',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -870,6 +906,9 @@ const I18N = {
     trial_over_base_list:'Enveloppes, banques, récurrents illimités. Prévisions. Export. Famille jusqu\'à 4', trial_over_pro:'Pro', 
     trial_over_pro_list:'Tout Base + OCR reçus, IA, Monobank, catégories perso, famille jusqu\'à 6', trial_over_cta:'S\'abonner', 
     trial_over_later:'Plus tard', ro_banner:'Essai terminé.', ro_banner_cta:'Abonnez-vous — données sauvegardées.',
+    tariffs_title:'Forfait', tier_base:'Base', tier_pro:'Pro', pay_method:'Paiement', pay_stars:'Telegram Stars', pay_crypto:'Crypto', 
+    pay_go:'Payer', pay_stars_hint:'Un tap, sans carte', pay_crypto_hint:'USDT, TON, BTC — navigateur', pay_success:'Payé !', pay_cancelled:'Annulé', 
+    upgrade_to:'Améliorer',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -917,6 +956,9 @@ const I18N = {
     trial_over_base:'Base', trial_over_base_list:'Sobres, bancos, recurrentes ilimitados. Pronósticos. Exportar. Familia hasta 4', 
     trial_over_pro:'Pro', trial_over_pro_list:'Todo Base + OCR recibos, IA, Monobank, categorías propias, familia hasta 6', trial_over_cta:'Suscribirse', 
     trial_over_later:'Después', ro_banner:'Prueba terminada.', ro_banner_cta:'Suscríbete — datos guardados.',
+    tariffs_title:'Plan', tier_base:'Base', tier_pro:'Pro', pay_method:'Pago', pay_stars:'Telegram Stars', pay_crypto:'Cripto', 
+    pay_go:'Pagar', pay_stars_hint:'Un toque, sin tarjeta', pay_crypto_hint:'USDT, TON, BTC — navegador', pay_success:'¡Pago exitoso!', 
+    pay_cancelled:'Cancelado', upgrade_to:'Mejorar',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -964,6 +1006,9 @@ const I18N = {
     trial_over_base:'Base', trial_over_base_list:'Buste, banche, ricorrenti illimitati. Previsioni. Export. Famiglia fino a 4', 
     trial_over_pro:'Pro', trial_over_pro_list:'Tutto Base + OCR ricevute, IA, Monobank, categorie personali, famiglia fino a 6', 
     trial_over_cta:'Abbonati', trial_over_later:'Dopo', ro_banner:'Prova terminata.', ro_banner_cta:'Abbonati — dati salvati.',
+    tariffs_title:'Piano', tier_base:'Base', tier_pro:'Pro', pay_method:'Pagamento', pay_stars:'Telegram Stars', 
+    pay_crypto:'Cripto', pay_go:'Paga', pay_stars_hint:'Un tap, senza carta', pay_crypto_hint:'USDT, TON, BTC — browser', 
+    pay_success:'Pagamento ok!', pay_cancelled:'Annullato', upgrade_to:'Migliora',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -1011,6 +1056,9 @@ const I18N = {
     trial_over_base:'Podstawowy', trial_over_base_list:'Bez limitu kopert, banków, cyklicznych. Prognozy. Eksport. Rodzina do 4', 
     trial_over_pro:'Pro', trial_over_pro_list:'Wszystko z Podstawowego + OCR paragonów, AI, Monobank, własne kategorie, rodzina do 6', 
     trial_over_cta:'Wykup subskrypcję', trial_over_later:'Później', ro_banner:'Okres próbny zakończony.', ro_banner_cta:'Wykup subskrypcję — dane zapisane.',
+    tariffs_title:'Plan', tier_base:'Podstawowy', tier_pro:'Pro', pay_method:'Płatność', pay_stars:'Telegram Stars', pay_crypto:'Krypto', pay_go:'Zapłać', 
+    pay_stars_hint:'Jedno kliknięcie', pay_crypto_hint:'USDT, TON, BTC — przeglądarka', pay_success:'Zapłacono!', pay_cancelled:'Anulowano', 
+    upgrade_to:'Ulepsz',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1059,6 +1107,9 @@ const I18N = {
     trial_over_base_list:'Sınırsız zarf, banka, tekrarlayan. Tahminler. Dışa aktar. Aile 4\'e kadar', trial_over_pro:'Pro', 
     trial_over_pro_list:'Tüm Temel + fiş OCR, AI, Monobank, özel kategoriler, aile 6\'ya kadar', trial_over_cta:'Abone ol', 
     trial_over_later:'Sonra', ro_banner:'Deneme bitti.', ro_banner_cta:'Abone ol — veriler kayıtlı.',
+    tariffs_title:'Plan', tier_base:'Temel', tier_pro:'Pro', pay_method:'Ödeme', pay_stars:'Telegram Stars', 
+    pay_crypto:'Kripto', pay_go:'Öde', pay_stars_hint:'Tek dokunuş', pay_crypto_hint:'USDT, TON, BTC — tarayıcı', 
+    pay_success:'Ödeme tamam!', pay_cancelled:'İptal edildi', upgrade_to:'Yükselt',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1106,6 +1157,9 @@ const I18N = {
     trial_over_base_list:'无限信封、银行、定期。预测。导出。家庭最多4人', trial_over_pro:'Pro',
     trial_over_pro_list:'基础全部 + 收据OCR、AI助手、Monobank、自定义分类、家庭最多6人', trial_over_cta:'订阅', 
     trial_over_later:'稍后', ro_banner:'试用已结束。', ro_banner_cta:'订阅 — 数据已保存。',
+    tariffs_title:'选择套餐', tier_base:'基础', tier_pro:'Pro', pay_method:'支付方式', 
+    pay_stars:'Telegram Stars', pay_crypto:'加密货币', pay_go:'支付', pay_stars_hint:'一键支付', 
+    pay_crypto_hint:'USDT、TON、BTC — 浏览器打开', pay_success:'支付成功！', pay_cancelled:'支付已取消', upgrade_to:'升级',
   }
 };
 
@@ -1585,8 +1639,127 @@ function renderTrialGate(){
     setTimeout(() => openModal('modalTrialGate'), 1200);
   }
 }
+let tariffTier = 'base';
+let payMethod = 'stars';
+let selectedPlan = '1month';
+
+const TARIFF_INFO = {
+  base: [
+    { id:'1month',   label:'1 мес',  stars:500,  usd:6,  days:30 },
+    { id:'3months',  label:'3 мес',  stars:1300, usd:15, days:90 },
+    { id:'6months',  label:'6 мес',  stars:2300, usd:27, days:180 },
+    { id:'12months', label:'12 мес', stars:3900, usd:45, days:365 },
+  ],
+  pro: [
+    { id:'pro1',  label:'Pro 1 мес',  stars:1000, usd:12, days:30 },
+    { id:'pro12', label:'Pro 12 мес', stars:7500, usd:85, days:365 },
+  ]
+};
+
 function openTariffs(){
-  showAlert('Экран тарифов подключаем — будет в следующем обновлении');
+  if(!hasInitData()){ showAlert('Открой через Telegram'); return; }
+  tariffTier = 'base';
+  payMethod = 'stars';
+  selectedPlan = '1month';
+  switchTier('base');
+  switchPayMethod('stars');
+  openModal('modalTariffs');
+}
+
+function switchTier(tier){
+  tariffTier = tier;
+  document.querySelectorAll('#tariffSeg .seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tier === tier);
+  });
+  const plans = TARIFF_INFO[tier];
+  selectedPlan = plans[0].id;
+  const box = document.getElementById('tariffList');
+  box.innerHTML = plans.map((p, i) => `
+    <div class="tariff-card ${i===0?'active':''}" onclick="selectPlan('${p.id}', this)">
+      <div class="name">${p.label}</div>
+      <div class="price" id="price_${p.id}">—</div>
+    </div>
+  `).join('');
+  updatePrices();
+  updateMethodHint();
+}
+
+function selectPlan(id, el){
+  selectedPlan = id;
+  document.querySelectorAll('#tariffList .tariff-card').forEach(c => c.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+function switchPayMethod(m){
+  payMethod = m;
+  document.querySelectorAll('#methodSeg .seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.method === m);
+  });
+  updateMethodHint();
+  updatePrices();
+}
+
+function updateMethodHint(){
+  const el = document.getElementById('methodHint');
+  if(!el) return;
+  el.innerText = payMethod === 'stars' ? t('pay_stars_hint') : t('pay_crypto_hint');
+}
+
+function updatePrices(){
+  const plans = TARIFF_INFO[tariffTier] || [];
+  plans.forEach(p => {
+    const el = document.getElementById('price_' + p.id);
+    if(!el) return;
+    el.innerText = payMethod === 'stars' ? '⭐ ' + p.stars : '$' + p.usd;
+  });
+}
+
+function startPayment(){
+  if(!selectedPlan){ showAlert('Выбери тариф'); return; }
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '...';
+
+  if(payMethod === 'stars'){
+    API.post('/api/pay/stars', { plan: selectedPlan }).then(res => {
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+      if(!res || !res.invoice_url){ showAlert('Ошибка счёта'); return; }
+      if(window.Telegram?.WebApp?.openInvoice){
+        Telegram.WebApp.openInvoice(res.invoice_url, status => {
+          if(status === 'paid'){
+            closeModal('modalTariffs');
+            showAlert(t('pay_success'));
+            loadFamilyFromServer();
+          } else if(status === 'cancelled'){
+            showAlert(t('pay_cancelled'));
+          }
+        });
+      } else {
+        window.open(res.invoice_url, '_blank');
+      }
+    }).catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+      showAlert('Ошибка: ' + err.message);
+    });
+  } else {
+    API.post('/api/pay/create', { plan: selectedPlan }).then(res => {
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+      if(!res || !res.invoice_url){ showAlert('Ошибка счёта'); return; }
+      if(window.Telegram?.WebApp?.openLink){
+        Telegram.WebApp.openLink(res.invoice_url);
+      } else {
+        window.open(res.invoice_url, '_blank');
+      }
+    }).catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+      showAlert('Ошибка: ' + err.message);
+    });
+  }
 }
   
 function fmtMoney(v){

@@ -148,6 +148,11 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .seg{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px;gap:4px;margin-bottom:12px}
 .seg-btn{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:8px;font:inherit;font-weight:600;font-size:13px;cursor:pointer}
 .seg-btn.active{background:var(--accent);color:#fff}
+.tariff-card{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;background:var(--bg);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:border-color .15s,background .15s}
+.tariff-card:active{background:var(--card)}
+.tariff-card.active{border-color:var(--accent);background:rgba(59,130,246,.1)}
+.tariff-card .name{font-weight:700;font-size:14px}
+.tariff-card .price{font-weight:700;color:var(--accent);font-size:15px}
 
 .ref-code{font:700 22px/1 ui-monospace,monospace;color:var(--accent);letter-spacing:2px;margin-bottom:8px;text-align:center}
 .ref-link-row{display:flex;gap:8px;align-items:center;margin:8px 0}

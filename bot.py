@@ -935,14 +935,15 @@ async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
         "final": final,
     })
 
+    log.warning(f"cryptopay request: asset={CRYPTOPAY_NETWORK} amount={final}")
     resp = await cp.call("createInvoice", {
         "asset": CRYPTOPAY_NETWORK,
         "amount": str(final),
         "description": f"Family Budget — {TARIFFS[plan]['name']}",
         "payload": payload,
-        "allow_comments": False,
-        "allow_anonymous": False,
+        "expires_in": 3600,
     })
+    log.warning(f"cryptopay response: {resp}")
     if not resp.get("ok"):
         log.warning(f"cryptopay create: {resp}")
         raise HTTPException(500, str(resp.get("error") or resp))

@@ -1159,7 +1159,6 @@ async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
 
 @app.post("/api/admin/grant-coupon")
 async def api_admin_grant_coupon(request: Request):
-    alert("GRANT: uid=" + uid + " kind=" + kind);
     key = request.headers.get("X-Admin-Key", "")
     if not TEST_WEBHOOK_KEY or key != TEST_WEBHOOK_KEY:
         raise HTTPException(401, "bad admin key")

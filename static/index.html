@@ -2813,7 +2813,7 @@ if(carryEl){
       const spent = envelopeSpent(e.id);
       const pct = Math.min(100, Math.round((spent / (e.target || 1)) * 100));
       return `<div class="card">
-        <button class="card-del" onclick="deleteEnvelope(${e.id})">✕</button>
+        <button class="card-del" onclick="deleteEnvelope('${e.id}')">✕</button>
         <div class="row-between" style="padding-right:24px"><b>📩 ${escapeAttr(e.name)}</b><span>${pct}%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
         <div class="muted">${fmtMoney(spent)} / ${fmtMoney(e.target)}</div>
@@ -2842,12 +2842,12 @@ if(bankBox){
       }
     }
     return `<div class="card">
-      <button class="card-del" onclick="deleteBank(${b.id})">✕</button>
+      <button class="card-del" onclick="deleteBank('${b.id}')">✕</button>
       <div class="row-between" style="padding-right:24px"><b>🏦 ${escapeAttr(b.name)}</b><span>${pct}%</span></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${done ? 'var(--success)' : 'var(--success)'}"></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
         <span class="muted">${fmtMoney(b.balance)} / ${fmtMoney(b.target)}</span>
-        <button class="btn btn-success btn-sm" onclick="depositBank(${b.id})">+ ${t('top_up')}</button>
+        <button class="btn btn-success btn-sm" onclick="depositBank('${b.id}')">+ ${t('top_up')}</button>
       </div>
       ${doneBadge ? `<div style="margin-top:6px">${doneBadge}</div>` : ''}
       ${deadlineLine}
@@ -2872,8 +2872,8 @@ if(bankBox){
           ${item.type === 'expense' ? '-' : '+'}${fmtMoney(item.amount)}
         </div>
         <div class="history-tools">
-          <button onclick="openEditTx(${item.id})"><i class="fa-solid fa-pen"></i></button>
-          <button class="del" onclick="deleteTx(${item.id})"><i class="fa-solid fa-trash"></i></button>
+          <button onclick="openEditTx('${item.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="del" onclick="deleteTx('${item.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>`;
     }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_history')}</div>`;

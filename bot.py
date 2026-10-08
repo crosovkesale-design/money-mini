@@ -38,6 +38,7 @@ logging.basicConfig(
 log = logging.getLogger("app")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+TEST_WEBHOOK_KEY = os.getenv("TEST_WEBHOOK_KEY", "")
 MINI_APP_URL = os.getenv("MINI_APP_URL", "")
 CRYPTOPAY_TOKEN = os.getenv("CRYPTOPAY_TOKEN", "")
 CRYPTOPAY_NETWORK = os.getenv("CRYPTOPAY_NETWORK", "USDT")

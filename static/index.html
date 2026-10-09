@@ -3166,7 +3166,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if(window.Telegram?.WebApp) Telegram.WebApp.ready();
-
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.get('screen') === 'pay'){
+    setTimeout(() => openTariffs(), 1500);
+  }
   renderFamily();
   renderAll();
 

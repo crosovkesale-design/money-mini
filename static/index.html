@@ -700,7 +700,7 @@ const I18N = {
     bank_name_lbl:'Название', bank_target_lbl:'Цель накопления', bank_deadline_lbl:'Срок', 
     no_deadline:'Без срока', clear_deadline:'Убрать срок', 
     bank_done:'✓ Цель достигнута', bank_left:'Осталось', bank_by:'к', bank_save:'откладывать по', 
-    bank_per_mo:'/мес', bank_over:'срок истёк', bank_limit:'Бесплатно — 2 цели. В Pro — без ограничений.',
+    bank_per_mo:'/мес', bank_over:'срок истёк', bank_limit:'Бесплатно — 2 цели. Обнови до Базовой — будет безлимит.',
     confirm_title:'Подтверждение', delete_btn:'Удалить',
     recurring_title:'Автоплатежи', recurring_new:'Новое правило', rec_name:'Название', rec_day:'День месяца', 
     rec_none:'Правил нет', rec_active:'Активно', rec_paused:'Пауза', rec_limit:'Бесплатно — 2 правила. Pro — без ограничений.',
@@ -713,7 +713,7 @@ const I18N = {
     tariffs_title:'Выбери тариф', tier_base:'Базовая', tier_pro:'Pro', pay_method:'Способ оплаты', 
     pay_stars:'Telegram Stars', pay_crypto:'Крипта', pay_go:'Оплатить', pay_stars_hint:'Оплата в один тап, без карты', 
     pay_crypto_hint:'USDT, TON, BTC — откроется в браузере', pay_success:'Оплата прошла! Спасибо.', pay_cancelled:'Оплата отменена', 
-    upgrade_to:'Улучшить',
+    upgrade_to:'Улучшить', env_limit:'Бесплатно — 2 конверта. Обнови до Базовой — будет безлимит.',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -764,7 +764,7 @@ const I18N = {
     trial_over_cta:'Оформити підписку', trial_over_later:'Пізніше', ro_banner:'Пробний період закінчився.', ro_banner_cta:'Оформи підписку — дані збережені.',
     tariffs_title:'Обери тариф', tier_base:'Базова', tier_pro:'Pro', pay_method:'Спосіб оплати', pay_stars:'Telegram Stars', pay_crypto:'Крипта', pay_go:'Сплатити', 
     pay_stars_hint:'Оплата в один тап', pay_crypto_hint:'USDT, TON, BTC — відкриється у браузері', pay_success:'Оплата пройшла!', pay_cancelled:'Оплату скасовано', 
-    upgrade_to:'Покращити',
+    upgrade_to:'Покращити', env_limit:'Безкоштовно — 2 конверти. Онови до Базової — буде безліміт.',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -814,7 +814,7 @@ const I18N = {
     trial_over_cta:'Subscribe', trial_over_later:'Later', ro_banner:'Trial ended.', ro_banner_cta:'Subscribe — your data is saved.',
     tariffs_title:'Choose plan', tier_base:'Base', tier_pro:'Pro', pay_method:'Payment', pay_stars:'Telegram Stars', pay_crypto:'Crypto', 
     pay_go:'Pay', pay_stars_hint:'One-tap, no card', pay_crypto_hint:'USDT, TON, BTC — opens in browser', pay_success:'Payment complete!', 
-    pay_cancelled:'Payment cancelled', upgrade_to:'Upgrade',
+    pay_cancelled:'Payment cancelled', upgrade_to:'Upgrade', env_limit:'Free — 2 envelopes. Upgrade to Base for unlimited.',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -862,7 +862,7 @@ const I18N = {
     trial_over_later:'Später', ro_banner:'Testphase beendet.', ro_banner_cta:'Abonniere — Daten sind gespeichert.',
     tariffs_title:'Tarif', tier_base:'Basis', tier_pro:'Pro', pay_method:'Zahlung', pay_stars:'Telegram Stars', pay_crypto:'Krypto', 
     pay_go:'Bezahlen', pay_stars_hint:'Ein-Tap, keine Karte', pay_crypto_hint:'USDT, TON, BTC — im Browser', pay_success:'Zahlung erfolgreich!', 
-    pay_cancelled:'Abgebrochen', upgrade_to:'Upgrade',
+    pay_cancelled:'Abgebrochen', upgrade_to:'Upgrade', env_limit:'Kostenlos — 2 Umschläge. Upgrade für unbegrenzt.',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -912,7 +912,7 @@ const I18N = {
     trial_over_later:'Plus tard', ro_banner:'Essai terminé.', ro_banner_cta:'Abonnez-vous — données sauvegardées.',
     tariffs_title:'Forfait', tier_base:'Base', tier_pro:'Pro', pay_method:'Paiement', pay_stars:'Telegram Stars', pay_crypto:'Crypto', 
     pay_go:'Payer', pay_stars_hint:'Un tap, sans carte', pay_crypto_hint:'USDT, TON, BTC — navigateur', pay_success:'Payé !', pay_cancelled:'Annulé', 
-    upgrade_to:'Améliorer',
+    upgrade_to:'Améliorer', env_limit:'Gratuit — 2 enveloppes. Passez à Base pour illimité.',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -936,7 +936,7 @@ const I18N = {
     no_env:'Sin sobres', no_bank:'Sin bancos', no_history:'Sin historial',
     analytics_title:'Análisis de gastos', no_data:'Sin datos',
     months_chart_title:'Dinámica mensual',
-    date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'Añadir artículo',
+    date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'xz artículo',
     receipt_total:'Total:', receipt_save:'Guardar recibo',
     receipt_photo_hint:'Fotografiar o subir recibo', receipt_remove_photo:'Quitar foto',
     receipt_pro_only:'Recibo por foto solo en Pro.',
@@ -962,7 +962,7 @@ const I18N = {
     trial_over_later:'Después', ro_banner:'Prueba terminada.', ro_banner_cta:'Suscríbete — datos guardados.',
     tariffs_title:'Plan', tier_base:'Base', tier_pro:'Pro', pay_method:'Pago', pay_stars:'Telegram Stars', pay_crypto:'Cripto', 
     pay_go:'Pagar', pay_stars_hint:'Un toque, sin tarjeta', pay_crypto_hint:'USDT, TON, BTC — navegador', pay_success:'¡Pago exitoso!', 
-    pay_cancelled:'Cancelado', upgrade_to:'Mejorar',
+    pay_cancelled:'Cancelado', upgrade_to:'Mejorar', env_limit:'Gratis — 2 sobres. Actualiza a Base para ilimitado.',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -1012,7 +1012,7 @@ const I18N = {
     trial_over_cta:'Abbonati', trial_over_later:'Dopo', ro_banner:'Prova terminata.', ro_banner_cta:'Abbonati — dati salvati.',
     tariffs_title:'Piano', tier_base:'Base', tier_pro:'Pro', pay_method:'Pagamento', pay_stars:'Telegram Stars', 
     pay_crypto:'Cripto', pay_go:'Paga', pay_stars_hint:'Un tap, senza carta', pay_crypto_hint:'USDT, TON, BTC — browser', 
-    pay_success:'Pagamento ok!', pay_cancelled:'Annullato', upgrade_to:'Migliora',
+    pay_success:'Pagamento ok!', pay_cancelled:'Annullato', upgrade_to:'Migliora', env_limit:'Gratis — 2 buste. Upgrade a Base per illimitato.',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -1062,7 +1062,7 @@ const I18N = {
     trial_over_cta:'Wykup subskrypcję', trial_over_later:'Później', ro_banner:'Okres próbny zakończony.', ro_banner_cta:'Wykup subskrypcję — dane zapisane.',
     tariffs_title:'Plan', tier_base:'Podstawowy', tier_pro:'Pro', pay_method:'Płatność', pay_stars:'Telegram Stars', pay_crypto:'Krypto', pay_go:'Zapłać', 
     pay_stars_hint:'Jedno kliknięcie', pay_crypto_hint:'USDT, TON, BTC — przeglądarka', pay_success:'Zapłacono!', pay_cancelled:'Anulowano', 
-    upgrade_to:'Ulepsz',
+    upgrade_to:'Ulepsz', env_limit:'Za darmo — 2 koperty. Ulepsz do Base.',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1113,7 +1113,7 @@ const I18N = {
     trial_over_later:'Sonra', ro_banner:'Deneme bitti.', ro_banner_cta:'Abone ol — veriler kayıtlı.',
     tariffs_title:'Plan', tier_base:'Temel', tier_pro:'Pro', pay_method:'Ödeme', pay_stars:'Telegram Stars', 
     pay_crypto:'Kripto', pay_go:'Öde', pay_stars_hint:'Tek dokunuş', pay_crypto_hint:'USDT, TON, BTC — tarayıcı', 
-    pay_success:'Ödeme tamam!', pay_cancelled:'İptal edildi', upgrade_to:'Yükselt',
+    pay_success:'Ödeme tamam!', pay_cancelled:'İptal edildi', upgrade_to:'Yükselt', env_limit:'Ücretsiz — 2 zarf. Sınırsız için Base\'e geç.',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1164,6 +1164,7 @@ const I18N = {
     tariffs_title:'选择套餐', tier_base:'基础', tier_pro:'Pro', pay_method:'支付方式', 
     pay_stars:'Telegram Stars', pay_crypto:'加密货币', pay_go:'支付', pay_stars_hint:'一键支付', 
     pay_crypto_hint:'USDT、TON、BTC — 浏览器打开', pay_success:'支付成功！', pay_cancelled:'支付已取消', upgrade_to:'升级',
+    env_limit:'免费 — 2 个信封。升级基础版解锁无限。',
   }
 };
 
@@ -1460,6 +1461,49 @@ function loadData(){
   }
 }
 function saveData(){ localStorage.setItem(getUserStorageKey(), JSON.stringify(appData)); }
+function seedDemoData(){
+  const demoFlag = 'budgetDemoSeeded_' + (getUserStorageKey ? getUserStorageKey() : 'anon');
+  if(localStorage.getItem(demoFlag)) return;
+  if(appData.history && appData.history.length > 0) return;
+
+  const now = new Date();
+  const d1 = new Date(now.getTime() - 5 * 86400000);
+  const d2 = new Date(now.getTime() - 2 * 86400000);
+  const d3 = new Date(now.getTime() - 1 * 86400000);
+
+  function fmt(d){
+    return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear();
+  }
+
+  appData.history = [
+    { id: 'demo_' + Date.now() + '_1', type:'income',  title:'Зарплата', category:'Зарплата', icon:'💰', amount: 35000, date: fmt(d1), ts: d1.getTime(), receipt: null, envelopeId: null, demo: true },
+    { id: 'demo_' + Date.now() + '_2', type:'expense', title:'Еда',      category:'Еда',      icon:'🍔', amount: 450,   date: fmt(d2), ts: d2.getTime(), receipt: null, envelopeId: 'demo_env', demo: true },
+    { id: 'demo_' + Date.now() + '_3', type:'expense', title:'Бензин',   category:'Бензин',   icon:'⛽', amount: 1200,  date: fmt(d3), ts: d3.getTime(), receipt: null, envelopeId: null, demo: true }
+  ];
+
+  appData.envelopes = [
+    { id: 'demo_env', name: 'Еда', target: 8000, spent: 0, demo: true }
+  ];
+
+  localStorage.setItem(demoFlag, '1');
+  saveData();
+}
+
+function clearDemoData(){
+  if(!appData.history) return;
+  const hadDemo = appData.history.some(t => t.demo) || (appData.envelopes || []).some(e => e.demo);
+  if(!hadDemo) return;
+
+  appData.history = appData.history.filter(t => !t.demo);
+  appData.envelopes = (appData.envelopes || []).filter(e => !e.demo);
+
+  // отвязываем транзакции с demo_env
+  appData.history.forEach(t => {
+    if(t.envelopeId === 'demo_env') t.envelopeId = null;
+  });
+
+  saveData();
+}
 function isPro(){
   return appData.subscription && appData.subscription.plan === 'pro';
 }
@@ -1994,6 +2038,7 @@ function submitTransaction(){
     amount, date: dateStr, receipt: null,
     envelopeId: activeTxType === 'expense' ? (appData.selectedEnvelopeId || null) : null
   };
+  clearDemoData();
   applyTx(tx);
   if(hasInitData() && appData.joinedFamily){
     API.post('/api/tx', {
@@ -2226,6 +2271,7 @@ function submitReceipt(){
     envelopeId: appData.selectedEnvelopeReceiptId || null,
     receipt: { store, items: items.map(i=>({name:i.name,qty:i.qty,price:i.price})), source: pendingReceiptPhoto?'ocr':'manual', hasPhoto: !!pendingReceiptPhoto }
 };
+  clearDemoData();
   applyTx(tx);
   resetReceiptPhoto();
   closeModal('modalTransaction');
@@ -2474,7 +2520,8 @@ function saveRecurring(){
       r.envelopeId = envelopeId;
     }
   } else {
-    if(!isPro() && (appData.recurring || []).length >= 2){
+    const lim = tierLimits();
+    if((appData.recurring || []).length >= lim.recurring){
       showAlert(t('rec_limit'));
       return;
     }
@@ -2640,6 +2687,13 @@ function connectFamily(){
 
   if(!hasInitData()){
     showAlert('Открой через Telegram');
+    return;
+  }
+
+  const lim = tierLimits();
+  const members = appData.familyMembers || 1;
+  if(members >= lim.family){
+    showAlert('Лимит семьи на твоём тарифе — ' + lim.family + ' чел. Обнови до Pro.');
     return;
   }
 
@@ -2838,6 +2892,7 @@ if(carryEl){
       return `<div class="card">
         <button class="card-del" onclick="deleteEnvelope('${e.id}')">✕</button>
         <div class="row-between" style="padding-right:24px"><b>📩 ${escapeAttr(e.name)}</b><span>${pct}%</span></div>
+        ${e.demo ? '<div style="font-size:9px;background:rgba(59,130,246,.15);color:var(--accent);padding:2px 6px;border-radius:4px;display:inline-block;margin-bottom:6px">ДЕМО</div>' : ''}
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
         <div class="muted">${fmtMoney(spent)} / ${fmtMoney(e.target)}</div>
       </div>`;
@@ -2886,6 +2941,7 @@ if(bankBox){
       return `<div class="history-item">
         <div class="history-left">
           <div class="history-icon">${item.icon}</div>
+         ${item.demo ? '<span style="font-size:9px;background:rgba(59,130,246,.15);color:var(--accent);padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle">ДЕМО</span>' : ''}
           <div style="min-width:0">
             <div class="history-title">${escapeAttr(item.title === item.category ? tCat(item.title) : item.title)}</div>
             <div class="history-sub">${sub}</div>
@@ -2913,6 +2969,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyLang();
   applyWallpaper();
   renderTrialGate();
+  seedDemoData();
   if(hasInitData()){
     loadFamilyFromServer();
   }

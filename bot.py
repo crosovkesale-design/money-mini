@@ -681,6 +681,9 @@ STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 async def lifespan(app: FastAPI):
     polling_task = None
     reminder_task = None
+    remind_daily_task = None
+    digest_task = None
+
     if bot:
         await bot.delete_webhook(drop_pending_updates=True)
         polling_task = asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types()))
@@ -688,18 +691,19 @@ async def lifespan(app: FastAPI):
         remind_daily_task = asyncio.create_task(daily_reminder())
         digest_task = asyncio.create_task(weekly_digest())
         log.info("bot started")
-    yield
+        yield
         for t in (polling_task, reminder_task, remind_daily_task, digest_task):
-        if t:
-            t.cancel()
-            try:
-                await t
-            except asyncio.CancelledError:
-                pass
-    if bot:
-        await bot.session.close()
-    await fb.close()
-
+            if t:
+                t.cancel()
+                try:
+                    await t
+                except asyncio.CancelledError:
+                    pass
+        if bot:
+            await bot.session.close()
+        await fb.close()
+    else:
+        yield
 
 app = FastAPI(lifespan=lifespan)
 from fastapi.middleware.cors import CORSMiddleware

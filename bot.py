@@ -211,7 +211,7 @@ if bot:
             })
         await fb.patch(f"/users/{uid}", upd)
 
-                kb = InlineKeyboardMarkup(inline_keyboard=[
+        kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="📊 Открыть бюджет",
                 web_app=WebAppInfo(url=MINI_APP_URL),

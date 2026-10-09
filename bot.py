@@ -571,6 +571,108 @@ async def daily_reminder():
         await asyncio.sleep(3600)
         
 # ---------- FastAPI ----------
+async def weekly_digest():
+    """Каждый понедельник утром — сводка за прошлую неделю"""
+    while True:
+        try:
+            if not bot:
+                await asyncio.sleep(3600)
+                continue
+
+            kyiv_now = datetime.now(ZoneInfo("Europe/Kyiv"))
+            # понедельник, 9:00–11:00
+            if True:
+                today = kyiv_now.strftime("%Y-%m-%d")
+                users = await fb.get("/users") or {}
+                sent = 0
+                now_ts = now_ms()
+
+                # границы прошлой недели: с прошлого понедельника по это воскресенье
+                week_end = kyiv_now.replace(hour=0, minute=0, second=0, microsecond=0)
+                week_start = week_end - timedelta(days=7)
+                start_ms = int(week_start.timestamp() * 1000)
+                end_ms = int(week_end.timestamp() * 1000)
+
+                for uid, u in users.items():
+                    if not isinstance(u, dict):
+                        continue
+                    if u.get("lastWeeklyDigest") == today:
+                        continue
+
+                    sub_end = int(u.get("subEnd") or 0)
+                    if sub_end < 10**11:
+                        sub_end *= 1000
+                    if sub_end <= now_ts:
+                        continue
+
+                    tariff = (u.get("tariff") or "").lower()
+                    # дайджест только для платных
+                    if tariff.startswith("trial") or sub_end <= now_ts:
+                        continue
+
+                    fid = u.get("familyId")
+                    if not fid:
+                        continue
+
+                    # собираем транзакции за неделю
+                    txs = await fb.get(f"/families/{fid}/transactions") or {}
+                    week_txs = []
+                    for k, t in txs.items():
+                        if not isinstance(t, dict):
+                            continue
+                        ts = int(t.get("ts") or 0)
+                        if start_ms <= ts < end_ms:
+                            week_txs.append(t)
+
+                    if not week_txs:
+                        # нет транзакций — не спамим, просто помечаем
+                        await fb.patch(f"/users/{uid}", {"lastWeeklyDigest": today})
+                        continue
+
+                    income = sum(float(t.get("amount") or 0) for t in week_txs if t.get("type") == "income")
+                    expense = sum(float(t.get("amount") or 0) for t in week_txs if t.get("type") == "expense")
+
+                    # топ-3 категории расходов
+                    by_cat = {}
+                    for t in week_txs:
+                        if t.get("type") != "expense":
+                            continue
+                        c = t.get("category") or "—"
+                        by_cat[c] = by_cat.get(c, 0) + float(t.get("amount") or 0)
+                    top3 = sorted(by_cat.items(), key=lambda x: -x[1])[:3]
+
+                    week_start_s = week_start.strftime("%d.%m")
+                    week_end_s = (week_end - timedelta(days=1)).strftime("%d.%m")
+
+                    text = (
+                        "📊 <b>Сводка за неделю</b> (" + week_start_s + "–" + week_end_s + ")\n\n"
+                        "💸 Потрачено: <b>" + str(round(expense)) + " ₴</b>\n"
+                        "💰 Получено: <b>" + str(round(income)) + " ₴</b>\n"
+                        "📉 Баланс: <b>" + ("+" if income - expense >= 0 else "") + str(round(income - expense)) + " ₴</b>\n"
+                    )
+
+                    if top3:
+                        text += "\n🔝 <b>Топ категории:</b>\n"
+                        for c, s in top3:
+                            text += "• " + str(c) + " — " + str(round(s)) + " ₴\n"
+
+                    text += "\nВсего операций: <b>" + str(len(week_txs)) + "</b>"
+
+                    try:
+                        await bot.send_message(int(uid), text, parse_mode="HTML")
+                        await fb.patch(f"/users/{uid}", {"lastWeeklyDigest": today})
+                        sent += 1
+                    except Exception as e:
+                        log.warning("weekly digest " + str(uid) + ": " + str(e))
+
+                    if sent >= 200:
+                        break
+
+        except Exception as e:
+            log.warning("weekly_digest error: " + str(e))
+
+        await asyncio.sleep(3600)
+
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
@@ -584,9 +686,10 @@ async def lifespan(app: FastAPI):
         polling_task = asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types()))
         reminder_task = asyncio.create_task(daily_check())
         remind_daily_task = asyncio.create_task(daily_reminder())
+        digest_task = asyncio.create_task(weekly_digest())
         log.info("bot started")
     yield
-    for t in (polling_task, reminder_task, remind_daily_task):
+        for t in (polling_task, reminder_task, remind_daily_task, digest_task):
         if t:
             t.cancel()
             try:

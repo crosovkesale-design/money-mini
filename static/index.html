@@ -226,6 +226,17 @@ window.addEventListener('error', e => {
       <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_income">Доход</span></button>
       <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> <span data-i18n="btn_expense">Расход</span></button>
     </div>
+    <div id="forecastCard" class="card" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:20px" id="forecastIcon">📊</span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px" data-i18n="forecast_title">Прогноз на конец месяца</div>
+          <div class="muted" style="font-size:11px" id="forecastSubtitle"></div>
+        </div>
+      </div>
+      <div id="forecastBody" style="font-size:13px;line-height:1.5"></div>
+      <div class="pro-badge" style="position:absolute;top:12px;right:12px;display:none" id="forecastProBadge">Pro</div>
+    </div>
     <h4 style="margin:16px 0 10px" data-i18n="history">История операций</h4>
     <div id="historyContainer" class="history-list"></div>
   </div>
@@ -722,6 +733,8 @@ const I18N = {
     upgrade_to:'Улучшить', env_limit:'Бесплатно — 2 конверта. Обнови до Базовой — будет безлимит.',
     export_title:'Экспорт данных', export_hint:'Скачай все свои транзакции в CSV. Открывается в Excel, Google Sheets.', 
     export_btn:'Скачать CSV', export_empty:'Нет данных для экспорта',
+    forecast_title:'Прогноз на конец месяца', forecast_positive:'Хороший темп', forecast_warning:'Риск перерасхода', forecast_projected:'Прогноз баланса', 
+    forecast_daily:'Среднедневной расход', forecast_days_left:'Дней осталось', forecast_pro_hint:'Прогноз доступен в Базовой и Pro',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -775,6 +788,8 @@ const I18N = {
     upgrade_to:'Покращити', env_limit:'Безкоштовно — 2 конверти. Онови до Базової — буде безліміт.',
     export_title:'Експорт даних', export_hint:'Завантаж усі транзакції в CSV. Відкривається в Excel, Google Sheets.', 
     export_btn:'Завантажити CSV', export_empty:'Немає даних для експорту',
+    forecast_title:'Прогноз на кінець місяця', forecast_positive:'Гарний темп', forecast_warning:'Ризик перевитрати', forecast_projected:'Прогноз балансу', 
+    forecast_daily:'Середньоденна витрата', forecast_days_left:'Днів залишилось', forecast_pro_hint:'Прогноз доступний у Базовій та Pro',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -827,6 +842,8 @@ const I18N = {
     pay_cancelled:'Payment cancelled', upgrade_to:'Upgrade', env_limit:'Free — 2 envelopes. Upgrade to Base for unlimited.',
     export_title:'Export data', export_hint:'Download all transactions as CSV. Opens in Excel, Google Sheets.', 
     export_btn:'Download CSV', export_empty:'No data to export',
+    forecast_title:'End of month forecast', forecast_positive:'Good pace', forecast_warning:'Overspend risk', forecast_projected:'Projected balance', 
+    forecast_daily:'Daily average', forecast_days_left:'Days left', forecast_pro_hint:'Forecast available in Base and Pro',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -877,7 +894,9 @@ const I18N = {
     pay_cancelled:'Abgebrochen', upgrade_to:'Upgrade', env_limit:'Kostenlos — 2 Umschläge. Upgrade für unbegrenzt.',
     export_title:'Daten exportieren', export_hint:'Alle Transaktionen als CSV herunterladen. Öffnet in Excel.', 
     export_btn:'CSV herunterladen', export_empty:'Keine Daten',
-  },
+    forecast_title:'Prognose Monatsende', forecast_positive:'Gutes Tempo', forecast_warning:'Überziehungsrisiko', 
+    forecast_projected:'Prognose', forecast_daily:'Tagesdurchschnitt', forecast_days_left:'Tage übrig', forecast_pro_hint:'Prognose in Basis und Pro',
+},
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
     balance:'Solde actuel', income:'Revenus', expense:'Dépenses', history:'Historique',
@@ -929,6 +948,8 @@ const I18N = {
     upgrade_to:'Améliorer', env_limit:'Gratuit — 2 enveloppes. Passez à Base pour illimité.',
     export_title:'Exporter les données', export_hint:'Téléchargez toutes les transactions en CSV.', 
     export_btn:'Télécharger CSV', export_empty:'Aucune donnée',
+    forecast_title:'Prévision fin de mois', forecast_positive:'Bon rythme', forecast_warning:'Risque de dépassement', forecast_projected:'Solde prévu', 
+    forecast_daily:'Moyenne quotidienne', forecast_days_left:'Jours restants', forecast_pro_hint:'Prévision disponible en Base et Pro',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -980,6 +1001,8 @@ const I18N = {
     pay_go:'Pagar', pay_stars_hint:'Un toque, sin tarjeta', pay_crypto_hint:'USDT, TON, BTC — navegador', pay_success:'¡Pago exitoso!', 
     pay_cancelled:'Cancelado', upgrade_to:'Mejorar', env_limit:'Gratis — 2 sobres. Actualiza a Base para ilimitado.',
     export_title:'Exportar datos', export_hint:'Descarga todas las transacciones en CSV.', export_btn:'Descargar CSV', export_empty:'Sin datos',
+    forecast_title:'Pronóstico fin de mes', forecast_positive:'Buen ritmo', forecast_warning:'Riesgo de exceso', forecast_projected:'Saldo previsto', forecast_daily:'Promedio diario', 
+    forecast_days_left:'Días restantes', forecast_pro_hint:'Disponible en Base y Pro',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -1031,6 +1054,8 @@ const I18N = {
     pay_crypto:'Cripto', pay_go:'Paga', pay_stars_hint:'Un tap, senza carta', pay_crypto_hint:'USDT, TON, BTC — browser', 
     pay_success:'Pagamento ok!', pay_cancelled:'Annullato', upgrade_to:'Migliora', env_limit:'Gratis — 2 buste. Upgrade a Base per illimitato.',
     export_title:'Esporta dati', export_hint:'Scarica tutte le transazioni in CSV.', export_btn:'Scarica CSV', export_empty:'Nessun dato',
+    forecast_title:'Previsione fine mese', forecast_positive:'Buon ritmo', forecast_warning:'Rischio superamento', forecast_projected:'Saldo previsto', 
+    forecast_daily:'Media giornaliera', forecast_days_left:'Giorni rimasti', forecast_pro_hint:'Disponibile in Base e Pro',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -1082,6 +1107,8 @@ const I18N = {
     pay_stars_hint:'Jedno kliknięcie', pay_crypto_hint:'USDT, TON, BTC — przeglądarka', pay_success:'Zapłacono!', pay_cancelled:'Anulowano', 
     upgrade_to:'Ulepsz', env_limit:'Za darmo — 2 koperty. Ulepsz do Base.',
     export_title:'Eksport danych', export_hint:'Pobierz wszystkie transakcje jako CSV.', export_btn:'Pobierz CSV', export_empty:'Brak danych',
+    forecast_title:'Prognoza końca miesiąca', forecast_positive:'Dobre tempo', forecast_warning:'Ryzyko przekroczenia', forecast_projected:'Prognozowane saldo', 
+    forecast_daily:'Średnia dzienna', forecast_days_left:'Dni pozostało', forecast_pro_hint:'Dostępne w Base i Pro',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1134,6 +1161,8 @@ const I18N = {
     pay_crypto:'Kripto', pay_go:'Öde', pay_stars_hint:'Tek dokunuş', pay_crypto_hint:'USDT, TON, BTC — tarayıcı', 
     pay_success:'Ödeme tamam!', pay_cancelled:'İptal edildi', upgrade_to:'Yükselt', env_limit:'Ücretsiz — 2 zarf. Sınırsız için Base\'e geç.',
     export_title:'Verileri dışa aktar', export_hint:'Tüm işlemleri CSV olarak indir.', export_btn:'CSV indir', export_empty:'Veri yok',
+    forecast_title:'Ay sonu tahmini', forecast_positive:'İyi tempo', forecast_warning:'Aşım riski', forecast_projected:'Tahmini bakiye', forecast_daily:'Günlük ortalama', 
+    forecast_days_left:'Kalan gün', forecast_pro_hint:'Base ve Pro\'da mevcut',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1185,6 +1214,8 @@ const I18N = {
     pay_stars:'Telegram Stars', pay_crypto:'加密货币', pay_go:'支付', pay_stars_hint:'一键支付', 
     pay_crypto_hint:'USDT、TON、BTC — 浏览器打开', pay_success:'支付成功！', pay_cancelled:'支付已取消', upgrade_to:'升级',
     env_limit:'免费 — 2 个信封。升级基础版解锁无限。', export_title:'导出数据', export_hint:'下载所有交易为 CSV。', export_btn:'下载 CSV', export_empty:'无数据',
+    forecast_title:'月末预测', forecast_positive:'节奏良好', forecast_warning:'超支风险', forecast_projected:'预测余额', forecast_daily:'日均', 
+    forecast_days_left:'剩余天数', forecast_pro_hint:'基础版与 Pro 可用',
   }
 };
 
@@ -2923,8 +2954,86 @@ function renderChart(){
 }
 
 function escapeAttr(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function renderForecast(){
+  const card = document.getElementById('forecastCard');
+  const body = document.getElementById('forecastBody');
+  const subtitle = document.getElementById('forecastSubtitle');
+  const icon = document.getElementById('forecastIcon');
+  const proBadge = document.getElementById('forecastProBadge');
+  if(!card || !body) return;
 
-function renderAll(){
+  // показываем только на текущем месяце
+  const now = new Date();
+  const [cy, cm] = appData.currentMonth.split('-').map(Number);
+  const isCurrentMonth = (cy === now.getFullYear()) && (cm - 1 === now.getMonth());
+
+  if(!isCurrentMonth){
+    card.style.display = 'none';
+    return;
+  }
+
+  // на trial / без подписки — только заглушка "Pro"
+  if(!hasPaidSub()){
+    card.style.display = 'block';
+    icon.textContent = '🔮';
+    subtitle.textContent = '';
+    body.innerHTML = '<span class="muted" data-i18n="forecast_pro_hint">Прогноз доступен в Базовой и Pro</span>';
+    proBadge.style.display = 'block';
+    return;
+  }
+
+  proBadge.style.display = 'none';
+
+  const mtx = monthTx();
+  const incomes = mtx.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const expenses = mtx.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+
+  if(mtx.length === 0){
+    card.style.display = 'none';
+    return;
+  }
+
+  const daysInMonth = new Date(cy, cm, 0).getDate();
+  const dayOfMonth = (cy === now.getFullYear() && cm - 1 === now.getMonth()) ? now.getDate() : daysInMonth;
+  const daysPassed = Math.max(1, dayOfMonth);
+  const daysLeft = daysInMonth - daysPassed;
+
+  const avgDailyExpense = expenses / daysPassed;
+  const avgDailyIncome = incomes / daysPassed;
+
+  const projectedExpense = Math.round(avgDailyExpense * daysInMonth);
+  const projectedIncome = Math.round(avgDailyIncome * daysInMonth);
+  const projectedBalance = projectedIncome - projectedExpense;
+  const currentBalance = incomes - expenses;
+
+  card.style.display = 'block';
+
+  if(projectedBalance >= 0){
+    icon.textContent = '📈';
+    subtitle.textContent = t('forecast_positive') || 'Хороший темп';
+    body.innerHTML =
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+        '<span class="muted">' + t('forecast_projected') + ':</span>' +
+        '<b style="color:var(--success)">' + fmtMoney(projectedBalance) + '</b>' +
+      '</div>' +
+      '<div class="muted" style="font-size:11px">' +
+        t('forecast_daily') + ': ' + fmtMoney(Math.round(avgDailyExpense)) +
+        ' · ' + t('forecast_days_left') + ': ' + daysLeft +
+      '</div>';
+  } else {
+    icon.textContent = '⚠️';
+    subtitle.textContent = t('forecast_warning') || 'Риск перерасхода';
+    body.innerHTML =
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+        '<span class="muted">' + t('forecast_projected') + ':</span>' +
+        '<b style="color:var(--danger)">' + fmtMoney(projectedBalance) + '</b>' +
+      '</div>' +
+      '<div class="muted" style="font-size:11px">' +
+        t('forecast_daily') + ': ' + fmtMoney(Math.round(avgDailyExpense)) +
+        ' · ' + t('forecast_days_left') + ': ' + daysLeft +
+      '</div>';
+  }
+}function renderAll(){
   const el = id => document.getElementById(id);
   renderMonthBar();
 
@@ -2949,6 +3058,7 @@ if(carryEl){
   }
 }
   renderSettingsLabels();
+  renderForecast();
   renderReferral();
   renderSubscription();
   renderRecurring();

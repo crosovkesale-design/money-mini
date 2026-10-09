@@ -319,7 +319,13 @@ window.addEventListener('error', e => {
         <div class="muted" style="font-size:11px" data-i18n="wallpaper_hint">Рекомендуем вертикальное фото до 3 МБ.</div>
       </div>
     </div>
-    
+      <div class="card">
+        <h5 style="margin-bottom:12px"><i class="fa-solid fa-download"></i> <span data-i18n="export_title">Экспорт данных</span></h5>
+        <p class="muted" style="font-size:11px;margin-bottom:12px" data-i18n="export_hint">Скачай все свои транзакции в CSV. Открывается в Excel, Google Sheets, любой таблице.</p>
+        <button class="btn btn-outline" style="width:100%" onclick="exportCSV()">
+          <i class="fa-solid fa-file-csv"></i> <span data-i18n="export_btn">Скачать CSV</span>
+        </button>
+      </div>
     <div class="card">
       <h5 style="margin-bottom:12px"><i class="fa-solid fa-user-plus"></i> <span data-i18n="referral">Пригласи друга</span></h5>
       <div class="ref-code" id="refCode">—</div>
@@ -714,6 +720,8 @@ const I18N = {
     pay_stars:'Telegram Stars', pay_crypto:'Крипта', pay_go:'Оплатить', pay_stars_hint:'Оплата в один тап, без карты', 
     pay_crypto_hint:'USDT, TON, BTC — откроется в браузере', pay_success:'Оплата прошла! Спасибо.', pay_cancelled:'Оплата отменена', 
     upgrade_to:'Улучшить', env_limit:'Бесплатно — 2 конверта. Обнови до Базовой — будет безлимит.',
+    export_title:'Экспорт данных', export_hint:'Скачай все свои транзакции в CSV. Открывается в Excel, Google Sheets.', 
+    export_btn:'Скачать CSV', export_empty:'Нет данных для экспорта',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -765,6 +773,8 @@ const I18N = {
     tariffs_title:'Обери тариф', tier_base:'Базова', tier_pro:'Pro', pay_method:'Спосіб оплати', pay_stars:'Telegram Stars', pay_crypto:'Крипта', pay_go:'Сплатити', 
     pay_stars_hint:'Оплата в один тап', pay_crypto_hint:'USDT, TON, BTC — відкриється у браузері', pay_success:'Оплата пройшла!', pay_cancelled:'Оплату скасовано', 
     upgrade_to:'Покращити', env_limit:'Безкоштовно — 2 конверти. Онови до Базової — буде безліміт.',
+    export_title:'Експорт даних', export_hint:'Завантаж усі транзакції в CSV. Відкривається в Excel, Google Sheets.', 
+    export_btn:'Завантажити CSV', export_empty:'Немає даних для експорту',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -815,6 +825,8 @@ const I18N = {
     tariffs_title:'Choose plan', tier_base:'Base', tier_pro:'Pro', pay_method:'Payment', pay_stars:'Telegram Stars', pay_crypto:'Crypto', 
     pay_go:'Pay', pay_stars_hint:'One-tap, no card', pay_crypto_hint:'USDT, TON, BTC — opens in browser', pay_success:'Payment complete!', 
     pay_cancelled:'Payment cancelled', upgrade_to:'Upgrade', env_limit:'Free — 2 envelopes. Upgrade to Base for unlimited.',
+    export_title:'Export data', export_hint:'Download all transactions as CSV. Opens in Excel, Google Sheets.', 
+    export_btn:'Download CSV', export_empty:'No data to export',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -863,6 +875,8 @@ const I18N = {
     tariffs_title:'Tarif', tier_base:'Basis', tier_pro:'Pro', pay_method:'Zahlung', pay_stars:'Telegram Stars', pay_crypto:'Krypto', 
     pay_go:'Bezahlen', pay_stars_hint:'Ein-Tap, keine Karte', pay_crypto_hint:'USDT, TON, BTC — im Browser', pay_success:'Zahlung erfolgreich!', 
     pay_cancelled:'Abgebrochen', upgrade_to:'Upgrade', env_limit:'Kostenlos — 2 Umschläge. Upgrade für unbegrenzt.',
+    export_title:'Daten exportieren', export_hint:'Alle Transaktionen als CSV herunterladen. Öffnet in Excel.', 
+    export_btn:'CSV herunterladen', export_empty:'Keine Daten',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -913,6 +927,8 @@ const I18N = {
     tariffs_title:'Forfait', tier_base:'Base', tier_pro:'Pro', pay_method:'Paiement', pay_stars:'Telegram Stars', pay_crypto:'Crypto', 
     pay_go:'Payer', pay_stars_hint:'Un tap, sans carte', pay_crypto_hint:'USDT, TON, BTC — navigateur', pay_success:'Payé !', pay_cancelled:'Annulé', 
     upgrade_to:'Améliorer', env_limit:'Gratuit — 2 enveloppes. Passez à Base pour illimité.',
+    export_title:'Exporter les données', export_hint:'Téléchargez toutes les transactions en CSV.', 
+    export_btn:'Télécharger CSV', export_empty:'Aucune donnée',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -963,6 +979,7 @@ const I18N = {
     tariffs_title:'Plan', tier_base:'Base', tier_pro:'Pro', pay_method:'Pago', pay_stars:'Telegram Stars', pay_crypto:'Cripto', 
     pay_go:'Pagar', pay_stars_hint:'Un toque, sin tarjeta', pay_crypto_hint:'USDT, TON, BTC — navegador', pay_success:'¡Pago exitoso!', 
     pay_cancelled:'Cancelado', upgrade_to:'Mejorar', env_limit:'Gratis — 2 sobres. Actualiza a Base para ilimitado.',
+    export_title:'Exportar datos', export_hint:'Descarga todas las transacciones en CSV.', export_btn:'Descargar CSV', export_empty:'Sin datos',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -1013,6 +1030,7 @@ const I18N = {
     tariffs_title:'Piano', tier_base:'Base', tier_pro:'Pro', pay_method:'Pagamento', pay_stars:'Telegram Stars', 
     pay_crypto:'Cripto', pay_go:'Paga', pay_stars_hint:'Un tap, senza carta', pay_crypto_hint:'USDT, TON, BTC — browser', 
     pay_success:'Pagamento ok!', pay_cancelled:'Annullato', upgrade_to:'Migliora', env_limit:'Gratis — 2 buste. Upgrade a Base per illimitato.',
+    export_title:'Esporta dati', export_hint:'Scarica tutte le transazioni in CSV.', export_btn:'Scarica CSV', export_empty:'Nessun dato',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -1063,6 +1081,7 @@ const I18N = {
     tariffs_title:'Plan', tier_base:'Podstawowy', tier_pro:'Pro', pay_method:'Płatność', pay_stars:'Telegram Stars', pay_crypto:'Krypto', pay_go:'Zapłać', 
     pay_stars_hint:'Jedno kliknięcie', pay_crypto_hint:'USDT, TON, BTC — przeglądarka', pay_success:'Zapłacono!', pay_cancelled:'Anulowano', 
     upgrade_to:'Ulepsz', env_limit:'Za darmo — 2 koperty. Ulepsz do Base.',
+    export_title:'Eksport danych', export_hint:'Pobierz wszystkie transakcje jako CSV.', export_btn:'Pobierz CSV', export_empty:'Brak danych',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1114,6 +1133,7 @@ const I18N = {
     tariffs_title:'Plan', tier_base:'Temel', tier_pro:'Pro', pay_method:'Ödeme', pay_stars:'Telegram Stars', 
     pay_crypto:'Kripto', pay_go:'Öde', pay_stars_hint:'Tek dokunuş', pay_crypto_hint:'USDT, TON, BTC — tarayıcı', 
     pay_success:'Ödeme tamam!', pay_cancelled:'İptal edildi', upgrade_to:'Yükselt', env_limit:'Ücretsiz — 2 zarf. Sınırsız için Base\'e geç.',
+    export_title:'Verileri dışa aktar', export_hint:'Tüm işlemleri CSV olarak indir.', export_btn:'CSV indir', export_empty:'Veri yok',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1164,7 +1184,7 @@ const I18N = {
     tariffs_title:'选择套餐', tier_base:'基础', tier_pro:'Pro', pay_method:'支付方式', 
     pay_stars:'Telegram Stars', pay_crypto:'加密货币', pay_go:'支付', pay_stars_hint:'一键支付', 
     pay_crypto_hint:'USDT、TON、BTC — 浏览器打开', pay_success:'支付成功！', pay_cancelled:'支付已取消', upgrade_to:'升级',
-    env_limit:'免费 — 2 个信封。升级基础版解锁无限。',
+    env_limit:'免费 — 2 个信封。升级基础版解锁无限。', export_title:'导出数据', export_hint:'下载所有交易为 CSV。', export_btn:'下载 CSV', export_empty:'无数据',
   }
 };
 
@@ -1901,6 +1921,55 @@ function copyRefLink(){
   try{ navigator.clipboard.writeText(inp.value); }catch(e){}
   if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
 }
+function exportCSV(){
+  if(!appData.history || !appData.history.length){
+    showAlert(t('export_empty'));
+    return;
+  }
+
+  const rows = [['Дата', 'Тип', 'Категория', 'Описание', 'Сумма', 'Валюта']];
+
+  const sorted = [...appData.history].sort((a,b) => {
+    const ta = a.ts || dateToTs(a.date);
+    const tb = b.ts || dateToTs(b.date);
+    return ta - tb;
+  });
+
+  sorted.forEach(tx => {
+    rows.push([
+      tx.date || '',
+      tx.type === 'income' ? 'Доход' : 'Расход',
+      tx.category || '',
+      tx.title || '',
+      tx.type === 'income' ? tx.amount : -tx.amount,
+      appData.currency || 'UAH'
+    ]);
+  });
+
+  const csv = rows.map(row =>
+    row.map(cell => {
+      const s = String(cell ?? '');
+      if(s.includes(',') || s.includes('"') || s.includes('\n')){
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }).join(',')
+  ).join('\n');
+
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'family_budget_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+}  
 function shareRef(){
   const link = document.getElementById('refLink')?.value || '';
   if(!link) return;

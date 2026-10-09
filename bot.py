@@ -211,10 +211,14 @@ if bot:
             })
         await fb.patch(f"/users/{uid}", upd)
 
-        kb = InlineKeyboardMarkup(inline_keyboard=[
+                kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="📊 Открыть бюджет",
                 web_app=WebAppInfo(url=MINI_APP_URL),
+            )],
+            [InlineKeyboardButton(
+                text="💎 Подписка и оплата",
+                callback_data="show_pay",
             )],
             [InlineKeyboardButton(
                 text="🎁 Пригласить друга",
@@ -296,7 +300,8 @@ if bot:
             "/help — справка\n"
             "/status — подписка\n"
             "/referrals — мои рефералы\n"
-            "/stats — сколько нас"
+            "/stats — сколько нас\n"
+            "/pay — подписка и оплата\n"
         )
 
     @dp.message(Command("status"))
@@ -315,6 +320,69 @@ if bot:
             f"Осталось: {left} дней",
             parse_mode="HTML",
         )
+    @dp.callback_query(F.data == "show_pay")
+    async def cb_show_pay(callback: CallbackQuery):
+        uid = str(callback.from_user.id)
+        u = await get_user(uid)
+        tariff = u.get("tariff") or "trial"
+        sub_end = int(u.get("subEnd") or 0)
+        if sub_end < 10**11:
+            sub_end *= 1000
+        now_ts = now_ms()
+
+        status = "активна" if sub_end > now_ts else "истекла"
+        days = max(0, math.ceil((sub_end - now_ts) / 86400000)) if sub_end > now_ts else 0
+        tariff_label = TARIFFS.get(tariff, {}).get("name", tariff)
+
+        text = (
+            "💎 <b>Подписка</b>\n\n"
+            "Тариф: <b>" + tariff_label + "</b>\n"
+            "Статус: <b>" + status + "</b>\n"
+        )
+        if days > 0:
+            text += "Осталось: <b>" + str(days) + " дн.</b>\n"
+        text += "\nНажми кнопку — откроются тарифы и оплата."
+
+        try:
+            await callback.message.edit_text(
+                text,
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(
+                        text="💳 Открыть тарифы",
+                        web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"),
+                    )],
+                    [InlineKeyboardButton(text="⬅️ Назад", callback_data="back_to_start")],
+                ])
+            )
+        except Exception as e:
+            log.warning("show_pay: " + str(e))
+        await callback.answer()
+
+    @dp.callback_query(F.data == "back_to_start")
+    async def cb_back_to_start(callback: CallbackQuery):
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="📊 Открыть бюджет",
+                web_app=WebAppInfo(url=MINI_APP_URL),
+            )],
+            [InlineKeyboardButton(
+                text="💎 Подписка и оплата",
+                callback_data="show_pay",
+            )],
+            [InlineKeyboardButton(
+                text="🎁 Пригласить друга",
+                callback_data="ref_link",
+            )],
+        ])
+        try:
+            await callback.message.edit_text(
+                "Выбери действие:",
+                reply_markup=kb
+            )
+        except Exception as e:
+            log.warning("back_to_start: " + str(e))
+        await callback.answer()
 
 @dp.callback_query(F.data == "ref_link")
 async def cb_ref_link(callback: CallbackQuery):
@@ -382,7 +450,44 @@ async def cb_my_refs(callback: CallbackQuery):
     except Exception as e:
         log.warning("my_refs: " + str(e))
     await callback.answer()
-    
+    @dp.message(Command("pay"))
+    async def cmd_pay(message: Message):
+        uid = str(message.from_user.id)
+        u = await get_user(uid)
+        tariff = u.get("tariff") or "trial"
+        sub_end = int(u.get("subEnd") or 0)
+        if sub_end < 10**11:
+            sub_end *= 1000
+        now_ts = now_ms()
+
+        status = "активна" if sub_end > now_ts else "истекла"
+        days = max(0, math.ceil((sub_end - now_ts) / 86400000)) if sub_end > now_ts else 0
+        tariff_label = TARIFFS.get(tariff, {}).get("name", tariff)
+
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="💳 Открыть тарифы и оплатить",
+                web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"),
+            )],
+        ])
+
+        text = (
+            "💎 <b>Подписка</b>\n\n"
+            "Тариф: <b>" + tariff_label + "</b>\n"
+            "Статус: <b>" + status + "</b>\n"
+        )
+        if days > 0:
+            text += "Осталось: <b>" + str(days) + " дн.</b>\n"
+        text += (
+            "\n<b>Базовая</b> — 500 ⭐ / мес\n"
+            "Безлимит конвертов, банок, автоплатежей. Прогнозы. Дайджест. Семья до 4.\n\n"
+            "<b>Pro</b> — 1000 ⭐ / мес\n"
+            "Всё из базовой + распознавание чеков по фото, AI-ассистент, Monobank, свои категории, семья до 6.\n\n"
+            "Нажми кнопку — откроются тарифы."
+        )
+
+        await message.answer(text, parse_mode="HTML", reply_markup=kb)
+
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
         users = await fb.get("/users") or {}

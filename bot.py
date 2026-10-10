@@ -127,34 +127,19 @@ async def grant_rewards(uid: str, count: int):
                 except Exception:
                     pass
 
-    await fb.patch(f"/users/{uid}", {
-        "rewardsClaimed": list(got),
-        "referralCount": count,
-        "couponsEarned": c10,
-        "coupons20Earned": c20,
-    })
+await fb.patch(f"/users/{uid}", {
+    "rewardsClaimed": list(got),
+    "referralCount": count,
+    "couponsEarned": c10,
+    "coupons20Earned": c20,
+})
 
 
 class ReviewState(StatesGroup):
     waiting_text = State()
 
 
-if bot:
-                try:
-                    await bot.send_message(
-                        uid,
-                        "🎁 Новая награда: <b>" + r["label"] + "</b>\n\nПриглашено: " + str(count),
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
 
-    fb_patch("/users/" + uid, {
-        "rewardsClaimed": list(got),
-        "referralCount": count,
-        "couponsEarned": c10,
-        "coupons20Earned": c20,
-    })
 def calc_max_coupons(plan: str) -> int:
     return 3 if plan in BIG_TARIFFS else 1
 

@@ -102,9 +102,8 @@ REFERRAL_REWARDS = [
     {"at": 100, "type": "coupon20", "label": "Купон 20%"},
 ]
 
-
 async def grant_rewards(uid: str, count: int):
-    u = fb_get("/users/" + uid) or {}
+    u = await fb.get("/users/" + uid) or {}
     got = set(u.get("rewardsClaimed") or [])
     c10 = u.get("couponsEarned") or 0
     c20 = u.get("coupons20Earned") or 0
@@ -117,7 +116,25 @@ async def grant_rewards(uid: str, count: int):
             elif r["type"] == "coupon20":
                 c20 += 1
             got.add(key)
-            
+
+            if bot:
+                try:
+                    await bot.send_message(
+                        int(uid),
+                        "🎁 Новая награда: <b>" + r["label"] + "</b>\n\nПриглашено: " + str(count),
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
+
+    await fb.patch(f"/users/{uid}", {
+        "rewardsClaimed": list(got),
+        "referralCount": count,
+        "couponsEarned": c10,
+        "coupons20Earned": c20,
+    })
+
+
 class ReviewState(StatesGroup):
     waiting_text = State()
 

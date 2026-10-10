@@ -118,7 +118,7 @@ async def grant_rewards(uid: str, count: int):
             got.add(key)
 
             if bot:
-                try:
+                 try:
                     await bot.send_message(
                         int(uid),
                         "🎁 Новая награда: <b>" + r["label"] + "</b>\n\nПриглашено: " + str(count),
@@ -127,12 +127,12 @@ async def grant_rewards(uid: str, count: int):
                 except Exception:
                     pass
 
-await fb.patch(f"/users/{uid}", {
-    "rewardsClaimed": list(got),
-    "referralCount": count,
-    "couponsEarned": c10,
-    "coupons20Earned": c20,
-})
+    await fb.patch(f"/users/{uid}", {
+        "rewardsClaimed": list(got),
+        "referralCount": count,
+        "couponsEarned": c10,
+        "coupons20Earned": c20,
+    })
 
 
 class ReviewState(StatesGroup):

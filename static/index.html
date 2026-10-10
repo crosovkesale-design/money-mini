@@ -238,7 +238,17 @@ window.addEventListener('error', e => {
       <div class="pro-badge" style="position:absolute;top:12px;right:12px;display:none" id="forecastProBadge">Pro</div>
     </div>
     <h4 style="margin:16px 0 10px" data-i18n="history">История операций</h4>
-    <div id="historyContainer" class="history-list"></div>
+    
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <button class="seg-btn active" data-hist-filter="all" onclick="setHistFilter('all')" style="flex:1;font-size:12px;padding:8px" data-i18n="hist_all">Все</button>
+      <button class="seg-btn" data-hist-filter="income" onclick="setHistFilter('income')" style="flex:1;font-size:12px;padding:8px" data-i18n="hist_income">Доходы</button>
+      <button class="seg-btn" data-hist-filter="expense" onclick="setHistFilter('expense')" style="flex:1;font-size:12px;padding:8px" data-i18n="hist_expense">Расходы</button>
+    </div>
+
+<input type="text" id="histSearch" class="custom-input" placeholder="Поиск по описанию" style="margin-bottom:8px" oninput="renderHistory()">
+<div id="histCounter" class="muted" style="font-size:11px;margin-bottom:10px;text-align:center"></div>
+
+<div id="historyContainer" class="history-list"></div>
   </div>
 
   <div id="tab-envelopes" class="tab-content" style="display:none">

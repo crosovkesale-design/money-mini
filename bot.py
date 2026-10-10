@@ -117,11 +117,12 @@ async def grant_rewards(uid: str, count: int):
             elif r["type"] == "coupon20":
                 c20 += 1
             got.add(key)
+            
 class ReviewState(StatesGroup):
     waiting_text = State()
 
 
-            if bot:
+if bot:
                 try:
                     await bot.send_message(
                         uid,

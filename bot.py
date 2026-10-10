@@ -10,7 +10,9 @@ from zoneinfo import ZoneInfo
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import (
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.storage.memory import MemoryStorage
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -72,7 +74,7 @@ STARS_PRICES = {
 FAMILY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 bot = Bot(token=BOT_TOKEN) if BOT_TOKEN else None
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
 fb = Firebase(FIREBASE_URL)
 cp = CryptoPay(CRYPTOPAY_TOKEN)
 
@@ -115,6 +117,9 @@ async def grant_rewards(uid: str, count: int):
             elif r["type"] == "coupon20":
                 c20 += 1
             got.add(key)
+class ReviewState(StatesGroup):
+    waiting_text = State()
+
 
             if bot:
                 try:
@@ -488,6 +493,73 @@ async def cb_my_refs(callback: CallbackQuery):
 
         await message.answer(text, parse_mode="HTML", reply_markup=kb)
 
+@dp.message(Command("review"))
+async def cmd_review(message: Message, state: FSMContext):
+    uid = str(message.from_user.id)
+    u = await get_user(uid)
+    if u.get("reviewSubmitted"):
+        await message.answer("✅ Ты уже оставлял отзыв. Спасибо!")
+        return
+    await state.set_state(ReviewState.waiting_text)
+    await message.answer(
+        "📝 <b>Оставить отзыв</b>\n\n"
+        "Напиши одним сообщением, что думаешь о Family Budget.\n\n"
+        "За отзыв получишь <b>купон 20%</b> на любой тариф.\n\n"
+        "Отменить — /cancel",
+        parse_mode="HTML"
+    )
+
+@dp.message(Command("cancel"))
+async def cmd_cancel(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer("Отменено")
+
+@dp.message(ReviewState.waiting_text)
+async def review_text(message: Message, state: FSMContext):
+    uid = str(message.from_user.id)
+    text = (message.text or "").strip()
+    if len(text) < 10:
+        await message.answer("Слишком коротко — напиши хотя бы 10 символов.")
+        return
+    if len(text) > 1000:
+        text = text[:1000]
+
+    await fb.push("/reviews", {
+        "uid": uid,
+        "name": message.from_user.first_name or "Гость",
+        "username": message.from_user.username or "",
+        "text": text,
+        "ts": now_ms()
+    })
+
+    u = await get_user(uid)
+    cur20 = u.get("coupons20Earned") or 0
+    await fb.patch(f"/users/{uid}", {
+        "reviewSubmitted": True,
+        "coupons20Earned": cur20 + 1
+    })
+
+    await state.clear()
+    await message.answer(
+        "✅ <b>Спасибо за отзыв!</b>\n\n"
+        "🎁 Начислен купон <b>20%</b> на любой тариф.\n\n"
+        "Открой приложение → Настройки → Оплатить, чтобы использовать.",
+        parse_mode="HTML"
+    )
+
+    if ADMIN_CHAT_ID:
+        try:
+            await bot.send_message(
+                ADMIN_CHAT_ID,
+                "📝 <b>Новый отзыв</b>\n"
+                "От: " + (message.from_user.first_name or "Гость") +
+                (" (@" + message.from_user.username + ")" if message.from_user.username else "") +
+                "\n\n" + text,
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+            
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
         users = await fb.get("/users") or {}

@@ -126,6 +126,45 @@ def apply_discount(price_usd: float, plan: str, use10: int, use20: int):
     final = round(price_usd * (1 - pct / 100), 2)
     return final, pct, use10, use20
 
+async def _grant_single(uid: str, r: dict):
+    if not bot:
+        return
+    try:
+        await bot.send_message(
+            int(uid),
+            "🎁 Новая награда: <b>" + r["label"] + "</b>",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        log.warning("grant single " + str(uid) + ": " + str(e))
+
+
+async def _apply_reward(u: dict, r: dict, c10: int, c20: int):
+    if r["type"] == "coupon10":
+        return c10 + 1, c20
+    if r["type"] == "coupon20":
+        return c10, c20 + 1
+    return c10, c20
+
+
+async def grant_rewards(uid: str, count: int):
+    u = await fb.get("/users/" + uid) or {}
+    got = set(u.get("rewardsClaimed") or [])
+    c10 = u.get("couponsEarned") or 0
+    c20 = u.get("coupons20Earned") or 0
+    for r in REFERRAL_REWARDS:
+        key = r["type"] + "_" + str(r["at"])
+        if count >= r["at"] and key not in got:
+            c10, c20 = await _apply_reward(u, r, c10, c20)
+            got.add(key)
+            await _grant_single(uid, r)
+    await fb.patch(f"/users/{uid}", {
+        "rewardsClaimed": list(got),
+        "referralCount": count,
+        "couponsEarned": c10,
+        "coupons20Earned": c20,
+    })
+
 
 async def get_user(uid: str) -> dict:
     return (await fb.get(f"/users/{uid}")) or {}
@@ -152,42 +191,12 @@ if bot:
                 refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
                 refs[uid] = ts
                 await fb.put(f"/users/{ref_id}/referrals", refs)
-# await grant_rewards(ref_id, len(refs))
-
-        existing = await get_user(uid)
-        # автоязык по языку клиента Telegram — только при первом входе
-        detected_lang = None
-        if not existing.get("lang"):
-            lc = (message.from_user.language_code or "").lower()
-            if lc.startswith("ru"): detected_lang = "ru"
-            elif lc.startswith("uk"): detected_lang = "uk"     
-            elif lc.startswith("de"): detected_lang = "de"
-            elif lc.startswith("fr"): detected_lang = "fr"
-            elif lc.startswith("es"): detected_lang = "es"
-            elif lc.startswith("it"): detected_lang = "it"
-            elif lc.startswith("pl"): detected_lang = "pl"
-            elif lc.startswith("tr"): detected_lang = "tr"
-            elif lc.startswith("zh"): detected_lang = "zh"
-            else: detected_lang = "en"
-
-        upd = {
-            "name": message.from_user.first_name or "Гость",
-            "username": message.from_user.username or "",
-            "tgId": uid,
-            "lastSeen": ts,
-        }
-        if detected_lang:
-            upd["lang"] = detected_lang
-        if not existing.get("firstSeen"):
-            upd.update({
-                "firstSeen": ts,
-                "tariff": "trial",
-                "subStart": ts,
-                "subEnd": ts + 30 * 24 * 60 * 60 * 1000,
-                "status": "active",
-                "reminderSent": 0,
-            })
-        await fb.patch(f"/users/{uid}", upd)
+                await grant_rewards(ref_id, len(refs))    await fb.patch(f"/users/{uid}", {
+        "rewardsClaimed": list(got),
+        "referralCount": count,
+        "couponsEarned": c10,
+        "coupons20Earned": c20,
+    })
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(

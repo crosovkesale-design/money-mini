@@ -191,7 +191,8 @@ if bot:
                 refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
                 refs[uid] = ts
                 await fb.put(f"/users/{ref_id}/referrals", refs)
-                await grant_rewards(ref_id, len(refs))    await fb.patch(f"/users/{uid}", {
+                await grant_rewards(ref_id, len(refs))
+                await fb.patch(f"/users/{uid}", {
         "rewardsClaimed": list(got),
         "referralCount": count,
         "couponsEarned": c10,

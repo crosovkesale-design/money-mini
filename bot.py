@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -158,12 +159,12 @@ async def grant_rewards(uid: str, count: int):
             c10, c20 = await _apply_reward(u, r, c10, c20)
             got.add(key)
             await _grant_single(uid, r)
-    await fb.patch(f"/users/{uid}", {
-        "rewardsClaimed": list(got),
-        "referralCount": count,
-        "couponsEarned": c10,
-        "coupons20Earned": c20,
-    })
+            await fb.patch(f"/users/{uid}", {
+                "rewardsClaimed": list(got),
+                "referralCount": count,
+                "couponsEarned": c10,
+                "coupons20Earned": c20,
+            })
 
 
 async def get_user(uid: str) -> dict:
@@ -192,13 +193,7 @@ if bot:
                 refs[uid] = ts
                 await fb.put(f"/users/{ref_id}/referrals", refs)
                 await grant_rewards(ref_id, len(refs))
-                await fb.patch(f"/users/{uid}", {
-        "rewardsClaimed": list(got),
-        "referralCount": count,
-        "couponsEarned": c10,
-        "coupons20Earned": c20,
-    })
-
+              
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="📊 Открыть бюджет",

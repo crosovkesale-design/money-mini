@@ -1871,6 +1871,69 @@ const TARIFF_INFO = {
     { id:'pro12', label:'Pro 12 мес', stars:7500, usd:85, days:365 },
   ]
 };
+function openAddCustomCategory(){
+  const custom = appData.customCategories || [];
+  const lim = tierLimits();
+  const limit = lim.custom || 2;
+  if(custom.length >= limit){
+    showAlert(isPro() ? 'Лимит категорий' : t('cat_limit'));
+    return;
+  }
+  selectedCatEmoji = '🎓';
+  const nameInput = document.getElementById('catCustomName');
+  if(nameInput) nameInput.value = '';
+  document.querySelectorAll('#catEmojiGrid .cat-emoji').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.background = 'var(--bg)';
+  });
+  openModal('modalAddCategory');
+}
+
+function pickCatEmoji(btn, emoji){
+  selectedCatEmoji = emoji;
+  document.querySelectorAll('#catEmojiGrid .cat-emoji').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.background = 'var(--bg)';
+  });
+  btn.style.borderColor = 'var(--accent)';
+  btn.style.background = 'rgba(59,130,246,.15)';
+}
+
+function saveCustomCategory(){
+  const name = document.getElementById('catCustomName').value.trim();
+  if(!name){ showAlert('Введи название'); return; }
+  if(!appData.customCategories) appData.customCategories = [];
+  const exists = appData.customCategories.some(c => c.name.toLowerCase() === name.toLowerCase());
+  if(exists){ showAlert('Такая категория уже есть'); return; }
+
+  appData.customCategories.push({
+    icon: selectedCatEmoji,
+    name: name,
+    custom: true
+  });
+  saveData();
+  closeModal('modalAddCategory');
+  if(typeof activeTxType !== 'undefined'){
+    const baseCats = activeTxType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+    const custom2 = (appData.customCategories || []).filter(c => !c.type || c.type === activeTxType);
+    const all = baseCats.concat(custom2);
+    renderCategoryGrid('categoryGrid', all, true);
+  }
+}
+
+function deleteCustomCategory(name){
+  askConfirm(t('delete_confirm'), () => {
+    appData.customCategories = (appData.customCategories || []).filter(c => c.name !== name);
+    saveData();
+    if(typeof activeTxType !== 'undefined'){
+      const baseCats = activeTxType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+      const custom2 = (appData.customCategories || []).filter(c => !c.type || c.type === activeTxType);
+      const all = baseCats.concat(custom2);
+      renderCategoryGrid('categoryGrid', all, true);
+    }
+  });
+  }
+  
 function openHelp(){
   openModal('modalHelp');
 }

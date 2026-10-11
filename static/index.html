@@ -581,8 +581,8 @@ window.addEventListener('error', e => {
       Вопросы и баги — пиши нам в Telegram. Отвечаем в течение дня.
     </p>
 
-    <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="Telegram.WebApp.openTelegramLink('https://t.me/moneyfamilybudget_bot')" data-i18n="help_contact">
-      <i class="fa-brands fa-telegram"></i> Связаться
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="contactSupport()" data-i18n="help_contact">
+      <i class="fa-solid fa-headset"></i> Связаться
     </button>
     <button class="btn btn-accent" style="width:100%" onclick="closeModal('modalHelp')" data-i18n="help_close">
       Понятно
@@ -1874,7 +1874,17 @@ const TARIFF_INFO = {
 function openHelp(){
   openModal('modalHelp');
 }
-  
+function contactSupport(){
+  const botUsername = 'moneyfamilybudget_bot';
+  const url = 'https://t.me/' + botUsername + '?start=support';
+  if(window.Telegram?.WebApp?.openTelegramLink){
+    Telegram.WebApp.openTelegramLink(url);
+  } else if(window.Telegram?.WebApp?.openLink){
+    Telegram.WebApp.openLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
 function openTariffs(){
   if(!hasInitData()){ showAlert('Открой через Telegram'); return; }
   tariffTier = 'base';

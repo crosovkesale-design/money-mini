@@ -180,6 +180,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 body.has-wallpaper{background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat}
 body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:-1;pointer-events:none}
 [data-theme="light"] body.has-wallpaper::before{background:rgba(245,247,250,.75)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;position:relative}
 </style>
 </head>
 <body>
@@ -276,24 +277,24 @@ window.addEventListener('error', e => {
 
   <div id="tab-settings" class="tab-content" style="display:none">
 
-    <div class="card">
-      <div class="row-between">
-        <h5><i class="fa-solid fa-crown"></i> <span data-i18n="tariff">Тариф</span></h5>
-        <span id="subBadge"></span>
-      </div>
-      <div class="sub-row">
-        <span style="font-size:13px" data-i18n="manual_receipts">Ручные чеки</span>
-        <span style="color:var(--success);font-size:13px">✓ <span data-i18n="available">Доступно</span></span>
-      </div>
-      <div class="sub-row">
-        <span style="font-size:13px" data-i18n="photo_receipts">Чеки по фото (OCR)</span>
-        <span id="ocrStatus" style="font-size:13px"></span>
-      </div>
-      <button class="btn btn-accent" style="width:100%;margin-top:8px" onclick="openTariffs()">
-        <i class="fa-solid fa-crown"></i> <span data-i18n="upgrade_to">Улучшить</span>
-      </button>
+<div class="card">
+  <div class="row-between" style="margin-bottom:10px">
+    <h5 style="margin:0"><i class="fa-solid fa-crown"></i> <span data-i18n="tariff">Тариф</span></h5>
+    <span id="subBadge"></span>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+    <span data-i18n="manual_receipts">Ручные чеки</span>
+    <span style="color:var(--success)">✓ <span data-i18n="available">Доступно</span></span>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:12px">
+    <span data-i18n="photo_receipts">Чеки по фото (OCR)</span>
+    <span id="ocrStatus"></span>
+  </div>
+  <button class="btn btn-accent" style="width:100%" onclick="openTariffs()">
+    <i class="fa-solid fa-crown"></i> <span data-i18n="upgrade_to">Улучшить до Pro</span>
+  </button>
+</div>
       
-
     <div class="card">
       <div class="row-between">
         <h5><i class="fa-solid fa-rotate"></i> <span data-i18n="recurring_title">Автоплатежи</span></h5>
@@ -746,6 +747,7 @@ const I18N = {
     forecast_title:'Прогноз на конец месяца', forecast_positive:'Хороший темп', forecast_warning:'Риск перерасхода', forecast_projected:'Прогноз баланса', 
     forecast_daily:'Среднедневной расход', forecast_days_left:'Дней осталось', forecast_pro_hint:'Прогноз доступен в Базовой и Pro',
     hist_all:'Все', hist_income:'Доходы', hist_expense:'Расходы', hist_ops:'операций', hist_empty:'Ничего не найдено', hist_search_ph:'Поиск по описанию',
+    cur_uah:'Гривна', cur_rub:'Рубль', cur_usd:'Доллар', cur_eur:'Евро', cur_pln:'Злотый', cur_gbp:'Фунт', cur_try:'Лира', cur_chf:'Франк', cur_czk:'Крона', cur_jpy:'Иена', cur_cny:'Юань',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -802,6 +804,7 @@ const I18N = {
     forecast_title:'Прогноз на кінець місяця', forecast_positive:'Гарний темп', forecast_warning:'Ризик перевитрати', forecast_projected:'Прогноз балансу', 
     forecast_daily:'Середньоденна витрата', forecast_days_left:'Днів залишилось', forecast_pro_hint:'Прогноз доступний у Базовій та Pro',
     hist_all:'Усі', hist_income:'Доходи', hist_expense:'Витрати', hist_ops:'операцій', hist_empty:'Нічого не знайдено', hist_search_ph:'Пошук за описом',
+    cur_uah:'Гривня', cur_rub:'Рубль', cur_usd:'Долар', cur_eur:'Євро', cur_pln:'Злотий', cur_gbp:'Фунт', cur_try:'Ліра', cur_chf:'Франк', cur_czk:'Крона', cur_jpy:'Єна', cur_cny:'Юань',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -857,6 +860,7 @@ const I18N = {
     forecast_title:'End of month forecast', forecast_positive:'Good pace', forecast_warning:'Overspend risk', forecast_projected:'Projected balance', 
     forecast_daily:'Daily average', forecast_days_left:'Days left', forecast_pro_hint:'Forecast available in Base and Pro',
     hist_all:'All', hist_income:'Income', hist_expense:'Expense', hist_ops:'txns', hist_empty:'Nothing found', hist_search_ph:'Search by note',
+    cur_uah:'Hryvnia', cur_rub:'Ruble', cur_usd:'Dollar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Pound', cur_try:'Lira', cur_chf:'Franc', cur_czk:'Krona', cur_jpy:'Yen', cur_cny:'Yuan',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -910,7 +914,8 @@ const I18N = {
     forecast_title:'Prognose Monatsende', forecast_positive:'Gutes Tempo', forecast_warning:'Überziehungsrisiko', 
     forecast_projected:'Prognose', forecast_daily:'Tagesdurchschnitt', forecast_days_left:'Tage übrig', forecast_pro_hint:'Prognose in Basis und Pro',
     hist_all:'Alle', hist_income:'Einnahmen', hist_expense:'Ausgaben', hist_ops:'Transaktionen', hist_empty:'Nichts gefunden', hist_search_ph:'Nach Notiz suchen',
-},
+    cur_uah:'Hrywnja', cur_rub:'Rubel', cur_usd:'Dollar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Pfund', cur_try:'Lira', cur_chf:'Franken', cur_czk:'Krone', cur_jpy:'Yen', cur_cny:'Yuan',
+  },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
     balance:'Solde actuel', income:'Revenus', expense:'Dépenses', history:'Historique',
@@ -965,6 +970,7 @@ const I18N = {
     forecast_title:'Prévision fin de mois', forecast_positive:'Bon rythme', forecast_warning:'Risque de dépassement', forecast_projected:'Solde prévu', 
     forecast_daily:'Moyenne quotidienne', forecast_days_left:'Jours restants', forecast_pro_hint:'Prévision disponible en Base et Pro',
     hist_all:'Tous', hist_income:'Revenus', hist_expense:'Dépenses', hist_ops:'opérations', hist_empty:'Rien trouvé', hist_search_ph:'Rechercher par note',
+    cur_uah:'Hryvnia', cur_rub:'Rouble', cur_usd:'Dollar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Livre', cur_try:'Lire', cur_chf:'Franc', cur_czk:'Couronne', cur_jpy:'Yen', cur_cny:'Yuan',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -1019,6 +1025,7 @@ const I18N = {
     forecast_title:'Pronóstico fin de mes', forecast_positive:'Buen ritmo', forecast_warning:'Riesgo de exceso', forecast_projected:'Saldo previsto', forecast_daily:'Promedio diario', 
     forecast_days_left:'Días restantes', forecast_pro_hint:'Disponible en Base y Pro',
     hist_all:'Todos', hist_income:'Ingresos', hist_expense:'Gastos', hist_ops:'ops', hist_empty:'Nada encontrado', hist_search_ph:'Buscar por nota',
+    cur_uah:'Grivna', cur_rub:'Rublo', cur_usd:'Dólar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Libra', cur_try:'Lira', cur_chf:'Franco', cur_czk:'Corona', cur_jpy:'Yen', cur_cny:'Yuan',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -1073,6 +1080,7 @@ const I18N = {
     forecast_title:'Previsione fine mese', forecast_positive:'Buon ritmo', forecast_warning:'Rischio superamento', forecast_projected:'Saldo previsto', 
     forecast_daily:'Media giornaliera', forecast_days_left:'Giorni rimasti', forecast_pro_hint:'Disponibile in Base e Pro',
     hist_all:'Tutti', hist_income:'Entrate', hist_expense:'Spese', hist_ops:'op', hist_empty:'Niente trovato', hist_search_ph:'Cerca per nota',
+    cur_uah:'Grivnia', cur_rub:'Rublo', cur_usd:'Dollaro', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Sterlina', cur_try:'Lira', cur_chf:'Franco', cur_czk:'Corona', cur_jpy:'Yen', cur_cny:'Yuan',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -1127,6 +1135,7 @@ const I18N = {
     forecast_title:'Prognoza końca miesiąca', forecast_positive:'Dobre tempo', forecast_warning:'Ryzyko przekroczenia', forecast_projected:'Prognozowane saldo', 
     forecast_daily:'Średnia dzienna', forecast_days_left:'Dni pozostało', forecast_pro_hint:'Dostępne w Base i Pro',
     hist_all:'Wszystkie', hist_income:'Dochody', hist_expense:'Wydatki', hist_ops:'oper.', hist_empty:'Nic nie znaleziono', hist_search_ph:'Szukaj po opisie',
+    cur_uah:'Hrywna', cur_rub:'Rubel', cur_usd:'Dolar', cur_eur:'Euro', cur_pln:'Złoty', cur_gbp:'Funt', cur_try:'Lira', cur_chf:'Frank', cur_czk:'Korona', cur_jpy:'Jen', cur_cny:'Yuan',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1182,6 +1191,7 @@ const I18N = {
     forecast_title:'Ay sonu tahmini', forecast_positive:'İyi tempo', forecast_warning:'Aşım riski', forecast_projected:'Tahmini bakiye', forecast_daily:'Günlük ortalama', 
     forecast_days_left:'Kalan gün', forecast_pro_hint:'Base ve Pro\'da mevcut',
     hist_all:'Tümü', hist_income:'Gelir', hist_expense:'Gider', hist_ops:'işlem', hist_empty:'Bulunamadı', hist_search_ph:'Nota göre ara',
+    cur_uah:'Grivna', cur_rub:'Ruble', cur_usd:'Dolar', cur_eur:'Euro', cur_pln:'Zloti', cur_gbp:'Sterlin', cur_try:'Lira', cur_chf:'Frank', cur_czk:'Korona', cur_jpy:'Yen', cur_cny:'Yuan',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1236,6 +1246,7 @@ const I18N = {
     forecast_title:'月末预测', forecast_positive:'节奏良好', forecast_warning:'超支风险', forecast_projected:'预测余额', forecast_daily:'日均', 
     forecast_days_left:'剩余天数', forecast_pro_hint:'基础版与 Pro 可用',
     hist_all:'全部', hist_income:'收入', hist_expense:'支出', hist_ops:'笔', hist_empty:'未找到', hist_search_ph:'按备注搜索',
+    cur_uah:'格里夫纳', cur_rub:'卢布', cur_usd:'美元', cur_eur:'欧元', cur_pln:'兹罗提', cur_gbp:'英镑', cur_try:'里拉', cur_chf:'法郎', cur_czk:'克朗', cur_jpy:'日元', cur_cny:'人民币',
   }
 };
 
@@ -1478,7 +1489,7 @@ const LANGS = [
   {id:'zh',flag:'🇨🇳',label:'中文'}
 ];
 const CURRENCIES = [
-  {id:'UAH',sym:'₴',label:'Гривня'},{id:'USD',sym:'$',label:'Доллар США'},{id:'EUR',sym:'€',label:'Евро'},
+  {id:'UAH',sym:'₴',label:'Гривня'},{id:'RUB', sym:'₽',  label:'Рубль'},{id:'USD',sym:'$',label:'Доллар США'},{id:'EUR',sym:'€',label:'Евро'},
   {id:'PLN',sym:'zł',label:'Злотый'},{id:'GBP',sym:'£',label:'Фунт'},{id:'TRY',sym:'₺',label:'Лира'},
   {id:'CHF',sym:'₣',label:'Франк'},{id:'CZK',sym:'Kč',label:'Крона'},{id:'JPY',sym:'¥',label:'Иена'},
   {id:'CNY',sym:'元',label:'Юань'}
@@ -1665,14 +1676,17 @@ function shiftMonth(dir){
   renderMonthBar();
   renderAll();
 }
-
+function curLabel(c){
+  return t(c.key) || c.label || c.id;
+}
+  
   function openPicker(kind){
   const cfg = {
     envelope:        { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
     envelopeReceipt: { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
     recurringEnvelope: { title:t('envelope'), items:[{id:'',label:t('no_envelope')}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
     language:        { title:t('language'), items: LANGS },
-    currency:        { title:t('currency'), items: CURRENCIES }
+    currency:        { title:t('currency'), items: CURRENCIES.map(c => ({id:c.id, sym:c.sym, label: curLabel(c)})) }
   }[kind];
   if(!cfg) return;
   document.getElementById('pickerTitle').innerText = cfg.title;
@@ -1946,7 +1960,7 @@ function renderSettingsLabels(){
   const le = document.getElementById('langLabel');
   const ce = document.getElementById('currLabel');
   if(le) le.innerText = l.flag + ' ' + l.label;
-  if(ce) ce.innerText = c.sym + ' ' + c.label;
+  if(ce) ce.innerText = c.sym + ' ' + curLabel(c);
 }
 
 function renderReferral(){

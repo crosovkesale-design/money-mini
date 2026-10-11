@@ -201,7 +201,19 @@ if bot:
                 "reminderSent": 0,
             })
         await fb.patch(f"/users/{uid}", upd)
-
+        if ADMIN_CHAT_ID and not existing.get("firstSeen"):
+            try:
+                await bot.send_message(
+                    ADMIN_CHAT_ID,
+                    "🆕 <b>Новый юзер</b>\n\n"
+                    + (message.from_user.first_name or "—")
+                    + (" (@" + message.from_user.username + ")" if message.from_user.username else "")
+                    + "\nid: <code>" + uid + "</code>",
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                log.warning("new user notify: " + str(e))
+        
         if ref_id and ref_id != uid:
             if not existing.get("referredBy"):
                 await fb.patch(f"/users/{uid}", {"referredBy": ref_id, "referredAt": ts})
@@ -329,34 +341,48 @@ if bot:
             parse_mode="HTML",
         )
 
-    @dp.message(Command("stats"))
-    async def cmd_stats(message: Message):
-        users = await fb.get("/users") or {}
-        total = 0
-        trial = 0
-        paid = 0
-        now = now_ms()
-        for uid_key, u in users.items():
-            if not isinstance(u, dict):
-                continue
-            total += 1
-            tariff = (u.get("tariff") or "").lower()
-            sub_end = int(u.get("subEnd") or 0)
-            if sub_end < 10**11:
-                sub_end *= 1000
-            if tariff.startswith("trial"):
-                trial += 1
-            elif sub_end > now:
-                paid += 1
-            else:
-                trial += 1
-        await message.answer(
-            "📊 <b>Family Budget</b>\n\n"
-            "👥 Пользуются: <b>" + str(total) + "</b> человек\n"
-            "🎁 На триале: " + str(trial) + "\n"
-            "💎 С подпиской: " + str(paid),
-            parse_mode="HTML"
-        )
+@dp.message(Command("stats"))
+async def cmd_stats(message: Message):
+    users = await fb.get("/users") or {}
+    total = 0
+    trial = 0
+    paid = 0
+    active24 = 0
+    active7d = 0
+    now = now_ms()
+    day_ago = now - 86400000
+    week_ago = now - 7 * 86400000
+
+    for uid_key, u in users.items():
+        if not isinstance(u, dict):
+            continue
+        total += 1
+        tariff = (u.get("tariff") or "").lower()
+        sub_end = int(u.get("subEnd") or 0)
+        if sub_end < 10**11:
+            sub_end *= 1000
+        if tariff.startswith("trial"):
+            trial += 1
+        elif sub_end > now:
+            paid += 1
+        else:
+            trial += 1
+
+        last_seen = int(u.get("lastSeen") or 0)
+        if last_seen >= day_ago:
+            active24 += 1
+        if last_seen >= week_ago:
+            active7d += 1
+
+    await message.answer(
+        "📊 <b>Family Budget</b>\n\n"
+        "👥 Всего: <b>" + str(total) + "</b>\n"
+        "🔥 Активных за 24ч: <b>" + str(active24) + "</b>\n"
+        "📅 Активных за 7д: <b>" + str(active7d) + "</b>\n\n"
+        "🎁 На триале: " + str(trial) + "\n"
+        "💎 С подпиской: " + str(paid),
+        parse_mode="HTML"
+    )
 
     @dp.message(Command("referrals"))
     async def cmd_referrals(message: Message):

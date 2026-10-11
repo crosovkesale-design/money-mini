@@ -289,6 +289,7 @@ if bot:
 
     @dp.message(Command("status"))
     async def cmd_status(message: Message):
+        log.warning("CMD_STATS TRIGGERED by " + str(message.from_user.id))
         uid = str(message.from_user.id)
         u = await get_user(uid)
         sub_end = int(u.get("subEnd") or 0)

@@ -180,8 +180,12 @@ if bot:
     async def cmd_start(message: Message):
         args = message.text.split()
         ref_id = None
-        if len(args) > 1 and args[1].startswith("ref_"):
-            ref_id = args[1][4:]
+        start_support = False
+        if len(args) > 1:
+            if args[1].startswith("ref_"):
+                ref_id = args[1][4:]
+            elif args[1] == "support":
+                start_support = True
 
         uid = str(message.from_user.id)
         ts = now_ms()
@@ -254,9 +258,15 @@ if bot:
             "2. Добавь первую трату — кнопка ➖\n"
             "3. Поставь лимиты в «Конвертах»\n\n"
             "<i>В Pro:</i> распознавание чеков по фото и ИИ-ассистент.",
-            reply_markup=kb,
-            parse_mode="HTML"
+                reply_markup=kb,
+                parse_mode="HTML"
         )
+
+        if start_support:
+            try:
+                await cmd_support(message, None)
+            except Exception:
+                pass
 
     @dp.pre_checkout_query()
     async def pre_checkout(query: PreCheckoutQuery):

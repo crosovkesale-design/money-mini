@@ -172,7 +172,6 @@ async def get_user(uid: str) -> dict:
 
 
 # ---------- aiogram ----------
-
 if bot:
 
     @dp.message(Command("start"))
@@ -185,15 +184,35 @@ if bot:
         uid = str(message.from_user.id)
         ts = now_ms()
 
+        existing = await get_user(uid)
+        upd = {
+            "name": message.from_user.first_name or "Гость",
+            "username": message.from_user.username or "",
+            "tgId": uid,
+            "lastSeen": ts,
+        }
+        if not existing.get("firstSeen"):
+            upd.update({
+                "firstSeen": ts,
+                "tariff": "trial",
+                "subStart": ts,
+                "subEnd": ts + 30 * 24 * 60 * 60 * 1000,
+                "status": "active",
+                "reminderSent": 0,
+            })
+        await fb.patch(f"/users/{uid}", upd)
+
         if ref_id and ref_id != uid:
-            existing = await get_user(uid)
             if not existing.get("referredBy"):
                 await fb.patch(f"/users/{uid}", {"referredBy": ref_id, "referredAt": ts})
                 refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
                 refs[uid] = ts
                 await fb.put(f"/users/{ref_id}/referrals", refs)
-                await grant_rewards(ref_id, len(refs))
-              
+                try:
+                    await grant_rewards(ref_id, len(refs))
+                except Exception as e:
+                    log.warning("grant_rewards: " + str(e))
+
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text="📊 Открыть бюджет",
@@ -209,21 +228,22 @@ if bot:
             )],
         ])
         await message.answer(
-    "👋 Привет! Это <b>Family Budget</b> — семейный учёт доходов и расходов.\n\n"
-    "<b>Что умеет:</b>\n"
-    "💰 Доходы и расходы по категориям\n"
-    "📊 Аналитика по месяцам\n"
-    "📩 Конверты — лимиты на категории\n"
-    "🏦 Банки-цели — накопления с дедлайном\n"
-    "👥 Общий бюджет с партнёром\n\n"
-    "<b>Как начать:</b>\n"
-    "1. Нажми «Открыть бюджет» ниже\n"
-    "2. Добавь первую трату — кнопка ➖\n"
-    "3. Поставь лимиты в «Конвертах»\n\n"
-    "<i>В Pro:</i> распознавание чеков по фото и ИИ-ассистент.",
-    reply_markup=kb,
-    parse_mode="HTML"
+            "👋 Привет! Это <b>Family Budget</b> — семейный учёт доходов и расходов.\n\n"
+            "<b>Что умеет:</b>\n"
+            "💰 Доходы и расходы по категориям\n"
+            "📊 Аналитика по месяцам\n"
+            "📩 Конверты — лимиты на категории\n"
+            "🏦 Банки-цели — накопления с дедлайном\n"
+            "👥 Общий бюджет с партнёром\n\n"
+            "<b>Как начать:</b>\n"
+            "1. Нажми «Открыть бюджет» ниже\n"
+            "2. Добавь первую трату — кнопка ➖\n"
+            "3. Поставь лимиты в «Конвертах»\n\n"
+            "<i>В Pro:</i> распознавание чеков по фото и ИИ-ассистент.",
+            reply_markup=kb,
+            parse_mode="HTML"
         )
+
     @dp.pre_checkout_query()
     async def pre_checkout(query: PreCheckoutQuery):
         await query.answer(ok=True)
@@ -239,43 +259,47 @@ if bot:
         plan = meta.get("plan")
         if not uid or plan not in TARIFFS:
             return
-            days = TARIFFS[plan]["days"]
-            now_ts = now_ms()
-            u = await get_user(uid)
-            cur_end = int(u.get("subEnd") or 0)
-            if cur_end < 10**11:
-                cur_end *= 1000
-                if cur_end < now_ts:
-                    cur_end = now_ts
-                    new_end = cur_end + days * 86400000
-                    await fb.patch(f"/users/{uid}", {
-                        "tariff": plan,
-                        "subStart": now_ts,
-                        "subEnd": new_end,
-                        "status": "active",
-                        "starsTotalPaid": (u.get("starsTotalPaid") or 0) + (sp.total_amount or 0),
-                        "reminderSent": 0,
-                    })
-                    try:
-                        await bot.send_message(
-                            int(uid),
-                            "✅ <b>Оплата через Telegram Stars прошла!</b>\n\n"
-                            "Тариф: " + TARIFFS[plan]["name"] + "\n"
-                            "Активен до: " + datetime.fromtimestamp(new_end / 1000).strftime("%d.%m.%Y"),
-                            parse_mode="HTML"
-                        )
-                    except Exception:
-                        pass
-                        if ADMIN_CHAT_ID:
-                            try:
-                                await bot.send_message(
-                                    ADMIN_CHAT_ID,
-                                    "⭐ <b>Оплата Stars</b>\nID: " + str(uid) + "\nТариф: " + TARIFFS[plan]["name"] + "\nЗвёзд: " + str(sp.total_amount),
-                                    parse_mode="HTML"
-                                )
-                            except Exception:
-                                pass
-            
+
+        days = TARIFFS[plan]["days"]
+        now_ts = now_ms()
+        u = await get_user(uid)
+        cur_end = int(u.get("subEnd") or 0)
+        if cur_end < 10**11:
+            cur_end *= 1000
+        if cur_end < now_ts:
+            cur_end = now_ts
+        new_end = cur_end + days * 86400000
+
+        await fb.patch(f"/users/{uid}", {
+            "tariff": plan,
+            "subStart": now_ts,
+            "subEnd": new_end,
+            "status": "active",
+            "starsTotalPaid": (u.get("starsTotalPaid") or 0) + (sp.total_amount or 0),
+            "reminderSent": 0,
+        })
+
+        try:
+            await bot.send_message(
+                int(uid),
+                "✅ <b>Оплата через Telegram Stars прошла!</b>\n\n"
+                "Тариф: " + TARIFFS[plan]["name"] + "\n"
+                "Активен до: " + datetime.fromtimestamp(new_end / 1000, KYIV).strftime("%d.%m.%Y"),
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+
+        if ADMIN_CHAT_ID:
+            try:
+                await bot.send_message(
+                    ADMIN_CHAT_ID,
+                    "⭐ <b>Оплата Stars</b>\nID: " + str(uid) + "\nТариф: " + TARIFFS[plan]["name"] + "\nЗвёзд: " + str(sp.total_amount),
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
+
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         await message.answer(
@@ -285,11 +309,11 @@ if bot:
             "/referrals — мои рефералы\n"
             "/stats — сколько нас\n"
             "/pay — подписка и оплата\n"
+            "/review — оставить отзыв\n"
         )
 
     @dp.message(Command("status"))
     async def cmd_status(message: Message):
-        log.warning("CMD_STATS TRIGGERED by " + str(message.from_user.id))
         uid = str(message.from_user.id)
         u = await get_user(uid)
         sub_end = int(u.get("subEnd") or 0)
@@ -304,6 +328,190 @@ if bot:
             f"Осталось: {left} дней",
             parse_mode="HTML",
         )
+
+    @dp.message(Command("stats"))
+    async def cmd_stats(message: Message):
+        users = await fb.get("/users") or {}
+        total = 0
+        trial = 0
+        paid = 0
+        now = now_ms()
+        for uid_key, u in users.items():
+            if not isinstance(u, dict):
+                continue
+            total += 1
+            tariff = (u.get("tariff") or "").lower()
+            sub_end = int(u.get("subEnd") or 0)
+            if sub_end < 10**11:
+                sub_end *= 1000
+            if tariff.startswith("trial"):
+                trial += 1
+            elif sub_end > now:
+                paid += 1
+            else:
+                trial += 1
+        await message.answer(
+            "📊 <b>Family Budget</b>\n\n"
+            "👥 Пользуются: <b>" + str(total) + "</b> человек\n"
+            "🎁 На триале: " + str(trial) + "\n"
+            "💎 С подпиской: " + str(paid),
+            parse_mode="HTML"
+        )
+
+    @dp.message(Command("referrals"))
+    async def cmd_referrals(message: Message):
+        uid = str(message.from_user.id)
+        me = await get_user(uid)
+        refs = me.get("referrals") or {}
+        link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
+
+        if not refs:
+            await message.answer(
+                "👥 <b>Рефералы</b>\n\nПока никого не пригласил.\n\n"
+                f"Твоя ссылка:\n<code>{link}</code>",
+                parse_mode="HTML",
+            )
+            return
+
+        lines = ["👥 <b>Твои рефералы</b>", ""]
+        total_paid = 0
+        ts_now = now_ms()
+        for i, ref_id in enumerate(refs, 1):
+            ru = await get_user(ref_id)
+            name = ru.get("name") or f"id {ref_id}"
+            uname = f"@{ru['username']}" if ru.get("username") else ""
+            paid = ru.get("paidAmount") or 0
+            total_paid += paid
+            sub_end = int(ru.get("subEnd") or 0)
+            if 0 < sub_end < 10**11:
+                sub_end *= 1000
+            st = "активна" if sub_end > ts_now else "истекла"
+            lines.append(
+                f"{i}. <b>{name}</b> {uname}\n"
+                f"   Тариф: {ru.get('tariff') or 'trial'} · {st}\n"
+                f"   Купил на: {paid} ₴"
+            )
+        lines += [
+            "",
+            f"Всего рефералов: <b>{me.get('referralCount') or 0}</b>",
+            f"Купонов 10%: <b>{me.get('couponsEarned') or 0}</b>",
+            f"Купонов 20%: <b>{me.get('coupons20Earned') or 0}</b>",
+            f"Рефералы купили на <b>${round(total_paid)}</b>",
+        ]
+        await message.answer("\n".join(lines), parse_mode="HTML")
+
+    @dp.message(Command("pay"))
+    async def cmd_pay(message: Message):
+        uid = str(message.from_user.id)
+        u = await get_user(uid)
+        tariff = u.get("tariff") or "trial"
+        sub_end = int(u.get("subEnd") or 0)
+        if sub_end < 10**11:
+            sub_end *= 1000
+        now_ts = now_ms()
+
+        status = "активна" if sub_end > now_ts else "истекла"
+        days = max(0, math.ceil((sub_end - now_ts) / 86400000)) if sub_end > now_ts else 0
+        tariff_label = TARIFFS.get(tariff, {}).get("name", tariff)
+
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="💳 Открыть тарифы и оплатить",
+                web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"),
+            )],
+        ])
+
+        text = (
+            "💎 <b>Подписка</b>\n\n"
+            "Тариф: <b>" + tariff_label + "</b>\n"
+            "Статус: <b>" + status + "</b>\n"
+        )
+        if days > 0:
+            text += "Осталось: <b>" + str(days) + " дн.</b>\n"
+        text += (
+            "\n<b>Базовая</b> — 500 ⭐ / мес\n"
+            "Безлимит конвертов, банок, автоплатежей. Прогнозы. Дайджест. Семья до 4.\n\n"
+            "<b>Pro</b> — 1000 ⭐ / мес\n"
+            "Всё из базовой + распознавание чеков по фото, AI-ассистент, Monobank, свои категории, семья до 6.\n\n"
+            "Нажми кнопку — откроются тарифы."
+        )
+
+        await message.answer(text, parse_mode="HTML", reply_markup=kb)
+
+    @dp.message(Command("review"))
+    async def cmd_review(message: Message, state: FSMContext):
+        uid = str(message.from_user.id)
+        u = await get_user(uid)
+        if u.get("reviewSubmitted"):
+            await message.answer("✅ Ты уже оставлял отзыв. Спасибо!")
+            return
+        await state.set_state(ReviewState.waiting_text)
+        await message.answer(
+            "📝 <b>Оставить отзыв</b>\n\n"
+            "Напиши одним сообщением, что думаешь о Family Budget.\n\n"
+            "За отзыв получишь <b>купон 20%</b> на любой тариф.\n\n"
+            "Отменить — /cancel",
+            parse_mode="HTML"
+        )
+
+    @dp.message(Command("cancel"))
+    async def cmd_cancel(message: Message, state: FSMContext):
+        await state.clear()
+        await message.answer("Отменено")
+
+    @dp.message(ReviewState.waiting_text)
+    async def review_text(message: Message, state: FSMContext):
+        uid = str(message.from_user.id)
+        text = (message.text or "").strip()
+        if len(text) < 10:
+            await message.answer("Слишком коротко — напиши хотя бы 10 символов.")
+            return
+        if len(text) > 1000:
+            text = text[:1000]
+
+        await fb.push("/reviews", {
+            "uid": uid,
+            "name": message.from_user.first_name or "Гость",
+            "username": message.from_user.username or "",
+            "text": text,
+            "ts": now_ms()
+        })
+
+        u = await get_user(uid)
+        cur20 = u.get("coupons20Earned") or 0
+        await fb.patch(f"/users/{uid}", {
+            "reviewSubmitted": True,
+            "coupons20Earned": cur20 + 1
+        })
+
+        await state.clear()
+        await message.answer(
+            "✅ <b>Спасибо за отзыв!</b>\n\n"
+            "🎁 Начислен купон <b>20%</b> на любой тариф.\n\n"
+            "Открой приложение → Настройки → Оплатить, чтобы использовать.",
+            parse_mode="HTML"
+        )
+
+        review_post = (
+            "📝 <b>Отзыв</b>\n\n"
+            + text + "\n\n"
+            + "— " + (message.from_user.first_name or "Гость")
+            + (" (@" + message.from_user.username + ")" if message.from_user.username else "")
+        )
+
+        review_channel = os.getenv("REVIEW_CHANNEL_ID", "")
+        if review_channel:
+            try:
+                await bot.send_message(int(review_channel), review_post, parse_mode="HTML")
+            except Exception as e:
+                log.warning("review channel: " + str(e))
+
+        if ADMIN_CHAT_ID:
+            try:
+                await bot.send_message(int(ADMIN_CHAT_ID), review_post, parse_mode="HTML")
+            except Exception:
+                pass
+
     @dp.callback_query(F.data == "show_pay")
     async def cb_show_pay(callback: CallbackQuery):
         uid = str(callback.from_user.id)
@@ -368,254 +576,73 @@ if bot:
             log.warning("back_to_start: " + str(e))
         await callback.answer()
 
-@dp.callback_query(F.data == "ref_link")
-async def cb_ref_link(callback: CallbackQuery):
-    uid = str(callback.from_user.id)
-    me = await bot.get_me()
-    bot_username = me.username or "moneyfamilybudget_bot"
-    link = "https://t.me/" + bot_username + "?start=ref_" + uid
-
-    text = (
-        "🎁 <b>Приглашай друзей — получай купоны</b>\n\n"
-        "За каждого друга, который зайдёт по твоей ссылке:\n"
-        "• 1 друг → купон 10%\n"
-        "• 5 друзей → купон 20%\n"
-        "• 10 друзей → ещё купоны\n\n"
-        "Твоя ссылка:\n"
-        "<code>" + link + "</code>\n\n"
-        "Отправь её другу — купон зачислится автоматически."
-    )
-
-    share_url = "https://t.me/share/url?url=" + link + "&text=" + "Family Budget — семейный бюджет в Telegram. Заходи по моей ссылке"
-
-    try:
-        await callback.message.edit_text(
-            text,
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(
-                    text="📤 Поделиться ссылкой",
-                    url=share_url,
-                )],
-                [InlineKeyboardButton(
-                    text="👥 Мои рефералы",
-                    callback_data="my_refs",
-                )],
-            ])
-        )
-    except Exception as e:
-        log.warning("ref_link: " + str(e))
-    await callback.answer()
-
-@dp.callback_query(F.data == "my_refs")
-async def cb_my_refs(callback: CallbackQuery):
-    uid = str(callback.from_user.id)
-    u = await get_user(uid)
-    refs = u.get("referrals") or {}
-    count = len(refs)
-    c10 = u.get("couponsEarned") or 0
-    c20 = u.get("coupons20Earned") or 0
-
-    text = (
-        "👥 <b>Твои рефералы</b>\n\n"
-        "Приглашено: <b>" + str(count) + "</b>\n"
-        "Купонов 10%: <b>" + str(c10) + "</b>\n"
-        "Купонов 20%: <b>" + str(c20) + "</b>"
-    )
-
-    try:
-        await callback.message.edit_text(
-            text,
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="⬅️ Назад", callback_data="ref_link")],
-            ])
-        )
-    except Exception as e:
-        log.warning("my_refs: " + str(e))
-    await callback.answer()
-    @dp.message(Command("pay"))
-    async def cmd_pay(message: Message):
-        uid = str(message.from_user.id)
-        u = await get_user(uid)
-        tariff = u.get("tariff") or "trial"
-        sub_end = int(u.get("subEnd") or 0)
-        if sub_end < 10**11:
-            sub_end *= 1000
-        now_ts = now_ms()
-
-        status = "активна" if sub_end > now_ts else "истекла"
-        days = max(0, math.ceil((sub_end - now_ts) / 86400000)) if sub_end > now_ts else 0
-        tariff_label = TARIFFS.get(tariff, {}).get("name", tariff)
-
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="💳 Открыть тарифы и оплатить",
-                web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"),
-            )],
-        ])
+    @dp.callback_query(F.data == "ref_link")
+    async def cb_ref_link(callback: CallbackQuery):
+        uid = str(callback.from_user.id)
+        me = await bot.get_me()
+        bot_username = me.username or "moneyfamilybudget_bot"
+        link = "https://t.me/" + bot_username + "?start=ref_" + uid
 
         text = (
-            "💎 <b>Подписка</b>\n\n"
-            "Тариф: <b>" + tariff_label + "</b>\n"
-            "Статус: <b>" + status + "</b>\n"
-        )
-        if days > 0:
-            text += "Осталось: <b>" + str(days) + " дн.</b>\n"
-        text += (
-            "\n<b>Базовая</b> — 500 ⭐ / мес\n"
-            "Безлимит конвертов, банок, автоплатежей. Прогнозы. Дайджест. Семья до 4.\n\n"
-            "<b>Pro</b> — 1000 ⭐ / мес\n"
-            "Всё из базовой + распознавание чеков по фото, AI-ассистент, Monobank, свои категории, семья до 6.\n\n"
-            "Нажми кнопку — откроются тарифы."
+            "🎁 <b>Приглашай друзей — получай купоны</b>\n\n"
+            "За каждого друга, который зайдёт по твоей ссылке:\n"
+            "• 1 друг → купон 10%\n"
+            "• 5 друзей → купон 20%\n"
+            "• 10 друзей → ещё купоны\n\n"
+            "Твоя ссылка:\n"
+            "<code>" + link + "</code>\n\n"
+            "Отправь её другу — купон зачислится автоматически."
         )
 
-        await message.answer(text, parse_mode="HTML", reply_markup=kb)
+        share_url = "https://t.me/share/url?url=" + link + "&text=" + "Family Budget — семейный бюджет в Telegram. Заходи по моей ссылке"
 
-@dp.message(Command("review"))
-async def cmd_review(message: Message, state: FSMContext):
-    uid = str(message.from_user.id)
-    u = await get_user(uid)
-    if u.get("reviewSubmitted"):
-        await message.answer("✅ Ты уже оставлял отзыв. Спасибо!")
-        return
-    await state.set_state(ReviewState.waiting_text)
-    await message.answer(
-        "📝 <b>Оставить отзыв</b>\n\n"
-        "Напиши одним сообщением, что думаешь о Family Budget.\n\n"
-        "За отзыв получишь <b>купон 20%</b> на любой тариф.\n\n"
-        "Отменить — /cancel",
-        parse_mode="HTML"
-    )
-
-@dp.message(Command("cancel"))
-async def cmd_cancel(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer("Отменено")
-
-@dp.message(ReviewState.waiting_text)
-async def review_text(message: Message, state: FSMContext):
-    uid = str(message.from_user.id)
-    text = (message.text or "").strip()
-    if len(text) < 10:
-        await message.answer("Слишком коротко — напиши хотя бы 10 символов.")
-        return
-    if len(text) > 1000:
-        text = text[:1000]
-
-    await fb.push("/reviews", {
-        "uid": uid,
-        "name": message.from_user.first_name or "Гость",
-        "username": message.from_user.username or "",
-        "text": text,
-        "ts": now_ms()
-    })
-
-    u = await get_user(uid)
-    cur20 = u.get("coupons20Earned") or 0
-    await fb.patch(f"/users/{uid}", {
-        "reviewSubmitted": True,
-        "coupons20Earned": cur20 + 1
-    })
-
-    await state.clear()
-    await message.answer(
-        "✅ <b>Спасибо за отзыв!</b>\n\n"
-        "🎁 Начислен купон <b>20%</b> на любой тариф.\n\n"
-        "Открой приложение → Настройки → Оплатить, чтобы использовать.",
-        parse_mode="HTML"
-    )
-
-    if ADMIN_CHAT_ID:
         try:
-            await bot.send_message(
-                ADMIN_CHAT_ID,
-                "📝 <b>Новый отзыв</b>\n"
-                "От: " + (message.from_user.first_name or "Гость") +
-                (" (@" + message.from_user.username + ")" if message.from_user.username else "") +
-                "\n\n" + text,
-                parse_mode="HTML"
-            )
-        except Exception:
-            pass
-            
-    @dp.message(Command("stats"))
-    async def cmd_stats(message: Message):
-        users = await fb.get("/users") or {}
-        total = 0
-        trial = 0
-        paid = 0
-        now = now_ms()
-        for uid, u in users.items():
-            if not isinstance(u, dict):
-                continue
-            total += 1
-            tariff = (u.get("tariff") or "").lower()
-            sub_end = int(u.get("subEnd") or 0)
-            if sub_end < 10**11:
-                sub_end *= 1000
-            if tariff.startswith("trial"):
-                trial += 1
-            elif sub_end > now:
-                paid += 1
-            else:
-                trial += 1
-        await message.answer(
-            "📊 <b>Family Budget</b>\n\n"
-            "👥 Пользуются: <b>" + str(total) + "</b> человек\n"
-            "🎁 На триале: " + str(trial) + "\n"
-            "💎 С подпиской: " + str(paid),
-            parse_mode="HTML"
-        )
-    
-    @dp.message(Command("referrals"))
-    async def cmd_referrals(message: Message):
-        uid = str(message.from_user.id)
-        me = await get_user(uid)
-        refs = me.get("referrals") or {}
-        link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
-
-        if not refs:
-            await message.answer(
-                "👥 <b>Рефералы</b>\n\nПока никого не пригласил.\n\n"
-                f"Твоя ссылка:\n<code>{link}</code>",
+            await callback.message.edit_text(
+                text,
                 parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(
+                        text="📤 Поделиться ссылкой",
+                        url=share_url,
+                    )],
+                    [InlineKeyboardButton(
+                        text="👥 Мои рефералы",
+                        callback_data="my_refs",
+                    )],
+                ])
             )
-            return
+        except Exception as e:
+            log.warning("ref_link: " + str(e))
+        await callback.answer()
 
-        lines = ["👥 <b>Твои рефералы</b>", ""]
-        total_paid = 0
-        ts_now = now_ms()
-        for i, ref_id in enumerate(refs, 1):
-            ru = await get_user(ref_id)
-            name = ru.get("name") or f"id {ref_id}"
-            uname = f"@{ru['username']}" if ru.get("username") else ""
-            paid = ru.get("paidAmount") or 0
-            total_paid += paid
-            sub_end = int(ru.get("subEnd") or 0)
-            if 0 < sub_end < 10**11:
-                sub_end *= 1000
-            st = "активна" if sub_end > ts_now else "истекла"
-            lines.append(
-                f"{i}. <b>{name}</b> {uname}\n"
-                f"   Тариф: {ru.get('tariff') or 'trial'} · {st}\n"
-                f"   Купил на: {paid} ₴"
+    @dp.callback_query(F.data == "my_refs")
+    async def cb_my_refs(callback: CallbackQuery):
+        uid = str(callback.from_user.id)
+        u = await get_user(uid)
+        refs = u.get("referrals") or {}
+        count = len(refs)
+        c10 = u.get("couponsEarned") or 0
+        c20 = u.get("coupons20Earned") or 0
+
+        text = (
+            "👥 <b>Твои рефералы</b>\n\n"
+            "Приглашено: <b>" + str(count) + "</b>\n"
+            "Купонов 10%: <b>" + str(c10) + "</b>\n"
+            "Купонов 20%: <b>" + str(c20) + "</b>"
+        )
+
+        try:
+            await callback.message.edit_text(
+                text,
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="⬅️ Назад", callback_data="ref_link")],
+                ])
             )
-        lines += [
-            "",
-            f"Всего рефералов: <b>{me.get('referralCount') or 0}</b>",
-            f"Купонов 10%: <b>{me.get('couponsEarned') or 0}</b>",
-            f"Купонов 20%: <b>{me.get('coupons20Earned') or 0}</b>",
-            f"Рефералы купили на <b>${round(total_paid)}</b>",
-        ]
-        await message.answer("\n".join(lines), parse_mode="HTML")
+        except Exception as e:
+            log.warning("my_refs: " + str(e))
+        await callback.answer()
         
-        async def fb_get(path):
-            return await fb.get(path)
-            
-        async def fb_patch(path, data):
-            return await fb.patch(path, data)
-
 # ---------- фоновые проверки ----------
 
 async def daily_check():
@@ -737,7 +764,7 @@ async def weekly_digest():
 
             kyiv_now = datetime.now(ZoneInfo("Europe/Kyiv"))
             # понедельник, 9:00–11:00
-            if True:
+            if kyiv_now.weekday() == 0 and 9 <= kyiv_now.hour <= 11:
                 today = kyiv_now.strftime("%Y-%m-%d")
                 users = await fb.get("/users") or {}
                 sent = 0
@@ -1324,10 +1351,11 @@ async def api_me(request: Request):
     if not uid:
         return JSONResponse({"error": "no uid"}, status_code=400)
 
-    u = (await fb.get(f"/users/{uid}")) or {}
+    u = (await get_user(uid))
     refs = (await fb.get(f"/users/{uid}/referrals")) or {}
-    username = me.username if me else "your_bot"
-
+    me_bot = await bot.get_me() if bot else None
+    username = me_bot.username if me_bot else "moneyfamilybudget_bot"
+    
     return {
         "tgId": uid,
         "name": u.get("name") or "",

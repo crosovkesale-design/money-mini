@@ -3203,28 +3203,6 @@ if(bankBox){
   }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_bank')}</div>`;
 }
   renderHistory();
-      const sub = item.receipt
-        ? `${escapeAttr(item.receipt.store)} · ${item.receipt.items.length} · ${item.date}`
-        : `${escapeAttr(tCat(item.category))} · ${item.date}`;
-      return `<div class="history-item">
-        <div class="history-left">
-          <div class="history-icon">${item.icon}</div>
-         ${item.demo ? '<span style="font-size:9px;background:rgba(59,130,246,.15);color:var(--accent);padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle">ДЕМО</span>' : ''}
-          <div style="min-width:0">
-            <div class="history-title">${escapeAttr(item.title === item.category ? tCat(item.title) : item.title)}</div>
-            <div class="history-sub">${sub}</div>
-          </div>
-        </div>
-        <div class="history-amount ${item.type === 'expense' ? 'exp' : 'inc'}">
-          ${item.type === 'expense' ? '-' : '+'}${fmtMoney(item.amount)}
-        </div>
-        <div class="history-tools">
-          <button onclick="openEditTx('${item.id}')"><i class="fa-solid fa-pen"></i></button>
-          <button class="del" onclick="deleteTx('${item.id}')"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>`;
-    }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_history')}</div>`;
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

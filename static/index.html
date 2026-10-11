@@ -203,6 +203,10 @@ window.addEventListener('error', e => {
   </div>
 
   <div id="tab-budget" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-weight:800;font-size:15px">Family Budget</div>
+      <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;font-weight:700">?</button>
+    </div>
     <div class="month-bar">
       <button onclick="shiftMonth(-1)">‹</button>
       <div>
@@ -514,6 +518,74 @@ window.addEventListener('error', e => {
     <p class="muted" style="font-size:11px;margin-bottom:14px" id="methodHint"></p>
     <button class="btn btn-accent" style="width:100%" id="payBtn" onclick="startPayment()">
       <span data-i18n="pay_go">Оплатить</span>
+    </button>
+  </div>
+</div>
+<div class="modal" id="modalHelp">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-circle-info"></i> <span data-i18n="help_title">О Family Budget</span></h3>
+      <span class="modal-close" onclick="closeModal('modalHelp')">×</span>
+    </div>
+
+    <p style="font-size:13px;line-height:1.55;margin-bottom:14px;color:var(--muted)" data-i18n="help_intro">
+      Family Budget — семейный бюджет прямо в Telegram. Доходы, расходы, лимиты, цели — всё в одном месте, работает на телефоне и у партнёра.
+    </p>
+
+    <h5 style="font-size:13px;font-weight:700;margin:14px 0 8px" data-i18n="help_features">Что умеет</h5>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45">
+        <span style="font-size:16px;flex-shrink:0">💰</span>
+        <div><b data-i18n="help_f1">Доходы и расходы</b> — <span style="color:var(--muted)" data-i18n="help_f1s">учёт по категориям, редактирование, поиск</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45">
+        <span style="font-size:16px;flex-shrink:0">📩</span>
+        <div><b data-i18n="help_f2">Конверты</b> — <span style="color:var(--muted)" data-i18n="help_f2s">лимиты на категории, бот предупредит при превышении</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45">
+        <span style="font-size:16px;flex-shrink:0">🏦</span>
+        <div><b data-i18n="help_f3">Банки-цели</b> — <span style="color:var(--muted)" data-i18n="help_f3s">копите на отпуск, машину, что угодно. Прогресс и дедлайн</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45">
+        <span style="font-size:16px;flex-shrink:0">📊</span>
+        <div><b data-i18n="help_f4">Аналитика</b> — <span style="color:var(--muted)" data-i18n="help_f4s">траты по месяцам, топ товаров из чеков, прогноз на конец месяца</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45">
+        <span style="font-size:16px;flex-shrink:0">👥</span>
+        <div><b data-i18n="help_f5">Семья</b> — <span style="color:var(--muted)" data-i18n="help_f5s">общий бюджет с партнёром, общие лимиты и цели</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45">
+        <span style="font-size:16px;flex-shrink:0">🔄</span>
+        <div><b data-i18n="help_f6">Автоплатежи</b> — <span style="color:var(--muted)" data-i18n="help_f6s">аренда, подписки, зарплата — записываются сами</span></div>
+      </div>
+    </div>
+
+    <h5 style="font-size:13px;font-weight:700;margin:14px 0 8px" data-i18n="help_pricing">Сколько стоит</h5>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;margin-bottom:14px">
+      <div style="margin-bottom:6px">🎁 <b data-i18n="help_p_trial">Первый месяц</b> — бесплатно</div>
+      <div style="margin-bottom:6px">💎 <b data-i18n="help_p_base">Базовая</b> — 500 ⭐ / мес</div>
+      <div>⭐ <b data-i18n="help_p_pro">Pro</b> — 1000 ⭐ / мес</div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px" data-i18n="help_pay">Оплата в приложении: Telegram Stars или крипта (USDT, TON, BTC).</p>
+
+    <h5 style="font-size:13px;font-weight:700;margin:14px 0 8px" data-i18n="help_start">Как начать</h5>
+    <div style="font-size:12px;line-height:1.6;color:var(--muted);margin-bottom:14px">
+      <div data-i18n="help_s1">1. Нажми ➖ на главной — добавь первую трату</div>
+      <div data-i18n="help_s2">2. Создай конверт в разделе «Конверты» — поставь лимит на категорию</div>
+      <div data-i18n="help_s3">3. Пригласи партнёра — Настройки → Семья → Создать семью</div>
+      <div data-i18n="help_s4">4. Подключи автоплатежи для аренды и подписок</div>
+    </div>
+
+    <h5 style="font-size:13px;font-weight:700;margin:14px 0 8px" data-i18n="help_help">Помощь</h5>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px" data-i18n="help_support">
+      Вопросы и баги — пиши нам в Telegram. Отвечаем в течение дня.
+    </p>
+
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="Telegram.WebApp.openTelegramLink('https://t.me/moneyfamilybudget_bot')" data-i18n="help_contact">
+      <i class="fa-brands fa-telegram"></i> Связаться
+    </button>
+    <button class="btn btn-accent" style="width:100%" onclick="closeModal('modalHelp')" data-i18n="help_close">
+      Понятно
     </button>
   </div>
 </div>

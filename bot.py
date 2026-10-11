@@ -108,7 +108,9 @@ REFERRAL_REWARDS = [
 
 class ReviewState(StatesGroup):
     waiting_text = State()
-
+class SupportState(StatesGroup):
+    waiting_msg = State()
+    waiting_reply = State()
 
 
 def calc_max_coupons(plan: str) -> int:
@@ -322,6 +324,7 @@ if bot:
             "/stats — сколько нас\n"
             "/pay — подписка и оплата\n"
             "/review — оставить отзыв\n"
+            "/support — связаться с поддержкой\n"
         )
 
     @dp.message(Command("status"))
@@ -464,6 +467,103 @@ async def cmd_stats(message: Message):
 
         await message.answer(text, parse_mode="HTML", reply_markup=kb)
 
+@dp.message(Command("support"))
+async def cmd_support(message: Message, state: FSMContext):
+    await state.set_state(SupportState.waiting_msg)
+    await message.answer(
+        "💬 <b>Поддержка</b>\n\n"
+        "Напиши свой вопрос или проблему одним сообщением.\n"
+        "Отвечаем в течение дня.\n\n"
+        "Отменить — /cancel",
+        parse_mode="HTML"
+    )
+
+@dp.message(SupportState.waiting_msg)
+async def support_msg(message: Message, state: FSMContext):
+    uid = str(message.from_user.id)
+    text = (message.text or "").strip()
+    if not text:
+        await message.answer("Напиши текстом.")
+        return
+    if len(text) > 2000:
+        text = text[:2000]
+
+    name = message.from_user.first_name or "Гость"
+    uname = ("@" + message.from_user.username) if message.from_user.username else ""
+
+    await fb.push("/support", {
+        "uid": uid,
+        "name": name,
+        "username": message.from_user.username or "",
+        "text": text,
+        "ts": now_ms(),
+        "status": "open",
+    })
+
+    await state.clear()
+    await message.answer(
+        "✅ <b>Сообщение отправлено</b>\n\n"
+        "Мы ответим тебе сюда в течение дня.",
+        parse_mode="HTML"
+    )
+
+    if ADMIN_CHAT_ID:
+        try:
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(
+                    text="✍️ Ответить",
+                    callback_data=f"reply_{uid}"
+                )]
+            ])
+            await bot.send_message(
+                int(ADMIN_CHAT_ID),
+                "💬 <b>Новое обращение</b>\n\n"
+                "От: " + name + " " + uname + "\n"
+                "id: <code>" + uid + "</code>\n\n"
+                + text,
+                parse_mode="HTML",
+                reply_markup=kb
+            )
+        except Exception as e:
+            log.warning("support notify: " + str(e))
+
+@dp.callback_query(F.data.startswith("reply_"))
+async def cb_reply(callback: CallbackQuery, state: FSMContext):
+    uid = callback.data[6:]
+    await state.update_data(reply_to=uid)
+    await state.set_state(SupportState.waiting_reply)
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(
+        "✍️ Напиши ответ для юзера <code>" + uid + "</code>.\n"
+        "Уйдёт ему в личку сразу.",
+        parse_mode="HTML"
+    )
+    await callback.answer()
+
+@dp.message(SupportState.waiting_reply)
+async def support_reply(message: Message, state: FSMContext):
+    data = await state.get_data()
+    target = data.get("reply_to")
+    if not target:
+        await state.clear()
+        await message.answer("Потеряли получателя. Используй /support заново.")
+        return
+
+    text = (message.text or "").strip()
+    if not text:
+        return
+
+    try:
+        await bot.send_message(
+            int(target),
+            "💬 <b>Ответ поддержки</b>\n\n" + text,
+            parse_mode="HTML"
+        )
+        await message.answer("✅ Отправлено юзеру.")
+    except Exception as e:
+        await message.answer("❌ Не доставлено: " + str(e))
+    await state.clear()
+    
     @dp.message(Command("review"))
     async def cmd_review(message: Message, state: FSMContext):
         uid = str(message.from_user.id)

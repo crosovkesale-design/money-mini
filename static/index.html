@@ -626,15 +626,16 @@ window.addEventListener('error', e => {
     </div>
     <div class="cal-wrap">
       <div class="cal-head">
+        <button class="cal-nav" onclick="calBankShiftYear(-1)">«</button>
         <button class="cal-nav" onclick="calBankShift(-1)">‹</button>
         <span id="calBankMonthLabel"></span>
         <button class="cal-nav" onclick="calBankShift(1)">›</button>
+        <button class="cal-nav" onclick="calBankShiftYear(1)">»</button>
       </div>
+      <div id="calBankMonths" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px"></div>
       <div class="cal-week" id="calBankWeek"></div>
       <div class="cal-grid" id="calBankGrid"></div>
     </div>
-  </div>
-</div>
 
 <div class="modal" id="modalDeposit">
   <div class="modal-content">
@@ -2654,22 +2655,50 @@ function calBankShift(dir){
   if(calBankMonth > 11){ calBankMonth = 0; calBankYear++; }
   renderBankCal();
 }
+function calBankShiftYear(dir){
+  calBankYear += dir;
+  renderBankCal();
+}
 function renderBankCal(){
+  // сетка месяцев сверху
+  const monthsGrid = document.getElementById('calBankMonths');
+  if(monthsGrid){
+    const monthKeys = ['m_jan','m_feb','m_mar','m_apr','m_may','m_jun','m_jul','m_aug','m_sep','m_oct','m_nov','m_dec'];
+    monthsGrid.innerHTML = monthKeys.map((k, i) => {
+      const short = t(k).slice(0, 3);
+      const active = i === calBankMonth;
+      return '<button type="button" onclick="calBankSetMonth(' + i + ')" style="padding:8px 4px;background:' + (active ? 'var(--accent)' : 'var(--bg)') + ';border:1px solid ' + (active ? 'var(--accent)' : 'var(--border)') + ';color:' + (active ? '#fff' : 'var(--text)') + ';border-radius:8px;font-size:11px;font-weight:600;cursor:pointer">' + short + '</button>';
+    }).join('');
+  }
+
   const week = document.getElementById('calBankWeek');
-  if(week) week.innerHTML = ['w_mon','w_tue','w_wed','w_thu','w_fri','w_sat','w_sun'].map(k => `<span>${t(k)}</span>`).join('');
-  document.getElementById('calBankMonthLabel').textContent = t(MONTH_KEYS[calBankMonth]) + ' ' + calBankYear;
+  if(week) week.innerHTML = ['w_mon','w_tue','w_wed','w_thu','w_fri','w_sat','w_sun'].map(k => '<span>' + t(k) + '</span>').join('');
+
+  const lbl = document.getElementById('calBankMonthLabel');
+  if(lbl) lbl.textContent = t(MONTH_KEYS[calBankMonth]) + ' ' + calBankYear;
+
   const first = new Date(calBankYear, calBankMonth, 1);
   const startDay = (first.getDay() + 6) % 7;
   const daysInMonth = new Date(calBankYear, calBankMonth+1, 0).getDate();
-  const sel = document.getElementById('bankDeadlineInput').value;
+  const sel = document.getElementById('bankDeadlineInput')?.value || document.getElementById('editBankDeadline')?.value || '';
   const selDate = sel ? new Date(sel) : null;
   let html = '';
   for(let i = 0; i < startDay; i++) html += '<span class="cal-empty"></span>';
   for(let d = 1; d <= daysInMonth; d++){
     const isSel = selDate && selDate.getFullYear()===calBankYear && selDate.getMonth()===calBankMonth && selDate.getDate()===d;
-    html += `<button class="cal-day ${isSel?'sel':''}" onclick="pickBankDate(${calBankYear},${calBankMonth},${d})">${d}</button>`;
+    html += '<button class="cal-day ' + (isSel?'sel':'') + '" onclick="pickBankDate(' + calBankYear + ',' + calBankMonth + ',' + d + ')">' + d + '</button>';
   }
   document.getElementById('calBankGrid').innerHTML = html;
+}
+
+function calBankSetMonth(m){
+  calBankMonth = m;
+  renderBankCal();
+}
+
+function calBankSetYear(y){
+  calBankYear = y;
+  renderBankCal();
 }
 function pickBankDate(y,m,d){
   const iso = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');

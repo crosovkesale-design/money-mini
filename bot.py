@@ -263,7 +263,7 @@ if bot:
         )
         
         if start_support:
-    try:
+            try:
         from aiogram.fsm.context import FSMContext
         ctx = FSMContext(dp.storage, message.chat.id, message.from_user.id)
         await ctx.set_state(SupportState.waiting_msg)

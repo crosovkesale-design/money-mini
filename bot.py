@@ -263,17 +263,20 @@ if bot:
         )
         
         if start_support:
-            await message.answer(
-                "💬 <b>Поддержка</b>\n\n"
-                "Напиши свой вопрос следующим сообщением — увидим и ответим.",
-                parse_mode="HTML"
-            )
-            try:
-                from aiogram.fsm.context import FSMContext
-                ctx = FSMContext(dp.storage, message.chat.id, message.from_user.id)
-                await ctx.set_state(SupportState.waiting_msg)
-            except Exception as e:
-                log.warning("start support state: " + str(e))
+    try:
+        from aiogram.fsm.context import FSMContext
+        ctx = FSMContext(dp.storage, message.chat.id, message.from_user.id)
+        await ctx.set_state(SupportState.waiting_msg)
+        await message.answer(
+            "💬 <b>Поддержка</b>\n\n"
+            "Напиши свой вопрос одним сообщением — увидим и ответим.",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        log.warning("start support: " + str(e))
+        await message.answer(
+            "💬 Напиши свой вопрос — увидим и ответим."
+        )
 
     @dp.pre_checkout_query()
     async def pre_checkout(query: PreCheckoutQuery):

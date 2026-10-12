@@ -261,12 +261,19 @@ if bot:
                 reply_markup=kb,
                 parse_mode="HTML"
         )
-
+        
         if start_support:
+            await message.answer(
+                "💬 <b>Поддержка</b>\n\n"
+                "Напиши свой вопрос следующим сообщением — увидим и ответим.",
+                parse_mode="HTML"
+            )
             try:
-                await cmd_support(message, None)
-            except Exception:
-                pass
+                from aiogram.fsm.context import FSMContext
+                ctx = FSMContext(dp.storage, message.chat.id, message.from_user.id)
+                await ctx.set_state(SupportState.waiting_msg)
+            except Exception as e:
+                log.warning("start support state: " + str(e))
 
     @dp.pre_checkout_query()
     async def pre_checkout(query: PreCheckoutQuery):

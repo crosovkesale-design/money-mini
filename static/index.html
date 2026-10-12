@@ -492,7 +492,7 @@ window.addEventListener('error', e => {
     <input type="number" id="editAmount" class="custom-input" inputmode="decimal">
     <label class="lbl" data-i18n="comment_lbl">Комментарий</label>
     <input type="text" id="editComment" class="custom-input">
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn btn-outline" style="flex:1" onclick="closeModal('modalEditTx')" data-i18n="cancel">Отмена</button>
       <button class="btn btn-accent" style="flex:1" onclick="saveEditTx()" data-i18n="save">Сохранить</button>
     </div>
@@ -2416,53 +2416,58 @@ function deleteTx(id){
   });
 }
 function openEditTx(id){
-  const tx = appData.history.find(x => x.id === id);
+  const tx = appData.history.find(x => String(x.id) === String(id));
   if(!tx) return;
   editingTxId = id;
   document.getElementById('editAmount').value = tx.amount;
   document.getElementById('editComment').value = tx.title || '';
-  const cats = tx.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  renderCategoryGrid('editCategoryGrid', cats, false);
+
+  const baseCats = tx.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const custom = (appData.customCategories || []).filter(c => !c.type || c.type === tx.type);
+  const all = baseCats.concat(custom);
+  renderCategoryGrid('editCategoryGrid', all, false);
+
   setTimeout(() => {
     const grid = document.getElementById('editCategoryGrid');
+    if(!grid) return;
     grid.querySelectorAll('.icon-item').forEach(el => {
       if(el.dataset.name === tx.category) el.classList.add('active');
       else el.classList.remove('active');
     });
-  }, 10);
+  }, 20);
   openModal('modalEditTx');
 }
 
 function saveEditTx(){
-  const tx = appData.history.find(x => x.id === editingTxId);
+  const tx = appData.history.find(x => String(x.id) === String(editingTxId));
   if(!tx) return;
   const newAmount = parseFloat(document.getElementById('editAmount').value);
   const newComment = document.getElementById('editComment').value.trim();
-  if(!newAmount || newAmount <= 0) return;
+  if(!newAmount || newAmount <= 0){ showAlert('Введи сумму'); return; }
+
   const grid = document.getElementById('editCategoryGrid');
   const active = grid.querySelector('.icon-item.active');
   const newCat = active ? active.dataset.name : tx.category;
   const newIcon = active ? active.dataset.icon : tx.icon;
-  const diff = newAmount - tx.amount;
-  if(tx.type === 'expense'){
-    appData.balance -= diff;
-    appData.monthExpense += diff;
-  } else {
-    appData.balance += diff;
-    appData.monthIncome += diff;
-  }
-  // если это пополнение банки — корректируем баланс банки на разницу
+
+  // корректируем баланс банки, если это было пополнение
   if(tx.bankId){
     const bank = appData.banks.find(b => String(b.id) === String(tx.bankId));
     if(bank){
-      bank.balance = Math.max(0, (bank.balance || 0) + diff);
+      bank.balance = Math.max(0, (bank.balance || 0) + (newAmount - tx.amount));
     }
   }
+
   tx.amount = newAmount;
   tx.title = newComment || newCat;
   tx.category = newCat;
   tx.icon = newIcon;
-  saveData(); closeModal('modalEditTx'); renderAll();
+
+  // если привязано к конверту — spent считается из истории, ничего не трогаем
+  saveData();
+  closeModal('modalEditTx');
+  editingTxId = null;
+  renderAll();
 }
 
 function updateReceiptPhotoSection(){

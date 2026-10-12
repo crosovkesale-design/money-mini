@@ -1670,6 +1670,12 @@ function clearDemoData(){
 
   saveData();
 }
+function tierLimits(){
+  if(isPro()) return { banks: 999, envelopes: 999, recurring: 999, family: 6, custom: 999 };
+  if(isBase()) return { banks: 999, envelopes: 999, recurring: 999, family: 4, custom: 2 };
+  return { banks: 2, envelopes: 2, recurring: 2, family: 2, custom: 2 };
+}
+  
 function isPro(){
   return appData.subscription && appData.subscription.plan === 'pro';
 }

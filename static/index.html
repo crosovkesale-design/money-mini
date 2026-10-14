@@ -1680,6 +1680,11 @@ function tierLimits(){
 function isPro(){
   return appData.subscription && appData.subscription.plan === 'pro';
 }
+function tierLimits(){
+  if(isPro()) return { banks: 999, envelopes: 999, recurring: 999, family: 6, custom: 999 };
+  if(isBase()) return { banks: 999, envelopes: 999, recurring: 999, family: 4, custom: 2 };
+  return { banks: 2, envelopes: 2, recurring: 2, family: 2, custom: 2 };
+}
 
 function isBase(){
   return appData.subscription && appData.subscription.plan === 'base';
@@ -2721,7 +2726,6 @@ function saveEnvelope(){
   const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
   if(!name) return;
-  const lim = tierLimits();
   if(appData.envelopes.length >= lim.envelopes){
     showAlert(t('env_limit'));
     return;

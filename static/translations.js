@@ -1,4 +1,3 @@
-// translations.js
 const TRANSLATIONS = {
   ru: {
     balance: 'Текущий баланс', income: 'Доходы', expense: 'Расходы', history: 'История',
@@ -8,27 +7,11 @@ const TRANSLATIONS = {
     settings: 'Настройки', export: 'Скачать CSV', family: 'Семья', leave_family: 'Выйти из семьи',
     envelopes: 'Конверты', banks: 'Банки', analytics: 'Аналитика', home: 'Главная',
     new_env: 'Новый конверт', new_bank: 'Новая банка', limit: 'Лимит', goal: 'Цель',
-    recurring: 'Автоплатежи', add_rule: '+ Добавить правило', no_rules: 'Правил нет',
+    recurring: 'Автоплатежи', add_rule: 'Добавить', no_rules: 'Правил нет',
     wallpaper: 'Обои', upload: 'Загрузить', remove: 'Убрать',
     forecast: 'Прогноз на конец месяца', forecast_text: 'При текущем темпе вы потратите <b>{sum}</b> к концу месяца.',
     help: 'Справка', help_text: 'Семейный бюджет в Telegram. Ведите учёт вместе, ставьте лимиты и копите на цели.',
-    ok: 'Понятно', confirm_delete: 'Удалить?', cat_food: 'Еда', cat_grocery: 'Продукты', cat_cafe: 'Кафе', cat_fastfood: 'Фастфуд',
-    cat_transport: 'Транспорт', cat_taxi: 'Такси', cat_fuel: 'Бензин', cat_public: 'Общественный',
-    cat_home: 'Дом', cat_utilities: 'Коммуналка', cat_comm: 'Связь', cat_internet: 'Интернет',
-    cat_subs: 'Подписки', cat_pharmacy: 'Аптека', cat_clothes: 'Одежда', cat_shoes: 'Обувь',
-    cat_beauty: 'Красота', cat_sport: 'Спорт', cat_cinema: 'Кино', cat_games: 'Игры',
-    cat_leisure: 'Досуг', cat_gifts: 'Подарки', cat_pets: 'Питомцы', cat_travel: 'Путешествия',
-    cat_edu: 'Образование', cat_repair: 'Ремонт', cat_household: 'Хозтовары', cat_loan: 'Кредит',
-    cat_alimony: 'Алименты', cat_alcohol: 'Алкоголь', cat_smoke: 'Сигареты', cat_marketplace: 'Маркетплейсы',
-    cat_bank: 'Банк/комиссия', cat_other: 'Разное',
-    inc_salary: 'Зарплата', inc_advance: 'Аванс', inc_bonus: 'Премия', inc_cashback: 'Кэшбэк',
-    inc_invest: 'Инвестиции', inc_dividend: 'Дивиденды', inc_freelance: 'Фриланс', inc_business: 'Бизнес',
-    inc_sale: 'Продажа', inc_gift: 'Подарок', inc_help: 'Помощь', inc_win: 'Выигрыш',
-    inc_refund: 'Возврат', inc_scholarship: 'Стипендия', inc_pension: 'Пенсия', inc_other: 'Прочее',
-    search_ph: 'Поиск...',
-    custom_cat: 'Своя',
-    forecast: 'Прогноз на конец месяца',
-    forecast_text: 'При текущем темпе вы потратите <b>{sum}</b> к концу месяца.',
+    ok: 'Понятно', confirm_delete: 'Удалить?', custom_cat: 'Своя', search_ph: 'Поиск...'
   },
   uk: {
     balance: 'Поточний баланс', income: 'Доходи', expense: 'Витрати', history: 'Історія',
@@ -38,11 +21,11 @@ const TRANSLATIONS = {
     settings: 'Налаштування', export: 'Завантажити CSV', family: 'Родина', leave_family: 'Вийти з родини',
     envelopes: 'Конверти', banks: 'Банки', analytics: 'Аналітика', home: 'Головна',
     new_env: 'Новий конверт', new_bank: 'Нова банка', limit: 'Ліміт', goal: 'Ціль',
-    recurring: 'Автоплатежі', add_rule: '+ Додати правило', no_rules: 'Правил немає',
+    recurring: 'Автоплатежі', add_rule: 'Додати', no_rules: 'Правил немає',
     wallpaper: 'Шпалери', upload: 'Завантажити', remove: 'Прибрати',
     forecast: 'Прогноз на кінець місяця', forecast_text: 'При поточному темпі ви витратите <b>{sum}</b> до кінця місяця.',
-    help: 'Довідка', help_text: 'Сімейний бюджет у Telegram. Ведіть облік разом, ставте ліміти та накопичуйте на цілі.',
-    ok: 'Зрозуміло', confirm_delete: 'Видалити?'
+    help: 'Довідка', help_text: 'Сімейний бюджет у Telegram. Ведіть облік разом, ставте ліміти та накопичуйте.',
+    ok: 'Зрозуміло', confirm_delete: 'Видалити?', custom_cat: 'Своя', search_ph: 'Пошук...'
   },
   en: {
     balance: 'Current balance', income: 'Income', expense: 'Expenses', history: 'History',
@@ -52,11 +35,11 @@ const TRANSLATIONS = {
     settings: 'Settings', export: 'Download CSV', family: 'Family', leave_family: 'Leave family',
     envelopes: 'Envelopes', banks: 'Banks', analytics: 'Analytics', home: 'Home',
     new_env: 'New envelope', new_bank: 'New bank', limit: 'Limit', goal: 'Goal',
-    recurring: 'Recurring', add_rule: '+ Add rule', no_rules: 'No rules',
+    recurring: 'Recurring', add_rule: 'Add', no_rules: 'No rules',
     wallpaper: 'Wallpaper', upload: 'Upload', remove: 'Remove',
-    forecast: 'End of month forecast', forecast_text: 'At the current pace you will spend <b>{sum}</b> by the end of the month.',
-    help: 'Help', help_text: 'Family budget in Telegram. Track together, set limits and save for goals.',
-    ok: 'Got it', confirm_delete: 'Delete?'
+    forecast: 'End of month forecast', forecast_text: 'At current pace you will spend <b>{sum}</b> by month end.',
+    help: 'Help', help_text: 'Family budget in Telegram. Track together, set limits and save.',
+    ok: 'Got it', confirm_delete: 'Delete?', custom_cat: 'Custom', search_ph: 'Search...'
   },
   de: {
     balance: 'Aktueller Saldo', income: 'Einnahmen', expense: 'Ausgaben', history: 'Verlauf',
@@ -66,11 +49,11 @@ const TRANSLATIONS = {
     settings: 'Einstellungen', export: 'CSV herunterladen', family: 'Familie', leave_family: 'Familie verlassen',
     envelopes: 'Umschläge', banks: 'Banken', analytics: 'Analyse', home: 'Start',
     new_env: 'Neuer Umschlag', new_bank: 'Neue Bank', limit: 'Limit', goal: 'Ziel',
-    recurring: 'Daueraufträge', add_rule: '+ Regel hinzufügen', no_rules: 'Keine Regeln',
+    recurring: 'Daueraufträge', add_rule: 'Hinzufügen', no_rules: 'Keine Regeln',
     wallpaper: 'Hintergrund', upload: 'Hochladen', remove: 'Entfernen',
     forecast: 'Prognose Monatsende', forecast_text: 'Bei diesem Tempo geben Sie bis Monatsende <b>{sum}</b> aus.',
-    help: 'Hilfe', help_text: 'Familienbudget in Telegram. Gemeinsam verwalten, Limits setzen und sparen.',
-    ok: 'Verstanden', confirm_delete: 'Löschen?'
+    help: 'Hilfe', help_text: 'Familienbudget in Telegram. Gemeinsam verwalten, Limits setzen.',
+    ok: 'Verstanden', confirm_delete: 'Löschen?', custom_cat: 'Eigene', search_ph: 'Suchen...'
   },
   fr: {
     balance: 'Solde actuel', income: 'Revenus', expense: 'Dépenses', history: 'Historique',
@@ -80,11 +63,11 @@ const TRANSLATIONS = {
     settings: 'Paramètres', export: 'Télécharger CSV', family: 'Famille', leave_family: 'Quitter la famille',
     envelopes: 'Enveloppes', banks: 'Banques', analytics: 'Analytique', home: 'Accueil',
     new_env: 'Nouvelle enveloppe', new_bank: 'Nouvelle banque', limit: 'Limite', goal: 'Objectif',
-    recurring: 'Récurrents', add_rule: '+ Ajouter une règle', no_rules: 'Aucune règle',
+    recurring: 'Récurrents', add_rule: 'Ajouter', no_rules: 'Aucune règle',
     wallpaper: 'Fond', upload: 'Charger', remove: 'Retirer',
     forecast: 'Prévision fin de mois', forecast_text: 'À ce rythme, vous dépenserez <b>{sum}</b> d\'ici la fin du mois.',
-    help: 'Aide', help_text: 'Budget familial dans Telegram. Gérez ensemble, fixez des limites et épargnez.',
-    ok: 'Compris', confirm_delete: 'Supprimer ?'
+    help: 'Aide', help_text: 'Budget familial dans Telegram. Gérez ensemble, fixez des limites.',
+    ok: 'Compris', confirm_delete: 'Supprimer ?', custom_cat: 'Perso', search_ph: 'Rechercher...'
   },
   es: {
     balance: 'Saldo actual', income: 'Ingresos', expense: 'Gastos', history: 'Historial',
@@ -94,11 +77,11 @@ const TRANSLATIONS = {
     settings: 'Ajustes', export: 'Descargar CSV', family: 'Familia', leave_family: 'Salir de familia',
     envelopes: 'Sobres', banks: 'Bancos', analytics: 'Análisis', home: 'Inicio',
     new_env: 'Nuevo sobre', new_bank: 'Nuevo banco', limit: 'Límite', goal: 'Meta',
-    recurring: 'Recurrentes', add_rule: '+ Añadir regla', no_rules: 'Sin reglas',
+    recurring: 'Recurrentes', add_rule: 'Añadir', no_rules: 'Sin reglas',
     wallpaper: 'Fondo', upload: 'Subir', remove: 'Quitar',
     forecast: 'Pronóstico fin de mes', forecast_text: 'A este ritmo, gastarás <b>{sum}</b> a fin de mes.',
-    help: 'Ayuda', help_text: 'Presupuesto familiar en Telegram. Gestionen juntos, pongan límites y ahorren.',
-    ok: 'Entendido', confirm_delete: '¿Eliminar?'
+    help: 'Ayuda', help_text: 'Presupuesto familiar en Telegram. Gestionen juntos, pongan límites.',
+    ok: 'Entendido', confirm_delete: '¿Eliminar?', custom_cat: 'Propia', search_ph: 'Buscar...'
   },
   it: {
     balance: 'Saldo attuale', income: 'Entrate', expense: 'Spese', history: 'Cronologia',
@@ -108,11 +91,11 @@ const TRANSLATIONS = {
     settings: 'Impostazioni', export: 'Scarica CSV', family: 'Famiglia', leave_family: 'Esci dalla famiglia',
     envelopes: 'Buste', banks: 'Banche', analytics: 'Analisi', home: 'Home',
     new_env: 'Nuova busta', new_bank: 'Nuova banca', limit: 'Limite', goal: 'Obiettivo',
-    recurring: 'Ricorrenti', add_rule: '+ Aggiungi regola', no_rules: 'Nessuna regola',
+    recurring: 'Ricorrenti', add_rule: 'Aggiungi', no_rules: 'Nessuna regola',
     wallpaper: 'Sfondo', upload: 'Carica', remove: 'Rimuovi',
     forecast: 'Previsione fine mese', forecast_text: 'A questo ritmo, spenderai <b>{sum}</b> entro fine mese.',
-    help: 'Aiuto', help_text: 'Budget familiare in Telegram. Gestisci insieme, imposta limiti e risparmia.',
-    ok: 'Capito', confirm_delete: 'Eliminare?'
+    help: 'Aiuto', help_text: 'Budget familiare in Telegram. Gestisci insieme, imposta limiti.',
+    ok: 'Capito', confirm_delete: 'Eliminare?', custom_cat: 'Personale', search_ph: 'Cerca...'
   },
   pl: {
     balance: 'Aktualne saldo', income: 'Dochody', expense: 'Wydatki', history: 'Historia',
@@ -122,11 +105,11 @@ const TRANSLATIONS = {
     settings: 'Ustawienia', export: 'Pobierz CSV', family: 'Rodzina', leave_family: 'Opuść rodzinę',
     envelopes: 'Koperty', banks: 'Banki', analytics: 'Analizy', home: 'Główna',
     new_env: 'Nowa koperta', new_bank: 'Nowy bank', limit: 'Limit', goal: 'Cel',
-    recurring: 'Cykliczne', add_rule: '+ Dodaj regułę', no_rules: 'Brak reguł',
+    recurring: 'Cykliczne', add_rule: 'Dodaj', no_rules: 'Brak reguł',
     wallpaper: 'Tapeta', upload: 'Wgraj', remove: 'Usuń',
     forecast: 'Prognoza końca miesiąca', forecast_text: 'W tym tempie wydasz <b>{sum}</b> do końca miesiąca.',
-    help: 'Pomoc', help_text: 'Budżet rodzinny w Telegramie. Zarządzajcie razem, ustalajcie limity i oszczędzajcie.',
-    ok: 'Rozumiem', confirm_delete: 'Usunąć?'
+    help: 'Pomoc', help_text: 'Budżet rodzinny w Telegramie. Zarządzajcie razem, ustalajcie limity.',
+    ok: 'Rozumiem', confirm_delete: 'Usunąć?', custom_cat: 'Własna', search_ph: 'Szukaj...'
   },
   tr: {
     balance: 'Mevcut bakiye', income: 'Gelir', expense: 'Gider', history: 'Geçmiş',
@@ -136,11 +119,11 @@ const TRANSLATIONS = {
     settings: 'Ayarlar', export: 'CSV indir', family: 'Aile', leave_family: 'Aileden ayrıl',
     envelopes: 'Zarflar', banks: 'Bankalar', analytics: 'Analiz', home: 'Ana sayfa',
     new_env: 'Yeni zarf', new_bank: 'Yeni banka', limit: 'Limit', goal: 'Hedef',
-    recurring: 'Tekrarlayan', add_rule: '+ Kural ekle', no_rules: 'Kural yok',
+    recurring: 'Tekrarlayan', add_rule: 'Ekle', no_rules: 'Kural yok',
     wallpaper: 'Duvar kağıdı', upload: 'Yükle', remove: 'Kaldır',
     forecast: 'Ay sonu tahmini', forecast_text: 'Bu hızla ay sonuna kadar <b>{sum}</b> harcayacaksınız.',
-    help: 'Yardım', help_text: 'Telegram\'da aile bütçesi. Birlikte yönetin, limit koyun ve birikim yapın.',
-    ok: 'Anladım', confirm_delete: 'Silinsin mi?'
+    help: 'Yardım', help_text: 'Telegram\'da aile bütçesi. Birlikte yönetin, limit koyun.',
+    ok: 'Anladım', confirm_delete: 'Silinsin mi?', custom_cat: 'Özel', search_ph: 'Ara...'
   },
   zh: {
     balance: '当前余额', income: '收入', expense: '支出', history: '历史记录',
@@ -150,10 +133,10 @@ const TRANSLATIONS = {
     settings: '设置', export: '下载 CSV', family: '家庭', leave_family: '离开家庭',
     envelopes: '信封', banks: '储蓄罐', analytics: '分析', home: '主页',
     new_env: '新信封', new_bank: '新储蓄罐', limit: '限额', goal: '目标',
-    recurring: '定期交易', add_rule: '+ 添加规则', no_rules: '无规则',
+    recurring: '定期交易', add_rule: '添加', no_rules: '无规则',
     wallpaper: '壁纸', upload: '上传', remove: '移除',
     forecast: '月末预测', forecast_text: '按当前速度，到月底你将花费 <b>{sum}</b>。',
-    help: '帮助', help_text: 'Telegram 家庭记账。共同管理、设置限额并储蓄。',
-    ok: '明白了', confirm_delete: '删除？'
+    help: '帮助', help_text: 'Telegram 家庭记账。共同管理、设置限额。',
+    ok: '明白了', confirm_delete: '删除？', custom_cat: '自定义', search_ph: '搜索...'
   }
 };

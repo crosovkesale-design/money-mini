@@ -33,11 +33,7 @@ from pay import CryptoPay
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("app")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
@@ -46,32 +42,20 @@ MINI_APP_URL = os.getenv("MINI_APP_URL", "")
 CRYPTOPAY_TOKEN = os.getenv("CRYPTOPAY_TOKEN", "")
 CRYPTOPAY_NETWORK = os.getenv("CRYPTOPAY_NETWORK", "USDT")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "")
-ADMIN_IDS = {int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()}
-FIREBASE_URL = os.getenv(
-    "FIREBASE_URL",
-    "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app",
-)
+FIREBASE_URL = os.getenv("FIREBASE_URL", "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app")
 
 KYIV = ZoneInfo("Europe/Kyiv")
 
 TARIFFS = {
-    "1month":   {"days": 30,  "price_usd": 5,  "name": "1 месяц"},
-    "3months":  {"days": 90,  "price_usd": 13, "name": "3 месяца"},
-    "6months":  {"days": 180, "price_usd": 23, "name": "6 месяцев"},
+    "1month": {"days": 30, "price_usd": 5, "name": "1 месяц"},
+    "3months": {"days": 90, "price_usd": 13, "name": "3 месяца"},
+    "6months": {"days": 180, "price_usd": 23, "name": "6 месяцев"},
     "12months": {"days": 365, "price_usd": 38, "name": "12 месяцев"},
-    "pro1":     {"days": 30,  "price_usd": 10, "name": "Pro 1 месяц"},
-    "pro12":    {"days": 365, "price_usd": 75, "name": "Pro 12 месяцев"},
+    "pro1": {"days": 30, "price_usd": 10, "name": "Pro 1 месяц"},
+    "pro12": {"days": 365, "price_usd": 75, "name": "Pro 12 месяцев"},
 }
 BIG_TARIFFS = {"6months", "12months", "pro1", "pro12"}
-STARS_PRICES = {
-    "1month":   500,
-    "3months":  1300,
-    "6months":  2300,
-    "12months": 3900,
-    "pro1":     1000,
-    "pro12":    7500,
-}
-
+STARS_PRICES = {"1month": 500, "3months": 1300, "6months": 2300, "12months": 3900, "pro1": 1000, "pro12": 7500}
 FAMILY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 bot = Bot(token=BOT_TOKEN) if BOT_TOKEN else None
@@ -79,333 +63,119 @@ dp = Dispatcher(storage=MemoryStorage())
 fb = Firebase(FIREBASE_URL)
 cp = CryptoPay(CRYPTOPAY_TOKEN)
 
-
-# ---------- утилиты ----------
-
 def now_ms() -> int:
     return int(datetime.now(timezone.utc).timestamp() * 1000)
-
 
 def gen_family_code() -> str:
     return "FAM-" + "".join(secrets.choice(FAMILY_CODE_ALPHABET) for _ in range(6))
 
-
-REFERRAL_REWARDS = [
-    {"at": 1,   "type": "coupon10", "label": "Купон 10%"},
-    {"at": 3,   "type": "coupon10", "label": "Купон 10%"},
-    {"at": 5,   "type": "coupon20", "label": "Купон 20%"},
-    {"at": 10,  "type": "coupon10", "label": "Купон 10%"},
-    {"at": 15,  "type": "coupon10", "label": "Купон 10%"},
-    {"at": 20,  "type": "coupon20", "label": "Купон 20%"},
-    {"at": 30,  "type": "coupon10", "label": "Купон 10%"},
-    {"at": 50,  "type": "coupon20", "label": "Купон 20%"},
-    {"at": 75,  "type": "coupon10", "label": "Купон 10%"},
-    {"at": 100, "type": "coupon20", "label": "Купон 20%"},
-]
-
-
-
-
-class ReviewState(StatesGroup):
-    waiting_text = State()
-class SupportState(StatesGroup):
-    waiting_msg = State()
-    waiting_reply = State()
-
-
-def calc_max_coupons(plan: str) -> int:
-    return 3 if plan in BIG_TARIFFS else 1
-
-
-def apply_discount(price_usd: float, plan: str, use10: int, use20: int):
-    """Скидка: 10% за каждый обычный купон, 20% за каждый реферальный.
-    Суммарно не больше 50%. При превышении лимита приоритет 20%-купонам."""
-    max_c = calc_max_coupons(plan)
-    if use10 + use20 > max_c:
-        keep20 = min(use20, max_c)
-        keep10 = min(use10, max_c - keep20)
-        use10, use20 = keep10, keep20
-    pct = min(use10 * 10 + use20 * 20, 50)
-    final = round(price_usd * (1 - pct / 100), 2)
-    return final, pct, use10, use20
-
-async def _grant_single(uid: str, r: dict):
-    if not bot:
-        return
-    try:
-        await bot.send_message(
-            int(uid),
-            "🎁 Новая награда: <b>" + r["label"] + "</b>",
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        log.warning("grant single " + str(uid) + ": " + str(e))
-
-
-async def _apply_reward(u: dict, r: dict, c10: int, c20: int):
-    if r["type"] == "coupon10":
-        return c10 + 1, c20
-    if r["type"] == "coupon20":
-        return c10, c20 + 1
-    return c10, c20
-
-
-async def grant_rewards(uid: str, count: int):
-    u = await fb.get("/users/" + uid) or {}
-    got = set(u.get("rewardsClaimed") or [])
-    c10 = u.get("couponsEarned") or 0
-    c20 = u.get("coupons20Earned") or 0
-    for r in REFERRAL_REWARDS:
-        key = r["type"] + "_" + str(r["at"])
-        if count >= r["at"] and key not in got:
-            c10, c20 = await _apply_reward(u, r, c10, c20)
-            got.add(key)
-            await _grant_single(uid, r)
-            await fb.patch(f"/users/{uid}", {
-                "rewardsClaimed": list(got),
-                "referralCount": count,
-                "couponsEarned": c10,
-                "coupons20Earned": c20,
-            })
-
-
 async def get_user(uid: str) -> dict:
     return (await fb.get(f"/users/{uid}")) or {}
 
+class ReviewState(StatesGroup):
+    waiting_text = State()
+    waiting_msg = State()
 
-# ---------- aiogram ----------
+# ---------- ФОНОВЫЕ ЗАДАЧИ ----------
+async def daily_check():
+    while True:
+        try:
+            if bot:
+                now_sec = int(datetime.now(timezone.utc).timestamp())
+                users = (await fb.get("/users")) or {}
+                for uid, u in users.items():
+                    if not isinstance(u, dict): continue
+                    sub_end = int(u.get("subEnd") or 0)
+                    if sub_end > 10**11: sub_end //= 1000
+                    if sub_end <= 0: continue
+                    days = math.ceil((sub_end - now_sec) / 86400)
+                    sent_flag = u.get("reminderSent") or 0
+                    msg = None
+                    new_flag = None
+                    if days == 3 and sent_flag < 3:
+                        msg, new_flag = "⏰ Подписка истекает через <b>3 дн.</b>", 3
+                    elif days == 2 and sent_flag < 2:
+                        msg, new_flag = "⏰ Подписка истекает через <b>2 дн.</b>", 2
+                    elif days == 1 and sent_flag < 1:
+                        msg, new_flag = "⏰ Подписка истекает <b>завтра</b>.", 1
+                    elif days <= 0 and sent_flag != 99:
+                        msg, new_flag = "❌ <b>Ваша подписка истекла.</b>", 99
+                    if msg:
+                        try: await bot.send_message(int(uid), msg, parse_mode="HTML")
+                        except: pass
+                        patch = {"reminderSent": new_flag}
+                        if new_flag == 99: patch["status"] = "expired"
+                        await fb.patch(f"/users/{uid}", patch)
+        except Exception as e:
+            log.warning(f"daily_check error: {e}")
+        await asyncio.sleep(6 * 60 * 60)
+
+async def daily_reminder():
+    while True:
+        try:
+            if bot:
+                kyiv_now = datetime.now(KYIV)
+                if 19 <= kyiv_now.hour <= 21:
+                    today = kyiv_now.strftime("%Y-%m-%d")
+                    users = (await fb.get("/users")) or {}
+                    for uid, u in users.items():
+                        if not isinstance(u, dict) or u.get("lastDailyRemind") == today: continue
+                        sub_end = int(u.get("subEnd") or 0)
+                        if sub_end < 10**11: sub_end *= 1000
+                        if sub_end <= now_ms(): continue
+                        try:
+                            await bot.send_message(int(uid), "📝 <b>Не забудь записать траты за сегодня!</b>", parse_mode="HTML")
+                            await fb.patch(f"/users/{uid}", {"lastDailyRemind": today})
+                        except: pass
+        except Exception as e:
+            log.warning(f"daily_reminder error: {e}")
+        await asyncio.sleep(3600)
+
+# ---------- ХЕНДЛЕРЫ БОТА ----------
 if bot:
-
     @dp.message(Command("start"))
     async def cmd_start(message: Message):
         args = message.text.split()
         ref_id = None
-        start_support = False
-        if len(args) > 1:
-            if args[1].startswith("ref_"):
-                ref_id = args[1][4:]
-            elif args[1] == "support":
-                start_support = True
-
+        if len(args) > 1 and args[1].startswith("ref_"): ref_id = args[1][4:]
+        
         uid = str(message.from_user.id)
         ts = now_ms()
-
         existing = await get_user(uid)
-        upd = {
-            "name": message.from_user.first_name or "Гость",
-            "username": message.from_user.username or "",
-            "tgId": uid,
-            "lastSeen": ts,
-        }
-        if not existing.get("firstSeen"):
-            upd.update({
-                "firstSeen": ts,
-                "tariff": "trial",
-                "subStart": ts,
-                "subEnd": ts + 30 * 24 * 60 * 60 * 1000,
-                "status": "active",
-                "reminderSent": 0,
-            })
-        await fb.patch(f"/users/{uid}", upd)
-        if ADMIN_CHAT_ID and not existing.get("firstSeen"):
-            try:
-                await bot.send_message(
-                    ADMIN_CHAT_ID,
-                    "🆕 <b>Новый юзер</b>\n\n"
-                    + (message.from_user.first_name or "—")
-                    + (" (@" + message.from_user.username + ")" if message.from_user.username else "")
-                    + "\nid: <code>" + uid + "</code>",
-                    parse_mode="HTML"
-                )
-            except Exception as e:
-                log.warning("new user notify: " + str(e))
+        upd = {"name": message.from_user.first_name or "Гость", "username": message.from_user.username or "", "tgId": uid, "lastSeen": ts}
         
-        if ref_id and ref_id != uid:
-            if not existing.get("referredBy"):
-                await fb.patch(f"/users/{uid}", {"referredBy": ref_id, "referredAt": ts})
-                refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
-                refs[uid] = ts
-                await fb.put(f"/users/{ref_id}/referrals", refs)
-                try:
-                    await grant_rewards(ref_id, len(refs))
-                except Exception as e:
-                    log.warning("grant_rewards: " + str(e))
+        if not existing.get("firstSeen"):
+            upd.update({"firstSeen": ts, "tariff": "trial", "subStart": ts, "subEnd": ts + 30 * 86400000, "status": "active", "reminderSent": 0})
+        await fb.patch(f"/users/{uid}", upd)
+
+        if ref_id and ref_id != uid and not existing.get("referredBy"):
+            await fb.patch(f"/users/{uid}", {"referredBy": ref_id, "referredAt": ts})
+            refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
+            refs[uid] = ts
+            await fb.put(f"/users/{ref_id}/referrals", refs)
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="📊 Открыть бюджет",
-                web_app=WebAppInfo(url=MINI_APP_URL),
-            )],
-            [InlineKeyboardButton(
-                text="💎 Подписка и оплата",
-                callback_data="show_pay",
-            )],
-            [InlineKeyboardButton(
-                text="🎁 Пригласить друга",
-                callback_data="ref_link",
-            )],
+            [InlineKeyboardButton(text="📊 Открыть бюджет", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Подписка и оплата", callback_data="show_pay")],
+            [InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")]
         ])
         await message.answer(
             "👋 Привет! Это <b>Family Budget</b> — семейный учёт доходов и расходов.\n\n"
-            "<b>Что умеет:</b>\n"
-            "💰 Доходы и расходы по категориям\n"
-            "📊 Аналитика по месяцам\n"
-            "📩 Конверты — лимиты на категории\n"
-            "🏦 Банки-цели — накопления с дедлайном\n"
-            "👥 Общий бюджет с партнёром\n\n"
-            "<b>Как начать:</b>\n"
-            "1. Нажми «Открыть бюджет» ниже\n"
-            "2. Добавь первую трату — кнопка ➖\n"
-            "3. Поставь лимиты в «Конвертах»\n\n"
-            "<i>В Pro:</i> распознавание чеков по фото и ИИ-ассистент.",
-                reply_markup=kb,
-                parse_mode="HTML"
+            "Нажми кнопку, чтобы начать.",
+            reply_markup=kb, parse_mode="HTML"
         )
-        
-        if start_support:
-            try:
-                from aiogram.fsm.context import FSMContext
-                ctx = FSMContext(dp.storage, message.chat.id, message.from_user.id)
-                await ctx.set_state(SupportState.waiting_msg)
-                await message.answer(
-                    "💬 <b>Поддержка</b>\n\n"
-                    "Напиши свой вопрос одним сообщением — увидим и ответим.",
-                     parse_mode="HTML"
-                )
-            except Exception as e:
-                log.warning("start support: " + str(e))
-                await message.answer(
-                    "💬 Напиши свой вопрос — увидим и ответим."
-                )
-
-    @dp.pre_checkout_query()
-    async def pre_checkout(query: PreCheckoutQuery):
-        await query.answer(ok=True)
-
-    @dp.message(F.successful_payment)
-    async def on_stars_paid(message: Message):
-        sp = message.successful_payment
-        try:
-            meta = json.loads(sp.invoice_payload or "{}")
-        except Exception:
-            return
-        uid = meta.get("uid")
-        plan = meta.get("plan")
-        if not uid or plan not in TARIFFS:
-            return
-
-        days = TARIFFS[plan]["days"]
-        now_ts = now_ms()
-        u = await get_user(uid)
-        cur_end = int(u.get("subEnd") or 0)
-        if cur_end < 10**11:
-            cur_end *= 1000
-        if cur_end < now_ts:
-            cur_end = now_ts
-        new_end = cur_end + days * 86400000
-
-        await fb.patch(f"/users/{uid}", {
-            "tariff": plan,
-            "subStart": now_ts,
-            "subEnd": new_end,
-            "status": "active",
-            "starsTotalPaid": (u.get("starsTotalPaid") or 0) + (sp.total_amount or 0),
-            "reminderSent": 0,
-        })
-
-        try:
-            await bot.send_message(
-                int(uid),
-                "✅ <b>Оплата через Telegram Stars прошла!</b>\n\n"
-                "Тариф: " + TARIFFS[plan]["name"] + "\n"
-                "Активен до: " + datetime.fromtimestamp(new_end / 1000, KYIV).strftime("%d.%m.%Y"),
-                parse_mode="HTML"
-            )
-        except Exception:
-            pass
-
-        if ADMIN_CHAT_ID:
-            try:
-                await bot.send_message(
-                    ADMIN_CHAT_ID,
-                    "⭐ <b>Оплата Stars</b>\nID: " + str(uid) + "\nТариф: " + TARIFFS[plan]["name"] + "\nЗвёзд: " + str(sp.total_amount),
-                    parse_mode="HTML"
-                )
-            except Exception:
-                pass
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
-        await message.answer(
-            "/start — открыть бюджет\n"
-            "/help — справка\n"
-            "/status — подписка\n"
-            "/referrals — мои рефералы\n"
-            "/stats — сколько нас\n"
-            "/pay — подписка и оплата\n"
-            "/review — оставить отзыв\n"
-            "/support — связаться с поддержкой\n"
-        )
+        await message.answer("/start — бюджет\n/help — справка\n/stats — сколько нас\n/review — оставить отзыв\n/support — поддержка")
 
-    @dp.message(Command("status"))
-    async def cmd_status(message: Message):
-        uid = str(message.from_user.id)
-        u = await get_user(uid)
-        sub_end = int(u.get("subEnd") or 0)
-        if sub_end > 10**11:
-            sub_end //= 1000
-        left = max(0, math.ceil((sub_end - now_ms() / 1000) / 86400))
-        status = "активна" if sub_end * 1000 > now_ms() else "истекла"
-        await message.answer(
-            "📊 <b>Подписка</b>\n\n"
-            f"Тариф: {u.get('tariff') or 'trial'}\n"
-            f"Статус: {status}\n"
-            f"Осталось: {left} дней",
-            parse_mode="HTML",
-        )
-
-@dp.message(Command("stats"))
-async def cmd_stats(message: Message):
-    users = await fb.get("/users") or {}
-    total = 0
-    trial = 0
-    paid = 0
-    active24 = 0
-    active7d = 0
-    now = now_ms()
-    day_ago = now - 86400000
-    week_ago = now - 7 * 86400000
-
-    for uid_key, u in users.items():
-        if not isinstance(u, dict):
-            continue
-        total += 1
-        tariff = (u.get("tariff") or "").lower()
-        sub_end = int(u.get("subEnd") or 0)
-        if sub_end < 10**11:
-            sub_end *= 1000
-        if tariff.startswith("trial"):
-            trial += 1
-        elif sub_end > now:
-            paid += 1
-        else:
-            trial += 1
-
-        last_seen = int(u.get("lastSeen") or 0)
-        if last_seen >= day_ago:
-            active24 += 1
-        if last_seen >= week_ago:
-            active7d += 1
-
-    await message.answer(
-        "📊 <b>Family Budget</b>\n\n"
-        "👥 Всего: <b>" + str(total) + "</b>\n"
-        "🔥 Активных за 24ч: <b>" + str(active24) + "</b>\n"
-        "📅 Активных за 7д: <b>" + str(active7d) + "</b>\n\n"
-        "🎁 На триале: " + str(trial) + "\n"
-        "💎 С подпиской: " + str(paid),
-        parse_mode="HTML"
-    )
+    @dp.message(Command("stats"))
+    async def cmd_stats(message: Message):
+        users = (await fb.get("/users")) or {}
+        total = len(users)
+        trial = sum(1 for u in users.values() if isinstance(u, dict) and (u.get("tariff") or "").startswith("trial"))
+        paid = total - trial
+        await message.answer(f"📊 Всего: <b>{total}</b>\n🎁 На триале: {trial}\n💎 С подпиской: {paid}", parse_mode="HTML")
 
     @dp.message(Command("referrals"))
     async def cmd_referrals(message: Message):
@@ -413,1364 +183,154 @@ async def cmd_stats(message: Message):
         me = await get_user(uid)
         refs = me.get("referrals") or {}
         link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
+        await message.answer(f"👥 <b>Твои рефералы:</b> {len(refs)}\n\nТвоя ссылка:\n<code>{link}</code>", parse_mode="HTML")
 
-        if not refs:
-            await message.answer(
-                "👥 <b>Рефералы</b>\n\nПока никого не пригласил.\n\n"
-                f"Твоя ссылка:\n<code>{link}</code>",
-                parse_mode="HTML",
-            )
-            return
+    @dp.callback_query(F.data == "ref_link")
+    async def cb_ref_link(cb: CallbackQuery):
+        uid = str(cb.from_user.id)
+        link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
+        share = f"https://t.me/share/url?url={link}&text=Заходи в Family Budget!"
+        kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="📤 Поделиться", url=share)]])
+        await cb.message.edit_text(f"🎁 Приглашай друзей!\nТвоя ссылка:\n<code>{link}</code>", parse_mode="HTML", reply_markup=kb)
+        await cb.answer()
 
-        lines = ["👥 <b>Твои рефералы</b>", ""]
-        total_paid = 0
-        ts_now = now_ms()
-        for i, ref_id in enumerate(refs, 1):
-            ru = await get_user(ref_id)
-            name = ru.get("name") or f"id {ref_id}"
-            uname = f"@{ru['username']}" if ru.get("username") else ""
-            paid = ru.get("paidAmount") or 0
-            total_paid += paid
-            sub_end = int(ru.get("subEnd") or 0)
-            if 0 < sub_end < 10**11:
-                sub_end *= 1000
-            st = "активна" if sub_end > ts_now else "истекла"
-            lines.append(
-                f"{i}. <b>{name}</b> {uname}\n"
-                f"   Тариф: {ru.get('tariff') or 'trial'} · {st}\n"
-                f"   Купил на: {paid} ₴"
-            )
-        lines += [
-            "",
-            f"Всего рефералов: <b>{me.get('referralCount') or 0}</b>",
-            f"Купонов 10%: <b>{me.get('couponsEarned') or 0}</b>",
-            f"Купонов 20%: <b>{me.get('coupons20Earned') or 0}</b>",
-            f"Рефералы купили на <b>${round(total_paid)}</b>",
-        ]
-        await message.answer("\n".join(lines), parse_mode="HTML")
+    @dp.callback_query(F.data == "show_pay")
+    async def cb_show_pay(cb: CallbackQuery):
+        kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))]])
+        await cb.message.edit_text("Нажми кнопку, чтобы выбрать тариф:", reply_markup=kb)
+        await cb.answer()
 
-    @dp.message(Command("pay"))
-    async def cmd_pay(message: Message):
-        uid = str(message.from_user.id)
-        u = await get_user(uid)
-        tariff = u.get("tariff") or "trial"
-        sub_end = int(u.get("subEnd") or 0)
-        if sub_end < 10**11:
-            sub_end *= 1000
-        now_ts = now_ms()
-
-        status = "активна" if sub_end > now_ts else "истекла"
-        days = max(0, math.ceil((sub_end - now_ts) / 86400000)) if sub_end > now_ts else 0
-        tariff_label = TARIFFS.get(tariff, {}).get("name", tariff)
-
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="💳 Открыть тарифы и оплатить",
-                web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"),
-            )],
-        ])
-
-        text = (
-            "💎 <b>Подписка</b>\n\n"
-            "Тариф: <b>" + tariff_label + "</b>\n"
-            "Статус: <b>" + status + "</b>\n"
-        )
-        if days > 0:
-            text += "Осталось: <b>" + str(days) + " дн.</b>\n"
-        text += (
-            "\n<b>Базовая</b> — 500 ⭐ / мес\n"
-            "Безлимит конвертов, банок, автоплатежей. Прогнозы. Дайджест. Семья до 4.\n\n"
-            "<b>Pro</b> — 1000 ⭐ / мес\n"
-            "Всё из базовой + распознавание чеков по фото, AI-ассистент, Monobank, свои категории, семья до 6.\n\n"
-            "Нажми кнопку — откроются тарифы."
-        )
-
-        await message.answer(text, parse_mode="HTML", reply_markup=kb)
-
-@dp.message(Command("support"))
-async def cmd_support(message: Message, state: FSMContext):
-    await state.set_state(SupportState.waiting_msg)
-    await message.answer(
-        "💬 <b>Поддержка</b>\n\n"
-        "Напиши свой вопрос или проблему одним сообщением.\n"
-        "Отвечаем в течение дня.\n\n"
-        "Отменить — /cancel",
-        parse_mode="HTML"
-    )
-
-@dp.message(SupportState.waiting_msg)
-async def support_msg(message: Message, state: FSMContext):
-    uid = str(message.from_user.id)
-    text = (message.text or "").strip()
-    if not text:
-        await message.answer("Напиши текстом.")
-        return
-    if len(text) > 2000:
-        text = text[:2000]
-
-    name = message.from_user.first_name or "Гость"
-    uname = ("@" + message.from_user.username) if message.from_user.username else ""
-
-    await fb.push("/support", {
-        "uid": uid,
-        "name": name,
-        "username": message.from_user.username or "",
-        "text": text,
-        "ts": now_ms(),
-        "status": "open",
-    })
-
-    await state.clear()
-    await message.answer(
-        "✅ <b>Сообщение отправлено</b>\n\n"
-        "Мы ответим тебе сюда в течение дня.",
-        parse_mode="HTML"
-    )
-
-    if ADMIN_CHAT_ID:
-        try:
-            kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(
-                    text="✍️ Ответить",
-                    callback_data=f"reply_{uid}"
-                )]
-            ])
-            await bot.send_message(
-                int(ADMIN_CHAT_ID),
-                "💬 <b>Новое обращение</b>\n\n"
-                "От: " + name + " " + uname + "\n"
-                "id: <code>" + uid + "</code>\n\n"
-                + text,
-                parse_mode="HTML",
-                reply_markup=kb
-            )
-        except Exception as e:
-            log.warning("support notify: " + str(e))
-
-@dp.callback_query(F.data.startswith("reply_"))
-async def cb_reply(callback: CallbackQuery, state: FSMContext):
-    uid = callback.data[6:]
-    await state.update_data(reply_to=uid)
-    await state.set_state(SupportState.waiting_reply)
-    await callback.message.edit_reply_markup(reply_markup=None)
-    await callback.message.answer(
-        "✍️ Напиши ответ для юзера <code>" + uid + "</code>.\n"
-        "Уйдёт ему в личку сразу.",
-        parse_mode="HTML"
-    )
-    await callback.answer()
-
-@dp.message(SupportState.waiting_reply)
-async def support_reply(message: Message, state: FSMContext):
-    data = await state.get_data()
-    target = data.get("reply_to")
-    if not target:
-        await state.clear()
-        await message.answer("Потеряли получателя. Используй /support заново.")
-        return
-
-    text = (message.text or "").strip()
-    if not text:
-        return
-
-    try:
-        await bot.send_message(
-            int(target),
-            "💬 <b>Ответ поддержки</b>\n\n" + text,
-            parse_mode="HTML"
-        )
-        await message.answer("✅ Отправлено юзеру.")
-    except Exception as e:
-        await message.answer("❌ Не доставлено: " + str(e))
-    await state.clear()
-    
     @dp.message(Command("review"))
     async def cmd_review(message: Message, state: FSMContext):
-        uid = str(message.from_user.id)
-        u = await get_user(uid)
-        if u.get("reviewSubmitted"):
-            await message.answer("✅ Ты уже оставлял отзыв. Спасибо!")
-            return
         await state.set_state(ReviewState.waiting_text)
-        await message.answer(
-            "📝 <b>Оставить отзыв</b>\n\n"
-            "Напиши одним сообщением, что думаешь о Family Budget.\n\n"
-            "За отзыв получишь <b>купон 20%</b> на любой тариф.\n\n"
-            "Отменить — /cancel",
-            parse_mode="HTML"
-        )
-
-    @dp.message(Command("cancel"))
-    async def cmd_cancel(message: Message, state: FSMContext):
-        await state.clear()
-        await message.answer("Отменено")
+        await message.answer("📝 Напиши свой отзыв одним сообщением (минимум 10 символов):")
 
     @dp.message(ReviewState.waiting_text)
     async def review_text(message: Message, state: FSMContext):
-        uid = str(message.from_user.id)
         text = (message.text or "").strip()
         if len(text) < 10:
-            await message.answer("Слишком коротко — напиши хотя бы 10 символов.")
+            await message.answer("Слишком коротко.")
             return
-        if len(text) > 1000:
-            text = text[:1000]
-
-        await fb.push("/reviews", {
-            "uid": uid,
-            "name": message.from_user.first_name or "Гость",
-            "username": message.from_user.username or "",
-            "text": text,
-            "ts": now_ms()
-        })
-
-        u = await get_user(uid)
-        cur20 = u.get("coupons20Earned") or 0
-        await fb.patch(f"/users/{uid}", {
-            "reviewSubmitted": True,
-            "coupons20Earned": cur20 + 1
-        })
-
+        
+        uid = str(message.from_user.id)
+        await fb.push("/reviews", {"uid": uid, "name": message.from_user.first_name, "text": text, "ts": now_ms()})
+        await fb.patch(f"/users/{uid}", {"coupons20Earned": (await get_user(uid)).get("coupons20Earned", 0) + 1})
         await state.clear()
-        await message.answer(
-            "✅ <b>Спасибо за отзыв!</b>\n\n"
-            "🎁 Начислен купон <b>20%</b> на любой тариф.\n\n"
-            "Открой приложение → Настройки → Оплатить, чтобы использовать.",
-            parse_mode="HTML"
-        )
-
-        review_post = (
-            "📝 <b>Отзыв</b>\n\n"
-            + text + "\n\n"
-            + "— " + (message.from_user.first_name or "Гость")
-            + (" (@" + message.from_user.username + ")" if message.from_user.username else "")
-        )
-
-        review_channel = os.getenv("REVIEW_CHANNEL_ID", "")
-        if review_channel:
-            try:
-                await bot.send_message(int(review_channel), review_post, parse_mode="HTML")
-            except Exception as e:
-                log.warning("review channel: " + str(e))
+        await message.answer("✅ Спасибо! Начислен купон 20%.")
 
         if ADMIN_CHAT_ID:
             try:
-                await bot.send_message(int(ADMIN_CHAT_ID), review_post, parse_mode="HTML")
-            except Exception:
-                pass
+                channel_id = os.getenv("REVIEW_CHANNEL_ID")
+                target = int(channel_id) if channel_id else int(ADMIN_CHAT_ID)
+                await bot.send_message(target, f"📝 <b>Новый отзыв</b>\n\n{text}\n\n— {message.from_user.first_name}", parse_mode="HTML")
+            except Exception as e:
+                log.warning(f"review send error: {e}")
 
-    @dp.callback_query(F.data == "show_pay")
-    async def cb_show_pay(callback: CallbackQuery):
-        uid = str(callback.from_user.id)
-        u = await get_user(uid)
-        tariff = u.get("tariff") or "trial"
-        sub_end = int(u.get("subEnd") or 0)
-        if sub_end < 10**11:
-            sub_end *= 1000
-        now_ts = now_ms()
+    @dp.message(Command("support"))
+    async def cmd_support(message: Message, state: FSMContext):
+        await state.set_state(ReviewState.waiting_msg)
+        await message.answer("💬 Напиши свой вопрос одним сообщением:")
 
-        status = "активна" if sub_end > now_ts else "истекла"
-        days = max(0, math.ceil((sub_end - now_ts) / 86400000)) if sub_end > now_ts else 0
-        tariff_label = TARIFFS.get(tariff, {}).get("name", tariff)
+    @dp.message(ReviewState.waiting_msg)
+    async def support_msg(message: Message, state: FSMContext):
+        if ADMIN_CHAT_ID:
+            try:
+                await bot.send_message(int(ADMIN_CHAT_ID), f"💬 Вопрос от {message.from_user.id}:\n\n{message.text}")
+            except: pass
+        await state.clear()
+        await message.answer("✅ Отправлено. Мы ответим вам в ближайшее время.")
 
-        text = (
-            "💎 <b>Подписка</b>\n\n"
-            "Тариф: <b>" + tariff_label + "</b>\n"
-            "Статус: <b>" + status + "</b>\n"
-        )
-        if days > 0:
-            text += "Осталось: <b>" + str(days) + " дн.</b>\n"
-        text += "\nНажми кнопку — откроются тарифы и оплата."
+    @dp.pre_checkout_query()
+    async def pre_checkout(query: PreCheckoutQuery):
+        await query.answer(ok=True)
 
-        try:
-            await callback.message.edit_text(
-                text,
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(
-                        text="💳 Открыть тарифы",
-                        web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"),
-                    )],
-                    [InlineKeyboardButton(text="⬅️ Назад", callback_data="back_to_start")],
-                ])
-            )
-        except Exception as e:
-            log.warning("show_pay: " + str(e))
-        await callback.answer()
-
-    @dp.callback_query(F.data == "back_to_start")
-    async def cb_back_to_start(callback: CallbackQuery):
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="📊 Открыть бюджет",
-                web_app=WebAppInfo(url=MINI_APP_URL),
-            )],
-            [InlineKeyboardButton(
-                text="💎 Подписка и оплата",
-                callback_data="show_pay",
-            )],
-            [InlineKeyboardButton(
-                text="🎁 Пригласить друга",
-                callback_data="ref_link",
-            )],
-        ])
-        try:
-            await callback.message.edit_text(
-                "Выбери действие:",
-                reply_markup=kb
-            )
-        except Exception as e:
-            log.warning("back_to_start: " + str(e))
-        await callback.answer()
-
-    @dp.callback_query(F.data == "ref_link")
-    async def cb_ref_link(callback: CallbackQuery):
-        uid = str(callback.from_user.id)
-        me = await bot.get_me()
-        bot_username = me.username or "moneyfamilybudget_bot"
-        link = "https://t.me/" + bot_username + "?start=ref_" + uid
-
-        text = (
-            "🎁 <b>Приглашай друзей — получай купоны</b>\n\n"
-            "За каждого друга, который зайдёт по твоей ссылке:\n"
-            "• 1 друг → купон 10%\n"
-            "• 5 друзей → купон 20%\n"
-            "• 10 друзей → ещё купоны\n\n"
-            "Твоя ссылка:\n"
-            "<code>" + link + "</code>\n\n"
-            "Отправь её другу — купон зачислится автоматически."
-        )
-
-        share_url = "https://t.me/share/url?url=" + link + "&text=" + "Family Budget — семейный бюджет в Telegram. Заходи по моей ссылке"
-
-        try:
-            await callback.message.edit_text(
-                text,
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(
-                        text="📤 Поделиться ссылкой",
-                        url=share_url,
-                    )],
-                    [InlineKeyboardButton(
-                        text="👥 Мои рефералы",
-                        callback_data="my_refs",
-                    )],
-                ])
-            )
-        except Exception as e:
-            log.warning("ref_link: " + str(e))
-        await callback.answer()
-
-    @dp.callback_query(F.data == "my_refs")
-    async def cb_my_refs(callback: CallbackQuery):
-        uid = str(callback.from_user.id)
-        u = await get_user(uid)
-        refs = u.get("referrals") or {}
-        count = len(refs)
-        c10 = u.get("couponsEarned") or 0
-        c20 = u.get("coupons20Earned") or 0
-
-        text = (
-            "👥 <b>Твои рефералы</b>\n\n"
-            "Приглашено: <b>" + str(count) + "</b>\n"
-            "Купонов 10%: <b>" + str(c10) + "</b>\n"
-            "Купонов 20%: <b>" + str(c20) + "</b>"
-        )
-
-        try:
-            await callback.message.edit_text(
-                text,
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="⬅️ Назад", callback_data="ref_link")],
-                ])
-            )
-        except Exception as e:
-            log.warning("my_refs: " + str(e))
-        await callback.answer()
-        
-# ---------- фоновые проверки ----------
-
-async def daily_check():
-    """Фоновая проверка подписок: раз в 6 часов"""
-    while True:
-        try:
-            if not bot:
-                await asyncio.sleep(6 * 60 * 60)
-                continue
-
-            now_sec = int(datetime.utcnow().timestamp())
-            users = (await fb.get("/users")) or {}
-            for uid, u in users.items():
-                if not isinstance(u, dict):
-                    continue
-
-                sub_end = u.get("subEnd") or 0
-                try:
-                    sub_end = int(sub_end)
-                except (ValueError, TypeError):
-                    continue
-
-                if sub_end > 10**11:
-                    sub_end //= 1000
-
-                if sub_end <= 0:
-                    continue
-
-                seconds_left = sub_end - now_sec
-                days = math.ceil(seconds_left / 86400)
-                sent_flag = u.get("reminderSent") or 0
-
-                msg = None
-                new_flag = None
-
-                if days == 3 and sent_flag < 3:
-                    msg = "⏰ Подписка истекает через <b>3 дн.</b>\n\nПродлить: ⚙️ Настройки → Оплатить."
-                    new_flag = 3
-                elif days == 2 and sent_flag < 2:
-                    msg = "⏰ Подписка истекает через <b>2 дн.</b>\n\nПродлить: ⚙️ Настройки → Оплатить."
-                    new_flag = 2
-                elif days == 1 and sent_flag < 1:
-                    msg = "⏰ Подписка истекает <b>завтра</b>.\n\nПродлить: ⚙️ Настройки → Оплатить."
-                    new_flag = 1
-                elif days <= 0 and sent_flag != 99:
-                    msg = "❌ <b>Ваша подписка истекла.</b>\n\nПродлить: ⚙️ Настройки → Оплатить."
-                    new_flag = 99
-
-                if msg and new_flag is not None:
-                    try:
-                        await bot.send_message(str(uid), msg, parse_mode="HTML")
-                    except Exception as e:
-                        log.warning("reminder send " + str(uid) + ": " + str(e))
-                    patch = {"reminderSent": new_flag}
-                    if new_flag == 99:
-                        patch["status"] = "expired"
-                        await fb.patch(f"/users/{uid}", patch)
-
-        except Exception as e:
-            log.warning("daily_check error: " + str(e))
-
-        await asyncio.sleep(6 * 60 * 60)
-    
-async def daily_reminder():
-    """Каждый вечер напоминает записать траты"""
-    while True:
-        try:
-            if not bot:
-                await asyncio.sleep(3600)
-                continue
-
-            kyiv_now = datetime.now(ZoneInfo("Europe/Kyiv"))
-            if 19 <= kyiv_now.hour <= 21:
-                today = kyiv_now.strftime("%Y-%m-%d")
-                users = await fb.get("/users") or {}
-                now_ms_val = now_ms()
-                sent = 0
-
-                for uid, u in users.items():
-                    if not isinstance(u, dict):
-                        continue
-                    if u.get("lastDailyRemind") == today:
-                        continue
-
-                    sub_end = int(u.get("subEnd") or 0)
-                    if sub_end < 10**11:
-                        sub_end *= 1000
-                    if sub_end <= now_ms_val:
-                        continue
-
-                    try:
-                        await bot.send_message(
-                            int(uid),
-                            "📝 <b>Не забудь записать траты за сегодня!</b>\n\n"
-                            "Открой приложение — займёт минуту.",
-                            parse_mode="HTML"
-                        )
-                        await fb.patch(f"/users/{uid}", {"lastDailyRemind": today})
-                        sent += 1
-                    except Exception as e:
-                        log.warning("daily remind " + str(uid) + ": " + str(e))
-
-                    if sent >= 200:
-                        break
-
-        except Exception as e:
-            log.warning("daily_reminder error: " + str(e))
-
-        await asyncio.sleep(3600)
-        
-# ---------- FastAPI ----------
-async def weekly_digest():
-    """Каждый понедельник утром — сводка за прошлую неделю"""
-    while True:
-        try:
-            if not bot:
-                await asyncio.sleep(3600)
-                continue
-
-            kyiv_now = datetime.now(ZoneInfo("Europe/Kyiv"))
-            # понедельник, 9:00–11:00
-            if kyiv_now.weekday() == 0 and 9 <= kyiv_now.hour <= 11:
-                today = kyiv_now.strftime("%Y-%m-%d")
-                users = await fb.get("/users") or {}
-                sent = 0
-                now_ts = now_ms()
-
-                # границы прошлой недели: с прошлого понедельника по это воскресенье
-                week_end = kyiv_now.replace(hour=0, minute=0, second=0, microsecond=0)
-                week_start = week_end - timedelta(days=7)
-                start_ms = int(week_start.timestamp() * 1000)
-                end_ms = int(week_end.timestamp() * 1000)
-
-                for uid, u in users.items():
-                    if not isinstance(u, dict):
-                        continue
-                    if u.get("lastWeeklyDigest") == today:
-                        continue
-
-                    sub_end = int(u.get("subEnd") or 0)
-                    if sub_end < 10**11:
-                        sub_end *= 1000
-                    if sub_end <= now_ts:
-                        continue
-
-                    tariff = (u.get("tariff") or "").lower()
-                    # дайджест только для платных
-                    if tariff.startswith("trial") or sub_end <= now_ts:
-                        continue
-
-                    fid = u.get("familyId")
-                    if not fid:
-                        continue
-
-                    # собираем транзакции за неделю
-                    txs = await fb.get(f"/families/{fid}/transactions") or {}
-                    week_txs = []
-                    for k, t in txs.items():
-                        if not isinstance(t, dict):
-                            continue
-                        ts = int(t.get("ts") or 0)
-                        if start_ms <= ts < end_ms:
-                            week_txs.append(t)
-
-                    if not week_txs:
-                        # нет транзакций — не спамим, просто помечаем
-                        await fb.patch(f"/users/{uid}", {"lastWeeklyDigest": today})
-                        continue
-
-                    income = sum(float(t.get("amount") or 0) for t in week_txs if t.get("type") == "income")
-                    expense = sum(float(t.get("amount") or 0) for t in week_txs if t.get("type") == "expense")
-
-                    # топ-3 категории расходов
-                    by_cat = {}
-                    for t in week_txs:
-                        if t.get("type") != "expense":
-                            continue
-                        c = t.get("category") or "—"
-                        by_cat[c] = by_cat.get(c, 0) + float(t.get("amount") or 0)
-                    top3 = sorted(by_cat.items(), key=lambda x: -x[1])[:3]
-
-                    week_start_s = week_start.strftime("%d.%m")
-                    week_end_s = (week_end - timedelta(days=1)).strftime("%d.%m")
-
-                    text = (
-                        "📊 <b>Сводка за неделю</b> (" + week_start_s + "–" + week_end_s + ")\n\n"
-                        "💸 Потрачено: <b>" + str(round(expense)) + " ₴</b>\n"
-                        "💰 Получено: <b>" + str(round(income)) + " ₴</b>\n"
-                        "📉 Баланс: <b>" + ("+" if income - expense >= 0 else "") + str(round(income - expense)) + " ₴</b>\n"
-                    )
-
-                    if top3:
-                        text += "\n🔝 <b>Топ категории:</b>\n"
-                        for c, s in top3:
-                            text += "• " + str(c) + " — " + str(round(s)) + " ₴\n"
-
-                    text += "\nВсего операций: <b>" + str(len(week_txs)) + "</b>"
-
-                    try:
-                        await bot.send_message(int(uid), text, parse_mode="HTML")
-                        await fb.patch(f"/users/{uid}", {"lastWeeklyDigest": today})
-                        sent += 1
-                    except Exception as e:
-                        log.warning("weekly digest " + str(uid) + ": " + str(e))
-
-                    if sent >= 200:
-                        break
-
-        except Exception as e:
-            log.warning("weekly_digest error: " + str(e))
-
-        await asyncio.sleep(3600)
-
-
+# ---------- FASTAPI ----------
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    polling_task = None
-    reminder_task = None
-    remind_daily_task = None
-    digest_task = None
-
+    tasks = []
     if bot:
         await bot.delete_webhook(drop_pending_updates=True)
-        polling_task = asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types()))
-        reminder_task = asyncio.create_task(daily_check())
-        remind_daily_task = asyncio.create_task(daily_reminder())
-        digest_task = asyncio.create_task(weekly_digest())
+        tasks.append(asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())))
+        tasks.append(asyncio.create_task(daily_check()))
+        tasks.append(asyncio.create_task(daily_reminder()))
         log.info("bot started")
-        yield
-        for t in (polling_task, reminder_task, remind_daily_task, digest_task):
-            if t:
-                t.cancel()
-                try:
-                    await t
-                except asyncio.CancelledError:
-                    pass
-        if bot:
-            await bot.session.close()
-        await fb.close()
-    else:
-        yield
+    yield
+    for t in tasks:
+        t.cancel()
+        try: await t
+        except: pass
+    if bot: await bot.session.close()
+    await fb.close()
 
 app = FastAPI(lifespan=lifespan)
 from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ---------- auth dependency ----------
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 async def current_user(x_init_data: str = Header(default="", alias="X-Init-Data")) -> dict:
     user = verify_init_data(x_init_data, BOT_TOKEN)
-    if not user:
-        raise HTTPException(status_code=401, detail="invalid init data")
+    if not user: raise HTTPException(status_code=401)
     return user
-
 
 async def current_uid(user: dict = Depends(current_user)) -> str:
     return str(user["id"])
 
-
-# ---------- базовые ----------
-
-@app.get("/api/health")
-async def health():
-    return {"ok": True}
-
-
-# ---------- /api/init ----------
-
 @app.post("/api/init")
-async def api_init(user: dict = Depends(current_user)):
-    uid = str(user["id"])
+async def api_init(uid: str = Depends(current_uid)):
     u = await get_user(uid)
-
     sub_end = int(u.get("subEnd") or 0)
-    if sub_end and sub_end < 10**11:
-        sub_end *= 1000
-    left_days = max(0, math.ceil((sub_end - now_ms()) / 86400000))
-
-    family = None
-    fid = u.get("familyId")
-    if fid:
-        f = (await fb.get(f"/families/{fid}")) or {}
-        family = {
-            "id": fid,
-            "code": f.get("code"),
-            "owner": f.get("owner"),
-            "isOwner": f.get("owner") == uid,
-            "memberCount": len(f.get("members") or {}),
-        }
-
+    if sub_end < 10**11: sub_end *= 1000
     return {
-        "user": {
-            "id": user["id"],
-            "name": user.get("first_name") or u.get("name") or "Гость",
-            "username": user.get("username") or u.get("username") or "",
-        },
-        "subscription": {
-            "tariff": u.get("tariff") or "trial",
-            "status": "active" if sub_end > now_ms() else "expired",
-            "subEnd": sub_end,
-            "daysLeft": left_days,
-        },
-        "coupons": {
-            "c10": int(u.get("couponsEarned") or 0),
-            "c20": int(u.get("coupons20Earned") or 0),
-            "used10": int(u.get("couponsUsed10") or 0),
-            "used20": int(u.get("couponsUsed20") or 0),
-        },
-        "family": family,
-        "tariffs": {
-            k: {"name": v["name"], "days": v["days"], "price": v["price_usd"]}
-            for k, v in TARIFFS.items()
-        },
+        "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
+        "family": {"id": u.get("familyId")} if u.get("familyId") else None
     }
-
-
-# ---------- /api/family ----------
 
 @app.get("/api/family")
 async def api_family_get(uid: str = Depends(current_uid)):
     u = await get_user(uid)
     fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
+    if not fid: raise HTTPException(400, "no family")
     f = (await fb.get(f"/families/{fid}")) or {}
     f["id"] = fid
     return f
-
-
-@app.post("/api/family/create")
-async def api_family_create(uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    if u.get("familyId"):
-        raise HTTPException(400, "already in family")
-
-    fid = fb.url and secrets.token_urlsafe(12)
-    code = gen_family_code()
-    ts = now_ms()
-
-    family = {
-        "code": code,
-        "owner": uid,
-        "createdAt": ts,
-        "members": {uid: {"name": u.get("name") or "Гость", "joinedAt": ts}},
-    }
-    await fb.put(f"/families/{fid}", family)
-    await fb.put(f"/family_codes/{code}", fid)
-    await fb.patch(f"/users/{uid}", {"familyId": fid})
-    return {"ok": True, "id": fid, "code": code}
-
-
-@app.post("/api/family/join")
-async def api_family_join(request: Request, uid: str = Depends(current_uid)):
-    body = await request.json()
-    code = str(body.get("code") or "").strip().upper()
-    if not code:
-        raise HTTPException(400, "no code")
-
-    fid = await fb.get(f"/family_codes/{code}")
-    if not fid:
-        raise HTTPException(404, "family not found")
-
-    f = (await fb.get(f"/families/{fid}")) or {}
-    u = await get_user(uid)
-    ts = now_ms()
-    await fb.patch(f"/families/{fid}/members/{uid}", {
-        "name": u.get("name") or "Гость",
-        "joinedAt": ts,
-    })
-    await fb.patch(f"/users/{uid}", {"familyId": fid})
-    return {"ok": True, "id": fid, "code": f.get("code", code)}
-
-@app.post("/api/family/leave")
-async def api_family_leave(uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    fid = u.get("familyId")
-    if not fid:
-        return {"ok": True, "alreadyLeft": True}
-
-    # 1. удаляем поле familyId напрямую через DELETE
-    try:
-        await fb.delete(f"/users/{uid}/familyId")
-    except Exception as e:
-        log.warning("leave familyId delete " + uid + ": " + str(e))
-
-    # 2. проверяем что удалилось
-    check = await get_user(uid)
-    if check.get("familyId"):
-        # не удалилось — пробуем через put нулевое значение
-        try:
-            await fb.patch(f"/users/{uid}", {"familyId": "_left_" + str(now_ms())})
-        except Exception as e:
-            log.warning("leave fallback patch " + uid + ": " + str(e))
-
-    log.info("USER LEFT FAMILY uid=" + uid + " fid=" + str(fid))
-
-    # 3. чистим members
-    try:
-        members = await fb.get(f"/families/{fid}/members") or {}
-        if isinstance(members, dict) and uid in members:
-            members.pop(uid)
-            if members:
-                await fb.put(f"/families/{fid}/members", members)
-            else:
-                await fb.delete(f"/families/{fid}")
-                try:
-                    codes = await fb.get("/family_codes") or {}
-                    for code, cid in list(codes.items()):
-                        if cid == fid:
-                            codes.pop(code, None)
-                    await fb.put("/family_codes", codes)
-                except Exception:
-                    pass
-    except Exception as e:
-        log.warning("leave cleanup " + str(fid) + ": " + str(e))
-
-    return {"ok": True, "leftFrom": fid}
-    
-# ---------- /api/tx ----------
-async def check_envelope_limit(fid: str, uid: str, envelope_id: str, category: str):
-    env = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
-    if not env or not isinstance(env, dict):
-        return
-    target = float(env.get("target") or 0)
-    if target <= 0:
-        return
-
-    txs = await fb.get(f"/families/{fid}/transactions") or {}
-    now = datetime.now(timezone.utc)
-    month_start = int(datetime(now.year, now.month, 1, tzinfo=timezone.utc).timestamp() * 1000)
-    spent = 0.0
-    for k, t in txs.items():
-        if not isinstance(t, dict):
-            continue
-        if t.get("type") != "expense":
-            continue
-        if str(t.get("envelopeId") or "") != str(envelope_id):
-            continue
-        ts = int(t.get("ts") or 0)
-        if ts < month_start:
-            continue
-        spent += float(t.get("amount") or 0)
-
-    pct = (spent / target) * 100
-    month_key = now.strftime("%Y-%m")
-    env_key = str(envelope_id)
-    u = await get_user(uid)
-
-    warned_80 = u.get("envWarn80") or {}
-    warned_100 = u.get("envWarn100") or {}
-    if not isinstance(warned_80, dict):
-        warned_80 = {}
-    if not isinstance(warned_100, dict):
-        warned_100 = {}
-
-    name = env.get("name") or "—"
-
-    if pct >= 100 and warned_100.get(env_key) != month_key:
-        warned_100[env_key] = month_key
-        await fb.patch(f"/users/{uid}", {"envWarn100": warned_100})
-        if bot:
-            try:
-                await bot.send_message(
-                    int(uid),
-                    "🔴 <b>Лимит пробит</b>\n\n"
-                    "Конверт «" + str(name) + "»\n"
-                    "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴\n"
-                    "Категория: " + str(category),
-                    parse_mode="HTML"
-                )
-            except Exception:
-                pass
-    elif pct >= 80 and warned_80.get(env_key) != month_key:
-        warned_80[env_key] = month_key
-        await fb.patch(f"/users/{uid}", {"envWarn80": warned_80})
-        if bot:
-            try:
-                await bot.send_message(
-                    int(uid),
-                    "🟡 <b>Конверт «" + str(name) + "» — " + str(round(pct)) + "%</b>\n\n"
-                    "Потрачено: " + str(round(spent)) + " из " + str(round(target)) + " ₴",
-                    parse_mode="HTML"
-                )
-            except Exception:
-                pass
-
 
 @app.post("/api/tx")
 async def api_tx_create(request: Request, uid: str = Depends(current_uid)):
     u = await get_user(uid)
     fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-
+    if not fid: raise HTTPException(400, "no family")
     body = await request.json()
-    type_ = body.get("type")
-    if type_ not in ("income", "expense"):
-        raise HTTPException(400, "bad type")
-    try:
-        amount = float(body.get("amount") or 0)
-    except (TypeError, ValueError):
-        raise HTTPException(400, "bad amount")
-    if amount <= 0:
-        raise HTTPException(400, "amount <= 0")
-
-    tx = {
-        "uid": uid,
-        "type": type_,
-        "amount": amount,
-        "category": str(body.get("category") or "разное")[:40],
-        "note": str(body.get("note") or "")[:200],
-        "envelopeId": str(body.get("envelopeId") or "")[:60],
-        "ts": now_ms(),
-    }
+    tx = {"uid": uid, "type": body.get("type"), "amount": float(body.get("amount")), "category": body.get("category"), "note": body.get("note"), "envelopeId": body.get("envelopeId"), "ts": now_ms()}
     txid = await fb.push(f"/families/{fid}/transactions", tx)
-
-    # проверка лимита конверта
-    if type_ == "expense" and tx["envelopeId"]:
-        try:
-            await check_envelope_limit(fid, uid, tx["envelopeId"], tx["category"])
-        except Exception as e:
-            log.warning("envelope check: " + str(e))
-            
     return {"ok": True, "id": txid}
-
-@app.delete("/api/tx/{txid}")
-async def api_tx_delete(txid: str, uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-
-    tx = await fb.get(f"/families/{fid}/transactions/{txid}")
-    if not tx:
-        raise HTTPException(404, "tx not found")
-    if tx.get("uid") != uid and not (u.get("familyOwner") == uid):
-        # упрощённо: удалять может автор или владелец семьи
-        f = (await fb.get(f"/families/{fid}")) or {}
-        if f.get("owner") != uid:
-            raise HTTPException(403, "not allowed")
-
-    await fb.delete(f"/families/{fid}/transactions/{txid}")
-    return {"ok": True}
-
-
-# ---------- /api/envelope ----------
 
 @app.post("/api/envelope")
 async def api_env_create(request: Request, uid: str = Depends(current_uid)):
     u = await get_user(uid)
     fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-
     body = await request.json()
-    name = str(body.get("name") or "").strip()[:60]
-    if not name:
-        raise HTTPException(400, "no name")
-    try:
-        target = float(body.get("target") or 0)
-    except (TypeError, ValueError):
-        raise HTTPException(400, "bad target")
-
-    env = {
-        "name": name,
-        "target": target,
-        "createdBy": uid,
-        "createdAt": now_ms(),
-    }
-    envid = await fb.push(f"/families/{fid}/envelopes", env)
+    envid = await fb.push(f"/families/{fid}/envelopes", {"name": body.get("name"), "target": float(body.get("target"))})
     return {"ok": True, "id": envid}
-
-
-@app.delete("/api/envelope/{envid}")
-async def api_env_delete(envid: str, uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-    await fb.delete(f"/families/{fid}/envelopes/{envid}")
-    return {"ok": True}
-
-
-# ---------- /api/bank ----------
 
 @app.post("/api/bank")
 async def api_bank_create(request: Request, uid: str = Depends(current_uid)):
     u = await get_user(uid)
     fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-
     body = await request.json()
-    name = str(body.get("name") or "").strip()[:60]
-    if not name:
-        raise HTTPException(400, "no name")
-    try:
-        target = float(body.get("target") or 0)
-    except (TypeError, ValueError):
-        raise HTTPException(400, "bad target")
-
-    bank = {
-        "name": name,
-        "target": target,
-        "balance": 0,
-        "createdBy": uid,
-        "createdAt": now_ms(),
-    }
-    bid = await fb.push(f"/families/{fid}/banks", bank)
+    bid = await fb.push(f"/families/{fid}/banks", {"name": body.get("name"), "target": float(body.get("target")), "balance": 0})
     return {"ok": True, "id": bid}
-
-
-@app.post("/api/bank/{bid}/deposit")
-async def api_bank_deposit(bid: str, request: Request, uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-
-    body = await request.json()
-    try:
-        amount = float(body.get("amount") or 0)
-    except (TypeError, ValueError):
-        raise HTTPException(400, "bad amount")
-    if amount <= 0:
-        raise HTTPException(400, "amount <= 0")
-
-    bank = await fb.get(f"/families/{fid}/banks/{bid}")
-    if not bank:
-        raise HTTPException(404, "bank not found")
-
-    new_balance = float(bank.get("balance") or 0) + amount
-    await fb.patch(f"/families/{fid}/banks/{bid}", {"balance": new_balance})
-
-    # и записываем расход с той же суммы
-    await fb.push(f"/families/{fid}/transactions", {
-        "uid": uid,
-        "type": "expense",
-        "amount": amount,
-        "category": "🏦 Накопления",
-        "note": f"Пополнение банки «{bank.get('name')}»",
-        "envelopeId": "",
-        "bankId": bid,
-        "ts": now_ms(),
-    })
-    return {"ok": True, "balance": new_balance}
-
-
-@app.delete("/api/bank/{bid}")
-async def api_bank_delete(bid: str, uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    fid = u.get("familyId")
-    if not fid:
-        raise HTTPException(400, "no family")
-    await fb.delete(f"/families/{fid}/banks/{bid}")
-    return {"ok": True}
-
-
-# ---------- /api/pay ----------
-
-@app.post("/api/pay/preview")
-async def api_pay_preview(request: Request, uid: str = Depends(current_uid)):
-    body = await request.json()
-    plan = str(body.get("plan") or "")
-    if plan not in TARIFFS:
-        raise HTTPException(400, "bad plan")
-
-    u = await get_user(uid)
-    free10 = max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0))
-    free20 = max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0))
-
-    use10 = min(int(body.get("use10") or 0), free10)
-    use20 = min(int(body.get("use20") or 0), free20)
-    final, pct, use10, use20 = apply_discount(TARIFFS[plan]["price_usd"], plan, use10, use20)
-
-    return {
-        "plan": plan,
-        "name": TARIFFS[plan]["name"],
-        "base": TARIFFS[plan]["price_usd"],
-        "final": final,
-        "discountPct": pct,
-        "use10": use10,
-        "use20": use20,
-        "free10": free10,
-        "free20": free20,
-        "network": CRYPTOPAY_NETWORK,
-    }
-
-
-@app.post("/api/me")
-async def api_me(request: Request):
-    try:
-        body = await request.json()
-    except Exception:
-        return JSONResponse({"error": "bad json"}, status_code=400)
-    uid = str(body.get("uid", "")).strip()
-    if not uid:
-        return JSONResponse({"error": "no uid"}, status_code=400)
-
-    u = (await get_user(uid))
-    refs = (await fb.get(f"/users/{uid}/referrals")) or {}
-    me_bot = await bot.get_me() if bot else None
-    username = me_bot.username if me_bot else "moneyfamilybudget_bot"
-    
-    return {
-        "tgId": uid,
-        "name": u.get("name") or "",
-        "subscription": {
-            "tariff": u.get("tariff") or "trial",
-            "subEnd": int(u.get("subEnd") or 0),
-            "status": u.get("status") or "active",
-        },
-        "referral": {
-            "count": len(refs),
-            "code": "FAM-" + uid[-6:].upper(),
-            "link": "https://t.me/" + username + "?start=ref_" + uid,
-            "coupons10": max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0)),
-            "coupons20": max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0)),
-        },
-    }
 
 @app.post("/api/pay/stars")
 async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
-    try:
-        body = await request.json()
-    except Exception:
-        raise HTTPException(400, "bad json")
-    plan = str(body.get("plan") or "")
-    if plan not in TARIFFS:
-        raise HTTPException(400, "bad plan")
-    stars = STARS_PRICES.get(plan)
-    if not stars:
-        raise HTTPException(400, "no stars price")
-    if not bot:
-        raise HTTPException(500, "bot not configured")
-
-    payload = json.dumps({"uid": uid, "plan": plan, "method": "stars"})
-    try:
-        link = await bot.create_invoice_link(
-            title="Family Budget — " + TARIFFS[plan]["name"],
-            description="Подписка " + TARIFFS[plan]["name"],
-            payload=payload,
-            currency="XTR",
-            prices=[LabeledPrice(label=TARIFFS[plan]["name"], amount=stars)],
-        )
-    except Exception as e:
-        log.warning("create stars invoice: " + str(e))
-        raise HTTPException(500, "stars invoice failed")
-
-    return {"ok": True, "invoice_url": link, "stars": stars, "plan": plan}
-@app.post("/api/pay/create")
-async def api_pay_create(request: Request, uid: str = Depends(current_uid)):
     body = await request.json()
-    plan = str(body.get("plan") or "")
-    if plan not in TARIFFS:
-        raise HTTPException(400, "bad plan")
-    if not CRYPTOPAY_TOKEN:
-        raise HTTPException(500, "cryptopay not configured")
-
-    u = await get_user(uid)
-    free10 = max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0))
-    free20 = max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0))
-    use10 = min(int(body.get("use10") or 0), free10)
-    use20 = min(int(body.get("use20") or 0), free20)
-    final, pct, use10, use20 = apply_discount(TARIFFS[plan]["price_usd"], plan, use10, use20)
-
-    payload = json.dumps({
-        "uid": uid,
-        "plan": plan,
-        "use10": use10,
-        "use20": use20,
-        "discount": pct,
-        "base": TARIFFS[plan]["price_usd"],
-        "final": final,
-    })
-
-    resp = await cp.call("createInvoice", {
-        "asset": CRYPTOPAY_NETWORK,
-        "amount": str(final),
-        "description": f"Family Budget — {TARIFFS[plan]['name']}",
-        "payload": payload,
-        "expires_in": 3600,
-    })
-    if not resp.get("ok"):
-        log.warning(f"cryptopay create: {resp}")
-        raise HTTPException(500, str(resp.get("error") or resp))
-
-    inv = resp["result"]
-    return {
-        "ok": True,
-        "invoice_url": inv.get("bot_invoice_url"),
-        "mini_app_invoice_url": inv.get("mini_app_invoice_url"),
-        "invoiceId": inv.get("invoice_id"),
-        "final": final,
-        "discountPct": pct,
-    }
-
-@app.post("/api/admin/grant-coupon")
-async def api_admin_grant_coupon(request: Request):
-    key = request.headers.get("X-Admin-Key", "")
-    if not TEST_WEBHOOK_KEY or key != TEST_WEBHOOK_KEY:
-        raise HTTPException(401, "bad admin key")
-
-    try:
-        body = await request.json()
-    except Exception:
-        raise HTTPException(400, "bad json")
-
-    uid = str(body.get("uid") or "").strip()
-    kind = str(body.get("kind") or "").strip()
-    if not uid:
-        raise HTTPException(400, "no uid")
-    if kind not in ("c10", "c20"):
-        raise HTTPException(400, "bad kind")
-
-    u = await get_user(uid)
-    if kind == "c10":
-        cur = int(u.get("couponsEarned") or 0)
-        new = cur + 1
-        await fb.patch(f"/users/{uid}", {"couponsEarned": new})
-        label = "10%"
-        field = "couponsEarned"
-    else:
-        cur = int(u.get("coupons20Earned") or 0)
-        new = cur + 1
-        await fb.patch(f"/users/{uid}", {"coupons20Earned": new})
-        label = "20%"
-        field = "coupons20Earned"
-
-    if bot:
-        try:
-            await bot.send_message(
-                int(uid),
-                "🎁 <b>Тебе выдан купон " + label + "!</b>\n\n"
-                "Примени его при оплате тарифа — скидка сработает автоматически.\n\n"
-                "Всего купонов " + label + ": <b>" + str(new) + "</b>\n\n"
-                "Открой: Настройки → Улучшить",
-                parse_mode="HTML"
-            )
-        except Exception as e:
-            log.warning("grant coupon notify " + uid + ": " + str(e))
-
-    return {"ok": True, "field": field, "value": new}
-    
-@app.post("/api/pay/webhook")
-async def api_pay_webhook(request: Request):
-    raw = await request.body()
-    sig = request.headers.get("crypto-pay-api-signature", "")
-    if not verify_cryptopay_sig(raw, sig, CRYPTOPAY_TOKEN):
-        log.warning("webhook: bad signature")
-        raise HTTPException(401, "bad signature")
-
-    try:
-        body = json.loads(raw.decode("utf-8"))
-    except Exception:
-        return {"ok": True}
-
-    if body.get("update_type") != "invoice_paid":
-        return {"ok": True}
-
-    inv = body.get("payload", {})
-    try:
-        meta = json.loads(inv.get("payload") or "{}")
-    except Exception:
-        return {"ok": True}
-
-    uid = str(meta.get("uid") or "")
-    plan = meta.get("plan")
-    use10 = int(meta.get("use10") or 0)
-    use20 = int(meta.get("use20") or 0)
-    final = float(meta.get("final") or 0)
-
-    if not uid or plan not in TARIFFS:
-        return {"ok": True}
-
-    try:
-        days = TARIFFS[plan]["days"]
-        u = await get_user(uid)
-
-        cur_end = int(u.get("subEnd") or 0)
-        if 0 < cur_end < 10**11:
-            cur_end *= 1000
-        cur_end = max(cur_end, now_ms())
-        new_end = cur_end + days * 86400000
-
-        await fb.patch(f"/users/{uid}", {
-            "tariff": plan,
-            "subStart": now_ms(),
-            "subEnd": new_end,
-            "status": "active",
-            "paidAmount": (u.get("paidAmount") or 0) + final,
-            "couponsUsed10": int(u.get("couponsUsed10") or 0) + use10,
-            "couponsUsed20": int(u.get("couponsUsed20") or 0) + use20,
-            "reminderSent": 0,
-        })
-
-        # реферальное вознаграждение
-        ref = u.get("referredBy")
-        if ref:
-            refs = (await fb.get(f"/users/{ref}/referrals")) or {}
-            total = 0
-            for rid in refs:
-                ru = await get_user(rid)
-                total += ru.get("paidAmount") or 0
-            milestones = int(total // 150)
-            rbu = await get_user(ref)
-            if milestones > int(rbu.get("coupons20Earned") or 0):
-                await fb.patch(f"/users/{ref}", {"coupons20Earned": milestones})
-                if bot:
-                    try:
-                        await bot.send_message(
-                            int(ref),
-                            f"🎉 Твои рефералы купили на ${round(total)} — получил купон 20%!",
-                            parse_mode="HTML",
-                        )
-                    except Exception:
-                        pass
-
-        if bot:
-            try:
-                await bot.send_message(
-                    int(uid),
-                    "✅ <b>Оплата получена!</b>\n\n"
-                    f"Тариф: {TARIFFS[plan]['name']}\n"
-                    f"Сумма: ${final}\n"
-                    f"Активен до: {datetime.fromtimestamp(new_end / 1000, KYIV).strftime('%d.%m.%Y')}\n\n"
-                    "Открой приложение — всё готово.",
-                    parse_mode="HTML",
-                )
-            except Exception:
-                pass
-
-        if bot and ADMIN_CHAT_ID:
-            try:
-                await bot.send_message(
-                    ADMIN_CHAT_ID,
-                    f"💰 <b>Оплата</b>\nID: {uid}\n"
-                    f"Тариф: {TARIFFS[plan]['name']}\n"
-                    f"Сумма: ${final} (скидка {meta.get('discount', 0)}%)",
-                    parse_mode="HTML",
-                )
-            except Exception:
-                pass
-
-        return {"ok": True}
-    except Exception as e:
-        log.warning(f"webhook: {e}")
-        return JSONResponse({"ok": False, "err": str(e)}, status_code=500)
-
-
-# ---------- OCR ----------
-
-from fastapi import UploadFile, File
-from ocr import extract_receipt
-
-
-@app.post("/api/receipt/ocr")
-async def receipt_ocr(file: UploadFile = File(...)):
-    data = await file.read()
-    if len(data) > 8 * 1024 * 1024:
-        return JSONResponse({"error": "file too large"}, status_code=413)
-    try:
-        return extract_receipt(data)
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-
-# ---------- статика ----------
+    plan = body.get("plan")
+    stars = STARS_PRICES.get(plan)
+    link = await bot.create_invoice_link(
+        title="Family Budget", description="Оплата", payload=json.dumps({"uid": uid, "plan": plan}),
+        currency="XTR", prices=[LabeledPrice(label="Подписка", amount=stars)]
+    )
+    return {"ok": True, "invoice_url": link}
 
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("bot:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")))

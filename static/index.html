@@ -27,7 +27,7 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .muted{color:var(--muted);font-size:12px}
 .lbl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin:12px 0 6px;letter-spacing:.5px}
 .row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;position:relative}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;position:relative}
 .card-del{position:absolute;top:8px;right:8px;background:transparent;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px}
 .card-del:active{color:var(--danger);background:rgba(239,68,68,.1)}
 
@@ -180,20 +180,9 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 body.has-wallpaper{background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat}
 body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:-1;pointer-events:none}
 [data-theme="light"] body.has-wallpaper::before{background:rgba(245,247,250,.75)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;position:relative}
 </style>
 </head>
 <body>
-
-<div id="err" style="position:fixed;top:0;left:0;right:0;background:#000;color:#f66;font:11px monospace;padding:6px;z-index:99999;white-space:pre-wrap;max-height:30vh;overflow:auto;display:none"></div>
-<script>
-window.addEventListener('error', e => {
-  const d = document.getElementById('err');
-  if(!d) return;
-  d.style.display = 'block';
-  d.textContent += '❌ ' + e.message + '\n' + (e.filename||'').split('/').pop() + ':' + e.lineno + '\n\n';
-});
-</script>
 <div class="container">
 
   <div id="familyBanner" class="family-banner" style="display:none">
@@ -250,10 +239,10 @@ window.addEventListener('error', e => {
       <button class="seg-btn" data-hist-filter="expense" onclick="setHistFilter('expense')" style="flex:1;font-size:12px;padding:8px" data-i18n="hist_expense">Расходы</button>
     </div>
 
-<input type="text" id="histSearch" class="custom-input" placeholder="Поиск по описанию" style="margin-bottom:8px" oninput="renderHistory()">
-<div id="histCounter" class="muted" style="font-size:11px;margin-bottom:10px;text-align:center"></div>
+    <input type="text" id="histSearch" class="custom-input" placeholder="Поиск по описанию" style="margin-bottom:8px" oninput="renderHistory()">
+    <div id="histCounter" class="muted" style="font-size:11px;margin-bottom:10px;text-align:center"></div>
 
-<div id="historyContainer" class="history-list"></div>
+    <div id="historyContainer" class="history-list"></div>
   </div>
 
   <div id="tab-envelopes" class="tab-content" style="display:none">
@@ -281,28 +270,28 @@ window.addEventListener('error', e => {
 
   <div id="tab-settings" class="tab-content" style="display:none">
 
-<div class="card">
-  <div class="row-between" style="margin-bottom:10px">
-    <h5 style="margin:0"><i class="fa-solid fa-crown"></i> <span data-i18n="tariff">Тариф</span></h5>
-    <span id="subBadge"></span>
-  </div>
-  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
-    <span data-i18n="manual_receipts">Ручные чеки</span>
-    <span style="color:var(--success)">✓ <span data-i18n="available">Доступно</span></span>
-  </div>
-  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:12px">
-    <span data-i18n="photo_receipts">Чеки по фото (OCR)</span>
-    <span id="ocrStatus"></span>
-  </div>
-  <button class="btn btn-accent" style="width:100%" onclick="openTariffs()">
-    <i class="fa-solid fa-crown"></i> <span data-i18n="upgrade_to">Улучшить до Pro</span>
-  </button>
-</div>
+    <div class="card">
+      <div class="row-between" style="margin-bottom:10px">
+        <h5 style="margin:0"><i class="fa-solid fa-crown"></i> <span data-i18n="tariff">Тариф</span></h5>
+        <span id="subBadge"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+        <span data-i18n="manual_receipts">Ручные чеки</span>
+        <span style="color:var(--success)">✓ <span data-i18n="available">Доступно</span></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:12px">
+        <span data-i18n="photo_receipts">Чеки по фото (OCR)</span>
+        <span id="ocrStatus"></span>
+      </div>
+      <button class="btn btn-accent" style="width:100%" onclick="openTariffs()">
+        <i class="fa-solid fa-crown"></i> <span data-i18n="upgrade_to">Улучшить до Pro</span>
+      </button>
+    </div>
       
     <div class="card">
       <div class="row-between">
         <h5><i class="fa-solid fa-rotate"></i> <span data-i18n="recurring_title">Автоплатежи</span></h5>
-        <button class="btn btn-accent btn-sm" onclick="openModal('modalAddRecurring')"><i class="fa-solid fa-plus"></i></button>
+        <button class="btn btn-accent btn-sm" onclick="openAddRecurring()"><i class="fa-solid fa-plus"></i></button>
       </div>
       <div id="recurringList" class="muted" style="font-size:12px"></div>
     </div>
@@ -427,7 +416,12 @@ window.addEventListener('error', e => {
     </div>
 
     <div id="txPaneQuick">
-      <label class="lbl" style="margin-top:0" data-i18n="category_lbl">Категория</label>
+      <div class="row-between" style="margin-top:0;margin-bottom:6px">
+        <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label>
+        <button type="button" class="btn btn-outline btn-sm" onclick="openAddCustomCategory()" style="font-size:11px;padding:4px 8px">
+          <i class="fa-solid fa-plus"></i> <span data-i18n="cat_custom">Своя</span>
+        </button>
+      </div>
       <div id="categoryGrid" class="icon-grid"></div>
       <input type="number" id="txAmountInput" class="custom-input" placeholder="—" inputmode="decimal">
       <input type="text" id="txCommentInput" class="custom-input" placeholder="—">
@@ -636,6 +630,8 @@ window.addEventListener('error', e => {
       <div class="cal-week" id="calBankWeek"></div>
       <div class="cal-grid" id="calBankGrid"></div>
     </div>
+  </div>
+</div>
 
 <div class="modal" id="modalDeposit">
   <div class="modal-content">
@@ -699,6 +695,38 @@ window.addEventListener('error', e => {
   </div>
 </div>
 
+<div class="modal" id="modalAddCategory">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 data-i18n="cat_new">Своя категория</h3>
+      <span class="modal-close" onclick="closeModal('modalAddCategory')">×</span>
+    </div>
+    <label class="lbl" style="margin-top:0" data-i18n="cat_name">Название</label>
+    <input type="text" id="catCustomName" class="custom-input" placeholder="—" maxlength="20">
+    <label class="lbl" data-i18n="cat_emoji">Эмодзи</label>
+    <div id="catEmojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:14px">
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🎓')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🎓</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🏫')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🏫</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🧸')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🧸</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🐶')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🐶</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🚿')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🚿</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🍼')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🍼</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'💻')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">💻</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'📷')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">📷</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🎵')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🎵</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'📚')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">📚</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🎨')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🎨</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🎸')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🎸</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🏋️')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🏋️</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🧘')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🧘</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🛁')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🛁</button>
+      <button type="button" class="cat-emoji" onclick="pickCatEmoji(this,'🎁')" style="font-size:20px;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer">🎁</button>
+    </div>
+    <button class="btn btn-accent" style="width:100%" onclick="saveCustomCategory()" data-i18n="save">Сохранить</button>
+    <p class="muted" style="font-size:11px;margin-top:10px;text-align:center" data-i18n="cat_hint">Свои категории — в Pro. На Free доступно 2.</p>
+  </div>
+</div>
+
 <div class="modal" id="modalTrialGate">
   <div class="modal-content">
     <div class="modal-header">
@@ -759,10 +787,9 @@ window.addEventListener('error', e => {
   </div>
 </div>
 
-</body>
-
-
 <script>
+
+let _confirmCb = null;
 
 const I18N = {
   ru: {
@@ -822,6 +849,7 @@ const I18N = {
     hist_all:'Все', hist_income:'Доходы', hist_expense:'Расходы', hist_ops:'операций', hist_empty:'Ничего не найдено', hist_search_ph:'Поиск по описанию',
     cur_uah:'Гривна', cur_rub:'Рубль', cur_usd:'Доллар', cur_eur:'Евро', cur_pln:'Злотый', cur_gbp:'Фунт', cur_try:'Лира', cur_chf:'Франк', cur_czk:'Крона', cur_jpy:'Иена', cur_cny:'Юань',
     help_title:'О Family Budget', help_intro:'Family Budget — семейный бюджет прямо в Telegram. Доходы, расходы, лимиты, цели — всё в одном месте, работает на телефоне и у партнёра.', help_features:'Что умеет', help_f1:'Доходы и расходы', help_f1s:'учёт по категориям, редактирование, поиск', help_f2:'Конверты', help_f2s:'лимиты на категории, бот предупредит при превышении', help_f3:'Банки-цели', help_f3s:'копите на отпуск, машину. Прогресс и дедлайн', help_f4:'Аналитика', help_f4s:'траты по месяцам, топ товаров, прогноз', help_f5:'Семья', help_f5s:'общий бюджет с партнёром', help_f6:'Автоплатежи', help_f6s:'аренда, подписки, зарплата — записываются сами', help_pricing:'Сколько стоит', help_p_trial:'Первый месяц', help_p_base:'Базовая', help_p_pro:'Pro', help_pay:'Оплата в приложении: Telegram Stars или крипта (USDT, TON, BTC).', help_start:'Как начать', help_s1:'1. Нажми ➖ на главной — добавь первую трату', help_s2:'2. Создай конверт в разделе «Конверты» — поставь лимит', help_s3:'3. Пригласи партнёра — Настройки → Семья → Создать семью', help_s4:'4. Подключи автоплатежи для аренды и подписок', help_help:'Помощь', help_support:'Вопросы и баги — пиши нам в Telegram. Отвечаем в течение дня.', help_contact:'Связаться', help_close:'Понятно',
+    cat_custom:'Своя', cat_new:'Своя категория', cat_name:'Название', cat_emoji:'Эмодзи', cat_limit:'На Free и Базовой — 2 свои категории. Обнови до Pro — без ограничений.', cat_delete:'Удалить категорию', cat_hint:'Свои категории — в Pro. На Free доступно 2.',
   },
   uk: {
     nav_home:'Головна', nav_env:'Конверти', nav_bank:'Банки', nav_an:'Аналітика', nav_set:'Налаштування',
@@ -880,6 +908,7 @@ const I18N = {
     hist_all:'Усі', hist_income:'Доходи', hist_expense:'Витрати', hist_ops:'операцій', hist_empty:'Нічого не знайдено', hist_search_ph:'Пошук за описом',
     cur_uah:'Гривня', cur_rub:'Рубль', cur_usd:'Долар', cur_eur:'Євро', cur_pln:'Злотий', cur_gbp:'Фунт', cur_try:'Ліра', cur_chf:'Франк', cur_czk:'Крона', cur_jpy:'Єна', cur_cny:'Юань',
     help_title:'Про Family Budget', help_intro:'Family Budget — сімейний бюджет прямо в Telegram. Доходи, витрати, ліміти, цілі — все в одному місці.', help_features:'Що вміє', help_f1:'Доходи та витрати', help_f1s:'облік за категоріями, редагування, пошук', help_f2:'Конверти', help_f2s:'ліміти на категорії, бот попередить при перевищенні', help_f3:'Банки-цілі', help_f3s:'збирайте на відпустку, машину. Прогрес і дедлайн', help_f4:'Аналітика', help_f4s:'витрати по місяцях, топ товарів, прогноз', help_f5:'Родина', help_f5s:'спільний бюджет з партнером', help_f6:'Автоплатежі', help_f6s:'оренда, підписки, зарплата — записуються самі', help_pricing:'Скільки коштує', help_p_trial:'Перший місяць', help_p_base:'Базова', help_p_pro:'Pro', help_pay:'Оплата в додатку: Telegram Stars або крипта (USDT, TON, BTC).', help_start:'Як почати', help_s1:'1. Натисни ➖ на головній — додай першу витрату', help_s2:'2. Створи конверт у розділі «Конверти» — постав ліміт', help_s3:'3. Запроси партнера — Налаштування → Родина', help_s4:'4. Підключи автоплатежі', help_help:'Допомога', help_support:'Питання та баги — пиши в Telegram. Відповідаємо протягом дня.', help_contact:'Зв\'язатися', help_close:'Зрозуміло',
+    cat_custom:'Своя', cat_new:'Своя категорія', cat_name:'Назва', cat_emoji:'Емодзі', cat_limit:'На Free доступно 2 свої категорії. Онови до Pro.', cat_delete:'Видалити категорію', cat_hint:'Свої категорії — у Pro. На Free доступно 2.',
   },
   en: {
     nav_home:'Home', nav_env:'Envelopes', nav_bank:'Banks', nav_an:'Analytics', nav_set:'Settings',
@@ -937,6 +966,7 @@ const I18N = {
     hist_all:'All', hist_income:'Income', hist_expense:'Expense', hist_ops:'txns', hist_empty:'Nothing found', hist_search_ph:'Search by note',
     cur_uah:'Hryvnia', cur_rub:'Ruble', cur_usd:'Dollar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Pound', cur_try:'Lira', cur_chf:'Franc', cur_czk:'Krona', cur_jpy:'Yen', cur_cny:'Yuan',
     help_title:'About Family Budget', help_intro:'Family Budget is a family budget right inside Telegram. Income, expenses, limits, goals — all in one place, works on your phone and your partner\'s.', help_features:'Features', help_f1:'Income & expenses', help_f1s:'category tracking, editing, search', help_f2:'Envelopes', help_f2s:'category limits, bot warns on overspend', help_f3:'Savings banks', help_f3s:'save for a trip, car. Progress and deadline', help_f4:'Analytics', help_f4s:'monthly spending, top items, forecast', help_f5:'Family', help_f5s:'shared budget with partner', help_f6:'Recurring', help_f6s:'rent, subscriptions, salary — auto-recorded', help_pricing:'Pricing', help_p_trial:'First month', help_p_base:'Base', help_p_pro:'Pro', help_pay:'Pay in the app: Telegram Stars or crypto (USDT, TON, BTC).', help_start:'Getting started', help_s1:'1. Tap ➖ on home — add first expense', help_s2:'2. Create an envelope in Envelopes — set a limit', help_s3:'3. Invite your partner — Settings → Family', help_s4:'4. Set up recurring payments', help_help:'Support', help_support:'Questions and bugs — DM us on Telegram. We reply within a day.', help_contact:'Contact', help_close:'Got it',
+    cat_custom:'Custom', cat_new:'Custom category', cat_name:'Name', cat_emoji:'Emoji', cat_limit:'Free — 2 custom categories. Upgrade to Pro for unlimited.', cat_delete:'Delete category', cat_hint:'Custom categories — Pro. Free — up to 2.',
   },
   de: {
     nav_home:'Start', nav_env:'Umschläge', nav_bank:'Banken', nav_an:'Analyse', nav_set:'Einstellungen',
@@ -971,10 +1001,12 @@ const I18N = {
     w_mon:'Mo', w_tue:'Di', w_wed:'Mi', w_thu:'Do', w_fri:'Fr', w_sat:'Sa', w_sun:'So',
     store_ph:'Geschäft', comment_ph:'Kommentar (optional)', amount_ph:'Betrag',
     env_name_ph:'Name', env_target_ph:'Monatslimit', bank_target_ph:'Sparziel',
-    bank_name_lbl:'Name', bank_target_lbl:'Savings goal', bank_deadline_lbl:'Deadline', 
-    no_deadline:'No deadline', clear_deadline:'Clear deadline', bank_done:'✓ Goal reached', 
-    bank_left:'Left', bank_by:'by', bank_save:'save', bank_per_mo:'/mo', bank_over:'deadline passed', 
-    bank_limit:'Free — 2 goals. Pro — unlimited.', confirm_title:'Bestätigung', delete_btn:'Löschen',
+    bank_name_lbl:'Name', bank_target_lbl:'Sparziel', bank_deadline_lbl:'Frist', 
+    no_deadline:'Keine Frist', clear_deadline:'Frist entfernen', bank_done:'✓ Ziel erreicht', 
+    bank_left:'Übrig', bank_by:'bis', bank_save:'sparen', bank_per_mo:'/Mo', bank_over:'Frist abgelaufen', 
+    bank_limit:'Kostenlos — 2 Ziele. Pro — unbegrenzt.', confirm_title:'Bestätigung', delete_btn:'Löschen',
+    recurring_title:'Daueraufträge', recurring_new:'Neue Regel', rec_name:'Name', rec_day:'Tag des Monats', 
+    rec_none:'Keine Regeln', rec_active:'Aktiv', rec_paused:'Pause', rec_limit:'Kostenlos — 2 Regeln. Pro — unbegrenzt.',
     alert_title:'Hinweis', rec_edit_title:'Regel bearbeiten', no_envelope:'Kein Umschlag',
     wallpaper:'Hintergrund', wallpaper_pro_only:'Eigener Hintergrund in Pro.', wallpaper_upload:'Hochladen', 
     wallpaper_clear:'Entfernen', wallpaper_hint:'Vertikales Foto bis 3 MB empfohlen.',
@@ -992,6 +1024,7 @@ const I18N = {
     hist_all:'Alle', hist_income:'Einnahmen', hist_expense:'Ausgaben', hist_ops:'Transaktionen', hist_empty:'Nichts gefunden', hist_search_ph:'Nach Notiz suchen',
     cur_uah:'Hrywnja', cur_rub:'Rubel', cur_usd:'Dollar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Pfund', cur_try:'Lira', cur_chf:'Franken', cur_czk:'Krone', cur_jpy:'Yen', cur_cny:'Yuan',
     help_title:'Über Family Budget', help_intro:'Family Budget ist ein Familienbudget direkt in Telegram. Einnahmen, Ausgaben, Limits, Ziele — alles an einem Ort.', help_features:'Funktionen', help_f1:'Einnahmen & Ausgaben', help_f1s:'Kategorien, Bearbeitung, Suche', help_f2:'Umschläge', help_f2s:'Limits pro Kategorie, Bot warnt beim Überschreiten', help_f3:'Sparkassen', help_f3s:'für Urlaub, Auto sparen. Fortschritt und Frist', help_f4:'Analyse', help_f4s:'Monatsausgaben, Top-Artikel, Prognose', help_f5:'Familie', help_f5s:'gemeinsames Budget mit Partner', help_f6:'Daueraufträge', help_f6s:'Miete, Abos, Gehalt — automatisch', help_pricing:'Preise', help_p_trial:'Erster Monat', help_p_base:'Basis', help_p_pro:'Pro', help_pay:'Zahlung in der App: Telegram Stars oder Krypto (USDT, TON, BTC).', help_start:'Erste Schritte', help_s1:'1. Tippe ➖ auf Start — erste Ausgabe', help_s2:'2. Umschlag erstellen — Limit setzen', help_s3:'3. Partner einladen — Einstellungen → Familie', help_s4:'4. Daueraufträge einrichten', help_help:'Hilfe', help_support:'Fragen und Bugs — schreib uns auf Telegram. Antwort innerhalb eines Tages.', help_contact:'Kontakt', help_close:'Verstanden',
+    cat_custom:'Eigene', cat_new:'Eigene Kategorie', cat_name:'Name', cat_emoji:'Emoji', cat_limit:'Kostenlos — 2 eigene Kategorien. Upgrade für unbegrenzt.', cat_delete:'Kategorie löschen', cat_hint:'Eigene Kategorien — Pro. Kostenlos — bis 2.',
   },
   fr: {
     nav_home:'Accueil', nav_env:'Enveloppes', nav_bank:'Banques', nav_an:'Analytique', nav_set:'Paramètres',
@@ -1049,6 +1082,7 @@ const I18N = {
     hist_all:'Tous', hist_income:'Revenus', hist_expense:'Dépenses', hist_ops:'opérations', hist_empty:'Rien trouvé', hist_search_ph:'Rechercher par note',
     cur_uah:'Hryvnia', cur_rub:'Rouble', cur_usd:'Dollar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Livre', cur_try:'Lire', cur_chf:'Franc', cur_czk:'Couronne', cur_jpy:'Yen', cur_cny:'Yuan',
     help_title:'À propos de Family Budget', help_intro:'Family Budget est un budget familial directement dans Telegram. Revenus, dépenses, limites, objectifs — tout au même endroit.', help_features:'Fonctionnalités', help_f1:'Revenus & dépenses', help_f1s:'suivi par catégorie, édition, recherche', help_f2:'Enveloppes', help_f2s:'limites par catégorie, alerte en cas de dépassement', help_f3:'Épargne', help_f3s:'économisez pour un voyage, une voiture', help_f4:'Analyse', help_f4s:'dépenses mensuelles, top articles, prévision', help_f5:'Famille', help_f5s:'budget partagé avec partenaire', help_f6:'Récurrents', help_f6s:'loyer, abonnements, salaire — automatique', help_pricing:'Tarifs', help_p_trial:'Premier mois', help_p_base:'Base', help_p_pro:'Pro', help_pay:'Paiement dans l\'app : Telegram Stars ou crypto (USDT, TON, BTC).', help_start:'Pour commencer', help_s1:'1. Touchez ➖ pour une première dépense', help_s2:'2. Créez une enveloppe — fixez une limite', help_s3:'3. Invitez votre partenaire — Paramètres → Famille', help_s4:'4. Configurez les paiements récurrents', help_help:'Support', help_support:'Questions et bugs — écrivez-nous sur Telegram.', help_contact:'Contact', help_close:'Compris',
+    cat_custom:'Perso', cat_new:'Catégorie perso', cat_name:'Nom', cat_emoji:'Emoji', cat_limit:'Gratuit — 2 catégories perso. Passez à Pro.', cat_delete:'Supprimer la catégorie', cat_hint:'Catégories perso — Pro. Gratuit — jusqu\'à 2.',
   },
   es: {
     nav_home:'Inicio', nav_env:'Sobres', nav_bank:'Bancos', nav_an:'Análisis', nav_set:'Ajustes',
@@ -1072,7 +1106,7 @@ const I18N = {
     no_env:'Sin sobres', no_bank:'Sin bancos', no_history:'Sin historial',
     analytics_title:'Análisis de gastos', no_data:'Sin datos',
     months_chart_title:'Dinámica mensual',
-    date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'xz artículo',
+    date_lbl:'Fecha', receipt_items:'Artículos', receipt_add:'Añadir artículo',
     receipt_total:'Total:', receipt_save:'Guardar recibo',
     receipt_photo_hint:'Fotografiar o subir recibo', receipt_remove_photo:'Quitar foto',
     receipt_pro_only:'Recibo por foto solo en Pro.',
@@ -1105,6 +1139,7 @@ const I18N = {
     hist_all:'Todos', hist_income:'Ingresos', hist_expense:'Gastos', hist_ops:'ops', hist_empty:'Nada encontrado', hist_search_ph:'Buscar por nota',
     cur_uah:'Grivna', cur_rub:'Rublo', cur_usd:'Dólar', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Libra', cur_try:'Lira', cur_chf:'Franco', cur_czk:'Corona', cur_jpy:'Yen', cur_cny:'Yuan',
     help_title:'Sobre Family Budget', help_intro:'Family Budget es un presupuesto familiar dentro de Telegram. Ingresos, gastos, límites, metas — todo en un lugar.', help_features:'Qué hace', help_f1:'Ingresos y gastos', help_f1s:'por categoría, edición, búsqueda', help_f2:'Sobres', help_f2s:'límites por categoría, aviso al exceder', help_f3:'Bancos-meta', help_f3s:'ahorra para viaje, coche', help_f4:'Análisis', help_f4s:'gastos mensuales, top productos, pronóstico', help_f5:'Familia', help_f5s:'presupuesto compartido', help_f6:'Recurrentes', help_f6s:'alquiler, suscripciones, salario', help_pricing:'Precios', help_p_trial:'Primer mes', help_p_base:'Base', help_p_pro:'Pro', help_pay:'Pago en la app: Telegram Stars o cripto (USDT, TON, BTC).', help_start:'Cómo empezar', help_s1:'1. Toca ➖ para añadir gasto', help_s2:'2. Crea un sobre con límite', help_s3:'3. Invita a tu pareja — Ajustes → Familia', help_s4:'4. Configura pagos recurrentes', help_help:'Soporte', help_support:'Dudas y bugs — escríbenos en Telegram.', help_contact:'Contacto', help_close:'Entendido',
+    cat_custom:'Propia', cat_new:'Categoría propia', cat_name:'Nombre', cat_emoji:'Emoji', cat_limit:'Gratis — 2 categorías. Actualiza a Pro.', cat_delete:'Eliminar categoría', cat_hint:'Categorías propias — Pro. Gratis — hasta 2.',
   },
   it: {
     nav_home:'Home', nav_env:'Buste', nav_bank:'Banche', nav_an:'Analisi', nav_set:'Impostazioni',
@@ -1161,6 +1196,7 @@ const I18N = {
     hist_all:'Tutti', hist_income:'Entrate', hist_expense:'Spese', hist_ops:'op', hist_empty:'Niente trovato', hist_search_ph:'Cerca per nota',
     cur_uah:'Grivnia', cur_rub:'Rublo', cur_usd:'Dollaro', cur_eur:'Euro', cur_pln:'Zloty', cur_gbp:'Sterlina', cur_try:'Lira', cur_chf:'Franco', cur_czk:'Corona', cur_jpy:'Yen', cur_cny:'Yuan',
     help_title:'Informazioni su Family Budget', help_intro:'Family Budget è un bilancio familiare dentro Telegram. Entrate, spese, limiti, obiettivi — tutto in un posto.', help_features:'Cosa fa', help_f1:'Entrate e spese', help_f1s:'per categoria, modifica, ricerca', help_f2:'Buste', help_f2s:'limiti per categoria, avviso al superamento', help_f3:'Banche-obiettivo', help_f3s:'risparmia per viaggio, auto', help_f4:'Analisi', help_f4s:'spese mensili, top articoli, previsione', help_f5:'Famiglia', help_f5s:'budget condiviso', help_f6:'Ricorrenti', help_f6s:'affitto, abbonamenti, stipendio', help_pricing:'Prezzi', help_p_trial:'Primo mese', help_p_base:'Base', help_p_pro:'Pro', help_pay:'Pagamento in app: Telegram Stars o cripto (USDT, TON, BTC).', help_start:'Come iniziare', help_s1:'1. Tocca ➖ per aggiungere spesa', help_s2:'2. Crea una busta con limite', help_s3:'3. Invita il partner — Impostazioni → Famiglia', help_s4:'4. Imposta pagamenti ricorrenti', help_help:'Supporto', help_support:'Domande e bug — scrivici su Telegram.', help_contact:'Contatto', help_close:'Capito',
+    cat_custom:'Personale', cat_new:'Categoria personale', cat_name:'Nome', cat_emoji:'Emoji', cat_limit:'Gratis — 2 categorie. Passa a Pro.', cat_delete:'Elimina categoria', cat_hint:'Categorie personali — Pro. Gratis — fino a 2.',
   },
   pl: {
     nav_home:'Główna', nav_env:'Koperty', nav_bank:'Banki', nav_an:'Analizy', nav_set:'Ustawienia',
@@ -1217,6 +1253,7 @@ const I18N = {
     hist_all:'Wszystkie', hist_income:'Dochody', hist_expense:'Wydatki', hist_ops:'oper.', hist_empty:'Nic nie znaleziono', hist_search_ph:'Szukaj po opisie',
     cur_uah:'Hrywna', cur_rub:'Rubel', cur_usd:'Dolar', cur_eur:'Euro', cur_pln:'Złoty', cur_gbp:'Funt', cur_try:'Lira', cur_chf:'Frank', cur_czk:'Korona', cur_jpy:'Jen', cur_cny:'Yuan',
     help_title:'O Family Budget', help_intro:'Family Budget to budżet rodzinny w Telegramie. Dochody, wydatki, limity, cele — wszystko w jednym miejscu.', help_features:'Co potrafi', help_f1:'Dochody i wydatki', help_f1s:'kategorie, edycja, wyszukiwanie', help_f2:'Koperty', help_f2s:'limity na kategorie, alert przy przekroczeniu', help_f3:'Banki-cele', help_f3s:'oszczędzaj na wakacje, samochód', help_f4:'Analizy', help_f4s:'wydatki miesięczne, top produkty, prognoza', help_f5:'Rodzina', help_f5s:'wspólny budżet z partnerem', help_f6:'Cykliczne', help_f6s:'czynsz, subskrypcje, wypłata', help_pricing:'Ceny', help_p_trial:'Pierwszy miesiąc', help_p_base:'Podstawowy', help_p_pro:'Pro', help_pay:'Płatność w aplikacji: Telegram Stars lub krypto (USDT, TON, BTC).', help_start:'Jak zacząć', help_s1:'1. Naciśnij ➖ aby dodać wydatek', help_s2:'2. Utwórz kopertę z limitem', help_s3:'3. Zaproś partnera — Ustawienia → Rodzina', help_s4:'4. Skonfiguruj płatności cykliczne', help_help:'Pomoc', help_support:'Pytania i błędy — napisz na Telegramie.', help_contact:'Kontakt', help_close:'Rozumiem',
+    cat_custom:'Własna', cat_new:'Własna kategoria', cat_name:'Nazwa', cat_emoji:'Emoji', cat_limit:'Za darmo — 2 własne kategorie. Ulepsz do Pro.', cat_delete:'Usuń kategorię', cat_hint:'Własne kategorie — Pro. Za darmo — do 2.',
   },
   tr: {
     nav_home:'Ana', nav_env:'Zarflar', nav_bank:'Bankalar', nav_an:'Analiz', nav_set:'Ayarlar',
@@ -1274,6 +1311,7 @@ const I18N = {
     hist_all:'Tümü', hist_income:'Gelir', hist_expense:'Gider', hist_ops:'işlem', hist_empty:'Bulunamadı', hist_search_ph:'Nota göre ara',
     cur_uah:'Grivna', cur_rub:'Ruble', cur_usd:'Dolar', cur_eur:'Euro', cur_pln:'Zloti', cur_gbp:'Sterlin', cur_try:'Lira', cur_chf:'Frank', cur_czk:'Korona', cur_jpy:'Yen', cur_cny:'Yuan',
     help_title:'Family Budget hakkında', help_intro:'Family Budget Telegram içinde aile bütçesi. Gelir, gider, limit, hedef — hepsi tek yerde.', help_features:'Neler yapar', help_f1:'Gelir ve gider', help_f1s:'kategori, düzenleme, arama', help_f2:'Zarflar', help_f2s:'kategori limitleri, aşımda uyarı', help_f3:'Hedef bankalar', help_f3s:'tatil, araba için birikim', help_f4:'Analiz', help_f4s:'aylık harcama, top ürünler, tahmin', help_f5:'Aile', help_f5s:'partner ile ortak bütçe', help_f6:'Tekrarlayan', help_f6s:'kira, abonelik, maaş — otomatik', help_pricing:'Ücretler', help_p_trial:'İlk ay', help_p_base:'Temel', help_p_pro:'Pro', help_pay:'Uygulamada ödeme: Telegram Stars veya kripto (USDT, TON, BTC).', help_start:'Nasıl başlanır', help_s1:'1. ➖ ile gider ekle', help_s2:'2. Limitli zarf oluştur', help_s3:'3. Partnerini davet et — Ayarlar → Aile', help_s4:'4. Tekrarlayan ödemeleri ayarla', help_help:'Destek', help_support:'Sorular ve hatalar — Telegram\'dan yaz.', help_contact:'İletişim', help_close:'Anladım',
+    cat_custom:'Özel', cat_new:'Özel kategori', cat_name:'Ad', cat_emoji:'Emoji', cat_limit:'Ücretsiz — 2 özel kategori. Pro\'ya geç.', cat_delete:'Kategoriyi sil', cat_hint:'Özel kategoriler — Pro. Ücretsiz — 2\'ye kadar.',
   },
   zh: {
     nav_home:'首页', nav_env:'信封', nav_bank:'银行', nav_an:'分析', nav_set:'设置',
@@ -1330,9 +1368,9 @@ const I18N = {
     hist_all:'全部', hist_income:'收入', hist_expense:'支出', hist_ops:'笔', hist_empty:'未找到', hist_search_ph:'按备注搜索',
     cur_uah:'格里夫纳', cur_rub:'卢布', cur_usd:'美元', cur_eur:'欧元', cur_pln:'兹罗提', cur_gbp:'英镑', cur_try:'里拉', cur_chf:'法郎', cur_czk:'克朗', cur_jpy:'日元', cur_cny:'人民币',
     help_title:'关于 Family Budget', help_intro:'Family Budget 是 Telegram 中的家庭记账工具。收支、限额、目标 — 一站式管理。', help_features:'功能', help_f1:'收支', help_f1s:'按类别、编辑、搜索', help_f2:'信封', help_f2s:'分类限额，超支提醒', help_f3:'储蓄目标', help_f3s:'旅行、汽车储蓄，进度与截止日', help_f4:'分析', help_f4s:'月度支出、热门商品、预测', help_f5:'家庭', help_f5s:'与伴侣共享预算', help_f6:'定期交易', help_f6s:'房租、订阅、工资 — 自动记录', help_pricing:'价格', help_p_trial:'首月', help_p_base:'基础', help_p_pro:'Pro', help_pay:'应用内支付：Telegram Stars 或加密货币（USDT、TON、BTC）。', help_start:'开始使用', help_s1:'1. 点击 ➖ 添加第一笔支出', help_s2:'2. 在信封中创建限额', help_s3:'3. 邀请伴侣 — 设置 → 家庭', help_s4:'4. 设置定期交易', help_help:'支持', help_support:'问题与反馈 — 在 Telegram 联系我们。', help_contact:'联系', help_close:'知道了',
+    cat_custom:'自定义', cat_new:'自定义分类', cat_name:'名称', cat_emoji:'表情', cat_limit:'免费 — 2 个自定义分类。升级 Pro。', cat_delete:'删除分类', cat_hint:'自定义分类 — Pro。免费最多 2 个。',
   }
 };
-
 const MONTH_KEYS = ['m_jan','m_feb','m_mar','m_apr','m_may','m_jun','m_jul','m_aug','m_sep','m_oct','m_nov','m_dec'];
 
 function t(k){ return ((I18N[appData.lang] || I18N.ru)[k]) || k; }
@@ -1350,9 +1388,9 @@ function applyLang(){
   setPh('depositAmount', 'amount_ph');
   setPh('depositNote', 'comment_ph');
   setPh('histSearch', 'hist_search_ph');
-  }
+}
 
-  const CAT_I18N = {
+const CAT_I18N = {
   'Еда':          {en:'Food', uk:'Їжа', de:'Essen', fr:'Nourriture', es:'Comida', it:'Cibo', pl:'Jedzenie', tr:'Yemek', zh:'食物'},
   'Продукты':     {en:'Groceries', uk:'Продукти', de:'Lebensmittel', fr:'Courses', es:'Comestibles', it:'Spesa', pl:'Zakupy', tr:'Market', zh:'杂货'},
   'Кафе':         {en:'Cafe', uk:'Кафе', de:'Café', fr:'Café', es:'Café', it:'Caffè', pl:'Kawiarnia', tr:'Kafe', zh:'咖啡'},
@@ -1412,91 +1450,92 @@ function tCat(name){
   const e = CAT_I18N[name];
   return (e && e[lang]) || name;
 }
-  const API = {
-    headers: {},
-    async _fetch(path, opts = {}){
-      opts.headers = Object.assign({}, this.headers, opts.headers || {});
-      const r = await fetch(path, opts);
-      let j = null;
-      try { j = await r.json(); } catch(e){}
-      if(!r.ok){
-        const msg = (j && (j.detail || j.error)) || ('HTTP ' + r.status);
-        throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
-      }
-      return j;
-    },
-    get(path){ return this._fetch(path, {method:'GET'}); },
-    post(path, body){ return this._fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})}); },
-    del(path){ return this._fetch(path, {method:'DELETE'}); }
+
+const API = {
+  headers: {},
+  async _fetch(path, opts = {}){
+    opts.headers = Object.assign({}, this.headers, opts.headers || {});
+    const r = await fetch(path, opts);
+    let j = null;
+    try { j = await r.json(); } catch(e){}
+    if(!r.ok){
+      const msg = (j && (j.detail || j.error)) || ('HTTP ' + r.status);
+      throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+    }
+    return j;
+  },
+  get(path){ return this._fetch(path, {method:'GET'}); },
+  post(path, body){ return this._fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})}); },
+  del(path){ return this._fetch(path, {method:'DELETE'}); }
+};
+
+function hasInitData(){
+  return !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
+}
+
+function tsToDate(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear();
+}
+
+function dateToTs(dateStr){
+  if(!dateStr) return Date.now();
+  const p = String(dateStr).split('.');
+  if(p.length !== 3) return Date.now();
+  return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])).getTime();
+}
+
+function normalizeTx(t){
+  return {
+    id: t.id || t.txid || ('srv_' + Math.random().toString(36).slice(2)),
+    serverId: t.txid || t.id || null,
+    type: t.type || 'expense',
+    title: t.note || t.title || t.category || '—',
+    category: t.category || 'Разное',
+    icon: t.icon || (t.type === 'income' ? '💰' : '📦'),
+    amount: Number(t.amount) || 0,
+    date: t.date || tsToDate(t.ts),
+    ts: t.ts || (t.date ? dateToTs(t.date) : Date.now()),
+    envelopeId: t.envelopeId || null,
+    recurring: !!t.recurring,
+    receipt: t.receipt || null
   };
-  
-  function hasInitData(){
-    return !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
-  }
+}
 
-  function tsToDate(ts){
-    if(!ts) return '';
-    const d = new Date(ts);
-    return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear();
+function applyFamilyData(fam){
+  if(!fam) return;
+  if(fam.transactions && typeof fam.transactions === 'object'){
+    const list = Object.keys(fam.transactions).map(k => {
+      const t = Object.assign({}, fam.transactions[k]);
+      t.txid = k;
+      return normalizeTx(t);
+    });
+    appData.history = list.sort((a,b) => (b.ts||0) - (a.ts||0));
+  } else {
+    appData.history = [];
   }
-
-  function dateToTs(dateStr){
-    if(!dateStr) return Date.now();
-    const p = String(dateStr).split('.');
-    if(p.length !== 3) return Date.now();
-    return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])).getTime();
+  if(fam.envelopes && typeof fam.envelopes === 'object'){
+    appData.envelopes = Object.keys(fam.envelopes).map(k => {
+      const e = fam.envelopes[k] || {};
+      return { id: k, name: e.name || '—', target: Number(e.target)||0, spent: 0 };
+    });
+  } else {
+    appData.envelopes = [];
   }
-
-  function normalizeTx(t){
-    return {
-      id: t.id || t.txid || ('srv_' + Math.random().toString(36).slice(2)),
-      serverId: t.txid || t.id || null,
-      type: t.type || 'expense',
-      title: t.note || t.title || t.category || '—',
-      category: t.category || 'Разное',
-      icon: t.icon || (t.type === 'income' ? '💰' : '📦'),
-      amount: Number(t.amount) || 0,
-      date: t.date || tsToDate(t.ts),
-      ts: t.ts || (t.date ? dateToTs(t.date) : Date.now()),
-      envelopeId: t.envelopeId || null,
-      recurring: !!t.recurring,
-      receipt: t.receipt || null
-    };
+  if(fam.banks && typeof fam.banks === 'object'){
+    appData.banks = Object.keys(fam.banks).map(k => {
+      const b = fam.banks[k] || {};
+      return { id: k, name: b.name || '—', target: Number(b.target)||0, balance: Number(b.balance)||0, deadline: b.deadline || null };
+    });
+  } else {
+    appData.banks = [];
   }
+  saveData();
+  renderAll();
+}
 
-  function applyFamilyData(fam){
-    if(!fam) return;
-    if(fam.transactions && typeof fam.transactions === 'object'){
-      const list = Object.keys(fam.transactions).map(k => {
-        const t = Object.assign({}, fam.transactions[k]);
-        t.txid = k;
-        return normalizeTx(t);
-      });
-      appData.history = list.sort((a,b) => (b.ts||0) - (a.ts||0));
-    } else {
-      appData.history = [];
-    }
-    if(fam.envelopes && typeof fam.envelopes === 'object'){
-      appData.envelopes = Object.keys(fam.envelopes).map(k => {
-        const e = fam.envelopes[k] || {};
-        return { id: k, name: e.name || '—', target: Number(e.target)||0, spent: 0 };
-      });
-    } else {
-      appData.envelopes = [];
-    }
-    if(fam.banks && typeof fam.banks === 'object'){
-      appData.banks = Object.keys(fam.banks).map(k => {
-        const b = fam.banks[k] || {};
-        return { id: k, name: b.name || '—', target: Number(b.target)||0, balance: Number(b.balance)||0, deadline: b.deadline || null };
-      });
-    } else {
-      appData.banks = [];
-    }
-    saveData();
-    renderAll();
-  }
-
-  function loadFamilyFromServer(){
+function loadFamilyFromServer(){
   if(!hasInitData()) return Promise.resolve(null);
 
   if(appData._leftAt && Date.now() - appData._leftAt < 5000){
@@ -1505,7 +1544,6 @@ function tCat(name){
 
   API.headers['X-Init-Data'] = window.Telegram.WebApp.initData;
   return API.post('/api/init', {}).then(res => {
-    // обновляем подписку из Firebase
     if(res && res.subscription){
       appData.subscription = {
         plan: res.subscription.status === 'active' && (res.subscription.tariff || '').startsWith('pro') ? 'pro'
@@ -1541,9 +1579,9 @@ function tCat(name){
     console.warn('family load failed:', err.message);
     return null;
   });
-  }
-  
-   const EXPENSE_CATEGORIES = [
+}
+
+const EXPENSE_CATEGORIES = [
   {icon:'🍔',name:'Еда'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
   {icon:'🚗',name:'Транспорт'},{icon:'🚕',name:'Такси'},{icon:'⛽',name:'Бензин'},
   {icon:'🚌',name:'Общественный'},{icon:'🏠',name:'Дом'},{icon:'💡',name:'Коммуналка'},
@@ -1585,7 +1623,6 @@ let monthsChartInstance = null;
 let selectedCatEmoji = '🎓';
 let pendingReceiptPhoto = null;
 let editingTxId = null;
-let _confirmCb = null;
 
 const now0 = new Date();
 const DEFAULT_STATE = {
@@ -1665,7 +1702,6 @@ function clearDemoData(){
   appData.history = appData.history.filter(t => !t.demo);
   appData.envelopes = (appData.envelopes || []).filter(e => !e.demo);
 
-  // отвязываем транзакции с demo_env
   appData.history.forEach(t => {
     if(t.envelopeId === 'demo_env') t.envelopeId = null;
   });
@@ -1681,7 +1717,6 @@ function tierLimits(){
 function isPro(){
   return appData.subscription && appData.subscription.plan === 'pro';
 }
-
 
 function isBase(){
   return appData.subscription && appData.subscription.plan === 'base';
@@ -1772,7 +1807,7 @@ function curLabel(c){
   return t(c.key) || c.label || c.id;
 }
   
-  function openPicker(kind){
+function openPicker(kind){
   const cfg = {
     envelope:        { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
     envelopeReceipt: { title:t('envelope'), items:[{id:'',label:'—'}].concat(appData.envelopes.map(e=>({id:e.id,label:e.name}))) },
@@ -1823,7 +1858,6 @@ function pick(kind, id){
 function renderTrialGate(){
   const ro = isReadOnly();
 
-  // блокируем добавление транзакций
   const btnIncome = document.querySelector('.actions-grid .btn-success');
   const btnExpense = document.querySelector('.actions-grid .btn-danger');
   const btnEnvNew = document.querySelector('#tab-envelopes button');
@@ -1844,7 +1878,6 @@ function renderTrialGate(){
     }
   });
 
-  // баннер сверху
   let banner = document.getElementById('roBanner');
   if(ro && !banner){
     banner = document.createElement('div');
@@ -1859,7 +1892,6 @@ function renderTrialGate(){
     banner.remove();
   }
 
-  // модалку показываем максимум один раз за сессию
   if(ro && !sessionStorage.getItem('trialGateShown')){
     sessionStorage.setItem('trialGateShown', '1');
     setTimeout(() => openModal('modalTrialGate'), 1200);
@@ -1931,6 +1963,7 @@ function saveCustomCategory(){
   }
 }
 
+function deleteCustomCategory(name){
   askConfirm(t('delete_confirm'), () => {
     appData.customCategories = (appData.customCategories || []).filter(c => c.name !== name);
     saveData();
@@ -1941,6 +1974,7 @@ function saveCustomCategory(){
       renderCategoryGrid('categoryGrid', all, true);
     }
   });
+  }
   
 function openHelp(){
   openModal('modalHelp');
@@ -2236,6 +2270,9 @@ function resetBankForm(){
   document.getElementById('bankTargetInput').value = '';
   clearBankDeadline();
 }
+  
+function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('active'); }
+
 function askConfirm(text, cb){
   const el = document.getElementById('confirmText');
   if(el) el.innerText = text;
@@ -2253,9 +2290,6 @@ function confirmCancel(){
   _confirmCb = null;
 }
   
-function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('active'); }
-
-
 function closeModal(id){ const m = document.getElementById(id); if(m) m.classList.remove('active'); }
 
 function openTransactionModal(type){
@@ -2266,10 +2300,12 @@ function openTransactionModal(type){
   const expFields = document.getElementById('txExpenseFields');
   if(expFields) expFields.style.display = type === 'expense' ? 'block' : 'none';
 
-  const cats = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-  appData.selectedCategory = cats[0].name;
-  appData.currentIcon = cats[0].icon;
-  renderCategoryGrid('categoryGrid', cats, true);
+  const baseCats = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const custom = (appData.customCategories || []).filter(c => !c.type || c.type === type);
+  const allCats = baseCats.concat(custom);
+  appData.selectedCategory = allCats[0].name;
+  appData.currentIcon = allCats[0].icon;
+  renderCategoryGrid('categoryGrid', allCats, true);
 
   if(appData.envelopes.length && !appData.selectedEnvelopeId){
     appData.selectedEnvelopeId = appData.envelopes[0].id;
@@ -2411,12 +2447,8 @@ function applyTx(tx){
 function deleteTx(id){
   askConfirm(t('delete_confirm'), () => {
     const tx = appData.history.find(x => String(x.id) === String(id));
-    if(!tx) {
-      console.log('Трата не найдена по id:', id);
-      return;
-    }
+    if(!tx) return;
     
-    // Если удаляем пополнение банки, уменьшаем баланс
     if(tx.bankId){
       const bank = appData.banks.find(b => String(b.id) === String(tx.bankId));
       if(bank) bank.balance = Math.max(0, (bank.balance || 0) - tx.amount);
@@ -2462,7 +2494,6 @@ function saveEditTx(){
   const newCat = active ? active.dataset.name : tx.category;
   const newIcon = active ? active.dataset.icon : tx.icon;
 
-  // корректируем баланс банки, если это было пополнение
   if(tx.bankId){
     const bank = appData.banks.find(b => String(b.id) === String(tx.bankId));
     if(bank){
@@ -2475,7 +2506,6 @@ function saveEditTx(){
   tx.category = newCat;
   tx.icon = newIcon;
 
-  // если привязано к конверту — spent считается из истории, ничего не трогаем
   saveData();
   closeModal('modalEditTx');
   editingTxId = null;
@@ -2655,7 +2685,6 @@ function calBankShiftYear(dir){
   renderBankCal();
 }
 function renderBankCal(){
-  // сетка месяцев сверху
   const monthsGrid = document.getElementById('calBankMonths');
   if(monthsGrid){
     const monthKeys = ['m_jan','m_feb','m_mar','m_apr','m_may','m_jun','m_jul','m_aug','m_sep','m_oct','m_nov','m_dec'];
@@ -2683,7 +2712,7 @@ function renderBankCal(){
     const isSel = selDate && selDate.getFullYear()===calBankYear && selDate.getMonth()===calBankMonth && selDate.getDate()===d;
     html += '<button class="cal-day ' + (isSel?'sel':'') + '" onclick="pickBankDate(' + calBankYear + ',' + calBankMonth + ',' + d + ')">' + d + '</button>';
   }
-  https://github.com/crosovkesale-design/money-minidocument.getElementById('calBankGrid').innerHTML = html;
+  document.getElementById('calBankGrid').innerHTML = html;
 }
 
 function calBankSetMonth(m){
@@ -2742,7 +2771,7 @@ function saveBank(){
   const name = document.getElementById('bankNameInput').value.trim();
   const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
   if(!name) return;
-    const lim = tierLimits();
+  const lim = tierLimits();
   if(appData.banks.length >= lim.banks){
     showAlert(t('bank_limit'));
     return;
@@ -2931,7 +2960,6 @@ function processRecurring(){
     if(!appData.history) appData.history = [];
     appData.history.unshift(tx);
 
-    // если правило привязано к конверту и это расход — списываем с конверта
     if(rule.type === 'expense' && rule.envelopeId){
       const env = appData.envelopes.find(e => String(e.id) === String(rule.envelopeId));
       if(env) env.spent = (env.spent || 0) + rule.amount;
@@ -3071,7 +3099,6 @@ function leaveFamily(){
         saveData();
         renderFamily();
         renderAll();
-        // НЕ перечитываем сервер сразу — иначе race с Firebase
       }).catch(err => {
         showAlert('Не удалось выйти: ' + err.message);
       });
@@ -3202,7 +3229,6 @@ function renderForecast(){
   const proBadge = document.getElementById('forecastProBadge');
   if(!card || !body) return;
 
-  // показываем только на текущем месяце
   const now = new Date();
   const [cy, cm] = appData.currentMonth.split('-').map(Number);
   const isCurrentMonth = (cy === now.getFullYear()) && (cm - 1 === now.getMonth());
@@ -3212,7 +3238,6 @@ function renderForecast(){
     return;
   }
 
-  // на trial / без подписки — только заглушка "Pro"
   if(!hasPaidSub()){
     card.style.display = 'block';
     icon.textContent = '🔮';
@@ -3274,7 +3299,8 @@ function renderForecast(){
       '</div>';
   }
 }
-  let histFilter = 'all';
+
+let histFilter = 'all';
 function setHistFilter(f){
   histFilter = f;
   document.querySelectorAll('[data-hist-filter]').forEach(b => {
@@ -3282,7 +3308,7 @@ function setHistFilter(f){
   });
   renderHistory();
 }  
-  function filteredMonthTx(){
+function filteredMonthTx(){
   let list = monthTx();
   const q = (document.getElementById('histSearch')?.value || '').trim().toLowerCase();
 
@@ -3343,30 +3369,31 @@ function renderHistory(){
     </div>`;
   }).join('');
 }
-  function renderAll(){
+function renderAll(){
   const el = id => document.getElementById(id);
   renderMonthBar();
 
   const mtx = monthTx();
-const inc = mtx.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
-const exp = mtx.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
-const carryIn = carryInFor(appData.currentMonth);
-const totalBalance = carryIn + inc - exp;
+  const inc = mtx.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const exp = mtx.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+  const carryIn = carryInFor(appData.currentMonth);
+  const totalBalance = carryIn + inc - exp;
 
-if(el('totalBalance')) el('totalBalance').innerText = fmtMoney(totalBalance);
-if(el('monthIncome')) el('monthIncome').innerText = '+' + fmtMoney(inc);
-if(el('monthExpense')) el('monthExpense').innerText = '-' + fmtMoney(exp);
+  if(el('totalBalance')) el('totalBalance').innerText = fmtMoney(totalBalance);
+  if(el('monthIncome')) el('monthIncome').innerText = '+' + fmtMoney(inc);
+  if(el('monthExpense')) el('monthExpense').innerText = '-' + fmtMoney(exp);
 
-const carryEl = document.getElementById('carryIn');
-if(carryEl){
-  if(carryIn !== 0){
-    carryEl.style.display = 'block';
-    carryEl.innerText = (carryIn > 0 ? '↑ ' : '↓ ') + fmtMoney(Math.abs(carryIn)) + ' с прошлых месяцев';
-    carryEl.style.color = carryIn > 0 ? 'var(--success)' : 'var(--danger)';
-  } else {
-    carryEl.style.display = 'none';
+  const carryEl = document.getElementById('carryIn');
+  if(carryEl){
+    if(carryIn !== 0){
+      carryEl.style.display = 'block';
+      carryEl.innerText = (carryIn > 0 ? '↑ ' : '↓ ') + fmtMoney(Math.abs(carryIn)) + ' с прошлых месяцев';
+      carryEl.style.color = carryIn > 0 ? 'var(--success)' : 'var(--danger)';
+    } else {
+      carryEl.style.display = 'none';
+    }
   }
-}
+  
   renderSettingsLabels();
   renderForecast();
   renderReferral();
@@ -3389,38 +3416,39 @@ if(carryEl){
   }
 
   const bankBox = document.getElementById('banksList');
-if(bankBox){
-  bankBox.innerHTML = appData.banks.length ? appData.banks.map(b => {
-    const pct = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
-    const done = b.balance >= b.target && b.target > 0;
-    const doneBadge = done ? `<span style="color:var(--success);font-size:11px;font-weight:700">${t('bank_done')}</span>` : '';
-    let deadlineLine = '';
-    if(b.deadline && !done){
-      const now = new Date();
-      const dl = new Date(b.deadline);
-      const monthsLeft = Math.max(0, (dl.getFullYear() - now.getFullYear()) * 12 + (dl.getMonth() - now.getMonth()));
-      const remaining = Math.max(0, b.target - b.balance);
-      const perMonth = monthsLeft > 0 ? Math.ceil(remaining / monthsLeft) : remaining;
-      const fmtDl = String(dl.getDate()).padStart(2,'0') + '.' + String(dl.getMonth()+1).padStart(2,'0') + '.' + dl.getFullYear();
-      if(monthsLeft > 0){
-        deadlineLine = `<div class="muted" style="margin-top:4px;font-size:11px">${t('bank_left')} ${fmtMoney(remaining)} ${t('bank_by')} ${fmtDl} · ${t('bank_save')} ${fmtMoney(perMonth)}${t('bank_per_mo')}</div>`;
-      } else {
-        deadlineLine = `<div style="margin-top:4px;font-size:11px;color:var(--danger)">${t('bank_over')} · ${t('bank_left')} ${fmtMoney(remaining)}</div>`;
+  if(bankBox){
+    bankBox.innerHTML = appData.banks.length ? appData.banks.map(b => {
+      const pct = Math.min(100, Math.round((b.balance / (b.target || 1)) * 100));
+      const done = b.balance >= b.target && b.target > 0;
+      const doneBadge = done ? `<span style="color:var(--success);font-size:11px;font-weight:700">${t('bank_done')}</span>` : '';
+      let deadlineLine = '';
+      if(b.deadline && !done){
+        const now = new Date();
+        const dl = new Date(b.deadline);
+        const monthsLeft = Math.max(0, (dl.getFullYear() - now.getFullYear()) * 12 + (dl.getMonth() - now.getMonth()));
+        const remaining = Math.max(0, b.target - b.balance);
+        const perMonth = monthsLeft > 0 ? Math.ceil(remaining / monthsLeft) : remaining;
+        const fmtDl = String(dl.getDate()).padStart(2,'0') + '.' + String(dl.getMonth()+1).padStart(2,'0') + '.' + dl.getFullYear();
+        if(monthsLeft > 0){
+          deadlineLine = `<div class="muted" style="margin-top:4px;font-size:11px">${t('bank_left')} ${fmtMoney(remaining)} ${t('bank_by')} ${fmtDl} · ${t('bank_save')} ${fmtMoney(perMonth)}${t('bank_per_mo')}</div>`;
+        } else {
+          deadlineLine = `<div style="margin-top:4px;font-size:11px;color:var(--danger)">${t('bank_over')} · ${t('bank_left')} ${fmtMoney(remaining)}</div>`;
+        }
       }
-    }
-    return `<div class="card">
-      <button class="card-del" onclick="deleteBank('${b.id}')">✕</button>
-      <div class="row-between" style="padding-right:24px"><b>🏦 ${escapeAttr(b.name)}</b><span>${pct}%</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${done ? 'var(--success)' : 'var(--success)'}"></div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-        <span class="muted">${fmtMoney(b.balance)} / ${fmtMoney(b.target)}</span>
-        <button class="btn btn-success btn-sm" onclick="depositBank('${b.id}')">+ ${t('top_up')}</button>
-      </div>
-      ${doneBadge ? `<div style="margin-top:6px">${doneBadge}</div>` : ''}
-      ${deadlineLine}
-    </div>`;
-  }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_bank')}</div>`;
-}
+      return `<div class="card">
+        <button class="card-del" onclick="deleteBank('${b.id}')">✕</button>
+        <div class="row-between" style="padding-right:24px"><b>🏦 ${escapeAttr(b.name)}</b><span>${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${done ? 'var(--success)' : 'var(--success)'}"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span class="muted">${fmtMoney(b.balance)} / ${fmtMoney(b.target)}</span>
+          <button class="btn btn-success btn-sm" onclick="depositBank('${b.id}')">+ ${t('top_up')}</button>
+        </div>
+        ${doneBadge ? `<div style="margin-top:6px">${doneBadge}</div>` : ''}
+        ${deadlineLine}
+      </div>`;
+    }).join('') : `<div class="muted" style="text-align:center;padding:15px">${t('no_bank')}</div>`;
+  }
+  
   renderHistory();
 }
 

@@ -2716,6 +2716,7 @@ function saveEnvelope(){
   const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value) || 0;
   if(!name) return;
+  const lim = tierLimits();
   if(appData.envelopes.length >= lim.envelopes){
     showAlert(t('env_limit'));
     return;

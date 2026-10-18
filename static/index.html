@@ -1930,7 +1930,6 @@ function saveCustomCategory(){
   }
 }
 
-function deleteCustomCategory(name){
   askConfirm(t('delete_confirm'), () => {
     appData.customCategories = (appData.customCategories || []).filter(c => c.name !== name);
     saveData();
@@ -2237,9 +2236,6 @@ function resetBankForm(){
   document.getElementById('bankTargetInput').value = '';
   clearBankDeadline();
 }
-  
-function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('active'); }
-
 let _confirmCb = null;
 function askConfirm(text, cb){
   const el = document.getElementById('confirmText');
@@ -2258,6 +2254,9 @@ function confirmCancel(){
   _confirmCb = null;
 }
   
+function openModal(id){ const m = document.getElementById(id); if(m) m.classList.add('active'); }
+
+
 function closeModal(id){ const m = document.getElementById(id); if(m) m.classList.remove('active'); }
 
 function openTransactionModal(type){
@@ -2413,7 +2412,10 @@ function applyTx(tx){
 function deleteTx(id){
   askConfirm(t('delete_confirm'), () => {
     const tx = appData.history.find(x => String(x.id) === String(id));
-    if(!tx) return;
+    if(!tx) {
+      console.log('Трата не найдена по id:', id);
+      return;
+    }
     
     // Если удаляем пополнение банки, уменьшаем баланс
     if(tx.bankId){
@@ -2740,7 +2742,8 @@ function saveBank(){
   const name = document.getElementById('bankNameInput').value.trim();
   const target = parseFloat(document.getElementById('bankTargetInput').value) || 0;
   if(!name) return;
-  if(!isPro() && appData.banks.length >= 2){
+    const lim = tierLimits();
+  if(appData.banks.length >= lim.banks){
     showAlert(t('bank_limit'));
     return;
   }

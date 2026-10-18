@@ -25,6 +25,10 @@ const TRANSLATIONS = {
     inc_invest: 'Инвестиции', inc_dividend: 'Дивиденды', inc_freelance: 'Фриланс', inc_business: 'Бизнес',
     inc_sale: 'Продажа', inc_gift: 'Подарок', inc_help: 'Помощь', inc_win: 'Выигрыш',
     inc_refund: 'Возврат', inc_scholarship: 'Стипендия', inc_pension: 'Пенсия', inc_other: 'Прочее',
+    search_ph: 'Поиск...',
+    custom_cat: 'Своя',
+    forecast: 'Прогноз на конец месяца',
+    forecast_text: 'При текущем темпе вы потратите <b>{sum}</b> к концу месяца.',
   },
   uk: {
     balance: 'Поточний баланс', income: 'Доходи', expense: 'Витрати', history: 'Історія',

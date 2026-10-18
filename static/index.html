@@ -11,13 +11,15 @@
 :root{
   --bg:#0f172a; --card:#1e293b; --border:#334155;
   --text:#f8fafc; --muted:#94a3b8;
-  --accent:#3b82f6; --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
+  --accent:#3b82f6; --accent-hover:#2563eb;
+  --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
   --radius:14px;
 }
 [data-theme="light"]{
   --bg:#f5f7fa; --card:#ffffff; --border:#e2e8f0;
   --text:#0f172a; --muted:#64748b;
-  --accent:#2563eb; --success:#059669; --danger:#dc2626; --warning:#d97706;
+  --accent:#2563eb; --accent-hover:#1d4ed8;
+  --success:#059669; --danger:#dc2626; --warning:#d97706;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:background .2s,color .2s}
@@ -27,10 +29,13 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;position:relative}
 .card-del{position:absolute;top:8px;right:8px;background:transparent;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px}
-.card-del:active{color:var(--danger);background:rgba(239,68,68,.1)}
 
 .month-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px}
 .month-bar button{background:transparent;border:0;color:var(--text);font-size:20px;cursor:pointer;padding:4px 12px;border-radius:8px}
+.month-bar .m{font-weight:700;font-size:15px;text-transform:capitalize}
+.month-bar .y{color:var(--muted);font-size:12px;font-weight:400;margin-left:6px}
+.month-bar .mstat{margin-left:auto;font-size:11px;color:var(--muted);margin-right:8px}
+
 .balance-card{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px}
 [data-theme="light"] .balance-card{background:linear-gradient(135deg,#ffffff 0%,#eef2ff 100%)}
 .balance-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
@@ -45,7 +50,6 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 
 .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .btn{border:none;padding:12px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:#fff;transition:opacity .15s}
-.btn:active{opacity:.85}
 .btn-accent{background:var(--accent)}
 .btn-success{background:var(--success)}
 .btn-danger{background:var(--danger)}
@@ -59,16 +63,21 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .icon-item.active{border-color:var(--accent);background:rgba(59,130,246,.15)}
 .icon-item.active .name{color:var(--accent)}
 
-.custom-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:14px;margin-bottom:12px;outline:none}
+.custom-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:14px;margin-bottom:12px;outline:none;font-family:inherit}
+.progress-bar{background:var(--border);height:8px;border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;transition:width .3s}
+
 .history-list{display:flex;flex-direction:column;gap:8px}
 .history-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .history-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
-.history-icon{font-size:20px;background:rgba(255,255,255,.05);padding:8px;border-radius:10px}
+.history-icon{font-size:20px;background:rgba(255,255,255,.05);padding:8px;border-radius:10px;flex-shrink:0}
 .history-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.history-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.history-amount{font-weight:700;font-size:15px}
-.history-tools{display:flex;gap:4px}
-.history-tools button{background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.history-sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-amount{font-weight:700;font-size:15px;flex-shrink:0}
+.history-amount.inc{color:var(--success)}
+.history-amount.exp{color:var(--text)}
+.history-tools{display:flex;gap:4px;flex-shrink:0}
+.history-tools button{background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
 
 .nav-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0;z-index:100}
 .nav-item{display:flex;flex-direction:column;align-items:center;color:var(--muted);font-size:11px;cursor:pointer;gap:4px;width:20%}
@@ -81,47 +90,72 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
 .modal-close{font-size:24px;color:var(--muted);cursor:pointer}
 
 .seg{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px;gap:4px;margin-bottom:12px}
-.seg-btn{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+.seg-btn{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
 .seg-btn.active{background:var(--accent);color:#fff}
+.select-fake{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:12px;font-family:inherit}
+.picker-list{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto}
+.picker-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;background:var(--bg);border:1px solid transparent;cursor:pointer;font-size:15px;color:var(--text)}
+.picker-item.active{border-color:var(--accent);background:rgba(59,130,246,.12)}
+.picker-item .check{margin-left:auto;color:var(--accent);opacity:0;font-size:13px}
+.picker-item.active .check{opacity:1}
 </style>
 </head>
 <body>
-
 <div class="container">
+
   <div id="tab-budget" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-weight:800;font-size:15px">Family Budget</div>
+      <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;font-weight:700">?</button>
+    </div>
     <div class="month-bar">
       <button onclick="shiftMonth(-1)">‹</button>
-      <div><span id="monthLabel">—</span> <span id="yearLabel">—</span></div>
+      <div>
+        <span class="m" id="monthLabel">—</span>
+        <span class="y" id="yearLabel">—</span>
+      </div>
+      <span class="mstat" id="monthStat"></span>
       <button onclick="shiftMonth(1)">›</button>
     </div>
+
     <div class="balance-card">
       <div class="balance-title">Текущий баланс</div>
       <div class="balance-val" id="totalBalance">0 ₴</div>
+      <div id="carryIn" style="display:none;font-size:12px;font-weight:600;margin-bottom:10px"></div>
       <div class="balance-stats">
         <div class="stat-item"><div class="stat-label">Доходы</div><div class="stat-amount inc" id="monthIncome">+0 ₴</div></div>
         <div class="stat-item"><div class="stat-label">Расходы</div><div class="stat-amount exp" id="monthExpense">-0 ₴</div></div>
       </div>
     </div>
+
     <div class="actions-grid">
       <button class="btn btn-success" onclick="openTransactionModal('income')"><i class="fa-solid fa-plus"></i> Доход</button>
       <button class="btn btn-danger" onclick="openTransactionModal('expense')"><i class="fa-solid fa-minus"></i> Расход</button>
     </div>
     
+    <h4 style="margin:16px 0 10px">История операций</h4>
     <div style="display:flex;gap:6px;margin-bottom:8px">
-      <button class="seg-btn active" onclick="setHistFilter('all')">Все</button>
-      <button class="seg-btn" onclick="setHistFilter('income')">Доходы</button>
-      <button class="seg-btn" onclick="setHistFilter('expense')">Расходы</button>
+      <button class="seg-btn active" id="f-all" onclick="setHistFilter('all')">Все</button>
+      <button class="seg-btn" id="f-inc" onclick="setHistFilter('income')">Доходы</button>
+      <button class="seg-btn" id="f-exp" onclick="setHistFilter('expense')">Расходы</button>
     </div>
+
     <div id="historyContainer" class="history-list"></div>
   </div>
 
   <div id="tab-envelopes" class="tab-content" style="display:none">
-    <div class="row-between"><h4>Конверты</h4><button class="btn btn-accent" onclick="openModal('modalAddEnvelope')">+ Создать</button></div>
+    <div class="row-between">
+      <h4>Конверты расходов</h4>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')"><i class="fa-solid fa-plus"></i> Создать</button>
+    </div>
     <div id="envelopesList"></div>
   </div>
 
   <div id="tab-banks" class="tab-content" style="display:none">
-    <div class="row-between"><h4>Банки</h4><button class="btn btn-accent" onclick="openModal('modalAddBank')">+ Создать</button></div>
+    <div class="row-between">
+      <h4>Накопительные банки</h4>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')"><i class="fa-solid fa-plus"></i> Создать</button>
+    </div>
     <div id="banksList"></div>
   </div>
 
@@ -129,6 +163,14 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
     <div class="card">
       <h5>Настройки</h5>
       <button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="exportCSV()">Скачать CSV</button>
+      <button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="leaveFamily()">Выйти из семьи</button>
+    </div>
+    <div class="card">
+      <h5>Язык</h5>
+      <button type="button" class="select-fake" onclick="openPicker('language')">
+        <span id="langLabel">🇷🇺 Русский</span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
     </div>
   </div>
 </div>
@@ -168,14 +210,30 @@ body{background:var(--bg);color:var(--text);padding-bottom:90px;transition:backg
   </div>
 </div>
 
+<div class="modal" id="modalHelp">
+  <div class="modal-content">
+    <div class="modal-header"><h3>О Family Budget</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
+    <p style="font-size:13px;margin-bottom:12px">Family Budget — семейный бюджет прямо в Telegram. Доходы, расходы, лимиты, цели.</p>
+    <button class="btn btn-accent" style="width:100%" onclick="closeModal('modalHelp')">Понятно</button>
+  </div>
+</div>
+
+<div class="modal" id="modalPicker">
+  <div class="modal-content">
+    <div class="modal-header"><h3 id="pickerTitle">—</h3><span class="modal-close" onclick="closeModal('modalPicker')">×</span></div>
+    <div id="pickerList" class="picker-list"></div>
+  </div>
+</div>
+
 <script>
-let appData = JSON.parse(localStorage.getItem('budgetApp_final')) || {
+const LANGS = [{id:'ru',flag:'🇷🇺',label:'Русский'},{id:'en',flag:'🇬🇧',label:'English'}];
+let appData = JSON.parse(localStorage.getItem('budgetApp_v12')) || {
   balance: 0, monthIncome: 0, monthExpense: 0, history: [], envelopes: [], banks: [],
-  selectedCategory: 'Еда', currentIcon: '🍔', histFilter: 'all',
+  selectedCategory: 'Еда', currentIcon: '🍔', histFilter: 'all', lang: 'ru',
   currentMonth: new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0')
 };
 
-function saveData(){ localStorage.setItem('budgetApp_final', JSON.stringify(appData)); }
+function saveData(){ localStorage.setItem('budgetApp_v12', JSON.stringify(appData)); }
 function fmtMoney(v){ return Number(v||0).toLocaleString('ru-RU') + ' ₴'; }
 
 function switchTab(name){
@@ -188,6 +246,7 @@ function switchTab(name){
 
 function openModal(id){ document.getElementById(id).classList.add('active'); }
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function openHelp(){ openModal('modalHelp'); }
 
 const EXPENSE = [{icon:'🍔',name:'Еда'},{icon:'☕',name:'Кафе'},{icon:'🚗',name:'Транспорт'},{icon:'🏠',name:'Дом'},{icon:'📦',name:'Разное'}];
 const INCOME = [{icon:'💰',name:'Зарплата'},{icon:'💸',name:'Кэшбэк'},{icon:'🎁',name:'Подарок'}];
@@ -253,7 +312,9 @@ function saveBank(){
 function setHistFilter(f){
   appData.histFilter = f;
   document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  if(f==='all') document.getElementById('f-all').classList.add('active');
+  if(f==='income') document.getElementById('f-inc').classList.add('active');
+  if(f==='expense') document.getElementById('f-exp').classList.add('active');
   renderAll();
 }
 
@@ -265,10 +326,30 @@ function exportCSV(){
   else window.open(url, '_blank');
 }
 
+function openPicker(kind){
+  const cfg = { language: { title:'Язык', items: LANGS } }[kind];
+  document.getElementById('pickerTitle').innerText = cfg.title;
+  document.getElementById('pickerList').innerHTML = cfg.items.map(it => `
+    <div class="picker-item ${String(it.id)===String(appData.lang)?'active':''}" onclick="pick('${kind}','${it.id}')">
+      <span class="flag">${it.flag}</span>
+      <span>${it.label}</span>
+      <i class="fa-solid fa-check check"></i>
+    </div>`).join('');
+  openModal('modalPicker');
+}
+function pick(kind, id){ appData.lang = id; saveData(); closeModal('modalPicker'); renderAll(); }
+
+function leaveFamily(){
+  if(!confirm('Выйти из семьи?')) return;
+  appData.balance = 0; appData.history = []; appData.envelopes = []; appData.banks = [];
+  saveData(); renderAll();
+}
+
 function renderAll(){
   document.getElementById('totalBalance').innerText = fmtMoney(appData.balance);
   document.getElementById('monthIncome').innerText = '+' + fmtMoney(appData.monthIncome);
   document.getElementById('monthExpense').innerText = '-' + fmtMoney(appData.monthExpense);
+  document.getElementById('langLabel').innerText = (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).flag + ' ' + (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).label;
   
   const hist = document.getElementById('historyContainer');
   const filtered = appData.history.filter(t => appData.histFilter === 'all' || t.type === appData.histFilter);

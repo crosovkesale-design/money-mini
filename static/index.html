@@ -2230,17 +2230,12 @@ function exportCSV(){
   ).join('\n');
 
   const BOM = '\uFEFF';
-  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-  if(window.Telegram?.WebApp?.openLink) {
-    Telegram.WebApp.openLink(url); // Откроет файл во внешнем браузере
-  } else {
-    window.open(url, '_blank');
-  }
-  URL.revokeObjectURL(url);
-
-  if(window.Telegram?.WebApp?.HapticFeedback) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-}  
+const url = URL.createObjectURL(blob);
+if(window.Telegram?.WebApp?.openLink) {
+  Telegram.WebApp.openLink(url);
+} else {
+  window.open(url, '_blank');
+}
 function shareRef(){
   const link = document.getElementById('refLink')?.value || '';
   if(!link) return;

@@ -153,6 +153,13 @@ if bot:
             refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
             refs[uid] = ts
             await fb.put(f"/users/{ref_id}/referrals", refs)
+            # Начисление купона за приглашение
+            ref_u = await get_user(ref_id)
+            c10 = ref_u.get("couponsEarned") or 0
+            await fb.patch(f"/users/{ref_id}", {"couponsEarned": c10 + 1})
+            if bot:
+                try: await bot.send_message(int(ref_id), "🎁 Ты пригласил друга! Начислен купон 10%.", parse_mode="HTML")
+                except: pass
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📊 Открыть бюджет", web_app=WebAppInfo(url=MINI_APP_URL))],
@@ -167,7 +174,7 @@ if bot:
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
-        await message.answer("/start — бюджет\n/help — справка\n/stats — сколько нас\n/review — оставить отзыв\n/support — поддержка")
+        await message.answer("/start — бюджет\n/help — справка\n/pay — подписка\n/status — твоя подписка\n/stats — сколько нас\n/referrals — рефералы\n/review — отзыв\n/support — поддержка")
 
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
@@ -176,6 +183,19 @@ if bot:
         trial = sum(1 for u in users.values() if isinstance(u, dict) and (u.get("tariff") or "").startswith("trial"))
         paid = total - trial
         await message.answer(f"📊 Всего: <b>{total}</b>\n🎁 На триале: {trial}\n💎 С подпиской: {paid}", parse_mode="HTML")
+
+    @dp.message(Command("status"))
+    async def cmd_status(message: Message):
+        u = await get_user(str(message.from_user.id))
+        sub_end = int(u.get("subEnd") or 0)
+        if sub_end < 10**11: sub_end *= 1000
+        days = max(0, math.ceil((sub_end - now_ms()) / 86400000))
+        await message.answer(f"📊 Тариф: <b>{u.get('tariff', 'trial')}</b>\nОсталось: <b>{days} дн.</b>", parse_mode="HTML")
+
+    @dp.message(Command("pay"))
+    async def cmd_pay(message: Message):
+        kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))]])
+        await message.answer("Выбери тариф для оплаты:", reply_markup=kb)
 
     @dp.message(Command("referrals"))
     async def cmd_referrals(message: Message):
@@ -211,13 +231,13 @@ if bot:
         if len(text) < 10:
             await message.answer("Слишком коротко.")
             return
-        
         uid = str(message.from_user.id)
         await fb.push("/reviews", {"uid": uid, "name": message.from_user.first_name, "text": text, "ts": now_ms()})
-        await fb.patch(f"/users/{uid}", {"coupons20Earned": (await get_user(uid)).get("coupons20Earned", 0) + 1})
+        u = await get_user(uid)
+        await fb.patch(f"/users/{uid}", {"coupons20Earned": (u.get("coupons20Earned", 0) + 1)})
         await state.clear()
         await message.answer("✅ Спасибо! Начислен купон 20%.")
-
+        
         if ADMIN_CHAT_ID:
             try:
                 channel_id = os.getenv("REVIEW_CHANNEL_ID")
@@ -234,8 +254,7 @@ if bot:
     @dp.message(ReviewState.waiting_msg)
     async def support_msg(message: Message, state: FSMContext):
         if ADMIN_CHAT_ID:
-            try:
-                await bot.send_message(int(ADMIN_CHAT_ID), f"💬 Вопрос от {message.from_user.id}:\n\n{message.text}")
+            try: await bot.send_message(int(ADMIN_CHAT_ID), f"💬 Вопрос от {message.from_user.id}:\n\n{message.text}")
             except: pass
         await state.clear()
         await message.answer("✅ Отправлено. Мы ответим вам в ближайшее время.")
@@ -281,9 +300,17 @@ async def api_init(uid: str = Depends(current_uid)):
     u = await get_user(uid)
     sub_end = int(u.get("subEnd") or 0)
     if sub_end < 10**11: sub_end *= 1000
+    refs = (await fb.get(f"/users/{uid}/referrals")) or {}
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
-        "family": {"id": u.get("familyId")} if u.get("familyId") else None
+        "family": {"id": u.get("familyId")} if u.get("familyId") else None,
+        "referral": {
+            "count": len(refs),
+            "code": "FAM-" + uid[-6:].upper(),
+            "link": f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}",
+            "coupons10": max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0)),
+            "coupons20": max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0)),
+        }
     }
 
 @app.get("/api/family")
@@ -294,6 +321,21 @@ async def api_family_get(uid: str = Depends(current_uid)):
     f = (await fb.get(f"/families/{fid}")) or {}
     f["id"] = fid
     return f
+
+@app.post("/api/family/leave")
+async def api_family_leave(uid: str = Depends(current_uid)):
+    u = await get_user(uid)
+    fid = u.get("familyId")
+    if not fid: return {"ok": True, "alreadyLeft": True}
+    await fb.delete(f"/users/{uid}/familyId")
+    try:
+        members = await fb.get(f"/families/{fid}/members") or {}
+        if isinstance(members, dict) and uid in members:
+            members.pop(uid)
+            if members: await fb.put(f"/families/{fid}/members", members)
+            else: await fb.delete(f"/families/{fid}")
+    except: pass
+    return {"ok": True, "leftFrom": fid}
 
 @app.post("/api/tx")
 async def api_tx_create(request: Request, uid: str = Depends(current_uid)):

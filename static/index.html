@@ -2414,23 +2414,16 @@ function deleteTx(id){
   askConfirm(t('delete_confirm'), () => {
     const tx = appData.history.find(x => String(x.id) === String(id));
     if(!tx) return;
-
-    // если это пополнение банки — уменьшаем баланс банки
+    
+    // Если удаляем пополнение банки, уменьшаем баланс
     if(tx.bankId){
       const bank = appData.banks.find(b => String(b.id) === String(tx.bankId));
-      if(bank){
-        bank.balance = Math.max(0, (bank.balance || 0) - tx.amount);
-      }
+      if(bank) bank.balance = Math.max(0, (bank.balance || 0) - tx.amount);
     }
-
-    // если к транзакции привязан конверт — уменьшаем spent (уже считается, но на всякий случай)
-    // (у тебя spent считается из истории, тут ничего не трогаем)
-
-    if(hasInitData() && tx.serverId){
-      API.del('/api/tx/' + tx.serverId).catch(err => console.warn('tx delete failed:', err.message));
-    }
+    
     appData.history = appData.history.filter(x => String(x.id) !== String(id));
-    saveData(); renderAll();
+    saveData(); 
+    renderAll();
   });
 }
 function openEditTx(id){

@@ -13,8 +13,8 @@
 [data-theme="light"]{--bg:#f5f7fa;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--accent:#2563eb;--success:#059669;--danger:#dc2626;}
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);padding-bottom:90px;background-size:cover;background-position:center;}
-body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,23,42,.8);z-index:-1;}
-[data-theme="light"] body.has-wallpaper::before{background:rgba(245,247,250,.8);}
+body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,23,42,.85);z-index:-1;}
+[data-theme="light"] body.has-wallpaper::before{background:rgba(245,247,250,.85);}
 .container{padding:16px;max-width:500px;margin:0 auto}
 .muted{color:var(--muted);font-size:12px}
 .lbl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin:12px 0 6px;}
@@ -75,11 +75,6 @@ body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,
       <div style="font-weight:800;font-size:15px">Family Budget</div>
       <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>
     </div>
-    <div class="month-bar">
-      <button onclick="shiftMonth(-1)">‹</button>
-      <div><span id="monthLabel">—</span></div>
-      <button onclick="shiftMonth(1)">›</button>
-    </div>
     
     <div class="balance-card">
       <div class="balance-title" data-i18n="balance">Текущий баланс</div>
@@ -100,7 +95,10 @@ body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,
       <button class="btn btn-danger" onclick="openTransactionModal('expense')" data-i18n="btn_expense">Расход</button>
     </div>
     
-    <h4 style="margin:16px 0 10px" data-i18n="history">История</h4>
+    <div class="row-between">
+      <h4 data-i18n="history">История</h4>
+      <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" placeholder="Поиск..." oninput="renderAll()">
+    </div>
     <div id="historyContainer" class="history-list"></div>
   </div>
 
@@ -235,13 +233,13 @@ body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,
 const LANGS = [{id:'ru',flag:'🇷🇺',label:'Русский'},{id:'uk',flag:'🇺🇦',label:'Українська'},{id:'en',flag:'🇬🇧',label:'English'},{id:'de',flag:'🇩🇪',label:'Deutsch'},{id:'es',flag:'🇪🇸',label:'Español'},{id:'fr',flag:'🇫🇷',label:'Français'},{id:'it',flag:'🇮🇹',label:'Italiano'},{id:'pl',flag:'🇵🇱',label:'Polski'},{id:'tr',flag:'🇹🇷',label:'Türkçe'},{id:'zh',flag:'🇨🇳',label:'中文'}];
 const CURRENCIES = [{id:'UAH',sym:'₴',label:'Гривня'},{id:'RUB',sym:'₽',label:'Рубль'},{id:'USD',sym:'$',label:'Доллар'},{id:'EUR',sym:'€',label:'Евро'},{id:'PLN',sym:'zł',label:'Злотый'},{id:'GBP',sym:'£',label:'Фунт'},{id:'TRY',sym:'₺',label:'Лира'},{id:'CHF',sym:'₣',label:'Франк'},{id:'CZK',sym:'Kč',label:'Крона'},{id:'JPY',sym:'¥',label:'Иена'},{id:'CNY',sym:'元',label:'Юань'}];
 
-let appData = JSON.parse(localStorage.getItem('budgetApp_v16')) || {
+let appData = JSON.parse(localStorage.getItem('budgetApp_v17')) || {
   balance: 0, monthIncome: 0, monthExpense: 0, history: [], envelopes: [], banks: [], recurring: [], customCategories: [],
-  selectedCategory: 'Еда', currentIcon: '🍔', lang: 'ru', currency: 'UAH', theme: 'dark', wallpaper: null,
+  selectedCategory: 'cat_food', currentIcon: '🍔', lang: 'ru', currency: 'UAH', theme: 'dark', wallpaper: null,
   currentMonth: new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0')
 };
 
-function saveData(){ localStorage.setItem('budgetApp_v16', JSON.stringify(appData)); }
+function saveData(){ localStorage.setItem('budgetApp_v17', JSON.stringify(appData)); }
 function t(k){ return (TRANSLATIONS[appData.lang] && TRANSLATIONS[appData.lang][k]) || TRANSLATIONS['ru'][k] || k; }
 
 function fmtMoney(v){ 
@@ -254,8 +252,6 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.getElementById('langLabel').innerText = (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).flag + ' ' + (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).label;
   document.getElementById('currLabel').innerText = (CURRENCIES.find(c=>c.id===appData.currency)||CURRENCIES[0]).sym + ' ' + (CURRENCIES.find(c=>c.id===appData.currency)||CURRENCIES[0]).label;
-  document.getElementById('txAmountInput').placeholder = t('amount_lbl');
-  document.getElementById('txCommentInput').placeholder = t('comment_lbl');
 }
 
 function switchTab(name){
@@ -271,16 +267,32 @@ function openModal(id){ document.getElementById(id).classList.add('active'); }
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
 function openHelp(){ openModal('modalHelp'); }
 
-const EXPENSE = [{icon:'🍔',name:'Еда'},{icon:'☕',name:'Кафе'},{icon:'🚗',name:'Транспорт'},{icon:'🏠',name:'Дом'},{icon:'📦',name:'Разное'}];
-const INCOME = [{icon:'💰',name:'Зарплата'},{icon:'💸',name:'Кэшбэк'},{icon:'🎁',name:'Подарок'}];
+const EXPENSE_CATS = [
+  {icon:'🍔',name:'cat_food'},{icon:'🛒',name:'cat_grocery'},{icon:'☕',name:'cat_cafe'},{icon:'🍕',name:'cat_fastfood'},
+  {icon:'🚗',name:'cat_transport'},{icon:'🚕',name:'cat_taxi'},{icon:'⛽',name:'cat_fuel'},{icon:'🚌',name:'cat_public'},
+  {icon:'🏠',name:'cat_home'},{icon:'💡',name:'cat_utilities'},{icon:'📱',name:'cat_comm'},{icon:'🌐',name:'cat_internet'},
+  {icon:'📺',name:'cat_subs'},{icon:'💊',name:'cat_pharmacy'},{icon:'👕',name:'cat_clothes'},{icon:'👟',name:'cat_shoes'},
+  {icon:'💇',name:'cat_beauty'},{icon:'🏋️',name:'cat_sport'},{icon:'🎬',name:'cat_cinema'},{icon:'🎮',name:'cat_games'},
+  {icon:'🎉',name:'cat_leisure'},{icon:'🎁',name:'cat_gifts'},{icon:'🐾',name:'cat_pets'},{icon:'✈️',name:'cat_travel'},
+  {icon:'📚',name:'cat_edu'},{icon:'🔧',name:'cat_repair'},{icon:'🧴',name:'cat_household'},{icon:'💳',name:'cat_loan'},
+  {icon:'👨‍👧',name:'cat_alimony'},{icon:'🍷',name:'cat_alcohol'},{icon:'🚬',name:'cat_smoke'},{icon:'🛍️',name:'cat_marketplace'},
+  {icon:'🏦',name:'cat_bank'},{icon:'📦',name:'cat_other'}
+];
+
+const INCOME_CATS = [
+  {icon:'💰',name:'inc_salary'},{icon:'💵',name:'inc_advance'},{icon:'🏆',name:'inc_bonus'},{icon:'💸',name:'inc_cashback'},
+  {icon:'📈',name:'inc_invest'},{icon:'📊',name:'inc_dividend'},{icon:'💼',name:'inc_freelance'},{icon:'🏪',name:'inc_business'},
+  {icon:'🎯',name:'inc_sale'},{icon:'🎁',name:'inc_gift'},{icon:'🤝',name:'inc_help'},{icon:'🥇',name:'inc_win'},
+  {icon:'↩️',name:'inc_refund'},{icon:'🎓',name:'inc_scholarship'},{icon:'👴',name:'inc_pension'},{icon:'🪙',name:'inc_other'}
+];
 
 function openTransactionModal(type){
   appData.activeTxType = type;
   document.getElementById('txModalTitle').innerText = type === 'expense' ? t('btn_expense') : t('btn_income');
-  const baseCats = type === 'expense' ? EXPENSE : INCOME;
+  const baseCats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
   const cats = baseCats.concat(appData.customCategories || []);
   const grid = document.getElementById('categoryGrid');
-  grid.innerHTML = cats.map((c,i) => `<div class="icon-item ${i===0?'active':''}" data-name="${c.name}" data-icon="${c.icon}"><span class="emoji">${c.icon}</span><span class="name">${c.name}</span></div>`).join('');
+  grid.innerHTML = cats.map((c,i) => `<div class="icon-item ${i===0?'active':''}" data-name="${c.name}" data-icon="${c.icon}"><span class="emoji">${c.icon}</span><span class="name">${t(c.name)}</span></div>`).join('');
   grid.querySelectorAll('.icon-item').forEach(el => {
     el.onclick = () => {
       grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
@@ -305,9 +317,9 @@ function saveCustomCategory(){
 function submitTransaction(){
   const amount = parseFloat(document.getElementById('txAmountInput').value);
   if(!amount || amount <= 0) return;
+  const title = document.getElementById('txCommentInput').value || t(appData.selectedCategory);
   const tx = {
-    id: Date.now(), type: appData.activeTxType, 
-    title: document.getElementById('txCommentInput').value || appData.selectedCategory,
+    id: Date.now(), type: appData.activeTxType, title: title,
     category: appData.selectedCategory, icon: appData.currentIcon, amount, date: new Date().toLocaleDateString('ru-RU')
   };
   appData.history.unshift(tx);
@@ -408,10 +420,10 @@ function renderCharts(){
   if(ctx1){
     if(chart1) chart1.destroy();
     const cats = {};
-    appData.history.filter(t=>t.type==='expense').forEach(t => cats[t.category] = (cats[t.category]||0) + t.amount);
+    appData.history.filter(t=>t.type==='expense').forEach(tx => cats[tx.category] = (cats[tx.category]||0) + tx.amount);
     chart1 = new Chart(ctx1, {
       type:'doughnut',
-      data:{ labels: Object.keys(cats), datasets:[{ data: Object.values(cats), backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] },
+      data:{ labels: Object.keys(cats).map(k=>t(k)), datasets:[{ data: Object.values(cats), backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'] }] },
       options:{ responsive:true }
     });
   }
@@ -447,13 +459,15 @@ function renderAll(){
   document.getElementById('monthIncome').innerText = '+' + fmtMoney(appData.monthIncome);
   document.getElementById('monthExpense').innerText = '-' + fmtMoney(appData.monthExpense);
 
+  const q = (document.getElementById('histSearch').value || '').toLowerCase();
+  const filtered = appData.history.filter(tx => !q || t(tx.title).toLowerCase().includes(q));
   const hist = document.getElementById('historyContainer');
   
-  hist.innerHTML = appData.history.length ? appData.history.map(tx => `
+  hist.innerHTML = filtered.length ? filtered.map(tx => `
     <div class="history-item">
       <div class="history-left">
         <div class="history-icon">${tx.icon}</div>
-        <div><div class="history-title">${tx.title}</div><div class="history-sub">${tx.date}</div></div>
+        <div><div class="history-title">${t(tx.title)}</div><div class="history-sub">${tx.date}</div></div>
       </div>
       <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">${tx.type==='expense'?'-':'+'}${fmtMoney(tx.amount)}</div>
       <button class="card-del" style="position:static" onclick="deleteTx(${tx.id})">✕</button>

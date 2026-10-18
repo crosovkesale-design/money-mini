@@ -231,7 +231,7 @@ body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,
 
 <script>
 const LANGS = [{id:'ru',flag:'🇷🇺',label:'Русский'},{id:'uk',flag:'🇺🇦',label:'Українська'},{id:'en',flag:'🇬🇧',label:'English'},{id:'de',flag:'🇩🇪',label:'Deutsch'},{id:'es',flag:'🇪🇸',label:'Español'},{id:'fr',flag:'🇫🇷',label:'Français'},{id:'it',flag:'🇮🇹',label:'Italiano'},{id:'pl',flag:'🇵🇱',label:'Polski'},{id:'tr',flag:'🇹🇷',label:'Türkçe'},{id:'zh',flag:'🇨🇳',label:'中文'}];
-const CURRENCIES = [{id:'UAH',sym:'₴',label:'Гривня'},{id:'RUB',sym:'₽',label:'Рубль'},{id:'USD',sym:'$',label:'Доллар'},{id:'EUR',sym:'€',label:'Евро'},{id:'PLN',sym:'zł',label:'Злотый'},{id:'GBP',sym:'£',label:'Фунт'},{id:'TRY',sym:'₺',label:'Лира'},{id:'CHF',sym:'₣',label:'Франк'},{id:'CZK',sym:'Kč',label:'Крона'},{id:'JPY',sym:'¥',label:'Иена'},{id:'CNY',sym:'元',label:'Юань'}];
+const CURRENCIES = [{id:'UAH',sym:'₴',label:'Hryvnia'},{id:'RUB',sym:'₽',label:'Ruble'},{id:'USD',sym:'$',label:'Dollar'},{id:'EUR',sym:'€',label:'Euro'},{id:'PLN',sym:'zł',label:'Zloty'},{id:'GBP',sym:'£',label:'Pound'},{id:'TRY',sym:'₺',label:'Lira'},{id:'CHF',sym:'₣',label:'Franc'},{id:'CZK',sym:'Kč',label:'Krona'},{id:'JPY',sym:'¥',label:'Yen'},{id:'CNY',sym:'元',label:'Yuan'}];
 
 let appData = JSON.parse(localStorage.getItem('budgetApp_v18')) || {
   balance: 0, monthIncome: 0, monthExpense: 0, history: [], envelopes: [], banks: [], recurring: [], customCategories: [],

@@ -1978,25 +1978,13 @@ function openHelp(){
 }
 function contactSupport(){
   const botUsername = 'moneyfamilybudget_bot';
-  const url = 'https://t.me/' + botUsername + '?start=support';
+  const url = URL.createObjectURL(blob);
 
-  if(window.Telegram?.WebApp?.openTelegramLink){
-    try {
-      Telegram.WebApp.openTelegramLink(url);
-      setTimeout(() => {
-        Telegram.WebApp.close();
-      }, 300);
-      return;
-    } catch(e){}
+  if(window.Telegram?.WebApp?.openLink) {
+    Telegram.WebApp.openLink(url);
+  } else {
+    window.open(url, '_blank');
   }
-  if(window.Telegram?.WebApp?.openLink){
-    try {
-      Telegram.WebApp.openLink(url);
-      return;
-    } catch(e){}
-  }
-  window.open(url, '_blank');
-}
 function openTariffs(){
   if(!hasInitData()){ showAlert('Открой через Telegram'); return; }
   tariffTier = 'base';
@@ -3266,30 +3254,14 @@ function renderForecast(){
   if(projectedBalance >= 0){
     icon.textContent = '📈';
     subtitle.textContent = t('forecast_positive') || 'Хороший темп';
-    body.innerHTML =
+       body.innerHTML =
       '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
-        '<span class="muted">' + t('forecast_projected') + ':</span>' +
+        '<span class="muted">Остаток к концу месяца:</span>' +
         '<b style="color:var(--success)">' + fmtMoney(projectedBalance) + '</b>' +
       '</div>' +
-      '<div class="muted" style="font-size:11px">' +
-        t('forecast_daily') + ': ' + fmtMoney(Math.round(avgDailyExpense)) +
-        ' · ' + t('forecast_days_left') + ': ' + daysLeft +
+      '<div class="muted" style="font-size:11px;line-height:1.4">' +
+        'Если продолжишь тратить по ' + fmtMoney(Math.round(avgDailyExpense)) + ' в день, то через ' + daysLeft + ' дн. получится такой результат.' +
       '</div>';
-  } else {
-    icon.textContent = '⚠️';
-    subtitle.textContent = t('forecast_warning') || 'Риск перерасхода';
-    body.innerHTML =
-      '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
-        '<span class="muted">' + t('forecast_projected') + ':</span>' +
-        '<b style="color:var(--danger)">' + fmtMoney(projectedBalance) + '</b>' +
-      '</div>' +
-      '<div class="muted" style="font-size:11px">' +
-        t('forecast_daily') + ': ' + fmtMoney(Math.round(avgDailyExpense)) +
-        ' · ' + t('forecast_days_left') + ': ' + daysLeft +
-      '</div>';
-  }
-}
-
 let histFilter = 'all';
 function setHistFilter(f){
   histFilter = f;

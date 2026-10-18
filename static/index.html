@@ -1585,6 +1585,7 @@ let monthsChartInstance = null;
 let selectedCatEmoji = '🎓';
 let pendingReceiptPhoto = null;
 let editingTxId = null;
+let _confirmCb = null;
 
 const now0 = new Date();
 const DEFAULT_STATE = {
@@ -2235,7 +2236,6 @@ function resetBankForm(){
   document.getElementById('bankTargetInput').value = '';
   clearBankDeadline();
 }
-let _confirmCb = null;
 function askConfirm(text, cb){
   const el = document.getElementById('confirmText');
   if(el) el.innerText = text;

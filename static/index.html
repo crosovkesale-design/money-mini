@@ -233,13 +233,13 @@ body.has-wallpaper::before{content:'';position:fixed;inset:0;background:rgba(15,
 const LANGS = [{id:'ru',flag:'🇷🇺',label:'Русский'},{id:'uk',flag:'🇺🇦',label:'Українська'},{id:'en',flag:'🇬🇧',label:'English'},{id:'de',flag:'🇩🇪',label:'Deutsch'},{id:'es',flag:'🇪🇸',label:'Español'},{id:'fr',flag:'🇫🇷',label:'Français'},{id:'it',flag:'🇮🇹',label:'Italiano'},{id:'pl',flag:'🇵🇱',label:'Polski'},{id:'tr',flag:'🇹🇷',label:'Türkçe'},{id:'zh',flag:'🇨🇳',label:'中文'}];
 const CURRENCIES = [{id:'UAH',sym:'₴',label:'Гривня'},{id:'RUB',sym:'₽',label:'Рубль'},{id:'USD',sym:'$',label:'Доллар'},{id:'EUR',sym:'€',label:'Евро'},{id:'PLN',sym:'zł',label:'Злотый'},{id:'GBP',sym:'£',label:'Фунт'},{id:'TRY',sym:'₺',label:'Лира'},{id:'CHF',sym:'₣',label:'Франк'},{id:'CZK',sym:'Kč',label:'Крона'},{id:'JPY',sym:'¥',label:'Иена'},{id:'CNY',sym:'元',label:'Юань'}];
 
-let appData = JSON.parse(localStorage.getItem('budgetApp_v17')) || {
+let appData = JSON.parse(localStorage.getItem('budgetApp_v18')) || {
   balance: 0, monthIncome: 0, monthExpense: 0, history: [], envelopes: [], banks: [], recurring: [], customCategories: [],
-  selectedCategory: 'cat_food', currentIcon: '🍔', lang: 'ru', currency: 'UAH', theme: 'dark', wallpaper: null,
+  selectedCategory: 'Еда', currentIcon: '🍔', lang: 'ru', currency: 'UAH', theme: 'dark', wallpaper: null,
   currentMonth: new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0')
 };
 
-function saveData(){ localStorage.setItem('budgetApp_v17', JSON.stringify(appData)); }
+function saveData(){ localStorage.setItem('budgetApp_v18', JSON.stringify(appData)); }
 function t(k){ return (TRANSLATIONS[appData.lang] && TRANSLATIONS[appData.lang][k]) || TRANSLATIONS['ru'][k] || k; }
 
 function fmtMoney(v){ 
@@ -268,23 +268,81 @@ function closeModal(id){ document.getElementById(id).classList.remove('active');
 function openHelp(){ openModal('modalHelp'); }
 
 const EXPENSE_CATS = [
-  {icon:'🍔',name:'cat_food'},{icon:'🛒',name:'cat_grocery'},{icon:'☕',name:'cat_cafe'},{icon:'🍕',name:'cat_fastfood'},
-  {icon:'🚗',name:'cat_transport'},{icon:'🚕',name:'cat_taxi'},{icon:'⛽',name:'cat_fuel'},{icon:'🚌',name:'cat_public'},
-  {icon:'🏠',name:'cat_home'},{icon:'💡',name:'cat_utilities'},{icon:'📱',name:'cat_comm'},{icon:'🌐',name:'cat_internet'},
-  {icon:'📺',name:'cat_subs'},{icon:'💊',name:'cat_pharmacy'},{icon:'👕',name:'cat_clothes'},{icon:'👟',name:'cat_shoes'},
-  {icon:'💇',name:'cat_beauty'},{icon:'🏋️',name:'cat_sport'},{icon:'🎬',name:'cat_cinema'},{icon:'🎮',name:'cat_games'},
-  {icon:'🎉',name:'cat_leisure'},{icon:'🎁',name:'cat_gifts'},{icon:'🐾',name:'cat_pets'},{icon:'✈️',name:'cat_travel'},
-  {icon:'📚',name:'cat_edu'},{icon:'🔧',name:'cat_repair'},{icon:'🧴',name:'cat_household'},{icon:'💳',name:'cat_loan'},
-  {icon:'👨‍👧',name:'cat_alimony'},{icon:'🍷',name:'cat_alcohol'},{icon:'🚬',name:'cat_smoke'},{icon:'🛍️',name:'cat_marketplace'},
-  {icon:'🏦',name:'cat_bank'},{icon:'📦',name:'cat_other'}
+  {icon:'🍔',name:'Еда'},{icon:'🛒',name:'Продукты'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
+  {icon:'🚗',name:'Транспорт'},{icon:'🚕',name:'Такси'},{icon:'⛽',name:'Бензин'},{icon:'🚌',name:'Общественный'},
+  {icon:'🏠',name:'Дом'},{icon:'💡',name:'Коммуналка'},{icon:'📱',name:'Связь'},{icon:'🌐',name:'Интернет'},
+  {icon:'📺',name:'Подписки'},{icon:'💊',name:'Аптека'},{icon:'👕',name:'Одежда'},{icon:'👟',name:'Обувь'},
+  {icon:'💇',name:'Красота'},{icon:'🏋️',name:'Спорт'},{icon:'🎬',name:'Кино'},{icon:'🎮',name:'Игры'},
+  {icon:'🎉',name:'Досуг'},{icon:'🎁',name:'Подарки'},{icon:'🐾',name:'Питомцы'},{icon:'✈️',name:'Путешествия'},
+  {icon:'📚',name:'Образование'},{icon:'🔧',name:'Ремонт'},{icon:'🧴',name:'Хозтовары'},{icon:'💳',name:'Кредит'},
+  {icon:'👨‍👧',name:'Алименты'},{icon:'🍷',name:'Алкоголь'},{icon:'🚬',name:'Сигареты'},{icon:'🛍️',name:'Маркетплейсы'},
+  {icon:'🏦',name:'Банк/комиссия'},{icon:'📦',name:'Разное'}
 ];
 
 const INCOME_CATS = [
-  {icon:'💰',name:'inc_salary'},{icon:'💵',name:'inc_advance'},{icon:'🏆',name:'inc_bonus'},{icon:'💸',name:'inc_cashback'},
-  {icon:'📈',name:'inc_invest'},{icon:'📊',name:'inc_dividend'},{icon:'💼',name:'inc_freelance'},{icon:'🏪',name:'inc_business'},
-  {icon:'🎯',name:'inc_sale'},{icon:'🎁',name:'inc_gift'},{icon:'🤝',name:'inc_help'},{icon:'🥇',name:'inc_win'},
-  {icon:'↩️',name:'inc_refund'},{icon:'🎓',name:'inc_scholarship'},{icon:'👴',name:'inc_pension'},{icon:'🪙',name:'inc_other'}
+  {icon:'💰',name:'Зарплата'},{icon:'💵',name:'Аванс'},{icon:'🏆',name:'Премия'},{icon:'💸',name:'Кэшбэк'},
+  {icon:'📈',name:'Инвестиции'},{icon:'📊',name:'Дивиденды'},{icon:'💼',name:'Фриланс'},{icon:'🏪',name:'Бизнес'},
+  {icon:'🎯',name:'Продажа'},{icon:'🎁',name:'Подарок'},{icon:'🤝',name:'Помощь'},{icon:'🥇',name:'Выигрыш'},
+  {icon:'↩️',name:'Возврат'},{icon:'🎓',name:'Стипендия'},{icon:'👴',name:'Пенсия'},{icon:'🪙',name:'Прочее'}
 ];
+
+const CAT_I18N = {
+  'Еда': {en:'Food', uk:'Їжа', de:'Essen', fr:'Nourriture', es:'Comida', it:'Cibo', pl:'Jedzenie', tr:'Yemek', zh:'食物'},
+  'Продукты': {en:'Groceries', uk:'Продукти', de:'Lebensmittel', fr:'Courses', es:'Comestibles', it:'Spesa', pl:'Zakupy', tr:'Market', zh:'杂货'},
+  'Кафе': {en:'Cafe', uk:'Кафе', de:'Café', fr:'Café', es:'Café', it:'Caffè', pl:'Kawiarnia', tr:'Kafe', zh:'咖啡'},
+  'Фастфуд': {en:'Fast food', uk:'Фастфуд', de:'Fastfood', fr:'Fast-food', es:'Comida rápida', it:'Fast food', pl:'Fast food', tr:'Fast food', zh:'快餐'},
+  'Транспорт': {en:'Transport', uk:'Транспорт', de:'Transport', fr:'Transport', es:'Transporte', it:'Trasporto', pl:'Transport', tr:'Ulaşım', zh:'交通'},
+  'Такси': {en:'Taxi', uk:'Таксі', de:'Taxi', fr:'Taxi', es:'Taxi', it:'Taxi', pl:'Taxi', tr:'Taksi', zh:'出租车'},
+  'Бензин': {en:'Fuel', uk:'Бензин', de:'Kraftstoff', fr:'Carburant', es:'Combustible', it:'Carburante', pl:'Paliwo', tr:'Yakıt', zh:'油费'},
+  'Общественный': {en:'Public transport', uk:'Громадський', de:'ÖPNV', fr:'Transport public', es:'Transporte público', it:'Trasporto pubblico', pl:'Komunikacja', tr:'Toplu taşıma', zh:'公交'},
+  'Дом': {en:'Home', uk:'Дім', de:'Zuhause', fr:'Maison', es:'Casa', it:'Casa', pl:'Dom', tr:'Ev', zh:'家'},
+  'Коммуналка': {en:'Utilities', uk:'Комуналка', de:'Nebenkosten', fr:'Charges', es:'Servicios', it:'Bollette', pl:'Rachunki', tr:'Faturalar', zh:'水电'},
+  'Связь': {en:'Mobile', uk:'Зв\'язок', de:'Mobilfunk', fr:'Mobile', es:'Móvil', it:'Cellulare', pl:'Telefon', tr:'Telefon', zh:'通信'},
+  'Интернет': {en:'Internet', uk:'Інтернет', de:'Internet', fr:'Internet', es:'Internet', it:'Internet', pl:'Internet', tr:'İnternet', zh:'网络'},
+  'Подписки': {en:'Subscriptions', uk:'Підписки', de:'Abos', fr:'Abonnements', es:'Suscripciones', it:'Abbonamenti', pl:'Subskrypcje', tr:'Abonelikler', zh:'订阅'},
+  'Аптека': {en:'Pharmacy', uk:'Аптека', de:'Apotheke', fr:'Pharmacie', es:'Farmacia', it:'Farmacia', pl:'Apteka', tr:'Eczane', zh:'药房'},
+  'Одежда': {en:'Clothes', uk:'Одяг', de:'Kleidung', fr:'Vêtements', es:'Ropa', it:'Vestiti', pl:'Odzież', tr:'Giyim', zh:'服装'},
+  'Обувь': {en:'Shoes', uk:'Взуття', de:'Schuhe', fr:'Chaussures', es:'Zapatos', it:'Scarpe', pl:'Buty', tr:'Ayakkabı', zh:'鞋子'},
+  'Красота': {en:'Beauty', uk:'Краса', de:'Beauty', fr:'Beauté', es:'Belleza', it:'Bellezza', pl:'Uroda', tr:'Güzellik', zh:'美容'},
+  'Спорт': {en:'Sports', uk:'Спорт', de:'Sport', fr:'Sport', es:'Deporte', it:'Sport', pl:'Sport', tr:'Spor', zh:'运动'},
+  'Кино': {en:'Cinema', uk:'Кіно', de:'Kino', fr:'Cinéma', es:'Cine', it:'Cinema', pl:'Kino', tr:'Sinema', zh:'电影'},
+  'Игры': {en:'Games', uk:'Ігри', de:'Spiele', fr:'Jeux', es:'Juegos', it:'Giochi', pl:'Gry', tr:'Oyunlar', zh:'游戏'},
+  'Досуг': {en:'Leisure', uk:'Дозвілля', de:'Freizeit', fr:'Loisirs', es:'Ocio', it:'Tempo libero', pl:'Rozrywka', tr:'Eğlence', zh:'娱乐'},
+  'Подарки': {en:'Gifts', uk:'Подарунки', de:'Geschenke', fr:'Cadeaux', es:'Regalos', it:'Regali', pl:'Prezenty', tr:'Hediyeler', zh:'礼物'},
+  'Питомцы': {en:'Pets', uk:'Улюбленці', de:'Haustiere', fr:'Animaux', es:'Mascotas', it:'Animal', pl:'Zwierzęta', tr:'Evcil hayvan', zh:'宠物'},
+  'Путешествия': {en:'Travel', uk:'Подорожі', de:'Reisen', fr:'Voyages', es:'Viajes', it:'Viaggi', pl:'Podróże', tr:'Seyahat', zh:'旅行'},
+  'Образование': {en:'Education', uk:'Освіта', de:'Bildung', fr:'Éducation', es:'Educación', it:'Istruzione', pl:'Edukacja', tr:'Eğitim', zh:'教育'},
+  'Ремонт': {en:'Repairs', uk:'Ремонт', de:'Reparatur', fr:'Réparations', es:'Reparaciones', it:'Riparazioni', pl:'Naprawy', tr:'Tamir', zh:'维修'},
+  'Хозтовары': {en:'Household', uk:'Госптовари', de:'Haushalt', fr:'Maison', es:'Hogar', it:'Casa', pl:'Dom', tr:'Ev', zh:'家居'},
+  'Кредит': {en:'Loan', uk:'Кредит', de:'Kredit', fr:'Crédit', es:'Crédito', it:'Prestito', pl:'Kredyt', tr:'Kredi', zh:'贷款'},
+  'Алименты': {en:'Alimony', uk:'Аліменти', de:'Unterhalt', fr:'Pension', es:'Pensión', it:'Alimenti', pl:'Alimenty', tr:'Nafaka', zh:'抚养费'},
+  'Алкоголь': {en:'Alcohol', uk:'Алкоголь', de:'Alkohol', fr:'Alcool', es:'Alcohol', it:'Alcol', pl:'Alkohol', tr:'Alkol', zh:'酒类'},
+  'Сигареты': {en:'Cigarettes', uk:'Цигарки', de:'Zigaretten', fr:'Cigarettes', es:'Cigarrillos', it:'Sigarette', pl:'Papierosy', tr:'Sigara', zh:'香烟'},
+  'Маркетплейсы': {en:'Marketplaces', uk:'Маркетплейси', de:'Marktplätze', fr:'Marketplaces', es:'Marketplaces', it:'Marketplace', pl:'Marketplace', tr:'Pazaryeri', zh:'电商'},
+  'Банк/комиссия': {en:'Bank/Fees', uk:'Банк/комісія', de:'Bank/Gebühren', fr:'Banque/Frais', es:'Banco/Comisiones', it:'Banca/Commissioni', pl:'Bank/Prowizje', tr:'Banka/Komisyon', zh:'银行/手续费'},
+  'Разное': {en:'Other', uk:'Різне', de:'Sonstiges', fr:'Divers', es:'Varios', it:'Altro', pl:'Inne', tr:'Diğer', zh:'其他'},
+  'Зарплата': {en:'Salary', uk:'Зарплата', de:'Gehalt', fr:'Salaire', es:'Salario', it:'Stipendio', pl:'Wynagrodzenie', tr:'Maaş', zh:'工资'},
+  'Аванс': {en:'Advance', uk:'Аванс', de:'Vorschuss', fr:'Avance', es:'Anticipo', it:'Anticipo', pl:'Zaliczka', tr:'Avans', zh:'预支'},
+  'Премия': {en:'Bonus', uk:'Премія', de:'Bonus', fr:'Prime', es:'Bono', it:'Bonus', pl:'Premia', tr:'Prim', zh:'奖金'},
+  'Кэшбэк': {en:'Cashback', uk:'Кешбек', de:'Cashback', fr:'Cashback', es:'Reembolso', it:'Cashback', pl:'Cashback', tr:'İade', zh:'返现'},
+  'Инвестиции': {en:'Investments', uk:'Інвестиції', de:'Investitionen', fr:'Investissements', es:'Inversiones', it:'Investimenti', pl:'Inwestycje', tr:'Yatırımlar', zh:'投资'},
+  'Дивиденды': {en:'Dividends', uk:'Дивіденди', de:'Dividenden', fr:'Dividendes', es:'Dividendos', it:'Dividendi', pl:'Dywidendy', tr:'Temettüler', zh:'股息'},
+  'Фриланс': {en:'Freelance', uk:'Фріланс', de:'Freelance', fr:'Freelance', es:'Freelance', it:'Freelance', pl:'Freelance', tr:'Serbest', zh:'自由职业'},
+  'Бизнес': {en:'Business', uk:'Бізнес', de:'Business', fr:'Affaires', es:'Negocio', it:'Affari', pl:'Biznes', tr:'İş', zh:'生意'},
+  'Продажа': {en:'Sale', uk:'Продаж', de:'Verkauf', fr:'Vente', es:'Venta', it:'Vendita', pl:'Sprzedaż', tr:'Satış', zh:'出售'},
+  'Подарок': {en:'Gift', uk:'Подарунок', de:'Geschenk', fr:'Cadeau', es:'Regalo', it:'Regalo', pl:'Prezent', tr:'Hediye', zh:'礼物'},
+  'Помощь': {en:'Help', uk:'Допомога', de:'Hilfe', fr:'Aide', es:'Ayuda', it:'Aiuto', pl:'Pomoc', tr:'Yardım', zh:'帮助'},
+  'Выигрыш': {en:'Win', uk:'Виграш', de:'Gewinn', fr:'Gain', es:'Premio', it:'Vincita', pl:'Wygrana', tr:'Kazanç', zh:'中奖'},
+  'Возврат': {en:'Refund', uk:'Повернення', de:'Rückerstattung', fr:'Remboursement', es:'Devolución', it:'Rimborso', pl:'Zwrot', tr:'İade', zh:'退款'},
+  'Стипендия': {en:'Scholarship', uk:'Стипендія', de:'Stipendium', fr:'Bourse', es:'Beca', it:'Borsa', pl:'Stypendium', tr:'Burs', zh:'奖学金'},
+  'Пенсия': {en:'Pension', uk:'Пенсія', de:'Rente', fr:'Retraite', es:'Pensión', it:'Pensione', pl:'Emerytura', tr:'Emekli', zh:'养老金'},
+  'Прочее': {en:'Other', uk:'Інше', de:'Sonstiges', fr:'Autre', es:'Otros', it:'Altro', pl:'Inne', tr:'Diğer', zh:'其他'}
+};
+
+function tCat(name){
+  if(appData.lang === 'ru' || !appData.lang) return name;
+  return (CAT_I18N[name] && CAT_I18N[name][appData.lang]) || name;
+}
 
 function openTransactionModal(type){
   appData.activeTxType = type;
@@ -292,7 +350,7 @@ function openTransactionModal(type){
   const baseCats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
   const cats = baseCats.concat(appData.customCategories || []);
   const grid = document.getElementById('categoryGrid');
-  grid.innerHTML = cats.map((c,i) => `<div class="icon-item ${i===0?'active':''}" data-name="${c.name}" data-icon="${c.icon}"><span class="emoji">${c.icon}</span><span class="name">${t(c.name)}</span></div>`).join('');
+  grid.innerHTML = cats.map((c,i) => `<div class="icon-item ${i===0?'active':''}" data-name="${c.name}" data-icon="${c.icon}"><span class="emoji">${c.icon}</span><span class="name">${tCat(c.name)}</span></div>`).join('');
   grid.querySelectorAll('.icon-item').forEach(el => {
     el.onclick = () => {
       grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
@@ -317,7 +375,7 @@ function saveCustomCategory(){
 function submitTransaction(){
   const amount = parseFloat(document.getElementById('txAmountInput').value);
   if(!amount || amount <= 0) return;
-  const title = document.getElementById('txCommentInput').value || t(appData.selectedCategory);
+  const title = document.getElementById('txCommentInput').value || tCat(appData.selectedCategory);
   const tx = {
     id: Date.now(), type: appData.activeTxType, title: title,
     category: appData.selectedCategory, icon: appData.currentIcon, amount, date: new Date().toLocaleDateString('ru-RU')
@@ -423,7 +481,7 @@ function renderCharts(){
     appData.history.filter(t=>t.type==='expense').forEach(tx => cats[tx.category] = (cats[tx.category]||0) + tx.amount);
     chart1 = new Chart(ctx1, {
       type:'doughnut',
-      data:{ labels: Object.keys(cats).map(k=>t(k)), datasets:[{ data: Object.values(cats), backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'] }] },
+      data:{ labels: Object.keys(cats).map(k=>tCat(k)), datasets:[{ data: Object.values(cats), backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'] }] },
       options:{ responsive:true }
     });
   }
@@ -460,14 +518,14 @@ function renderAll(){
   document.getElementById('monthExpense').innerText = '-' + fmtMoney(appData.monthExpense);
 
   const q = (document.getElementById('histSearch').value || '').toLowerCase();
-  const filtered = appData.history.filter(tx => !q || t(tx.title).toLowerCase().includes(q));
+  const filtered = appData.history.filter(tx => !q || tx.title.toLowerCase().includes(q) || tCat(tx.category).toLowerCase().includes(q));
   const hist = document.getElementById('historyContainer');
   
   hist.innerHTML = filtered.length ? filtered.map(tx => `
     <div class="history-item">
       <div class="history-left">
         <div class="history-icon">${tx.icon}</div>
-        <div><div class="history-title">${t(tx.title)}</div><div class="history-sub">${tx.date}</div></div>
+        <div><div class="history-title">${tx.title}</div><div class="history-sub">${tx.date}</div></div>
       </div>
       <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">${tx.type==='expense'?'-':'+'}${fmtMoney(tx.amount)}</div>
       <button class="card-del" style="position:static" onclick="deleteTx(${tx.id})">✕</button>

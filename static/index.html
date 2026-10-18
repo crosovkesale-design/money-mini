@@ -1978,13 +1978,14 @@ function openHelp(){
 }
 function contactSupport(){
   const botUsername = 'moneyfamilybudget_bot';
-  const url = URL.createObjectURL(blob);
-
-  if(window.Telegram?.WebApp?.openLink) {
-    Telegram.WebApp.openLink(url);
+  const url = 'https://t.me/' + botUsername + '?start=support';
+  if(window.Telegram?.WebApp?.openTelegramLink) {
+    Telegram.WebApp.openTelegramLink(url);
   } else {
     window.open(url, '_blank');
   }
+}
+
 function openTariffs(){
   if(!hasInitData()){ showAlert('Открой через Telegram'); return; }
   tariffTier = 'base';
@@ -1994,7 +1995,6 @@ function openTariffs(){
   switchPayMethod('stars');
   openModal('modalTariffs');
 }
-
 function switchTier(tier){
   tariffTier = tier;
   document.querySelectorAll('#tariffSeg .seg-btn').forEach(b => {
@@ -2218,11 +2218,14 @@ function exportCSV(){
   ).join('\n');
 
   const BOM = '\uFEFF';
-const url = URL.createObjectURL(blob);
-if(window.Telegram?.WebApp?.openLink) {
-  Telegram.WebApp.openLink(url);
-} else {
-  window.open(url, '_blank');
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  if(window.Telegram?.WebApp?.openLink) {
+    Telegram.WebApp.openLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
 }
 function shareRef(){
   const link = document.getElementById('refLink')?.value || '';

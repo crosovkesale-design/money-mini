@@ -616,3 +616,113 @@ select:focus-visible {
     animation-duration: 0.01ms !important;
   }
 }
+/* Вставить в самый конец static/style.css — восстановление иконок */
+
+.fa,
+.fas,
+.far,
+.fab,
+.fa-solid,
+.fa-regular,
+.fa-brands,
+[class^="fa-"],
+[class*=" fa-"] {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fa-solid,
+.fas,
+.fa-classic.fa-solid {
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+}
+
+.fa-regular,
+.far {
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+  font-weight: 400 !important;
+}
+
+.fa-brands,
+.fab {
+  font-family: "Font Awesome 6 Brands" !important;
+  font-weight: 400 !important;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 76px;
+  padding: 10px 5px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.icon-item:active {
+  transform: scale(0.96);
+}
+
+.icon-item.active {
+  border-color: var(--accent);
+  background: rgba(139, 124, 255, 0.18);
+  box-shadow: 0 0 16px rgba(139, 124, 255, 0.12);
+}
+
+.icon-item .emoji {
+  display: block;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.icon-item .name {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.history-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 42px;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+
+.nav-item i {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.card i,
+.btn i,
+.modal-close i,
+.picker-item i {
+  flex-shrink: 0;
+}

@@ -561,3 +561,29 @@ function initApp(){
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+function showExportToast(message) {
+    const oldToast = document.querySelector('.export-toast');
+    if (oldToast) oldToast.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'export-toast';
+
+    const icon = document.createElement('span');
+    icon.className = 'export-toast-icon';
+    icon.textContent = '✓';
+
+    const text = document.createElement('span');
+    text.textContent = message;
+
+    toast.append(icon, text);
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}

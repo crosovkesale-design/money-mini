@@ -112,23 +112,44 @@ function tCat(name){
   return (CAT_I18N[name] && CAT_I18N[name][appData.lang]) || name;
 }
 
-function openTransactionModal(type){
+
+function openTransactionModal(type) {
   appData.activeTxType = type;
-  document.getElementById('txModalTitle').innerText = type === 'expense' ? t('btn_expense') : t('btn_income');
+
+  // Очищаем поля при каждом новом открытии
+  document.getElementById('txAmountInput').value = '';
+  document.getElementById('txCommentInput').value = '';
+
+  document.getElementById('txModalTitle').innerText =
+    type === 'expense' ? t('btn_expense') : t('btn_income');
+
   const baseCats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
   const cats = baseCats.concat(appData.customCategories || []);
   const grid = document.getElementById('categoryGrid');
-  grid.innerHTML = cats.map((c,i) => `<div class="icon-item ${i===0?'active':''}" data-name="${c.name}" data-icon="${c.icon}"><span class="emoji">${c.icon}</span><span class="name">${tCat(c.name)}</span></div>`).join('');
+
+  grid.innerHTML = cats.map((c, i) => `
+    <div class="icon-item ${i === 0 ? 'active' : ''}"
+         data-name="${c.name}" data-icon="${c.icon}">
+      <span class="emoji">${c.icon}</span>
+      <span class="name">${tCat(c.name)}</span>
+    </div>
+  `).join('');
+
   grid.querySelectorAll('.icon-item').forEach(el => {
     el.onclick = () => {
-      grid.querySelectorAll('.icon-item').forEach(i => i.classList.remove('active'));
+      grid.querySelectorAll('.icon-item').forEach(item =>
+        item.classList.remove('active')
+      );
+
       el.classList.add('active');
       appData.selectedCategory = el.dataset.name;
       appData.currentIcon = el.dataset.icon;
     };
   });
+
   appData.selectedCategory = cats[0].name;
   appData.currentIcon = cats[0].icon;
+
   openModal('modalTransaction');
 }
 
@@ -188,13 +209,55 @@ function saveRecurring(){
   saveData(); closeModal('modalAddRecurring'); renderAll();
 }
 
-function exportCSV(){
-  const csv = "Date,Type,Amount,Category\n" + appData.history.map(t => `${t.date},${t.type},${t.amount},${t.category}`).join("\n");
-  const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv' });
+
+function exportCSV() {
+  if (!Array.isArray(appData.history) || appData.history.length === 0) {
+    alert('История операций пока пуста.');
+    return;
+  }
+
+  // Экранируем значения для корректного CSV
+  const csvCell = value =>
+    '"' + String(value ?? '').replace(/"/g, '""') + '"';
+
+  const headers = [
+    'Дата',
+    'Тип',
+    'Сумма',
+    'Категория',
+    'Комментарий'
+  ];
+
+  const rows = appData.history.map(tx => [
+    tx.date,
+    tx.type === 'income' ? 'Доход' : 'Расход',
+    tx.amount,
+    tx.category,
+    tx.title
+  ].map(csvCell).join(';'));
+
+  const csv = [
+    headers.map(csvCell).join(';'),
+    ...rows
+  ].join('\r\n');
+
+  const blob = new Blob(['\uFEFF' + csv], {
+    type: 'text/csv;charset=utf-8;'
+  });
+
   const url = URL.createObjectURL(blob);
-  if(window.Telegram?.WebApp?.openLink) Telegram.WebApp.openLink(url);
-  else window.open(url, '_blank');
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = `money-mini-${new Date().toISOString().slice(0, 10)}.csv`;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
 
 function openPicker(kind){
   const cfg = { language: { title:t('lang'), items: LANGS }, currency: { title:t('currency'), items: CURRENCIES } }[kind];

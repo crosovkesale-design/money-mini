@@ -336,31 +336,142 @@ if bot:
         await cb.message.edit_text("Нажми кнопку, чтобы выбрать тариф:", reply_markup=kb)
         await cb.answer()
 
+
     @dp.message(Command("review"))
     async def cmd_review(message: Message, state: FSMContext):
         await state.set_state(ReviewState.waiting_text)
-        await message.answer("📝 Напиши свой отзыв одним сообщением (минимум 10 символов):")
+        await message.answer(
+            "📝 Напиши свой отзыв о Money Mini.\n\n"
+            "Требования:\n"
+            "• Минимум 20 символов\n"
+            "• Минимум 4 слова\n"
+            "• Опиши свой реальный опыт использования\n\n"
+            "🎁 За первый принятый отзыв начисляется купон 20%."
+        )
 
     @dp.message(ReviewState.waiting_text)
     async def review_text(message: Message, state: FSMContext):
+        import re
+        import html
+
         text = (message.text or "").strip()
-        if len(text) < 10:
-            await message.answer("Слишком коротко.")
+
+        if len(text) < 20:
+            await message.answer(
+                "❌ Отзыв слишком короткий.\n"
+                "Напиши минимум 20 символов."
+            )
             return
+
+        # Извлекаем слова на русском, украинском и английском языках.
+        words = re.findall(
+            r"[a-zа-яіїєґ]+",
+            text.lower()
+        )
+
+        if len(words) < 4:
+            await message.answer(
+                "❌ Отзыв должен содержать минимум 4 слова.\n"
+                "Расскажи, что тебе понравилось или что стоит улучшить."
+            )
+            return
+
+        # Проверяем, что текст не состоит из повторяющихся букв.
+        letters = re.sub(r"[^a-zа-яіїєґ]", "", text.lower())
+
+        if len(letters) >= 8 and len(set(letters)) <= 2:
+            await message.answer(
+                "❌ Похоже, это набор случайных букв.\n"
+                "Напиши отзыв обычными словами."
+            )
+            return
+
+        # Проверяем, что пользователь не повторяет одно слово.
+        unique_words = set(words)
+
+        if len(words) >= 4 and len(unique_words) == 1:
+            await message.answer(
+                "❌ Нельзя отправлять отзыв из одного повторяющегося слова.\n"
+                "Опиши свой опыт использования приложения."
+            )
+            return
+
+        # Отсекаем тексты, в которых одно слово повторяется почти везде.
+        if len(words) >= 6 and len(unique_words) <= 2:
+            await message.answer(
+                "❌ В отзыве слишком много повторений.\n"
+                "Напиши несколько предложений своими словами."
+            )
+            return
+
         uid = str(message.from_user.id)
-        await fb.push("/reviews", {"uid": uid, "name": message.from_user.first_name, "text": text, "ts": now_ms()})
-        u = await get_user(uid)
-        await fb.patch(f"/users/{uid}", {"coupons20Earned": (u.get("coupons20Earned", 0) + 1)})
+        user = await get_user(uid) or {}
+
+        # Проверяем, получал ли пользователь купон за отзыв раньше.
+        already_received = bool(user.get("reviewCouponReceived"))
+
+        # Сохраняем отзыв в Firebase.
+        await fb.push("/reviews", {
+            "uid": uid,
+            "name": message.from_user.first_name or "Пользователь",
+            "text": text,
+            "ts": now_ms(),
+        })
+
+        # Начисляем купон только один раз.
+        if not already_received:
+            current_coupons = int(user.get("coupons20Earned") or 0)
+
+            await fb.patch(f"/users/{uid}", {
+                "coupons20Earned": current_coupons + 1,
+                "reviewCouponReceived": True,
+            })
+
+        # Завершаем состояние только после успешной обработки.
         await state.clear()
-        await message.answer("✅ Спасибо! Начислен купон 20%.")
-        
+
+        # Отправляем отзыв в группу или администратору.
+        sent_to_group = False
+
         if ADMIN_CHAT_ID:
             try:
                 channel_id = os.getenv("REVIEW_CHANNEL_ID")
                 target = int(channel_id) if channel_id else int(ADMIN_CHAT_ID)
-                await bot.send_message(target, f"📝 <b>Новый отзыв</b>\n\n{text}\n\n— {message.from_user.first_name}", parse_mode="HTML")
+
+                safe_text = html.escape(text)
+                safe_name = html.escape(
+                    message.from_user.first_name or "Пользователь"
+                )
+
+                await bot.send_message(
+                    target,
+                    f"📝 <b>Новый отзыв Money Mini</b>\n\n"
+                    f"{safe_text}\n\n"
+                    f"— {safe_name}",
+                    parse_mode="HTML",
+                )
+                sent_to_group = True
+
             except Exception as e:
                 log.warning(f"review send error: {e}")
+
+        if not sent_to_group:
+            await message.answer(
+                "⚠️ Отзыв сохранён, но не удалось отправить его в группу. "
+                "Попробуй позже или сообщи администратору."
+            )
+            return
+
+        if already_received:
+            await message.answer(
+                "✅ Спасибо за отзыв! Он опубликован.\n"
+                "🎟 Купон 20% за отзыв можно получить только один раз."
+            )
+        else:
+            await message.answer(
+                "✅ Спасибо за отзыв! Он опубликован в группе.\n"
+                "🎁 Тебе начислен купон на скидку 20%."
+            )
 
     @dp.message(Command("support"))
     async def cmd_support(message: Message, state: FSMContext):

@@ -49,14 +49,40 @@ FIREBASE_URL = os.getenv("FIREBASE_URL", "https://money-family-f9d8b-default-rtd
 
 KYIV = ZoneInfo("Europe/Kyiv")
 
+
 TARIFFS = {
-    "1month": {"days": 30, "price_usd": 5, "name": "1 месяц"},
-    "3months": {"days": 90, "price_usd": 13, "name": "3 месяца"},
-    "6months": {"days": 180, "price_usd": 23, "name": "6 месяцев"},
-    "12months": {"days": 365, "price_usd": 38, "name": "12 месяцев"},
-    "pro1": {"days": 30, "price_usd": 10, "name": "Pro 1 месяц"},
-    "pro12": {"days": 365, "price_usd": 75, "name": "Pro 12 месяцев"},
+    "1month": {
+        "days": 30,
+        "price_usd": 6,
+        "name": "Basic — 1 месяц",
+    },
+    "3months": {
+        "days": 90,
+        "price_usd": 15,
+        "name": "Basic — 3 месяца",
+    },
+    "6months": {
+        "days": 180,
+        "price_usd": 27,
+        "name": "Basic — 6 месяцев",
+    },
+    "12months": {
+        "days": 365,
+        "price_usd": 45,
+        "name": "Basic — 12 месяцев",
+    },
+    "pro1": {
+        "days": 30,
+        "price_usd": 12,
+        "name": "PRO — 1 месяц",
+    },
+    "pro12": {
+        "days": 365,
+        "price_usd": 85,
+        "name": "PRO — 12 месяцев",
+    },
 }
+
 BIG_TARIFFS = {"6months", "12months", "pro1", "pro12"}
 STARS_PRICES = {"1month": 500, "3months": 1300, "6months": 2300, "12months": 3900, "pro1": 1000, "pro12": 7500}
 FAMILY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"

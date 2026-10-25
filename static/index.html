@@ -1,6 +1,57 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<script>
+(function () {
+  function showError(message) {
+    let box = document.getElementById('js-debug-error');
+
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'js-debug-error';
+
+      Object.assign(box.style, {
+        position: 'fixed',
+        bottom: '10px',
+        left: '10px',
+        right: '10px',
+        padding: '14px',
+        background: '#351520',
+        color: '#ffffff',
+        border: '1px solid #ff6685',
+        borderRadius: '12px',
+        fontSize: '13px',
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+        zIndex: '999999'
+      });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        document.body.appendChild(box);
+      });
+    }
+
+    box.textContent = 'ОШИБКА JAVASCRIPT:\n' + message;
+
+    if (document.body && !box.isConnected) {
+      document.body.appendChild(box);
+    }
+  }
+
+  window.addEventListener('error', function (event) {
+    showError(
+      (event.message || 'Ошибка загрузки файла') +
+      '\nФайл: ' + (event.filename || 'неизвестен') +
+      '\nСтрока: ' + (event.lineno || '?')
+    );
+  }, true);
+
+  window.addEventListener('unhandledrejection', function (event) {
+    showError('Promise: ' + String(event.reason));
+  });
+})();
+</script>
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Семейный Бюджет</title>

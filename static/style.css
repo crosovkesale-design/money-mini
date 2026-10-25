@@ -762,3 +762,45 @@ select:focus-visible {
 .nav-item span {
   display: block;
 }
+/* Уведомление об экспорте */
+.export-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 90px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100% - 32px);
+    padding: 13px 18px;
+    background: var(--card, #202640);
+    color: var(--text, #ffffff);
+    border: 1px solid var(--border, #343d5c);
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.export-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.export-toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(139, 124, 255, 0.18);
+    color: #a99cff;
+    font-size: 18px;
+    font-weight: 700;
+}

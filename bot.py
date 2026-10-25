@@ -938,5 +938,48 @@ async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     )
     return {"ok": True, "invoice_url": link}
 
+@app.post("/api/pay/crypto")
+async def api_pay_crypto(
+    request: Request,
+    uid: str = Depends(current_uid),
+):
+    if not CRYPTOPAY_TOKEN:
+        raise HTTPException(503, "Crypto Pay не настроен")
+
+    body = await request.json()
+    plan = str(body.get("plan") or "")
+    tariff = TARIFFS.get(plan)
+
+    if not tariff:
+        raise HTTPException(400, "Неизвестный тариф")
+
+    result = await cp.call("createInvoice", {
+        "asset": "USDT",
+        "amount": str(tariff["price_usd"]),
+        "description": tariff["name"],
+        "payload": json.dumps({
+            "uid": uid,
+            "plan": plan,
+        }),
+        "allow_comments": False,
+        "allow_anonymous": False,
+    })
+
+    if not result.get("ok"):
+        log.error("Crypto Pay invoice error: %s", result)
+        raise HTTPException(502, "Не удалось создать счёт")
+
+    invoice = result.get("result") or {}
+    pay_url = invoice.get("bot_invoice_url") or invoice.get("pay_url")
+
+    if not pay_url:
+        raise HTTPException(502, "Crypto Pay не вернул ссылку")
+
+    return {
+        "ok": True,
+        "invoice_url": pay_url,
+        "invoice_id": invoice.get("invoice_id"),
+    }
+
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

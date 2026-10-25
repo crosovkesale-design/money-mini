@@ -236,8 +236,7 @@ async function exportCSV() {
       throw new Error(result.detail || 'Ошибка экспорта');
     }
 
-    tg.showAlert(
-      'Excel-файл отправлен тебе в личный чат с ботом.'
+    showExportToast('Excel-файл отправлен в Telegram');
     );
   } catch (error) {
     console.error('Export error:', error);

@@ -339,6 +339,7 @@ async def api_family_leave(uid: str = Depends(current_uid)):
             else: await fb.delete(f"/families/{fid}")
     except: pass
     return {"ok": True, "leftFrom": fid}
+
 @app.post("/api/export")
 async def api_export(request: Request, uid: str = Depends(current_uid)):
     if not bot:
@@ -352,29 +353,95 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Операции"
+    ws.title = "История операций"
 
-    ws.append(["Дата", "Тип", "Сумма", "Категория", "Комментарий"])
+    headers = [
+        "№",
+        "Дата",
+        "Вид операции",
+        "Описание операции",
+        "Категория",
+        "Сумма",
+        "Валюта",
+        "Влияние на бюджет"
+    ]
+    ws.append(headers)
 
-    for tx in transactions:
+    income_total = 0
+    expense_total = 0
+
+    for index, tx in enumerate(transactions, 1):
         if not isinstance(tx, dict):
             continue
 
+        tx_type = tx.get("type", "")
+        amount = float(tx.get("amount") or 0)
+        is_expense = tx_type == "expense"
+
+        if is_expense:
+            expense_total += amount
+            operation = "Расход"
+            impact = -amount
+        else:
+            income_total += amount
+            operation = "Доход"
+            impact = amount
+
         ws.append([
+            index,
             tx.get("date", ""),
-            "Расход" if tx.get("type") == "expense" else "Доход",
-            float(tx.get("amount") or 0),
-            tx.get("category", ""),
-            tx.get("title", tx.get("note", ""))
+            operation,
+            tx.get("title") or tx.get("note") or "",
+            tx.get("category") or "Без категории",
+            amount,
+            body.get("currency", "UAH"),
+            impact
         ])
 
-    ws.freeze_panes = "A2"
-    ws.auto_filter.ref = ws.dimensions
+    summary = wb.create_sheet("Итоги")
+    summary.append(["ОТЧЁТ ПО ФИНАНСАМ", "Значение"])
+    summary.append(["Всего доходов", income_total])
+    summary.append(["Всего расходов", expense_total])
+    summary.append(["Разница доходов и расходов", income_total - expense_total])
+    summary.append(["Количество операций", len(transactions)])
+    summary.append(["Валюта", body.get("currency", "UAH")])
 
-    for column, width in {
-        "A": 16, "B": 14, "C": 16, "D": 22, "E": 35
-    }.items():
-        ws.column_dimensions[column].width = width
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+
+    header_fill = PatternFill(
+        fill_type="solid", fgColor="242B45"
+    )
+    header_font = Font(
+        bold=True, color="FFFFFF"
+    )
+
+    for sheet in (ws, summary):
+        sheet.freeze_panes = "A2"
+        sheet.auto_filter.ref = sheet.dimensions
+
+        for cell in sheet[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(
+                horizontal="center", vertical="center"
+            )
+
+        for col in sheet.columns:
+            letter = get_column_letter(col[0].column)
+            max_len = max(
+                len(str(cell.value or "")) for cell in col
+            )
+            sheet.column_dimensions[letter].width = min(
+                max(max_len + 3, 14), 36
+            )
+
+    for row in ws.iter_rows(min_row=2):
+        row[5].number_format = '#,##0.00'
+        row[7].number_format = '#,##0.00'
+
+    for row in summary.iter_rows(min_row=2, min_col=2, max_col=2):
+        row[0].number_format = '#,##0.00'
 
     output = BytesIO()
     wb.save(output)
@@ -382,14 +449,14 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
 
     document = BufferedInputFile(
         output.getvalue(),
-        filename="Money_Mini.xlsx"
+        filename="Money_Mini_Finances.xlsx"
     )
 
     try:
         await bot.send_document(
             chat_id=int(uid),
             document=document,
-            caption="📊 Твой Excel-отчёт из Money Mini"
+            caption="📊 Твой подробный финансовый отчёт Money Mini"
         )
     except Exception:
         log.exception("Excel export failed")

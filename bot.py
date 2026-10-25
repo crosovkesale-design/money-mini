@@ -340,6 +340,7 @@ async def api_family_leave(uid: str = Depends(current_uid)):
     except: pass
     return {"ok": True, "leftFrom": fid}
 
+
 @app.post("/api/export")
 async def api_export(request: Request, uid: str = Depends(current_uid)):
     if not bot:
@@ -347,35 +348,79 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
 
     body = await request.json()
     transactions = body.get("transactions", [])
+    currency = str(body.get("currency") or "UAH")
 
     if not isinstance(transactions, list):
         raise HTTPException(400, "Invalid transactions")
+
+    from datetime import datetime
+    from openpyxl.styles import (
+        Font, PatternFill, Alignment, Border, Side
+    )
+    from openpyxl.utils import get_column_letter
 
     wb = Workbook()
     ws = wb.active
     ws.title = "История операций"
 
+    # Заголовок отчёта
+    ws.merge_cells("A1:H1")
+    ws["A1"] = "MONEY MINI — ИСТОРИЯ ФИНАНСОВ"
+    ws["A1"].font = Font(
+        name="Arial", size=16, bold=True, color="FFFFFF"
+    )
+    ws["A1"].fill = PatternFill(
+        "solid", fgColor="242B45"
+    )
+    ws["A1"].alignment = Alignment(
+        horizontal="center", vertical="center"
+    )
+    ws.row_dimensions[1].height = 32
+
+    ws.merge_cells("A2:H2")
+    ws["A2"] = f"Валюта отчёта: {currency}"
+    ws["A2"].font = Font(
+        name="Arial", italic=True, color="666666"
+    )
+
     headers = [
-        "№",
-        "Дата",
-        "Вид операции",
-        "Описание операции",
-        "Категория",
-        "Сумма",
-        "Валюта",
-        "Влияние на бюджет"
+        "№", "Дата", "Вид операции", "Описание покупки / дохода",
+        "Категория", "Сумма", "Валюта", "Влияние на бюджет"
     ]
-    ws.append(headers)
 
-    income_total = 0
-    expense_total = 0
+    header_row = 4
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=header_row, column=col, value=header)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="344563")
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
 
-    for index, tx in enumerate(transactions, 1):
+    income_total = 0.0
+    expense_total = 0.0
+    valid_count = 0
+
+    money_format = '#,##0.00;[Red]-#,##0.00'
+    thin_gray = Side(style="thin", color="D9E0EA")
+
+    for tx in transactions:
         if not isinstance(tx, dict):
             continue
 
-        tx_type = tx.get("type", "")
-        amount = float(tx.get("amount") or 0)
+        tx_type = str(tx.get("type") or "").lower()
+        if tx_type not in ("income", "expense"):
+            continue
+
+        try:
+            amount = float(tx.get("amount") or 0)
+        except (TypeError, ValueError):
+            continue
+
+        if amount < 0:
+            amount = abs(amount)
+
+        valid_count += 1
         is_expense = tx_type == "expense"
 
         if is_expense:
@@ -387,62 +432,105 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
             operation = "Доход"
             impact = amount
 
-        ws.append([
-            index,
-            tx.get("date", ""),
+        description = (
+            tx.get("title")
+            or tx.get("note")
+            or tx.get("description")
+            or "Без описания"
+        )
+
+        row_num = header_row + valid_count
+        values = [
+            valid_count,
+            tx.get("date") or "",
             operation,
-            tx.get("title") or tx.get("note") or "",
+            str(description),
             tx.get("category") or "Без категории",
             amount,
-            body.get("currency", "UAH"),
-            impact
-        ])
+            currency,
+            impact,
+        ]
 
-    summary = wb.create_sheet("Итоги")
-    summary.append(["ОТЧЁТ ПО ФИНАНСАМ", "Значение"])
-    summary.append(["Всего доходов", income_total])
-    summary.append(["Всего расходов", expense_total])
-    summary.append(["Разница доходов и расходов", income_total - expense_total])
-    summary.append(["Количество операций", len(transactions)])
-    summary.append(["Валюта", body.get("currency", "UAH")])
-
-    from openpyxl.styles import Font, PatternFill, Alignment
-    from openpyxl.utils import get_column_letter
-
-    header_fill = PatternFill(
-        fill_type="solid", fgColor="242B45"
-    )
-    header_font = Font(
-        bold=True, color="FFFFFF"
-    )
-
-    for sheet in (ws, summary):
-        sheet.freeze_panes = "A2"
-        sheet.auto_filter.ref = sheet.dimensions
-
-        for cell in sheet[1]:
-            cell.fill = header_fill
-            cell.font = header_font
+        for col, value in enumerate(values, 1):
+            cell = ws.cell(row=row_num, column=col, value=value)
             cell.alignment = Alignment(
-                horizontal="center", vertical="center"
+                vertical="center",
+                wrap_text=(col in (4, 5))
             )
+            cell.border = Border(bottom=thin_gray)
 
-        for col in sheet.columns:
-            letter = get_column_letter(col[0].column)
-            max_len = max(
-                len(str(cell.value or "")) for cell in col
+        ws.cell(row_num, 3).fill = PatternFill(
+            "solid",
+            fgColor="FCE4D6" if is_expense else "E2F0D9"
+        )
+        ws.cell(row_num, 6).number_format = money_format
+        ws.cell(row_num, 8).number_format = money_format
+
+    last_row = header_row + valid_count
+    ws.freeze_panes = "A5"
+    ws.auto_filter.ref = f"A4:H{max(last_row, 4)}"
+
+    widths = {
+        "A": 7, "B": 16, "C": 17, "D": 34,
+        "E": 22, "F": 16, "G": 12, "H": 22
+    }
+    for col, width in widths.items():
+        ws.column_dimensions[col].width = width
+
+    ws.sheet_view.showGridLines = False
+
+    # Лист итогов
+    summary = wb.create_sheet("Итоги")
+    summary.sheet_view.showGridLines = False
+    summary.merge_cells("A1:B1")
+    summary["A1"] = "MONEY MINI — ФИНАНСОВЫЙ ИТОГ"
+    summary["A1"].font = Font(
+        size=16, bold=True, color="FFFFFF"
+    )
+    summary["A1"].fill = PatternFill(
+        "solid", fgColor="242B45"
+    )
+    summary["A1"].alignment = Alignment(horizontal="center")
+    summary.row_dimensions[1].height = 32
+
+    summary.append(["Показатель", "Значение"])
+
+    for cell in summary[2]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="344563")
+
+    results = [
+        ("Всего доходов", income_total),
+        ("Всего расходов", expense_total),
+        ("Баланс (доходы − расходы)", income_total - expense_total),
+        ("Количество операций", valid_count),
+        ("Валюта", currency),
+    ]
+
+    for label, value in results:
+        summary.append([label, value])
+
+    for row in range(3, 6):
+        summary.cell(row, 2).number_format = money_format
+
+    for row in summary.iter_rows():
+        for cell in row:
+            cell.alignment = Alignment(
+                vertical="center", wrap_text=True
             )
-            sheet.column_dimensions[letter].width = min(
-                max(max_len + 3, 14), 36
-            )
+            if cell.row >= 3:
+                cell.border = Border(bottom=thin_gray)
 
-    for row in ws.iter_rows(min_row=2):
-        row[5].number_format = '#,##0.00'
-        row[7].number_format = '#,##0.00'
+    summary.column_dimensions["A"].width = 34
+    summary.column_dimensions["B"].width = 24
+    summary.freeze_panes = "A3"
 
-    for row in summary.iter_rows(min_row=2, min_col=2, max_col=2):
-        row[0].number_format = '#,##0.00'
+    # Итоговые строки с выделением
+    for cell in summary[5]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="344563")
 
+    # Сохранение Excel в памяти
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -456,7 +544,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
         await bot.send_document(
             chat_id=int(uid),
             document=document,
-            caption="📊 Твой подробный финансовый отчёт Money Mini"
+            caption="📊 Твой финансовый отчёт Money Mini"
         )
     except Exception:
         log.exception("Excel export failed")
@@ -466,7 +554,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
         )
 
     return {"ok": True}
-
+    
 @app.post("/api/tx")
 async def api_tx_create(request: Request, uid: str = Depends(current_uid)):
     u = await get_user(uid)

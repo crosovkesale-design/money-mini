@@ -512,6 +512,102 @@ if bot:
         await state.clear()
         await message.answer("✅ Отправлено. Мы ответим вам в ближайшее время.")
 
+    @dp.message(F.successful_payment)
+    async def successful_payment(message: Message):
+        payment = message.successful_payment
+
+        try:
+            payload = json.loads(payment.invoice_payload)
+            uid = str(message.from_user.id)
+            plan = str(payload.get("plan") or "")
+
+            # Проверяем тариф и владельца платежа.
+            if str(payload.get("uid")) != uid:
+                log.error("Stars payment user mismatch: %s", uid)
+                await message.answer(
+                    "⚠️ Платёж получен, но возникла ошибка проверки. "
+                    "Обратись в поддержку."
+                )
+                return
+
+            tariff = TARIFFS.get(plan)
+            if not tariff or plan not in STARS_PRICES:
+                log.error("Unknown paid plan: %s", plan)
+                await message.answer(
+                    "⚠️ Платёж получен, но тариф не распознан. "
+                    "Обратись в поддержку."
+                )
+                return
+
+            # Один и тот же платёж нельзя обработать повторно.
+            charge_id = payment.telegram_payment_charge_id or ""
+            if not charge_id:
+                log.error("Missing Telegram charge ID for %s", uid)
+                await message.answer(
+                    "⚠️ Не удалось проверить платёж. Обратись в поддержку."
+                )
+                return
+
+            import hashlib
+            charge_key = hashlib.sha256(
+                charge_id.encode("utf-8")
+            ).hexdigest()
+
+            payment_path = f"/payments/stars/{charge_key}"
+            existing_payment = await fb.get(payment_path)
+
+            if existing_payment:
+                await message.answer(
+                    "✅ Этот платёж уже обработан. "
+                    "Проверь статус подписки командой /status."
+                )
+                return
+
+            user = await get_user(uid) or {}
+            now = now_ms()
+
+            sub_end = int(user.get("subEnd") or 0)
+            if 0 < sub_end < 10**11:
+                sub_end *= 1000
+
+            new_end = max(sub_end, now) + int(
+                tariff["days"]
+            ) * 86400000
+
+            # Сначала фиксируем платёж, затем обновляем подписку.
+            await fb.put(payment_path, {
+                "uid": uid,
+                "plan": plan,
+                "currency": "XTR",
+                "amount": payment.total_amount,
+                "telegramChargeId": charge_id,
+                "paidAt": now,
+                "status": "paid",
+            })
+
+            await fb.patch(f"/users/{uid}", {
+                "tariff": plan,
+                "subStart": now,
+                "subEnd": new_end,
+                "status": "active",
+                "reminderSent": 0,
+            })
+
+            await message.answer(
+                "🎉 <b>Оплата прошла успешно!</b>\n\n"
+                f"Тариф: <b>{tariff['name']}</b>\n"
+                f"Срок: <b>{tariff['days']} дней</b>\n"
+                "Подписка активирована.",
+                parse_mode="HTML",
+            )
+
+        except Exception:
+            log.exception("Stars payment processing failed")
+            await message.answer(
+                "⚠️ Платёж получен, но не удалось завершить "
+                "активацию автоматически. Обратись в поддержку."
+            )
+            
     @dp.pre_checkout_query()
     async def pre_checkout(query: PreCheckoutQuery):
         await query.answer(ok=True)

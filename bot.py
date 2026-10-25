@@ -200,14 +200,127 @@ if bot:
         kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))]])
         await message.answer("Выбери тариф для оплаты:", reply_markup=kb)
 
+
     @dp.message(Command("referrals"))
     async def cmd_referrals(message: Message):
+        import html
+
         uid = str(message.from_user.id)
         me = await get_user(uid)
         refs = me.get("referrals") or {}
-        link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
-        await message.answer(f"👥 <b>Твои рефералы:</b> {len(refs)}\n\nТвоя ссылка:\n<code>{link}</code>", parse_mode="HTML")
 
+        if not isinstance(refs, dict):
+            refs = {}
+
+        link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
+        now = now_ms()
+
+        total = len(refs)
+        trial_count = 0
+        paid_count = 0
+        expired_count = 0
+        lines = []
+
+        for ref_uid, ref_value in list(refs.items())[:25]:
+            ref_uid = str(ref_uid)
+            user = await get_user(ref_uid)
+
+            if not user:
+                name = f"Пользователь {ref_uid}"
+            else:
+                name = user.get("name") or user.get("username") or ref_uid
+
+            name = html.escape(str(name))
+            username = str(user.get("username") or "").strip()
+            tariff = str(user.get("tariff") or "unknown")
+            sub_end = int(user.get("subEnd") or 0)
+
+            if 0 < sub_end < 10**11:
+                sub_end *= 1000
+
+            if sub_end > now:
+                days = max(1, math.ceil((sub_end - now) / 86400000))
+
+                if tariff.lower().startswith("trial"):
+                    status = f"🎁 Триал, осталось {days} дн."
+                    trial_count += 1
+                else:
+                    status = f"💎 Подписка активна, {days} дн."
+                    paid_count += 1
+            else:
+                status = "⏳ Подписка истекла"
+                expired_count += 1
+
+            tariff_names = {
+                "trial": "Пробный период",
+                "basic": "Basic",
+                "pro": "PRO",
+                "1month": "Basic",
+                "3months": "Basic",
+                "6months": "Basic",
+                "12months": "Basic",
+                "pro1": "PRO",
+                "pro12": "PRO",
+            }
+            tariff_label = tariff_names.get(tariff.lower(), tariff)
+
+            registered = user.get("firstSeen") or user.get("referredAt") or ref_value
+            try:
+                registered = int(registered)
+                if 0 < registered < 10**11:
+                    registered *= 1000
+                date_text = datetime.fromtimestamp(
+                    registered / 1000, timezone.utc
+                ).strftime("%d.%m.%Y") if registered > 0 else "неизвестно"
+            except (ValueError, TypeError, OSError, OverflowError):
+                date_text = "неизвестно"
+
+            handle = f" (@{html.escape(username)})" if username else ""
+
+            lines.append(
+                f"• <b>{name}</b>{handle}\n"
+                f"  ID: <code>{html.escape(ref_uid)}</code>\n"
+                f"  Тариф: {html.escape(tariff_label)}\n"
+                f"  Статус: {status}\n"
+                f"  Регистрация: {date_text}"
+            )
+
+        coupons10 = max(
+            0,
+            int(me.get("couponsEarned") or 0)
+            - int(me.get("couponsUsed10") or 0)
+        )
+        coupons20 = max(
+            0,
+            int(me.get("coupons20Earned") or 0)
+            - int(me.get("couponsUsed20") or 0)
+        )
+
+        text = (
+            "👥 <b>ТВОЯ РЕФЕРАЛЬНАЯ СИСТЕМА</b>\n\n"
+            f"Всего приглашено: <b>{total}</b>\n"
+            f"🎁 Активный триал: <b>{trial_count}</b>\n"
+            f"💎 Активная подписка: <b>{paid_count}</b>\n"
+            f"⏳ Истёкшая подписка: <b>{expired_count}</b>\n\n"
+            "🎟 <b>Доступные купоны</b>\n"
+            f"Купоны 10%: <b>{coupons10}</b>\n"
+            f"Купоны 20%: <b>{coupons20}</b>\n\n"
+            "🔗 <b>Твоя ссылка:</b>\n"
+            f"<code>{html.escape(link)}</code>\n\n"
+        )
+
+        if lines:
+            text += "📋 <b>Приглашённые пользователи</b>\n\n"
+            text += "\n\n".join(lines)
+            if total > 25:
+                text += f"\n\nПоказаны первые 25 из {total} пользователей."
+        else:
+            text += (
+                "Пока никто не присоединился по твоей ссылке.\n"
+                "Отправь её друзьям, чтобы начать приглашать!"
+            )
+
+        await message.answer(text, parse_mode="HTML")
     @dp.callback_query(F.data == "ref_link")
     async def cb_ref_link(cb: CallbackQuery):
         uid = str(cb.from_user.id)

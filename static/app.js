@@ -210,73 +210,98 @@ function saveRecurring(){
 }
 
 async function exportCSV() {
+  const history = appData.history || [];
+
+  if (!history.length) {
+    alert('История операций пока пуста.');
+    return;
+  }
+
+  const cell = value =>
+    '"' + String(value ?? '').replace(/"/g, '""') + '"';
+
+  const rows = [
+    ['Дата', 'Тип', 'Сумма', 'Категория', 'Комментарий'],
+    ...history.map(tx => [
+      tx.date,
+      tx.type === 'income' ? 'Доход' : 'Расход',
+      tx.amount,
+      tx.category,
+      tx.title || tx.comment || ''
+    ])
+  ];
+
+  const csv = '\uFEFF' + rows
+    .map(row => row.map(cell).join(';'))
+    .join('\r\n');
+
+  const filename =
+    'money-mini-' + new Date().toISOString().slice(0, 10) + '.csv';
+
   try {
-    if (!Array.isArray(appData.history) || appData.history.length === 0) {
-      alert('История операций пока пуста.');
-      return;
-    }
-
-    const cell = value =>
-      '"' + String(value ?? '').replace(/"/g, '""') + '"';
-
-    const rows = [
-      ['Дата', 'Тип', 'Сумма', 'Категория', 'Комментарий']
-        .map(cell).join(';'),
-
-      ...appData.history.map(tx => [
-        tx.date,
-        tx.type === 'income' ? 'Доход' : 'Расход',
-        tx.amount,
-        tx.category,
-        tx.title
-      ].map(cell).join(';'))
-    ];
-
-    const csv = '\uFEFF' + rows.join('\r\n');
-    const filename =
-      `money-mini-${new Date().toISOString().slice(0, 10)}.csv`;
-
     const file = new File([csv], filename, {
-      type: 'text/csv;charset=utf-8;'
+      type: 'text/csv;charset=utf-8'
     });
 
-    // На телефоне предлагаем системное меню сохранения/отправки файла
-    if (
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({ files: [file] })
-    ) {
-      await navigator.share({
-        files: [file],
-        title: 'Экспорт Money Mini'
-      });
-      return;
+    // Способ 1: системное меню Android — работает и в Telegram,
+    // если WebView поддерживает передачу файлов.
+    if (navigator.share && navigator.canShare &&
+        navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Экспорт Money Mini'
+        });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
     }
 
-    // Запасной вариант — обычное скачивание
-    const url = URL.createObjectURL(file);
+    // Способ 2: обычное скачивание в браузере.
+    const blob = new Blob([csv], {
+      type: 'text/csv;charset=utf-8'
+    });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 
     link.href = url;
     link.download = filename;
-    link.style.display = 'none';
-
     document.body.appendChild(link);
     link.click();
     link.remove();
 
-    // Не удаляем ссылку сразу: мобильному браузеру нужно время
     setTimeout(() => URL.revokeObjectURL(url), 60000);
 
-    alert(
-      'Если загрузка не началась, открой приложение в браузере ' +
-      'и повтори экспорт.'
-    );
-  } catch (error) {
-    if (error.name !== 'AbortError') {
-      console.error('CSV export error:', error);
-      alert('Не удалось экспортировать CSV. Проверь консоль приложения.');
-    }
+    // Способ 3: запасной вариант, если загрузка заблокирована.
+    setTimeout(() => {
+      const fallback = confirm(
+        'Файл не появился? Нажми ОК, чтобы открыть CSV для копирования.'
+      );
+
+      if (fallback) {
+        const win = window.open('', '_blank');
+
+        if (win) {
+          win.document.write(
+            '<meta name="viewport" content="width=device-width">' +
+            '<title>Money Mini CSV</title>' +
+            '<textarea style="width:98%;height:75vh;font-size:14px">' +
+            csv.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;') +
+            '</textarea>' +
+            '<p>Выдели текст и скопируй его.</p>'
+          );
+        } else {
+          prompt('Скопируй данные CSV:', csv);
+        }
+      }
+    }, 1200);
+
+  } catch (e) {
+    console.error('CSV export error:', e);
+    alert('Ошибка экспорта: ' + (e.message || e));
   }
 }
 function openPicker(kind){

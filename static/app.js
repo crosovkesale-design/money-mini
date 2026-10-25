@@ -209,56 +209,76 @@ function saveRecurring(){
   saveData(); closeModal('modalAddRecurring'); renderAll();
 }
 
+async function exportCSV() {
+  try {
+    if (!Array.isArray(appData.history) || appData.history.length === 0) {
+      alert('История операций пока пуста.');
+      return;
+    }
 
-function exportCSV() {
-  if (!Array.isArray(appData.history) || appData.history.length === 0) {
-    alert('История операций пока пуста.');
-    return;
+    const cell = value =>
+      '"' + String(value ?? '').replace(/"/g, '""') + '"';
+
+    const rows = [
+      ['Дата', 'Тип', 'Сумма', 'Категория', 'Комментарий']
+        .map(cell).join(';'),
+
+      ...appData.history.map(tx => [
+        tx.date,
+        tx.type === 'income' ? 'Доход' : 'Расход',
+        tx.amount,
+        tx.category,
+        tx.title
+      ].map(cell).join(';'))
+    ];
+
+    const csv = '\uFEFF' + rows.join('\r\n');
+    const filename =
+      `money-mini-${new Date().toISOString().slice(0, 10)}.csv`;
+
+    const file = new File([csv], filename, {
+      type: 'text/csv;charset=utf-8;'
+    });
+
+    // На телефоне предлагаем системное меню сохранения/отправки файла
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        files: [file],
+        title: 'Экспорт Money Mini'
+      });
+      return;
+    }
+
+    // Запасной вариант — обычное скачивание
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Не удаляем ссылку сразу: мобильному браузеру нужно время
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+    alert(
+      'Если загрузка не началась, открой приложение в браузере ' +
+      'и повтори экспорт.'
+    );
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      console.error('CSV export error:', error);
+      alert('Не удалось экспортировать CSV. Проверь консоль приложения.');
+    }
   }
-
-  // Экранируем значения для корректного CSV
-  const csvCell = value =>
-    '"' + String(value ?? '').replace(/"/g, '""') + '"';
-
-  const headers = [
-    'Дата',
-    'Тип',
-    'Сумма',
-    'Категория',
-    'Комментарий'
-  ];
-
-  const rows = appData.history.map(tx => [
-    tx.date,
-    tx.type === 'income' ? 'Доход' : 'Расход',
-    tx.amount,
-    tx.category,
-    tx.title
-  ].map(csvCell).join(';'));
-
-  const csv = [
-    headers.map(csvCell).join(';'),
-    ...rows
-  ].join('\r\n');
-
-  const blob = new Blob(['\uFEFF' + csv], {
-    type: 'text/csv;charset=utf-8;'
-  });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-
-  link.href = url;
-  link.download = `money-mini-${new Date().toISOString().slice(0, 10)}.csv`;
-
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-
-
 function openPicker(kind){
   const cfg = { language: { title:t('lang'), items: LANGS }, currency: { title:t('currency'), items: CURRENCIES } }[kind];
   document.getElementById('pickerTitle').innerText = cfg.title;

@@ -237,7 +237,6 @@ async function exportCSV() {
     }
 
     showExportToast('Excel-файл отправлен в Telegram');
-    );
   } catch (error) {
     console.error('Export error:', error);
     tg?.showAlert?.(

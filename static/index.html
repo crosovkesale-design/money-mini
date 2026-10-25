@@ -1,399 +1,193 @@
-<!-- static/index.html — ЧАСТЬ 1/3 -->
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#080b16">
-
-  <title>Money Mini</title>
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="translations.js"></script>
-  <script src="app-main.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Семейный Бюджет</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/translations.js" defer></script>
+<script src="js/app.js" defer></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-  <main class="container">
+<div class="container">
 
-    <!-- Главная -->
-    <section id="tab-budget" class="tab-content">
-      <header class="row-between app-header">
-        <h2 class="app-title">Money Mini</h2>
-        <button class="btn btn-outline btn-sm" type="button" onclick="openHelp()" aria-label="Справка">
-          <i class="fa-solid fa-circle-question"></i>
-        </button>
-      </header>
+  <div id="tab-budget" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-weight:800;font-size:15px">Family Budget</div>
+      <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>
+    </div>
 
-      <section class="balance-card">
-        <div class="balance-title" data-i18n="balance">Текущий баланс</div>
-        <div class="balance-val" id="totalBalance">0 ₴</div>
-
-        <div class="balance-stats">
-          <div class="stat-item">
-            <div class="stat-label" data-i18n="income">Доходы</div>
-            <div class="stat-amount inc" id="monthIncome">+0 ₴</div>
-          </div>
-
-          <div class="stat-item">
-            <div class="stat-label" data-i18n="expense">Расходы</div>
-            <div class="stat-amount exp" id="monthExpense">-0 ₴</div>
-          </div>
+    <div class="balance-card">
+      <div class="balance-title" data-i18n="balance">Текущий баланс</div>
+      <div class="balance-val" id="totalBalance">0 ₴</div>
+      <div class="balance-stats">
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="income">Доходы</div>
+          <div class="stat-amount inc" id="monthIncome">+0 ₴</div>
         </div>
-      </section>
-
-      <section id="forecastCard" class="card forecast-card">
-        <div class="forecast-title" data-i18n="forecast">Прогноз на конец месяца</div>
-        <div id="forecastBody" class="forecast-text"></div>
-      </section>
-
-      <div class="actions-grid">
-        <button class="btn btn-success" type="button" onclick="openTransactionModal('income')">
-          <i class="fa-solid fa-plus"></i>
-          <span data-i18n="btn_income">Доход</span>
-        </button>
-
-        <button class="btn btn-danger" type="button" onclick="openTransactionModal('expense')">
-          <i class="fa-solid fa-minus"></i>
-          <span data-i18n="btn_expense">Расход</span>
-        </button>
-      </div>
-
-      <div class="row-between history-header">
-        <h3 data-i18n="history">История</h3>
-        <input
-          type="search"
-          id="histSearch"
-          class="custom-input history-search"
-          placeholder="Поиск..."
-          oninput="renderAll()"
-          aria-label="Поиск операций"
-        >
-      </div>
-
-      <div id="historyContainer" class="history-list"></div>
-    </section>
-
-    <!-- Аналитика -->
-    <section id="tab-analytics" class="tab-content">
-      <h3 class="section-heading" data-i18n="analytics">Аналитика</h3>
-
-      <div class="card chart-card">
-        <canvas id="expensesChart"></canvas>
-      </div>
-
-      <div class="card chart-card">
-        <canvas id="monthsChart"></canvas>
-      </div>
-    </section>
-
-    <!-- Конверты -->
-    <section id="tab-envelopes" class="tab-content">
-      <div class="row-between">
-        <h3 data-i18n="envelopes">Конверты</h3>
-        <button
-          class="btn btn-accent btn-sm"
-          type="button"
-          onclick="openModal('modalAddEnvelope')"
-          aria-label="Добавить конверт"
-        >
-          <i class="fa-solid fa-plus"></i>
-        </button>
-      </div>
-
-      <div id="envelopesList"></div>
-    </section>
-
-    <!-- Банки -->
-    <section id="tab-banks" class="tab-content">
-      <div class="row-between">
-        <h3 data-i18n="banks">Банки</h3>
-        <button
-          class="btn btn-accent btn-sm"
-          type="button"
-          onclick="openModal('modalAddBank')"
-          aria-label="Добавить банку"
-        >
-          <i class="fa-solid fa-plus"></i>
-        </button>
-      </div>
-
-      <div id="banksList"></div>
-    </section>
-
-    <!-- Настройки -->
-    <section id="tab-settings" class="tab-content">
-      <div class="card">
-        <h3 data-i18n="settings">Настройки</h3>
-
-        <label class="lbl" data-i18n="lang">Язык</label>
-        <button class="select-fake" type="button" onclick="openPicker('language')">
-          <span id="langLabel">🇷🇺 Русский</span>
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-
-        <label class="lbl" data-i18n="currency">Валюта</label>
-        <button class="select-fake" type="button" onclick="openPicker('currency')">
-          <span id="currLabel">₴ Hryvnia</span>
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-
-        <label class="lbl" data-i18n="theme">Тема</label>
-        <div class="seg">
-          <button class="seg-btn" type="button" data-theme-btn="dark" onclick="setTheme('dark')">
-            <i class="fa-solid fa-moon"></i>
-            <span data-i18n="dark">Тёмная</span>
-          </button>
-
-          <button class="seg-btn" type="button" data-theme-btn="light" onclick="setTheme('light')">
-            <i class="fa-solid fa-sun"></i>
-            <span data-i18n="light">Светлая</span>
-          </button>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="expense">Расходы</div>
+          <div class="stat-amount exp" id="monthExpense">-0 ₴</div>
         </div>
       </div>
+    </div>
 
-      <div class="card">
-        <h3 data-i18n="wallpaper">Обои</h3>
+    <div id="forecastCard" class="card" style="display:none;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3)">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px" data-i18n="forecast">Прогноз</div>
+      <div id="forecastBody" style="font-size:12px"></div>
+    </div>
 
-        <input
-          type="file"
-          id="wallpaperFile"
-          class="hidden-input"
-          accept="image/*"
-          onchange="onWallpaperPicked(event)"
-        >
+    <div class="actions-grid">
+      <button class="btn btn-success" onclick="openTransactionModal('income')" data-i18n="btn_income">Доход</button>
+      <button class="btn btn-danger" onclick="openTransactionModal('expense')" data-i18n="btn_expense">Расход</button>
+    </div>
 
-        <div class="settings-actions">
-          <button class="btn btn-outline" type="button" onclick="document.getElementById('wallpaperFile').click()">
-            <i class="fa-solid fa-image"></i>
-            <span data-i18n="upload">Загрузить</span>
-          </button>
+    <div class="row-between">
+      <h4 data-i18n="history">История</h4>
+      <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" placeholder="Поиск..." oninput="renderAll()">
+    </div>
+    <div id="historyContainer" class="history-list"></div>
+  </div>
 
-          <button class="btn btn-outline" type="button" onclick="clearWallpaper()">
-            <i class="fa-solid fa-trash-can"></i>
-            <span data-i18n="remove">Убрать</span>
-          </button>
-        </div>
+  <div id="tab-analytics" class="tab-content" style="display:none">
+    <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4>
+    <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
+    <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
+  </div>
+
+  <div id="tab-envelopes" class="tab-content" style="display:none">
+    <div class="row-between">
+      <h4 data-i18n="envelopes">Конверты</h4>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')">+</button>
+    </div>
+    <div id="envelopesList"></div>
+  </div>
+
+  <div id="tab-banks" class="tab-content" style="display:none">
+    <div class="row-between">
+      <h4 data-i18n="banks">Банки</h4>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')">+</button>
+    </div>
+    <div id="banksList"></div>
+  </div>
+
+  <div id="tab-settings" class="tab-content" style="display:none">
+    <div class="card">
+      <h5 data-i18n="settings">Настройки</h5>
+      <label class="lbl" data-i18n="lang">Язык</label>
+      <button type="button" class="select-fake" onclick="openPicker('language')"><span id="langLabel"></span></button>
+      <label class="lbl" data-i18n="currency">Валюта</label>
+      <button type="button" class="select-fake" onclick="openPicker('currency')"><span id="currLabel"></span></button>
+      <label class="lbl" data-i18n="theme">Тема</label>
+      <div class="seg">
+        <button class="seg-btn" data-theme-btn="dark" onclick="setTheme('dark')" data-i18n="dark">Тёмная</button>
+        <button class="seg-btn" data-theme-btn="light" onclick="setTheme('light')" data-i18n="light">Светлая</button>
       </div>
+    </div>
 
-      <div class="card">
-        <h3 data-i18n="recurring">Автоплатежи</h3>
-        <div id="recurringList" class="muted" data-i18n="no_rules">Правил нет</div>
-
-        <button class="btn btn-accent btn-block" type="button" onclick="openModal('modalAddRecurring')">
-          <i class="fa-solid fa-plus"></i>
-          <span data-i18n="add_rule">Добавить</span>
-        </button>
+    <div class="card">
+      <h5 data-i18n="wallpaper">Обои</h5>
+      <input type="file" id="wallpaperFile" accept="image/*" style="display:none" onchange="onWallpaperPicked(event)">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="document.getElementById('wallpaperFile').click()" data-i18n="upload">Загрузить</button>
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="clearWallpaper()" data-i18n="remove">Убрать</button>
       </div>
-
-      <div class="card">
-        <h3 data-i18n="family">Семья</h3>
-        <button class="btn btn-danger btn-block" type="button" onclick="leaveFamily()">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          <span data-i18n="leave_family">Выйти из семьи</span>
-        </button>
-      </div>
-
-      <div class="card">
-        <h3 data-i18n="export">Экспорт</h3>
-        <button class="btn btn-outline btn-block" type="button" onclick="exportCSV()">
-          <i class="fa-solid fa-file-csv"></i>
-          <span data-i18n="export">Скачать CSV</span>
-        </button>
-      </div>
-    </section>
-  </main>
-
-  <!-- Нижняя навигация -->
-  <nav class="nav-bar" aria-label="Основная навигация">
-    <button class="nav-item active" id="nav-budget" type="button" onclick="switchTab('budget')">
-      <i class="fa-solid fa-house"></i>
-      <span data-i18n="home">Главная</span>
-    </button>
-
-    <button class="nav-item" id="nav-analytics" type="button" onclick="switchTab('analytics')">
-      <i class="fa-solid fa-chart-pie"></i>
-      <span data-i18n="analytics">Аналитика</span>
-    </button>
-
-    <button class="nav-item" id="nav-banks" type="button" onclick="switchTab('banks')">
-      <i class="fa-solid fa-building-columns"></i>
-      <span data-i18n="banks">Банки</span>
-    </button>
-
-    <button class="nav-item" id="nav-envelopes" type="button" onclick="switchTab('envelopes')">
-      <i class="fa-solid fa-envelope-open-text"></i>
-      <span data-i18n="envelopes">Конверты</span>
-    </button>
-
-    <button class="nav-item" id="nav-settings" type="button" onclick="switchTab('settings')">
-      <i class="fa-solid fa-sliders"></i>
-      <span data-i18n="settings">Настройки</span>
-    </button>
-  </nav>
-  <!-- static/index.html — ЧАСТЬ 2/3 -->
-
-  <!-- Операция -->
-  <section class="modal" id="modalTransaction">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 id="txModalTitle"></h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalTransaction')" aria-label="Закрыть">×</button>
-      </header>
-
-      <div class="row-between form-heading">
-        <label class="lbl" data-i18n="category_lbl">Категория</label>
-        <button class="btn btn-outline btn-sm" type="button" onclick="openModal('modalAddCategory')">
-          <span data-i18n="custom_cat">Своя</span>
-        </button>
-      </div>
-
-      <div id="categoryGrid" class="icon-grid"></div>
-
-      <label class="lbl" for="txAmountInput" data-i18n="amount_lbl">Сумма</label>
-      <input
-        type="number"
-        id="txAmountInput"
-        class="custom-input"
-        min="0"
-        step="0.01"
-        placeholder="Сумма"
-      >
-
-      <label class="lbl" for="txCommentInput" data-i18n="comment_lbl">Комментарий</label>
-      <input
-        type="text"
-        id="txCommentInput"
-        class="custom-input"
-        placeholder="Комментарий"
-      >
-
-      <button class="btn btn-accent btn-block" type="button" onclick="submitTransaction()">
-        <i class="fa-solid fa-check"></i>
-        <span data-i18n="save">Сохранить</span>
-      </button>
     </div>
-  </section>
 
-  <!-- Новая категория -->
-  <section class="modal" id="modalAddCategory">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 data-i18n="custom_cat">Своя категория</h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalAddCategory')" aria-label="Закрыть">×</button>
-      </header>
-
-      <label class="lbl" for="catCustomName">Название</label>
-      <input type="text" id="catCustomName" class="custom-input" placeholder="Название">
-
-      <label class="lbl" for="catCustomEmoji">Эмодзи</label>
-      <input type="text" id="catCustomEmoji" class="custom-input" placeholder="Эмодзи" value="📦" maxlength="8">
-
-      <button class="btn btn-accent btn-block" type="button" onclick="saveCustomCategory()">
-        <i class="fa-solid fa-check"></i>
-        <span data-i18n="save">Сохранить</span>
-      </button>
+    <div class="card">
+      <h5 data-i18n="recurring">Автоплатежи</h5>
+      <div id="recurringList" class="muted" style="margin-bottom:8px" data-i18n="no_rules">Правил нет</div>
+      <button class="btn btn-accent btn-sm" style="width:100%" onclick="openModal('modalAddRecurring')" data-i18n="add_rule">Добавить</button>
     </div>
-  </section>
 
-  <!-- Новый конверт -->
-  <section class="modal" id="modalAddEnvelope">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 data-i18n="new_env">Новый конверт</h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalAddEnvelope')" aria-label="Закрыть">×</button>
-      </header>
-
-      <label class="lbl" for="envNameInput">Название</label>
-      <input type="text" id="envNameInput" class="custom-input" placeholder="Название">
-
-      <label class="lbl" for="envTargetInput" data-i18n="limit">Лимит</label>
-      <input type="number" id="envTargetInput" class="custom-input" min="0" step="0.01" placeholder="Лимит">
-
-      <button class="btn btn-accent btn-block" type="button" onclick="saveEnvelope()">
-        <i class="fa-solid fa-check"></i>
-        <span data-i18n="save">Создать</span>
-      </button>
+    <div class="card">
+      <h5 data-i18n="family">Семья</h5>
+      <button class="btn btn-danger btn-sm" style="width:100%;margin-top:8px" onclick="leaveFamily()" data-i18n="leave_family">Выйти из семьи</button>
     </div>
-  </section>
 
-  <!-- Новая банка -->
-  <section class="modal" id="modalAddBank">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 data-i18n="new_bank">Новая банка</h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalAddBank')" aria-label="Закрыть">×</button>
-      </header>
-
-      <label class="lbl" for="bankNameInput">Название</label>
-      <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
-
-      <label class="lbl" for="bankTargetInput" data-i18n="goal">Цель</label>
-      <input type="number" id="bankTargetInput" class="custom-input" min="0" step="0.01" placeholder="Цель">
-
-      <button class="btn btn-accent btn-block" type="button" onclick="saveBank()">
-        <i class="fa-solid fa-check"></i>
-        <span data-i18n="save">Создать</span>
-      </button>
+    <div class="card">
+      <h5 data-i18n="export">Экспорт</h5>
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="exportCSV()" data-i18n="export">Скачать CSV</button>
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- Автоплатёж -->
-  <section class="modal" id="modalAddRecurring">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 data-i18n="recurring">Автоплатежи</h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalAddRecurring')" aria-label="Закрыть">×</button>
-      </header>
+<div class="nav-bar">
+  <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span data-i18n="home">Главная</span></div>
+  <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="analytics">Аналитика</span></div>
+  <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span data-i18n="envelopes">Конверты</span></div>
+  <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="banks">Банки</span></div>
+  <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="settings">Настройки</span></div>
+</div>
 
-      <label class="lbl" for="recName">Название</label>
-      <input type="text" id="recName" class="custom-input" placeholder="Название">
-
-      <label class="lbl" for="recAmount" data-i18n="amount_lbl">Сумма</label>
-      <input type="number" id="recAmount" class="custom-input" min="0" step="0.01" placeholder="Сумма">
-
-      <label class="lbl" for="recDay">День месяца</label>
-      <input type="number" id="recDay" class="custom-input" min="1" max="31" placeholder="1–31">
-
-      <button class="btn btn-accent btn-block" type="button" onclick="saveRecurring()">
-        <i class="fa-solid fa-check"></i>
-        <span data-i18n="save">Сохранить</span>
-      </button>
+<div class="modal" id="modalTransaction">
+  <div class="modal-content">
+    <div class="modal-header"><h3 id="txModalTitle"></h3><span class="modal-close" onclick="closeModal('modalTransaction')">×</span></div>
+    <div class="row-between" style="margin-bottom:4px">
+      <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label>
+      <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="openModal('modalAddCategory')" data-i18n="custom_cat">Своя</button>
     </div>
-  </section>
-  <!-- static/index.html — ЧАСТЬ 3/3 -->
+    <div id="categoryGrid" class="icon-grid"></div>
+    <input type="number" id="txAmountInput" class="custom-input" data-i18n="amount_lbl" placeholder="Сумма">
+    <input type="text" id="txCommentInput" class="custom-input" data-i18n="comment_lbl" placeholder="Комментарий">
+    <button class="btn btn-accent" style="width:100%" onclick="submitTransaction()" data-i18n="save">Сохранить</button>
+  </div>
+</div>
 
-  <!-- Справка -->
-  <section class="modal" id="modalHelp">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 data-i18n="help">Справка</h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalHelp')" aria-label="Закрыть">×</button>
-      </header>
+<div class="modal" id="modalAddCategory">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="custom_cat">Своя</h3><span class="modal-close" onclick="closeModal('modalAddCategory')">×</span></div>
+    <input type="text" id="catCustomName" class="custom-input" placeholder="Название">
+    <input type="text" id="catCustomEmoji" class="custom-input" placeholder="Эмодзи" value="🐶" maxlength="2">
+    <button class="btn btn-accent" style="width:100%" onclick="saveCustomCategory()" data-i18n="save">Сохранить</button>
+  </div>
+</div>
 
-      <p class="muted" data-i18n="help_text"></p>
+<div class="modal" id="modalAddEnvelope">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="new_env">Новый конверт</h3><span class="modal-close" onclick="closeModal('modalAddEnvelope')">×</span></div>
+    <input type="text" id="envNameInput" class="custom-input" placeholder="Название">
+    <input type="number" id="envTargetInput" class="custom-input" placeholder="Лимит">
+    <button class="btn btn-accent" style="width:100%" onclick="saveEnvelope()" data-i18n="save">Создать</button>
+  </div>
+</div>
 
-      <button class="btn btn-accent btn-block" type="button" onclick="closeModal('modalHelp')">
-        <span data-i18n="ok">Понятно</span>
-      </button>
-    </div>
-  </section>
+<div class="modal" id="modalAddBank">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="new_bank">Новая банка</h3><span class="modal-close" onclick="closeModal('modalAddBank')">×</span></div>
+    <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
+    <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель">
+    <button class="btn btn-accent" style="width:100%" onclick="saveBank()" data-i18n="save">Создать</button>
+  </div>
+</div>
 
-  <!-- Выбор языка и валюты -->
-  <section class="modal" id="modalPicker">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 id="pickerTitle">—</h3>
-        <button class="modal-close" type="button" onclick="closeModal('modalPicker')" aria-label="Закрыть">×</button>
-      </header>
+<div class="modal" id="modalAddRecurring">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="recurring">Автоплатежи</h3><span class="modal-close" onclick="closeModal('modalAddRecurring')">×</span></div>
+    <input type="text" id="recName" class="custom-input" placeholder="Название">
+    <input type="number" id="recAmount" class="custom-input" placeholder="Сумма">
+    <input type="number" id="recDay" class="custom-input" placeholder="День (1-31)">
+    <button class="btn btn-accent" style="width:100%" onclick="saveRecurring()" data-i18n="save">Сохранить</button>
+  </div>
+</div>
 
-      <div id="pickerList" class="picker-list"></div>
-    </div>
-  </section>
+<div class="modal" id="modalHelp">
+  <div class="modal-content">
+    <div class="modal-header"><h3 data-i18n="help">Справка</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
+    <p class="muted" data-i18n="help_text"></p>
+    <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="closeModal('modalHelp')" data-i18n="ok">Понятно</button>
+  </div>
+</div>
+
+<div class="modal" id="modalPicker">
+  <div class="modal-content">
+    <div class="modal-header"><h3 id="pickerTitle">—</h3><span class="modal-close" onclick="closeModal('modalPicker')">×</span></div>
+    <div id="pickerList" class="picker-list"></div>
+  </div>
+</div>
 
 </body>
 </html>

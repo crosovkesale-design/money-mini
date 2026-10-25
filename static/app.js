@@ -547,6 +547,7 @@ function renderAll(){
   renderForecast();
 }
 
+
 function initApp(){
   setTheme(appData.theme || 'dark');
   applyLang();
@@ -557,9 +558,66 @@ function initApp(){
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.expand();
   }
+
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('screen') === 'pay'){
+    document.querySelectorAll('.tab-content').forEach(el => {
+      el.style.display = 'none';
+    });
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.remove('active');
+    });
+    document.getElementById('tab-pay').style.display = 'block';
+  }
 }
 
-document.addEventListener('DOMContentLoaded', initApp);
+async function buyPlan(plan, method){
+  try{
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const initData = tg && tg.initData;
+
+    if(!initData){
+      alert('Открой приложение через Telegram');
+      return;
+    }
+
+    const endpoint = method === 'stars'
+      ? '/api/pay/stars'
+      : '/api/pay/crypto';
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Init-Data': initData
+      },
+      body: JSON.stringify({plan})
+    });
+
+    const data = await response.json();
+
+    if(!response.ok || !data.invoice_url){
+      throw new Error(data.detail || 'Не удалось создать счёт');
+    }
+
+    if(method === 'stars' && tg.openInvoice){
+      tg.openInvoice(data.invoice_url, status => {
+        if(status === 'paid'){
+          alert('Платёж получен. Проверяем активацию подписки.');
+        } else if(status === 'failed'){
+          alert('Оплата не прошла. Попробуй ещё раз.');
+        }
+      });
+    } else if(tg.openLink){
+      tg.openLink(data.invoice_url);
+    } else {
+      window.open(data.invoice_url, '_blank');
+    }
+  } catch(error){
+    alert('Ошибка оплаты: ' + error.message);
+  }
+}
+
 function showExportToast(message) {
     const oldToast = document.querySelector('.export-toast');
     if (oldToast) oldToast.remove();

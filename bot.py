@@ -4,6 +4,8 @@ import logging
 import math
 import os
 import secrets
+from io import BytesIO
+from openpyxl import Workbook
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -14,6 +16,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
+    BufferedInputFile,
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -336,6 +339,66 @@ async def api_family_leave(uid: str = Depends(current_uid)):
             else: await fb.delete(f"/families/{fid}")
     except: pass
     return {"ok": True, "leftFrom": fid}
+@app.post("/api/export")
+async def api_export(request: Request, uid: str = Depends(current_uid)):
+    if not bot:
+        raise HTTPException(503, "Bot is unavailable")
+
+    body = await request.json()
+    transactions = body.get("transactions", [])
+
+    if not isinstance(transactions, list):
+        raise HTTPException(400, "Invalid transactions")
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Операции"
+
+    ws.append(["Дата", "Тип", "Сумма", "Категория", "Комментарий"])
+
+    for tx in transactions:
+        if not isinstance(tx, dict):
+            continue
+
+        ws.append([
+            tx.get("date", ""),
+            "Расход" if tx.get("type") == "expense" else "Доход",
+            float(tx.get("amount") or 0),
+            tx.get("category", ""),
+            tx.get("title", tx.get("note", ""))
+        ])
+
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = ws.dimensions
+
+    for column, width in {
+        "A": 16, "B": 14, "C": 16, "D": 22, "E": 35
+    }.items():
+        ws.column_dimensions[column].width = width
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    document = BufferedInputFile(
+        output.getvalue(),
+        filename="Money_Mini.xlsx"
+    )
+
+    try:
+        await bot.send_document(
+            chat_id=int(uid),
+            document=document,
+            caption="📊 Твой Excel-отчёт из Money Mini"
+        )
+    except Exception:
+        log.exception("Excel export failed")
+        raise HTTPException(
+            500,
+            "Не удалось отправить файл. Открой бота и нажми /start."
+        )
+
+    return {"ok": True}
 
 @app.post("/api/tx")
 async def api_tx_create(request: Request, uid: str = Depends(current_uid)):

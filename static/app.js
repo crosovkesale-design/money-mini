@@ -210,98 +210,40 @@ function saveRecurring(){
 }
 
 async function exportCSV() {
-  const history = appData.history || [];
+  const tg = window.Telegram?.WebApp;
 
-  if (!history.length) {
-    alert('История операций пока пуста.');
+  if (!tg?.initData) {
+    alert('Открой приложение через Telegram.');
     return;
   }
 
-  const cell = value =>
-    '"' + String(value ?? '').replace(/"/g, '""') + '"';
-
-  const rows = [
-    ['Дата', 'Тип', 'Сумма', 'Категория', 'Комментарий'],
-    ...history.map(tx => [
-      tx.date,
-      tx.type === 'income' ? 'Доход' : 'Расход',
-      tx.amount,
-      tx.category,
-      tx.title || tx.comment || ''
-    ])
-  ];
-
-  const csv = '\uFEFF' + rows
-    .map(row => row.map(cell).join(';'))
-    .join('\r\n');
-
-  const filename =
-    'money-mini-' + new Date().toISOString().slice(0, 10) + '.csv';
-
   try {
-    const file = new File([csv], filename, {
-      type: 'text/csv;charset=utf-8'
+    const response = await fetch('/api/export', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Init-Data': tg.initData
+      },
+      body: JSON.stringify({
+        transactions: appData.history,
+        currency: appData.currency
+      })
     });
 
-    // Способ 1: системное меню Android — работает и в Telegram,
-    // если WebView поддерживает передачу файлов.
-    if (navigator.share && navigator.canShare &&
-        navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Экспорт Money Mini'
-        });
-        return;
-      } catch (e) {
-        if (e.name === 'AbortError') return;
-      }
+    const result = await response.json();
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.detail || 'Ошибка экспорта');
     }
 
-    // Способ 2: обычное скачивание в браузере.
-    const blob = new Blob([csv], {
-      type: 'text/csv;charset=utf-8'
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
-
-    // Способ 3: запасной вариант, если загрузка заблокирована.
-    setTimeout(() => {
-      const fallback = confirm(
-        'Файл не появился? Нажми ОК, чтобы открыть CSV для копирования.'
-      );
-
-      if (fallback) {
-        const win = window.open('', '_blank');
-
-        if (win) {
-          win.document.write(
-            '<meta name="viewport" content="width=device-width">' +
-            '<title>Money Mini CSV</title>' +
-            '<textarea style="width:98%;height:75vh;font-size:14px">' +
-            csv.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;') +
-            '</textarea>' +
-            '<p>Выдели текст и скопируй его.</p>'
-          );
-        } else {
-          prompt('Скопируй данные CSV:', csv);
-        }
-      }
-    }, 1200);
-
-  } catch (e) {
-    console.error('CSV export error:', e);
-    alert('Ошибка экспорта: ' + (e.message || e));
+    tg.showAlert(
+      'Excel-файл отправлен тебе в личный чат с ботом.'
+    );
+  } catch (error) {
+    console.error('Export error:', error);
+    tg?.showAlert?.(
+      'Не удалось экспортировать файл. Попробуй ещё раз.'
+    );
   }
 }
 function openPicker(kind){

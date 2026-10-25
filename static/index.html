@@ -70,6 +70,54 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <body>
 <div class="container">
 
+  <div id="tab-pay" class="tab-content" style="display:none">
+    <div class="card">
+      <h3>💎 Выбери тариф</h3>
+      <p class="muted">Выбери подходящий срок подписки</p>
+
+      <div class="card">
+        <b>Basic — 1 месяц</b>
+        <p>500 ⭐ или $6 USDT</p>
+        <button class="btn btn-accent" onclick="buyPlan('1month')">Выбрать</button>
+      </div>
+
+      <div class="card">
+        <b>Basic — 3 месяца</b>
+        <p>1300 ⭐ или $15 USDT</p>
+        <button class="btn btn-accent" onclick="buyPlan('3months')">Выбрать</button>
+      </div>
+
+      <div class="card">
+        <b>Basic — 6 месяцев</b>
+        <p>2300 ⭐ или $27 USDT</p>
+        <button class="btn btn-accent" onclick="buyPlan('6months')">Выбрать</button>
+      </div>
+
+      <div class="card">
+        <b>Basic — 12 месяцев</b>
+        <p>3900 ⭐ или $45 USDT</p>
+        <button class="btn btn-accent" onclick="buyPlan('12months')">Выбрать</button>
+      </div>
+
+      <div class="card">
+        <b>PRO — 1 месяц</b>
+        <p>1000 ⭐ или $12 USDT</p>
+        <button class="btn btn-accent" onclick="buyPlan('pro1')">Выбрать</button>
+      </div>
+
+      <div class="card">
+        <b>PRO — 12 месяцев</b>
+        <p>7500 ⭐ или $85 USDT</p>
+        <button class="btn btn-accent" onclick="buyPlan('pro12')">Выбрать</button>
+      </div>
+
+      <button class="btn btn-outline" onclick="switchTab('budget')">
+        ← Назад в бюджет
+      </button>
+    </div>
+  </div>
+
+  
   <div id="tab-budget" class="tab-content">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-weight:800;font-size:15px">Family Budget</div>

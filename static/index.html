@@ -60,7 +60,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261026-bank-deadline1" defer></script>
+<script src="./app.js?v=20261027-envelope-select-visible" defer></script>
 
 <link rel="stylesheet"
 
@@ -361,11 +361,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label>
       <button id="customCategoryOpenBtn" class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px;display:flex;align-items:center;gap:5px" onclick="openCustomCategoryModal()"><span data-i18n="custom_cat">Своя</span><span id="customCategoryProTag" class="pro-mini-tag">PRO</span></button>
     </div>
-    <div id="categoryGrid" class="icon-grid"></div>
-    <div id="txEnvelopeWrap" style="display:none">
-      <label class="lbl" for="txEnvelopeSelect">В какой конверт засчитать расход?</label>
-      <select id="txEnvelopeSelect" class="custom-input"><option value="">Без конверта</option></select>
+    <div id="txEnvelopeWrap" style="display:none;margin:10px 0 14px;padding:12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)">
+      <label class="lbl" for="txEnvelopeSelect" style="display:block;margin-bottom:7px;font-weight:700">📩 Засчитать расход в конверт</label>
+      <select id="txEnvelopeSelect" class="custom-input" style="margin:0"><option value="">Без конверта</option></select>
     </div>
+    <div id="categoryGrid" class="icon-grid"></div>
     <input type="number" id="txAmountInput" class="custom-input" data-i18n="amount_lbl" placeholder="Сумма">
     <input type="text" id="txCommentInput" class="custom-input" data-i18n="comment_lbl" placeholder="Комментарий">
     <button class="btn btn-accent" style="width:100%" onclick="submitTransaction()" data-i18n="save">Сохранить</button>

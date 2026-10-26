@@ -184,7 +184,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div id="tab-budget" class="tab-content">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-weight:800;font-size:15px">Family Budget</div>
-      <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-accent btn-sm" onclick="window.location.href='?screen=pay'" style="padding:8px 11px;border-radius:11px;white-space:nowrap">💎 Тарифы</button>
+        <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>
+      </div>
     </div>
 
     <div class="balance-card">

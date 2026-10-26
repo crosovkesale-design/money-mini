@@ -658,11 +658,25 @@ async def api_init(uid: str = Depends(current_uid)):
     u = await get_user(uid)
     sub_end = int(u.get("subEnd") or 0)
     if sub_end < 10**11: sub_end *= 1000
+
+    family_id = u.get("familyId")
+    family_info = None
+    if family_id:
+        family = (await fb.get(f"/families/{family_id}")) or {}
+        members = family.get("members") or {}
+        if family and not family.get("archived") and isinstance(members, dict) and uid in members:
+            family_info = {"id": family_id}
+        else:
+            # Remove stale membership; the app never auto-joins a family.
+            await fb.patch(f"/users/{uid}", {"familyId": None, "familyRole": None})
+            u["familyId"] = None
+            u["familyRole"] = None
+
     refs = (await fb.get(f"/users/{uid}/referrals")) or {}
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
         "features": {"pro": has_pro_access(u)},
-        "family": {"id": u.get("familyId")} if u.get("familyId") else None,
+        "family": family_info,
         "referral": {
             "count": len(refs),
             "code": "FAM-" + uid[-6:].upper(),
@@ -681,6 +695,12 @@ async def api_family_get(uid: str = Depends(current_uid)):
 
     family = (await fb.get(f"/families/{fid}")) or {}
     if not family or family.get("archived"):
+        await fb.patch(f"/users/{uid}", {"familyId": None, "familyRole": None})
+        raise HTTPException(404, "no family")
+
+    members = family.get("members") or {}
+    if not isinstance(members, dict) or uid not in members:
+        await fb.patch(f"/users/{uid}", {"familyId": None, "familyRole": None})
         raise HTTPException(404, "no family")
 
     family["id"] = fid

@@ -1467,3 +1467,8 @@ select:focus-visible {
     width: 100%;
   }
 }
+
+/* Personal / family budget selector */
+.budget-mode-switch{display:flex;gap:5px;padding:4px;margin:0 0 12px;border:1px solid var(--border);border-radius:14px;background:var(--card)}
+.budget-mode-btn{flex:1;min-height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:background .18s ease,color .18s ease,box-shadow .18s ease}
+.budget-mode-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12)}

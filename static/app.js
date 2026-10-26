@@ -240,21 +240,17 @@ function saveCustomCategory(){
   saveData(); closeModal('modalAddCategory'); openTransactionModal(appData.activeTxType);
 }
 
-function submitTransaction(){
-  const amount = parseFloat(document.getElementById('txAmountInput').value);
-  if(!amount || amount <= 0) return;
-  const title = document.getElementById('txCommentInput').value || tCat(appData.selectedCategory);
-  const tx = {
-    id: Date.now(), type: appData.activeTxType, title: title,
-    category: appData.selectedCategory, icon: appData.currentIcon, amount, date: new Date().toLocaleDateString('ru-RU')
-  };
-  appData.history.unshift(tx);
-  if(tx.type === 'expense'){ appData.balance -= amount; appData.monthExpense += amount; }
-  else { appData.balance += amount; appData.monthIncome += amount; }
-  saveData(); closeModal('modalTransaction'); renderAll();
+async function submitTransaction(){
+  const amount=parseFloat(document.getElementById('txAmountInput').value);if(!amount||amount<=0)return;
+  const title=document.getElementById('txCommentInput').value||tCat(appData.selectedCategory);
+  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH'});closeModal('modalTransaction');await loadFamilyTransactions();}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
+  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,date:new Date().toLocaleDateString('ru-RU')};appData.history.unshift(tx);
+  if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
+  saveData();closeModal('modalTransaction');renderAll();
 }
 
 function deleteTx(id){
+  if(budgetMode==='family'){alert('Удаление семейных операций пока недоступно.');return;}
   const tx = appData.history.find(x => x.id === id);
   if(!tx) return;
   if(tx.type === 'expense'){ appData.balance += tx.amount; appData.monthExpense -= tx.amount; }
@@ -390,6 +386,25 @@ function applyWallpaper(){
 
 let currentFamily = null;
 let familyBusy = false;
+let familyTransactions = [];
+let familyTransactionsBusy = false;
+let budgetMode = localStorage.getItem('budgetMode_' + telegramUserId) === 'family' ? 'family' : 'personal';
+function updateBudgetModeControls(){
+ const sw=document.getElementById('budgetModeSwitch'); if(sw)sw.style.display=currentFamily?'flex':'none';
+ const p=document.getElementById('budgetModePersonal'),f=document.getElementById('budgetModeFamily');
+ if(p)p.classList.toggle('active',budgetMode==='personal');if(f)f.classList.toggle('active',budgetMode==='family');
+ if(!currentFamily&&budgetMode==='family'){budgetMode='personal';localStorage.setItem('budgetMode_'+telegramUserId,'personal');}
+}
+function setBudgetMode(mode){if(!['personal','family'].includes(mode)||(mode==='family'&&!currentFamily))return;budgetMode=mode;localStorage.setItem('budgetMode_'+telegramUserId,mode);updateBudgetModeControls();if(mode==='family')loadFamilyTransactions();renderAll();}
+async function loadFamilyTransactions(){if(!currentFamily||familyTransactionsBusy)return;familyTransactionsBusy=true;try{const r=await familyRequest('/api/family/transactions');familyTransactions=Array.isArray(r.transactions)?r.transactions:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные операции.',true);}finally{familyTransactionsBusy=false;renderAll();}}
+function getVisibleBudget(){
+ if(budgetMode!=='family'||!currentFamily)return {balance:appData.balance,monthIncome:appData.monthIncome,monthExpense:appData.monthExpense,history:appData.history,isFamily:false};
+ const now=new Date(),history=familyTransactions.map(tx=>({...tx,title:tx.title||tx.note||tx.category||'Операция',date:tx.date||(tx.ts?new Date(Number(tx.ts)).toLocaleDateString('ru-RU'):'')}));
+ const month=history.filter(tx=>{const d=tx.ts?new Date(Number(tx.ts)):new Date(tx.date||'');return !isNaN(d)&&d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
+ const income=month.filter(tx=>tx.type==='income').reduce((s,tx)=>s+Number(tx.amount||0),0),expense=month.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+Number(tx.amount||0),0);
+ const balance=history.reduce((s,tx)=>s+(tx.type==='income'?1:-1)*Number(tx.amount||0),0);
+ return {balance,monthIncome:income,monthExpense:expense,history,isFamily:true};
+}
 
 function familyRequest(path, method='GET', body=null){
   const tg = window.Telegram?.WebApp;
@@ -472,6 +487,8 @@ function cancelFamilyForms(){
 
 function renderFamilyStatus(family){
   currentFamily = family || null;
+  updateBudgetModeControls();
+  if(currentFamily&&budgetMode==='family')loadFamilyTransactions();
   const status = document.getElementById('familyStatus');
   const currentInfo = document.getElementById('familyCurrentInfo');
   const emptyInfo = document.getElementById('familyEmptyInfo');
@@ -763,21 +780,15 @@ function renderForecast(){
 }
 
 function renderAll(){
-  const balance = document.getElementById('totalBalance');
-  const income = document.getElementById('monthIncome');
-  const expense = document.getElementById('monthExpense');
-
-  if(balance) balance.innerText = fmtMoney(appData.balance);
-  if(income) income.innerText = '+' + fmtMoney(appData.monthIncome);
-  if(expense) expense.innerText = '-' + fmtMoney(appData.monthExpense);
-
-  const search = document.getElementById('histSearch');
-  const q = search ? search.value.toLowerCase() : '';
-
-  const filtered = appData.history.filter(tx =>
+  const visibleBudget=getVisibleBudget(),balance=document.getElementById('totalBalance'),income=document.getElementById('monthIncome'),expense=document.getElementById('monthExpense');
+  if(balance)balance.innerText=fmtMoney(visibleBudget.balance);if(income)income.innerText='+'+fmtMoney(visibleBudget.monthIncome);if(expense)expense.innerText='-'+fmtMoney(visibleBudget.monthExpense);
+  const title=document.getElementById('budgetBalanceTitle');if(title)title.textContent=visibleBudget.isFamily?'Общий баланс семьи':'Личный баланс';
+  const search=document.getElementById('histSearch'),q=search?search.value.toLowerCase():'';
+  const filtered=visibleBudget.history.filter(tx =>
     !q ||
     String(tx.title || '').toLowerCase().includes(q) ||
-    tCat(tx.category || '').toLowerCase().includes(q)
+    tCat(tx.category || '').toLowerCase().includes(q) ||
+    String(tx.memberName || '').toLowerCase().includes(q)
   );
 
   const hist = document.getElementById('historyContainer');

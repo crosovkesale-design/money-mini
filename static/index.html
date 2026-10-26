@@ -60,7 +60,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261026-family1" defer></script>
+<script src="./app.js?v=20261026-family2" defer></script>
 
 <link rel="stylesheet"
 
@@ -208,8 +208,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       </div>
     </div>
 
-    <div class="balance-card">
-      <div class="balance-title" data-i18n="balance">Текущий баланс</div>
+    <div class="balance-card">    <div id="budgetModeSwitch" class="budget-mode-switch" style="display:none" role="group" aria-label="Режим бюджета">
+      <button id="budgetModePersonal" class="budget-mode-btn active" onclick="setBudgetMode('personal')">Личный</button>
+      <button id="budgetModeFamily" class="budget-mode-btn" onclick="setBudgetMode('family')">Семейный</button>
+    </div>
+
+      <div class="balance-title" id="budgetBalanceTitle" data-i18n="balance">Личный баланс</div>
       <div class="balance-val" id="totalBalance">0 ₴</div>
       <div class="balance-stats">
         <div class="stat-item">

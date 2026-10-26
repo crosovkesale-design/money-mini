@@ -60,7 +60,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261026-envelopes1" defer></script>
+<script src="./app.js?v=20261026-bank-deadline1" defer></script>
 
 <link rel="stylesheet"
 
@@ -395,6 +395,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="modal-header"><h3 data-i18n="new_bank">Новая банка</h3><span class="modal-close" onclick="closeModal('modalAddBank')">×</span></div>
     <input type="text" id="bankNameInput" class="custom-input" placeholder="Название">
     <input type="number" id="bankTargetInput" class="custom-input" placeholder="Цель">
+    <label class="lbl" for="bankDeadlineInput">Дедлайн накопления (необязательно)</label>
+    <input type="date" id="bankDeadlineInput" class="custom-input">
     <button class="btn btn-accent" style="width:100%" onclick="saveBank()" data-i18n="save">Создать</button>
   </div>
 </div>

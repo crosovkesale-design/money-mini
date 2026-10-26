@@ -1075,6 +1075,46 @@ async def api_tx_create(request: Request, uid: str = Depends(current_uid)):
     txid = await fb.push(f"/families/{fid}/transactions", tx)
     return {"ok": True, "id": txid}
 
+@app.get("/api/family/envelopes")
+async def api_family_envelopes(uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "no family")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if not family or family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Ты не состоишь в этой семейной группе.")
+    records = family.get("envelopes") or {}
+    envelopes = []
+    for envelope_id, envelope in records.items():
+        if isinstance(envelope, dict):
+            envelopes.append({"id": str(envelope_id), "name": str(envelope.get("name") or "Конверт")[:64], "target": float(envelope.get("target") or 0)})
+    return {"envelopes": envelopes}
+
+
+@app.post("/api/family/envelopes")
+async def api_family_envelope_create(request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "no family")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if not family or family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Ты не состоишь в этой семейной группе.")
+    body = await request.json()
+    name = " ".join(str(body.get("name") or "").split())[:64]
+    try:
+        target = float(body.get("target") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Укажи корректный лимит конверта.")
+    if not name or not math.isfinite(target) or target <= 0:
+        raise HTTPException(400, "Укажи название и лимит больше нуля.")
+    envelope_id = await fb.push(f"/families/{fid}/envelopes", {"name": name, "target": target, "createdBy": uid, "ts": now_ms()})
+    return {"ok": True, "id": envelope_id}
+
+
 @app.get("/api/family/transactions")
 async def api_family_transactions(uid: str = Depends(current_uid)):
     user=await get_user(uid); fid=user.get("familyId")
@@ -1085,7 +1125,7 @@ async def api_family_transactions(uid: str = Depends(current_uid)):
     for rid,tx in records.items():
         if not isinstance(tx,dict) or str(tx.get("uid") or "") not in members: continue
         member=members.get(str(tx.get("uid") or ""),{})
-        result.append({"id":str(rid),"type":str(tx.get("type") or "expense"),"amount":float(tx.get("amount") or 0),"title":str(tx.get("title") or tx.get("note") or tx.get("category") or "Операция")[:120],"category":str(tx.get("category") or "Разное")[:64],"icon":str(tx.get("icon") or "📦")[:12],"date":str(tx.get("date") or ""),"ts":int(tx.get("ts") or 0),"currency":str(tx.get("currency") or "UAH")[:8],"memberName":str(member.get("name") or "Участник")[:64]})
+        result.append({"id":str(rid),"type":str(tx.get("type") or "expense"),"amount":float(tx.get("amount") or 0),"title":str(tx.get("title") or tx.get("note") or tx.get("category") or "Операция")[:120],"category":str(tx.get("category") or "Разное")[:64],"icon":str(tx.get("icon") or "📦")[:12],"date":str(tx.get("date") or ""),"ts":int(tx.get("ts") or 0),"currency":str(tx.get("currency") or "UAH")[:8],"envelopeId":str(tx.get("envelopeId") or ""),"memberName":str(member.get("name") or "Участник")[:64]})
     result.sort(key=lambda item:item["ts"],reverse=True)
     return {"transactions":result}
 
@@ -1101,7 +1141,12 @@ async def api_family_transaction_create(request: Request, uid: str = Depends(cur
     try: amount=float(body.get("amount") or 0)
     except (TypeError,ValueError): raise HTTPException(400,"Укажи корректную сумму.")
     if not math.isfinite(amount) or amount<=0: raise HTTPException(400,"Сумма должна быть больше нуля.")
-    tx={"uid":uid,"type":kind,"amount":amount,"title":str(body.get("title") or body.get("category") or "Операция")[:120],"category":str(body.get("category") or "Разное")[:64],"icon":str(body.get("icon") or "📦")[:12],"date":str(body.get("date") or ""),"currency":str(body.get("currency") or "UAH")[:8],"ts":now_ms()}
+    envelope_id = str(body.get("envelopeId") or "")
+    if kind != "expense":
+        envelope_id = ""
+    if envelope_id and envelope_id not in (family.get("envelopes") or {}):
+        raise HTTPException(400, "Выбранный семейный конверт не найден.")
+    tx={"uid":uid,"type":kind,"amount":amount,"title":str(body.get("title") or body.get("category") or "Операция")[:120],"category":str(body.get("category") or "Разное")[:64],"icon":str(body.get("icon") or "📦")[:12],"date":str(body.get("date") or ""),"currency":str(body.get("currency") or "UAH")[:8],"envelopeId":envelope_id or None,"ts":now_ms()}
     rid=await fb.push(f"/families/{fid}/transactions",tx)
     return {"ok":True,"id":rid}
 

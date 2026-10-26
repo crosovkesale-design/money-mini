@@ -193,6 +193,13 @@ function openTransactionModal(type) {
   // Очищаем поля при каждом новом открытии
   document.getElementById('txAmountInput').value = '';
   document.getElementById('txCommentInput').value = '';
+  const envelopeWrap = document.getElementById('txEnvelopeWrap');
+  const envelopeSelect = document.getElementById('txEnvelopeSelect');
+  if(envelopeWrap && envelopeSelect){
+    envelopeWrap.style.display = type === 'expense' && budgetMode !== 'family' ? 'block' : 'none';
+    envelopeSelect.innerHTML = '<option value="">Без конверта</option>' + (appData.envelopes || []).map(e => '<option value="' + e.id + '">' + String(e.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</option>').join('');
+    envelopeSelect.value = '';
+  }
 
   document.getElementById('txModalTitle').innerText =
     type === 'expense' ? t('btn_expense') : t('btn_income');
@@ -244,7 +251,9 @@ async function submitTransaction(){
   const amount=parseFloat(document.getElementById('txAmountInput').value);if(!amount||amount<=0)return;
   const title=document.getElementById('txCommentInput').value||tCat(appData.selectedCategory);
   if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH'});closeModal('modalTransaction');await loadFamilyTransactions();}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
-  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,date:new Date().toLocaleDateString('ru-RU')};appData.history.unshift(tx);
+  const envelopeSelect=document.getElementById('txEnvelopeSelect');
+  const envelopeId=appData.activeTxType==='expense'&&envelopeSelect&&envelopeSelect.value?Number(envelopeSelect.value):null;
+  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU')};appData.history.unshift(tx);
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
   saveData();closeModal('modalTransaction');renderAll();
 }
@@ -268,11 +277,29 @@ function saveEnvelope(){
 }
 
 function saveBank(){
-  const name = document.getElementById('bankNameInput').value;
+  const name = document.getElementById('bankNameInput').value.trim();
   const target = parseFloat(document.getElementById('bankTargetInput').value);
-  if(!name) return;
+  if(!name || !Number.isFinite(target) || target <= 0) return;
   appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+  document.getElementById('bankNameInput').value='';
+  document.getElementById('bankTargetInput').value='';
   saveData(); closeModal('modalAddBank'); renderAll();
+}
+
+function contributeToBank(id){
+  if(budgetMode==='family'){alert('Семейные копилки пока не подключены к общему хранилищу.');return;}
+  const bank=appData.banks.find(item=>String(item.id)===String(id));
+  if(!bank)return;
+  const raw=prompt('Сколько добавить в копилку «'+bank.name+'»?');
+  if(raw===null)return;
+  const amount=Number(raw);
+  if(!Number.isFinite(amount)||amount<=0){alert('Введи сумму больше нуля.');return;}
+  if(amount>appData.balance){alert('На личном балансе недостаточно денег.');return;}
+  appData.balance-=amount;
+  bank.balance=Number(bank.balance||0)+amount;
+  bank.contributions=Array.isArray(bank.contributions)?bank.contributions:[];
+  bank.contributions.push({amount,date:new Date().toLocaleDateString('ru-RU')});
+  saveData();renderAll();
 }
 
 function saveRecurring(){
@@ -815,22 +842,29 @@ function renderAll(){
 
   const envelopes = document.getElementById('envelopesList');
   if(envelopes){
-    envelopes.innerHTML = appData.envelopes.map(e => `
-      <div class="card">
-        <b>📩 ${e.name}</b><br>
-        ${t('limit')}: ${fmtMoney(e.target)}
-      </div>
-    `).join('');
+    envelopes.innerHTML = appData.envelopes.map(e => {
+      const spent=appData.history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(e.id)).reduce((sum,tx)=>sum+Number(tx.amount||0),0);
+      const remaining=Number(e.target||0)-spent;
+      const pct=Number(e.target)>0?Math.min(100,Math.max(0,spent/Number(e.target)*100)):0;
+      return `<div class="card envelope-card">
+        <div class="envelope-card-top"><b>📩 ${e.name}</b><span class="envelope-spent">${fmtMoney(spent)} / ${fmtMoney(e.target)}</span></div>
+        <div class="progress-track"><div class="progress-fill ${pct>=100?'over-limit':''}" style="width:${pct}%"></div></div>
+        <div class="envelope-card-bottom"><span>${remaining>=0?'Осталось':'Превышение'}: ${fmtMoney(Math.abs(remaining))}</span><span>${Math.round(pct)}%</span></div>
+      </div>`;
+    }).join('') || '<div class="muted">Пока нет конвертов. Создай конверт, чтобы распределять расходы.</div>';
   }
 
   const banks = document.getElementById('banksList');
   if(banks){
-    banks.innerHTML = appData.banks.map(b => `
-      <div class="card">
-        <b>🏦 ${b.name}</b><br>
-        ${t('goal')}: ${fmtMoney(b.target)}
-      </div>
-    `).join('');
+    banks.innerHTML = appData.banks.map(b => {
+      const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
+      return `<div class="card bank-card">
+        <div class="bank-card-top"><b>🏦 ${b.name}</b><span class="bank-saved">${fmtMoney(saved)}</span></div>
+        <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
+        <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
+        <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank('${b.id}')">＋ Пополнить</button>
+      </div>`;
+    }).join('') || '<div class="muted">Пока нет копилок. Создай цель накопления.</div>';
   }
 
   const recurring = document.getElementById('recurringList');

@@ -548,7 +548,16 @@ function renderAll(){
 }
 
 
+let appInitialized = false;
+
 function initApp(){
+  // Avoid a blank/stale first screen: initialize once, then refresh rendered values.
+  if (appInitialized) {
+    renderAll();
+    return;
+  }
+  appInitialized = true;
+
   setTheme(appData.theme || 'dark');
   applyLang();
   applyWallpaper();
@@ -645,5 +654,13 @@ function showExportToast(message) {
     }, 3500);
 }
 
-// Initialize the app after the HTML has been parsed.
-document.addEventListener('DOMContentLoaded', initApp);
+// Initialize safely whether this file runs before or after DOMContentLoaded.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp, { once: true });
+} else {
+  initApp();
+}
+
+// Refresh after the page is fully loaded or restored from the browser cache.
+window.addEventListener('load', renderAll, { once: true });
+window.addEventListener('pageshow', renderAll);

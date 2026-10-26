@@ -1322,3 +1322,26 @@ select:focus-visible {
   .pro-label { font-size: 7px; padding: 5px; }
   .pricing-options-pro .price-main { font-size: 25px; }
 }
+
+
+/* Compact PRO badge for locked premium controls */
+.pro-mini-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 5px;
+  border: 1px solid rgba(255, 201, 107, .36);
+  border-radius: 6px;
+  color: #ffd992;
+  background: rgba(255, 201, 107, .10);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+[data-theme="light"] .pro-mini-tag {
+  color: #86560b;
+  border-color: rgba(169, 106, 0, .30);
+  background: rgba(255, 201, 107, .12);
+}

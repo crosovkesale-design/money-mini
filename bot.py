@@ -101,6 +101,16 @@ def gen_family_code() -> str:
 async def get_user(uid: str) -> dict:
     return (await fb.get(f"/users/{uid}")) or {}
 
+
+def has_pro_access(user: dict) -> bool:
+    """PRO-only features are available to active PRO subscribers and active trial users."""
+    tariff = str(user.get("tariff") or "trial").lower()
+    sub_end = int(user.get("subEnd") or 0)
+    if 0 < sub_end < 10**11:
+        sub_end *= 1000
+    return sub_end > now_ms() and tariff in {"trial", "pro", "pro1", "pro12"}
+
+
 class ReviewState(StatesGroup):
     waiting_text = State()
     waiting_msg = State()
@@ -149,9 +159,7 @@ async def daily_reminder():
                     users = (await fb.get("/users")) or {}
                     for uid, u in users.items():
                         if not isinstance(u, dict) or u.get("lastDailyRemind") == today: continue
-                        sub_end = int(u.get("subEnd") or 0)
-                        if sub_end < 10**11: sub_end *= 1000
-                        if sub_end <= now_ms(): continue
+                        if not has_pro_access(u): continue
                         try:
                             await bot.send_message(int(uid), "📝 <b>Не забудь записать траты за сегодня!</b>", parse_mode="HTML")
                             await fb.patch(f"/users/{uid}", {"lastDailyRemind": today})
@@ -652,6 +660,7 @@ async def api_init(uid: str = Depends(current_uid)):
     refs = (await fb.get(f"/users/{uid}/referrals")) or {}
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
+        "features": {"pro": has_pro_access(u)},
         "family": {"id": u.get("familyId")} if u.get("familyId") else None,
         "referral": {
             "count": len(refs),
@@ -689,6 +698,8 @@ async def api_family_leave(uid: str = Depends(current_uid)):
 
 @app.post("/api/export")
 async def api_export(request: Request, uid: str = Depends(current_uid)):
+    if not has_pro_access(await get_user(uid)):
+        raise HTTPException(403, "PRO_REQUIRED: export")
     if not bot:
         raise HTTPException(503, "Bot is unavailable")
 

@@ -7,6 +7,8 @@ let appData = JSON.parse(localStorage.getItem('budgetApp_v18')) || {
   currentMonth: new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0')
 };
 
+let canUseProFeatures = false;
+
 function saveData(){ localStorage.setItem('budgetApp_v18', JSON.stringify(appData)); }
 function t(k){ return (TRANSLATIONS[appData.lang] && TRANSLATIONS[appData.lang][k]) || TRANSLATIONS['ru'][k] || k; }
 
@@ -34,6 +36,75 @@ function switchTab(name){
 function openModal(id){ document.getElementById(id).classList.add('active'); }
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
 function openHelp(){ openModal('modalHelp'); }
+
+function requestProFeature(feature){
+  const message = feature + ' доступно в PRO. Открой тарифы, чтобы получить доступ.';
+  const tg = window.Telegram?.WebApp;
+  const goToPay = () => { window.location.href = '?screen=pay'; };
+  if(tg?.initData && tg.showAlert){
+    tg.showAlert(message, goToPay);
+  } else {
+    alert(message);
+    goToPay();
+  }
+}
+
+function openCustomCategoryModal(){
+  if(!canUseProFeatures){
+    requestProFeature('Свои категории');
+    return;
+  }
+  openModal('modalAddCategory');
+}
+
+function openWallpaperUpload(){
+  if(!canUseProFeatures){
+    requestProFeature('Персональные обои');
+    return;
+  }
+  document.getElementById('wallpaperFile').click();
+}
+
+function updateProFeatureControls(){
+  [
+    'customCategoryProTag',
+    'wallpaperProTag',
+    'exportProTag'
+  ].forEach(id => {
+    const tag = document.getElementById(id);
+    if(tag) tag.style.display = canUseProFeatures ? 'none' : 'inline-flex';
+  });
+}
+
+async function loadPlanStatus(){
+  const tg = window.Telegram?.WebApp;
+  if(!tg?.initData){
+    canUseProFeatures = false;
+    updateProFeatureControls();
+    applyWallpaper();
+    return;
+  }
+
+  try{
+    const response = await fetch('/api/init', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Init-Data': tg.initData
+      },
+      body: '{}'
+    });
+    if(!response.ok) throw new Error('Subscription status HTTP ' + response.status);
+    const data = await response.json();
+    canUseProFeatures = Boolean(data?.features?.pro);
+  } catch(error){
+    console.error('Could not load subscription access:', error);
+    canUseProFeatures = false;
+  }
+
+  updateProFeatureControls();
+  applyWallpaper();
+}
 
 const EXPENSE_CATS = [
   {icon:'🍔',name:'Еда'},{icon:'🛒',name:'Продукты'},{icon:'☕',name:'Кафе'},{icon:'🍕',name:'Фастфуд'},
@@ -124,7 +195,7 @@ function openTransactionModal(type) {
     type === 'expense' ? t('btn_expense') : t('btn_income');
 
   const baseCats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
-  const cats = baseCats.concat(appData.customCategories || []);
+  const cats = baseCats.concat(canUseProFeatures ? (appData.customCategories || []) : []);
   const grid = document.getElementById('categoryGrid');
 
   grid.innerHTML = cats.map((c, i) => `
@@ -154,6 +225,11 @@ function openTransactionModal(type) {
 }
 
 function saveCustomCategory(){
+  if(!canUseProFeatures){
+    requestProFeature('Свои категории');
+    closeModal('modalAddCategory');
+    return;
+  }
   const name = document.getElementById('catCustomName').value.trim();
   const icon = document.getElementById('catCustomEmoji').value.trim() || '📦';
   if(!name) return;
@@ -210,6 +286,10 @@ function saveRecurring(){
 }
 
 async function exportCSV() {
+  if(!canUseProFeatures){
+    requestProFeature('Экспорт Excel');
+    return;
+  }
   const tg = window.Telegram?.WebApp;
 
   if (!tg?.initData) {
@@ -273,6 +353,11 @@ function setTheme(mode){
 }
 
 function onWallpaperPicked(ev){
+  if(!canUseProFeatures){
+    ev.target.value = '';
+    requestProFeature('Персональные обои');
+    return;
+  }
   const file = ev.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -291,7 +376,7 @@ function clearWallpaper(){
 }
 
 function applyWallpaper(){
-  if(appData.wallpaper){
+  if(canUseProFeatures && appData.wallpaper){
     document.body.classList.add('has-wallpaper');
     document.body.style.backgroundImage = `url(${appData.wallpaper})`;
   } else {
@@ -545,6 +630,7 @@ function renderAll(){
 
   applyLang();
   renderForecast();
+  updateProFeatureControls();
 }
 
 
@@ -578,6 +664,8 @@ function initApp(){
     });
     document.getElementById('tab-pay').style.display = 'block';
   }
+
+  loadPlanStatus();
 }
 
 async function buyPlan(plan, method){

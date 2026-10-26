@@ -5,7 +5,7 @@ import math
 import os
 import secrets
 from io import BytesIO
-from openpyxl import Workbook
+from openpyxl import Workbookа
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -980,6 +980,102 @@ async def api_pay_crypto(
         "invoice_url": pay_url,
         "invoice_id": invoice.get("invoice_id"),
     }
-    
+
+@app.post("/api/cryptopay/webhook")
+async def cryptopay_webhook(request: Request):
+    raw_body = await request.body()
+    signature = request.headers.get("crypto-pay-api-signature", "")
+
+    if not verify_cryptopay_sig(
+        raw_body, signature, CRYPTOPAY_TOKEN
+    ):
+        raise HTTPException(401, "Invalid Crypto Pay signature")
+
+    try:
+        update = json.loads(raw_body)
+        invoice = update.get("payload") or {}
+
+        if update.get("update_type") != "invoice_paid":
+            return {"ok": True}
+
+        if invoice.get("status") != "paid":
+            return {"ok": True}
+
+        invoice_id = str(invoice.get("invoice_id") or "")
+        asset = str(invoice.get("asset") or "")
+        plan_data = json.loads(invoice.get("payload") or "{}")
+        uid = str(plan_data.get("uid") or "")
+        plan = str(plan_data.get("plan") or "")
+        tariff = TARIFFS.get(plan)
+
+        if not invoice_id or not uid or not tariff:
+            raise HTTPException(400, "Invalid invoice data")
+
+        if asset != "USDT":
+            raise HTTPException(400, "Unexpected currency")
+
+        if abs(float(invoice.get("amount") or 0) -
+               float(tariff["price_usd"])) > 0.000001:
+            raise HTTPException(400, "Unexpected amount")
+
+    except HTTPException:
+        raise
+    except Exception:
+        log.exception("Invalid Crypto Pay webhook payload")
+        raise HTTPException(400, "Invalid payload")
+
+    payment_path = f"/payments/crypto/{invoice_id}"
+    existing = await fb.get(payment_path)
+
+    if isinstance(existing, dict) and existing.get("status") == "paid":
+        return {"ok": True, "already_processed": True}
+
+    now = now_ms()
+    user = await get_user(uid) or {}
+
+    if isinstance(existing, dict) and existing.get("newEnd"):
+        new_end = int(existing["newEnd"])
+    else:
+        sub_end = int(user.get("subEnd") or 0)
+        if 0 < sub_end < 10**11:
+            sub_end *= 1000
+        new_end = max(sub_end, now) + int(tariff["days"]) * 86400000
+
+    await fb.put(payment_path, {
+        "uid": uid,
+        "plan": plan,
+        "currency": asset,
+        "amount": invoice["amount"],
+        "invoiceId": invoice_id,
+        "paidAt": now,
+        "newEnd": new_end,
+        "status": "processing",
+    })
+
+    await fb.patch(f"/users/{uid}", {
+        "tariff": plan,
+        "subStart": now,
+        "subEnd": new_end,
+        "status": "active",
+        "reminderSent": 0,
+    })
+
+    await fb.patch(payment_path, {"status": "paid"})
+
+    if bot:
+        try:
+            await bot.send_message(
+                int(uid),
+                "🎉 <b>Оплата USDT прошла успешно!</b>\n\n"
+                f"Тариф: <b>{tariff['name']}</b>\n"
+                f"Срок: <b>{tariff['days']} дней</b>\n"
+                "Подписка активирована.",
+                parse_mode="HTML",
+            )
+        except Exception:
+            log.exception("Crypto payment notification failed")
+
+    return {"ok": True}
+
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

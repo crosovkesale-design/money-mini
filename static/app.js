@@ -279,10 +279,12 @@ function saveEnvelope(){
 function saveBank(){
   const name = document.getElementById('bankNameInput').value.trim();
   const target = parseFloat(document.getElementById('bankTargetInput').value);
+  const deadline = document.getElementById('bankDeadlineInput').value || null;
   if(!name || !Number.isFinite(target) || target <= 0) return;
-  appData.banks.push({ id: Date.now(), name, target, balance: 0 });
+  appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline });
   document.getElementById('bankNameInput').value='';
   document.getElementById('bankTargetInput').value='';
+  document.getElementById('bankDeadlineInput').value='';
   saveData(); closeModal('modalAddBank'); renderAll();
 }
 
@@ -866,10 +868,24 @@ function renderAll(){
   if(banks){
     banks.innerHTML = appData.banks.map(b => {
       const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
+      let deadlineText = '';
+      if(b.deadline){
+        const today = new Date(); today.setHours(0,0,0,0);
+        const due = new Date(b.deadline + 'T00:00:00');
+        const daysLeft = Math.round((due.getTime()-today.getTime())/86400000);
+        deadlineText = saved >= target
+          ? '✅ Цель достигнута'
+          : daysLeft < 0
+            ? '⚠️ Дедлайн прошёл на ' + Math.abs(daysLeft) + ' дн.'
+            : daysLeft === 0
+              ? '⏰ Дедлайн сегодня'
+              : '📅 Осталось дней: ' + daysLeft;
+      }
       return `<div class="card bank-card">
         <div class="bank-card-top"><b>🏦 ${b.name}</b><span class="bank-saved">${fmtMoney(saved)}</span></div>
         <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
+        ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">Дедлайн: ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString('ru-RU') + ' · ' + deadlineText + '</div>' : ''}
         <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank('${b.id}')">＋ Пополнить</button>
       </div>`;
     }).join('') || '<div class="muted">Пока нет копилок. Создай цель накопления.</div>';

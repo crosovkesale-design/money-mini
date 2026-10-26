@@ -1066,3 +1066,54 @@ select:focus-visible {
   .pay-button { font-size: 9px; padding-left: 4px; padding-right: 4px; }
   .pro-label { font-size: 8px; padding: 5px 6px; }
 }
+
+
+/* Benefit summaries inside Basic and PRO pricing sections */
+.pricing-benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin: 0 0 14px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: rgba(54, 217, 255, .035);
+}
+.pricing-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.pricing-benefit > span {
+  flex: 0 0 15px;
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+.pricing-benefit p {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.pricing-benefits-pro {
+  background: rgba(255, 201, 107, .035);
+  border-color: rgba(255, 201, 107, .20);
+}
+.pricing-benefits-pro .pricing-benefit > span {
+  color: #ffc96b;
+}
+[data-theme="light"] .pricing-benefits {
+  background: rgba(101, 86, 232, .035);
+}
+[data-theme="light"] .pricing-benefits-pro {
+  background: rgba(169, 106, 0, .035);
+}
+@media (max-width: 380px) {
+  .pricing-benefits {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    padding: 12px;
+  }
+}

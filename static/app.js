@@ -385,16 +385,216 @@ function applyWallpaper(){
   }
 }
 
-function leaveFamily(){
-  if(!confirm(t('confirm_delete'))) return;
-  appData.balance = 0;
-  appData.monthIncome = 0;
-  appData.monthExpense = 0;
-  appData.history = [];
-  appData.envelopes = [];
-  appData.banks = [];
-  saveData();
-  renderAll();
+let currentFamily = null;
+let familyBusy = false;
+
+function familyRequest(path, method='GET', body=null){
+  const tg = window.Telegram?.WebApp;
+  if(!tg?.initData){
+    return Promise.reject(new Error('Открой Money Mini через Telegram, чтобы управлять семьёй.'));
+  }
+  const options = {
+    method,
+    headers: {'X-Init-Data': tg.initData}
+  };
+  if(body !== null){
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(body);
+  }
+  return fetch(path, options).then(async response => {
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok){
+      const error = new Error(data.detail || 'Не удалось выполнить запрос.');
+      error.status = response.status;
+      throw error;
+    }
+    return data;
+  });
+}
+
+function familyFeedback(message, isError=false){
+  const node = document.getElementById('familyFeedback');
+  if(!node) return;
+  node.textContent = message || '';
+  node.classList.toggle('is-error', Boolean(isError));
+}
+
+function setFamilyBusy(busy){
+  familyBusy = busy;
+  ['familyCreateSubmit','familyJoinSubmit','familyCreateBtn','familyJoinBtn','familyLeaveBtn']
+    .forEach(id => {
+      const node = document.getElementById(id);
+      if(node) node.disabled = busy;
+    });
+}
+
+function hideFamilyForms(){
+  const createForm = document.getElementById('familyCreateForm');
+  const joinForm = document.getElementById('familyJoinForm');
+  const actions = document.getElementById('familyActionButtons');
+  if(createForm) createForm.style.display = 'none';
+  if(joinForm) joinForm.style.display = 'none';
+  if(actions) actions.style.display = currentFamily ? 'none' : 'grid';
+}
+
+function showFamilyCreateForm(){
+  if(familyBusy) return;
+  familyFeedback('');
+  const createForm = document.getElementById('familyCreateForm');
+  const joinForm = document.getElementById('familyJoinForm');
+  const actions = document.getElementById('familyActionButtons');
+  if(createForm) createForm.style.display = 'block';
+  if(joinForm) joinForm.style.display = 'none';
+  if(actions) actions.style.display = 'none';
+  document.getElementById('familyCreateName')?.focus();
+}
+
+function showFamilyJoinForm(){
+  if(familyBusy) return;
+  familyFeedback('');
+  const createForm = document.getElementById('familyCreateForm');
+  const joinForm = document.getElementById('familyJoinForm');
+  const actions = document.getElementById('familyActionButtons');
+  if(createForm) createForm.style.display = 'none';
+  if(joinForm) joinForm.style.display = 'block';
+  if(actions) actions.style.display = 'none';
+  document.getElementById('familyInviteCode')?.focus();
+}
+
+function cancelFamilyForms(){
+  if(familyBusy) return;
+  hideFamilyForms();
+  familyFeedback('');
+}
+
+function renderFamilyStatus(family){
+  currentFamily = family || null;
+  const status = document.getElementById('familyStatus');
+  const currentInfo = document.getElementById('familyCurrentInfo');
+  const emptyInfo = document.getElementById('familyEmptyInfo');
+  const actions = document.getElementById('familyActionButtons');
+  const leaveBtn = document.getElementById('familyLeaveBtn');
+
+  if(!family){
+    if(status) status.textContent = 'Ты пока не состоишь в семейной группе.';
+    if(currentInfo) currentInfo.style.display = 'none';
+    if(emptyInfo) emptyInfo.style.display = 'block';
+    if(actions) actions.style.display = 'grid';
+    if(leaveBtn) leaveBtn.style.display = 'none';
+    hideFamilyForms();
+    return;
+  }
+
+  const members = family.members && typeof family.members === 'object'
+    ? family.members : {};
+  if(status) status.textContent = 'Семейная группа активна';
+  if(currentInfo) currentInfo.style.display = 'block';
+  if(emptyInfo) emptyInfo.style.display = 'none';
+  if(actions) actions.style.display = 'none';
+  if(leaveBtn) leaveBtn.style.display = 'block';
+  const nameNode = document.getElementById('familyNameText');
+  const codeNode = document.getElementById('familyCodeText');
+  const countNode = document.getElementById('familyMembersCount');
+  if(nameNode) nameNode.textContent = family.name || 'Моя семья';
+  if(codeNode) codeNode.textContent = family.id || '';
+  if(countNode){
+    const count = Object.keys(members).length;
+    countNode.textContent = 'Участников: ' + count + (family.currentRole === 'owner' ? ' · Ты организатор' : '');
+  }
+  hideFamilyForms();
+}
+
+async function loadFamilyStatus(){
+  const status = document.getElementById('familyStatus');
+  if(status) status.textContent = 'Проверяем семейную группу…';
+  try{
+    const family = await familyRequest('/api/family');
+    renderFamilyStatus(family);
+  } catch(error){
+    if(error.status === 404 && error.message === 'no family'){
+      renderFamilyStatus(null);
+      return;
+    }
+    if(status) status.textContent = error.message || 'Не удалось загрузить семейную группу.';
+    const actions = document.getElementById('familyActionButtons');
+    if(actions) actions.style.display = 'grid';
+    familyFeedback('Проверь подключение и открой приложение из Telegram.', true);
+  }
+}
+
+async function createFamily(){
+  if(familyBusy) return;
+  const input = document.getElementById('familyCreateName');
+  const name = (input?.value || '').trim();
+  setFamilyBusy(true);
+  familyFeedback('Создаём семейную группу…');
+  try{
+    const result = await familyRequest('/api/family/create', 'POST', {name});
+    renderFamilyStatus(result.family);
+    if(input) input.value = '';
+    familyFeedback('Семья создана! Передай близким код приглашения.');
+  } catch(error){
+    familyFeedback(error.message || 'Не удалось создать семью.', true);
+  } finally {
+    setFamilyBusy(false);
+  }
+}
+
+async function joinFamily(){
+  if(familyBusy) return;
+  const input = document.getElementById('familyInviteCode');
+  const code = (input?.value || '').replace(/\\s+/g, '').toUpperCase();
+  if(!code){
+    familyFeedback('Введи код приглашения.', true);
+    return;
+  }
+  setFamilyBusy(true);
+  familyFeedback('Проверяем код приглашения…');
+  try{
+    const result = await familyRequest('/api/family/join', 'POST', {code});
+    renderFamilyStatus(result.family);
+    if(input) input.value = '';
+    familyFeedback('Готово! Ты присоединился к семейной группе.');
+  } catch(error){
+    familyFeedback(error.message || 'Не удалось присоединиться к семье.', true);
+  } finally {
+    setFamilyBusy(false);
+  }
+}
+
+async function copyFamilyCode(){
+  const code = currentFamily?.id;
+  if(!code) return;
+  try{
+    await navigator.clipboard.writeText(code);
+    familyFeedback('Код ' + code + ' скопирован. Отправь его участнику семьи.');
+  } catch(error){
+    familyFeedback('Не удалось скопировать автоматически. Код: ' + code, true);
+  }
+}
+
+async function leaveFamily(){
+  if(familyBusy || !currentFamily) return;
+  const name = currentFamily.name || 'семья';
+  const confirmed = confirm(
+    'Выйти из группы «' + name + '»?\\n\\n' +
+    'Твои личные записи бюджета, баланс, история, конверты и счета останутся на устройстве. ' +
+    'Если ты организатор, роль перейдёт другому участнику. Семейные данные не будут удалены.'
+  );
+  if(!confirmed) return;
+
+  setFamilyBusy(true);
+  familyFeedback('Выполняем выход из семейной группы…');
+  try{
+    await familyRequest('/api/family/leave', 'POST', {});
+    renderFamilyStatus(null);
+    familyFeedback('Ты вышел из семьи. Личные финансовые записи сохранены.');
+  } catch(error){
+    familyFeedback(error.message || 'Не удалось выйти из семьи.', true);
+  } finally {
+    setFamilyBusy(false);
+    await loadFamilyStatus();
+  }
 }
 
 let chart1, chart2;
@@ -666,6 +866,7 @@ function initApp(){
   }
 
   loadPlanStatus();
+  loadFamilyStatus();
 }
 
 async function buyPlan(plan, method){

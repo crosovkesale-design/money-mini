@@ -60,7 +60,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261026-access1" defer></script>
+<script src="./app.js?v=20261026-family1" defer></script>
 
 <link rel="stylesheet"
 
@@ -291,9 +291,48 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <button class="btn btn-accent btn-sm" style="width:100%" onclick="openModal('modalAddRecurring')" data-i18n="add_rule">Добавить</button>
     </div>
 
-    <div class="card">
+    <div class="card family-card">
       <h5 data-i18n="family">Семья</h5>
-      <button class="btn btn-danger btn-sm" style="width:100%;margin-top:8px" onclick="leaveFamily()" data-i18n="leave_family">Выйти из семьи</button>
+      <div id="familyStatus" class="family-status" aria-live="polite">Проверяем семейную группу…</div>
+
+      <div id="familyCurrentInfo" class="family-current-info" style="display:none">
+        <div class="family-detail-row"><span>Название</span><b id="familyNameText">Моя семья</b></div>
+        <div class="family-code-box">
+          <div class="family-code-main"><span>Код приглашения</span><code id="familyCodeText"></code></div>
+          <button class="btn btn-outline btn-sm family-copy-btn" onclick="copyFamilyCode()">Копировать</button>
+        </div>
+        <div id="familyMembersCount" class="family-members-count"></div>
+      </div>
+
+      <div id="familyEmptyInfo" class="family-empty-info">
+        Создай новую группу или вступи в семью по коду приглашения.
+      </div>
+
+      <div id="familyActionButtons" class="family-action-buttons" style="display:none">
+        <button id="familyCreateBtn" class="btn btn-accent btn-sm" onclick="showFamilyCreateForm()">＋ Создать семью</button>
+        <button id="familyJoinBtn" class="btn btn-outline btn-sm" onclick="showFamilyJoinForm()">Вступить по коду</button>
+      </div>
+
+      <div id="familyCreateForm" class="family-form" style="display:none">
+        <label class="lbl" for="familyCreateName">Название семьи</label>
+        <input id="familyCreateName" class="custom-input" maxlength="48" placeholder="Например, Семья Ивановых">
+        <div class="family-form-actions">
+          <button id="familyCreateSubmit" class="btn btn-accent btn-sm" onclick="createFamily()">Создать</button>
+          <button class="btn btn-outline btn-sm" onclick="cancelFamilyForms()">Отмена</button>
+        </div>
+      </div>
+
+      <div id="familyJoinForm" class="family-form" style="display:none">
+        <label class="lbl" for="familyInviteCode">Код приглашения</label>
+        <input id="familyInviteCode" class="custom-input" maxlength="10" placeholder="FAM-ABC234" autocapitalize="characters">
+        <div class="family-form-actions">
+          <button id="familyJoinSubmit" class="btn btn-accent btn-sm" onclick="joinFamily()">Вступить</button>
+          <button class="btn btn-outline btn-sm" onclick="cancelFamilyForms()">Отмена</button>
+        </div>
+      </div>
+
+      <button id="familyLeaveBtn" class="btn btn-danger btn-sm family-leave-btn" style="display:none" onclick="leaveFamily()">Выйти из семьи</button>
+      <div id="familyFeedback" class="family-feedback" role="status" aria-live="polite"></div>
     </div>
 
     <div class="card">

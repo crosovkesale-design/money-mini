@@ -1345,3 +1345,125 @@ select:focus-visible {
   border-color: rgba(169, 106, 0, .30);
   background: rgba(255, 201, 107, .12);
 }
+
+
+/* Family creation, invite and safe exit */
+.family-status {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.family-current-info {
+  padding: 13px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(54, 214, 160, .25);
+  border-radius: 15px;
+  background: rgba(54, 214, 160, .045);
+}
+.family-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 11px;
+  font-size: 11px;
+}
+.family-detail-row span,
+.family-code-main span {
+  color: var(--muted);
+}
+.family-detail-row b {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.family-code-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.family-code-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.family-code-main span {
+  font-size: 9px;
+}
+.family-code-main code {
+  color: var(--accent-2);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+.family-copy-btn {
+  flex: 0 0 auto;
+}
+.family-members-count {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.family-empty-info {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.family-action-buttons,
+.family-form-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.family-action-buttons .btn,
+.family-form-actions .btn {
+  width: 100%;
+  min-height: 38px;
+  white-space: normal;
+}
+.family-form {
+  margin-top: 12px;
+  padding-top: 4px;
+}
+.family-form .custom-input {
+  width: 100%;
+  margin-bottom: 12px;
+}
+.family-form-actions {
+  margin-bottom: 4px;
+}
+.family-leave-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+.family-feedback {
+  min-height: 0;
+  margin-top: 10px;
+  color: var(--success);
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.family-feedback:empty {
+  display: none;
+}
+.family-feedback.is-error {
+  color: var(--danger);
+}
+@media (max-width: 360px) {
+  .family-code-box {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .family-copy-btn {
+    width: 100%;
+  }
+}

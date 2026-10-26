@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import os
+import re
 import secrets
 from io import BytesIO
 from openpyxl import Workbook
@@ -675,25 +676,157 @@ async def api_init(uid: str = Depends(current_uid)):
 async def api_family_get(uid: str = Depends(current_uid)):
     u = await get_user(uid)
     fid = u.get("familyId")
-    if not fid: raise HTTPException(400, "no family")
-    f = (await fb.get(f"/families/{fid}")) or {}
-    f["id"] = fid
-    return f
+    if not fid:
+        raise HTTPException(404, "no family")
+
+    family = (await fb.get(f"/families/{fid}")) or {}
+    if not family or family.get("archived"):
+        raise HTTPException(404, "no family")
+
+    family["id"] = fid
+    family["currentRole"] = u.get("familyRole") or (
+        "owner" if family.get("ownerId") == uid else "member"
+    )
+    return family
+
+
+@app.post("/api/family/create")
+async def api_family_create(request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    if user.get("familyId"):
+        raise HTTPException(409, "Ты уже состоишь в семье. Сначала выйди из текущей семьи.")
+
+    body = await request.json()
+    name = " ".join(str(body.get("name") or "").split())[:48] or "Моя семья"
+    ts = now_ms()
+    member_name = str(user.get("name") or "Участник")[:64]
+
+    family_id = ""
+    for _ in range(12):
+        candidate = gen_family_code()
+        if not await fb.get(f"/families/{candidate}"):
+            family_id = candidate
+            break
+    if not family_id:
+        raise HTTPException(503, "Не удалось создать код семьи. Попробуй ещё раз.")
+
+    family = {
+        "id": family_id,
+        "name": name,
+        "ownerId": uid,
+        "createdAt": ts,
+        "archived": False,
+        "members": {
+            uid: {
+                "name": member_name,
+                "joinedAt": ts,
+                "role": "owner",
+            }
+        },
+        "transactions": {},
+        "envelopes": {},
+        "banks": {},
+    }
+
+    await fb.put(f"/families/{family_id}", family)
+    await fb.patch(f"/users/{uid}", {
+        "familyId": family_id,
+        "familyRole": "owner",
+    })
+    return {"ok": True, "family": family}
+
+
+@app.post("/api/family/join")
+async def api_family_join(request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    if user.get("familyId"):
+        raise HTTPException(409, "Ты уже состоишь в семье. Сначала выйди из текущей семьи.")
+
+    body = await request.json()
+    code = re.sub(r"\\s+", "", str(body.get("code") or "")).upper()
+    if not re.fullmatch(r"FAM-[A-HJ-NP-Z2-9]{6}", code):
+        raise HTTPException(400, "Проверь код: он должен выглядеть как FAM-ABC234.")
+
+    family = (await fb.get(f"/families/{code}")) or {}
+    if not family:
+        raise HTTPException(404, "Семья с таким кодом не найдена.")
+    if family.get("archived"):
+        raise HTTPException(410, "Эта семейная группа больше не активна.")
+
+    members = family.get("members") or {}
+    if not isinstance(members, dict):
+        members = {}
+    if uid in members:
+        await fb.patch(f"/users/{uid}", {"familyId": code, "familyRole": "member"})
+        family["id"] = code
+        return {"ok": True, "family": family, "alreadyMember": True}
+    if len(members) >= 20:
+        raise HTTPException(409, "В семье уже достигнут лимит в 20 участников.")
+
+    ts = now_ms()
+    members[uid] = {
+        "name": str(user.get("name") or "Участник")[:64],
+        "joinedAt": ts,
+        "role": "member",
+    }
+    await fb.patch(f"/families/{code}", {"members": members})
+    await fb.patch(f"/users/{uid}", {
+        "familyId": code,
+        "familyRole": "member",
+    })
+
+    family["id"] = code
+    family["members"] = members
+    return {"ok": True, "family": family}
+
 
 @app.post("/api/family/leave")
 async def api_family_leave(uid: str = Depends(current_uid)):
-    u = await get_user(uid)
-    fid = u.get("familyId")
-    if not fid: return {"ok": True, "alreadyLeft": True}
-    await fb.delete(f"/users/{uid}/familyId")
-    try:
-        members = await fb.get(f"/families/{fid}/members") or {}
-        if isinstance(members, dict) and uid in members:
-            members.pop(uid)
-            if members: await fb.put(f"/families/{fid}/members", members)
-            else: await fb.delete(f"/families/{fid}")
-    except: pass
-    return {"ok": True, "leftFrom": fid}
+    user = await get_user(uid)
+    family_id = user.get("familyId")
+    if not family_id:
+        return {"ok": True, "alreadyLeft": True}
+
+    family = (await fb.get(f"/families/{family_id}")) or {}
+    new_owner_id = None
+    archived = False
+
+    if family:
+        members = family.get("members") or {}
+        if not isinstance(members, dict):
+            members = {}
+        members.pop(uid, None)
+
+        old_owner_id = str(family.get("ownerId") or "")
+        if old_owner_id == uid or old_owner_id not in members:
+            new_owner_id = next(iter(members), None)
+        else:
+            new_owner_id = old_owner_id
+
+        if new_owner_id and isinstance(members.get(new_owner_id), dict):
+            members[new_owner_id]["role"] = "owner"
+
+        archived = not bool(members)
+        family_patch = {
+            "members": members,
+            "ownerId": new_owner_id,
+            "archived": archived,
+            "archivedAt": now_ms() if archived else None,
+        }
+        await fb.patch(f"/families/{family_id}", family_patch)
+
+        if new_owner_id:
+            await fb.patch(f"/users/{new_owner_id}", {"familyRole": "owner"})
+
+    # Removing a membership must never erase personal budget records.
+    await fb.patch(f"/users/{uid}", {"familyId": None, "familyRole": None})
+    return {
+        "ok": True,
+        "leftFrom": family_id,
+        "archived": archived,
+        "newOwnerId": new_owner_id,
+        "familyDataPreserved": True,
+    }
 
 
 @app.post("/api/export")

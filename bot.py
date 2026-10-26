@@ -5,7 +5,7 @@ import math
 import os
 import secrets
 from io import BytesIO
-from openpyxl import Workbookа
+from openpyxl import Workbook
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo

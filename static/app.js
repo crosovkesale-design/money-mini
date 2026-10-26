@@ -801,13 +801,13 @@ function renderAll(){
             <div class="history-icon">${tx.icon || '📦'}</div>
             <div>
               <div class="history-title">${tx.title || tCat(tx.category || 'Разное')}</div>
-              <div class="history-sub">${tx.date || ''}</div>
+              <div class="history-sub">${visibleBudget.isFamily ? ((tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : '') + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</div>
             </div>
           </div>
           <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">
             ${tx.type === 'expense' ? '-' : '+'}${fmtMoney(tx.amount)}
           </div>
-          <button class="card-del" style="position:static" onclick="deleteTx(${tx.id})">✕</button>
+          ${visibleBudget.isFamily ? '' : `<button class="card-del" style="position:static" onclick="deleteTx(${tx.id})">✕</button>`}
         </div>
       `).join('')
       : `<div class="muted" style="text-align:center">${t('no_rules')}</div>`;

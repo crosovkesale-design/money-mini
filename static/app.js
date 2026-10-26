@@ -196,8 +196,9 @@ function openTransactionModal(type) {
   const envelopeWrap = document.getElementById('txEnvelopeWrap');
   const envelopeSelect = document.getElementById('txEnvelopeSelect');
   if(envelopeWrap && envelopeSelect){
-    envelopeWrap.style.display = type === 'expense' && budgetMode !== 'family' ? 'block' : 'none';
-    envelopeSelect.innerHTML = '<option value="">Без конверта</option>' + (appData.envelopes || []).map(e => '<option value="' + e.id + '">' + String(e.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</option>').join('');
+    envelopeWrap.style.display = type === 'expense' ? 'block' : 'none';
+    const availableEnvelopes = budgetMode === 'family' ? familyEnvelopes : (appData.envelopes || []);
+    envelopeSelect.innerHTML = '<option value="">Без конверта</option>' + availableEnvelopes.map(e => '<option value="' + e.id + '">' + String(e.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</option>').join('');
     envelopeSelect.value = '';
   }
 
@@ -250,9 +251,10 @@ function saveCustomCategory(){
 async function submitTransaction(){
   const amount=parseFloat(document.getElementById('txAmountInput').value);if(!amount||amount<=0)return;
   const title=document.getElementById('txCommentInput').value||tCat(appData.selectedCategory);
-  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH'});closeModal('modalTransaction');await loadFamilyTransactions();}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
   const envelopeSelect=document.getElementById('txEnvelopeSelect');
-  const envelopeId=appData.activeTxType==='expense'&&envelopeSelect&&envelopeSelect.value?Number(envelopeSelect.value):null;
+  const selectedEnvelopeId=appData.activeTxType==='expense'&&envelopeSelect&&envelopeSelect.value?envelopeSelect.value:null;
+  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId});closeModal('modalTransaction');await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
+  const envelopeId=selectedEnvelopeId?Number(selectedEnvelopeId):null;
   const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU')};appData.history.unshift(tx);
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
   saveData();closeModal('modalTransaction');renderAll();
@@ -268,11 +270,17 @@ function deleteTx(id){
   saveData(); renderAll();
 }
 
-function saveEnvelope(){
-  const name = document.getElementById('envNameInput').value;
+async function saveEnvelope(){
+  const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value);
-  if(!name) return;
+  if(!name || !Number.isFinite(target) || target <= 0) return;
+  if(budgetMode==='family'&&currentFamily){
+    try{await familyRequest('/api/family/envelopes','POST',{name,target});document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';closeModal('modalAddEnvelope');await loadFamilyEnvelopes();}
+    catch(e){alert(e.message||'Не удалось создать семейный конверт.');}
+    return;
+  }
   appData.envelopes.push({ id: Date.now(), name, target });
+  document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';
   saveData(); closeModal('modalAddEnvelope'); renderAll();
 }
 
@@ -424,6 +432,8 @@ function applyWallpaper(){
 let currentFamily = null;
 let familyBusy = false;
 let familyTransactions = [];
+let familyEnvelopes = [];
+let familyEnvelopesBusy = false;
 let familyTransactionsBusy = false;
 let budgetMode = localStorage.getItem('budgetMode_' + telegramUserId) === 'family' ? 'family' : 'personal';
 function updateBudgetModeControls(){
@@ -434,6 +444,7 @@ function updateBudgetModeControls(){
 }
 function setBudgetMode(mode){if(!['personal','family'].includes(mode)||(mode==='family'&&!currentFamily))return;budgetMode=mode;localStorage.setItem('budgetMode_'+telegramUserId,mode);updateBudgetModeControls();if(mode==='family')loadFamilyTransactions();renderAll();}
 async function loadFamilyTransactions(){if(!currentFamily||familyTransactionsBusy)return;familyTransactionsBusy=true;try{const r=await familyRequest('/api/family/transactions');familyTransactions=Array.isArray(r.transactions)?r.transactions:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные операции.',true);}finally{familyTransactionsBusy=false;renderAll();}}
+async function loadFamilyEnvelopes(){if(!currentFamily||familyEnvelopesBusy)return;familyEnvelopesBusy=true;try{const r=await familyRequest('/api/family/envelopes');familyEnvelopes=Array.isArray(r.envelopes)?r.envelopes:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные конверты.',true);}finally{familyEnvelopesBusy=false;renderAll();}}
 function getVisibleBudget(){
  if(budgetMode!=='family'||!currentFamily)return {balance:appData.balance,monthIncome:appData.monthIncome,monthExpense:appData.monthExpense,history:appData.history,isFamily:false};
  const now=new Date(),history=familyTransactions.map(tx=>({...tx,title:tx.title||tx.note||tx.category||'Операция',date:tx.date||(tx.ts?new Date(Number(tx.ts)).toLocaleDateString('ru-RU'):'')}));
@@ -525,7 +536,7 @@ function cancelFamilyForms(){
 function renderFamilyStatus(family){
   currentFamily = family || null;
   updateBudgetModeControls();
-  if(currentFamily&&budgetMode==='family')loadFamilyTransactions();
+  if(currentFamily){loadFamilyEnvelopes();if(budgetMode==='family')loadFamilyTransactions();}
   const status = document.getElementById('familyStatus');
   const currentInfo = document.getElementById('familyCurrentInfo');
   const emptyInfo = document.getElementById('familyEmptyInfo');
@@ -852,8 +863,10 @@ function renderAll(){
 
   const envelopes = document.getElementById('envelopesList');
   if(envelopes){
-    envelopes.innerHTML = appData.envelopes.map(e => {
-      const spent=appData.history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(e.id)).reduce((sum,tx)=>sum+Number(tx.amount||0),0);
+    const envelopeItems = budgetMode==='family'&&currentFamily ? familyEnvelopes : (appData.envelopes || []);
+    const visibleHistory = budgetMode==='family'&&currentFamily ? familyTransactions : (appData.history || []);
+    envelopes.innerHTML = envelopeItems.map(e => {
+      const spent=visibleHistory.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(e.id)).reduce((sum,tx)=>sum+Number(tx.amount||0),0);
       const remaining=Number(e.target||0)-spent;
       const pct=Number(e.target)>0?Math.min(100,Math.max(0,spent/Number(e.target)*100)):0;
       return `<div class="card envelope-card">

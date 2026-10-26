@@ -286,20 +286,28 @@ function saveBank(){
   saveData(); closeModal('modalAddBank'); renderAll();
 }
 
+let selectedBankIdForContribution = null;
 function contributeToBank(id){
   if(budgetMode==='family'){alert('Семейные копилки пока не подключены к общему хранилищу.');return;}
   const bank=appData.banks.find(item=>String(item.id)===String(id));
   if(!bank)return;
-  const raw=prompt('Сколько добавить в копилку «'+bank.name+'»?');
-  if(raw===null)return;
-  const amount=Number(raw);
-  if(!Number.isFinite(amount)||amount<=0){alert('Введи сумму больше нуля.');return;}
+  selectedBankIdForContribution=bank.id;
+  document.getElementById('bankContributionTitle').textContent='Пополнить: '+bank.name;
+  document.getElementById('bankContributionAmount').value='';
+  document.getElementById('bankContributionHint').textContent='Доступно на личном балансе: '+fmtMoney(appData.balance);
+  openModal('modalBankContribution');
+}
+function saveBankContribution(){
+  const bank=appData.banks.find(item=>String(item.id)===String(selectedBankIdForContribution));
+  const amount=Number(document.getElementById('bankContributionAmount').value);
+  if(!bank||!Number.isFinite(amount)||amount<=0){alert('Введи сумму больше нуля.');return;}
   if(amount>appData.balance){alert('На личном балансе недостаточно денег.');return;}
   appData.balance-=amount;
   bank.balance=Number(bank.balance||0)+amount;
   bank.contributions=Array.isArray(bank.contributions)?bank.contributions:[];
   bank.contributions.push({amount,date:new Date().toLocaleDateString('ru-RU')});
-  saveData();renderAll();
+  selectedBankIdForContribution=null;
+  saveData();closeModal('modalBankContribution');renderAll();
 }
 
 function saveRecurring(){

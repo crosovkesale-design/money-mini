@@ -65,66 +65,123 @@
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css?v=20261026-pricing1">
 </head>
 <body>
 <div class="container">
 
   <div id="tab-pay" class="tab-content" style="display:none">
-    <div class="card">
-      <h3>💎 Выбери тариф</h3>
-      <p class="muted">Выбери подходящий срок подписки</p>
-
-      <div class="card">
-        <b>Basic — 1 месяц</b>
-        <p>500 ⭐ или $6 USDT</p>
-        <button class="btn btn-accent" onclick="buyPlan('1month','stars')">Оплатить ⭐</button>
-        <button class="btn btn-outline" onclick="buyPlan('1month','crypto')">Оплатить USDT</button>
+    <section class="pricing-page">
+      <div class="pricing-hero">
+        <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> MONEY MINI MEMBERSHIP</div>
+        <h2>Выбери свой тариф</h2>
+        <p>Удобный срок подписки и оплата привычным способом.</p>
       </div>
 
-      <div class="card">
-        <b>Basic — 3 месяца</b>
-        <p>1300 ⭐ или $15 USDT</p>
-        <button class="btn btn-accent" onclick="buyPlan('3months','stars')">Оплатить ⭐</button>
-        <button class="btn btn-outline" onclick="buyPlan('3months','crypto')">Оплатить USDT</button>
+      <div class="trial-banner">
+        <div class="trial-icon">🎁</div>
+        <div class="trial-copy">
+          <b>30 дней бесплатно для новых пользователей</b>
+          <span>Пробный доступ активируется автоматически при первом запуске бота.</span>
+        </div>
+        <div class="trial-tag">FREE</div>
       </div>
 
-      <div class="card">
-        <b>Basic — 6 месяцев</b>
-        <p>2300 ⭐ или $27 USDT</p>
-        <button class="btn btn-accent" onclick="buyPlan('6months','stars')">Оплатить ⭐</button>
-        <button class="btn btn-outline" onclick="buyPlan('6months','crypto')">Оплатить USDT</button>
-      </div>
+      <section class="pricing-group">
+        <div class="pricing-group-head">
+          <div class="pricing-plan-icon basic-icon">◈</div>
+          <div>
+            <h3>Basic</h3>
+            <p>Выбери срок подписки</p>
+          </div>
+        </div>
 
-      <div class="card">
-        <b>Basic — 12 месяцев</b>
-        <p>3900 ⭐ или $45 USDT</p>
-        <button class="btn btn-accent" onclick="buyPlan('12months','stars')">Оплатить ⭐</button>
-        <button class="btn btn-outline" onclick="buyPlan('12months','crypto')">Оплатить USDT</button>
-      </div>
+        <div class="pricing-options">
+          <article class="price-option">
+            <div class="price-option-top"><span>1 месяц</span><span class="option-tag">START</span></div>
+            <div class="price-main">$6</div>
+            <div class="price-stars">или 500 ⭐</div>
+            <div class="price-actions">
+              <button class="pay-button pay-stars" onclick="buyPlan('1month','stars')">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('1month','crypto')">Оплатить USDT</button>
+            </div>
+          </article>
 
-      <div class="card">
-        <b>PRO — 1 месяц</b>
-        <p>1000 ⭐ или $12 USDT</p>
-        <button class="btn btn-accent" onclick="buyPlan('pro1','stars')">Оплатить ⭐</button>
-        <button class="btn btn-outline" onclick="buyPlan('pro1','crypto')">Оплатить USDT</button>
-      </div>
+          <article class="price-option">
+            <div class="price-option-top"><span>3 месяца</span><span class="option-tag">3 MO</span></div>
+            <div class="price-main">$15</div>
+            <div class="price-stars">или 1 300 ⭐</div>
+            <div class="price-note">Выгоднее помесячной оплаты</div>
+            <div class="price-actions">
+              <button class="pay-button pay-stars" onclick="buyPlan('3months','stars')">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('3months','crypto')">Оплатить USDT</button>
+            </div>
+          </article>
 
-      <div class="card">
-        <b>PRO — 12 месяцев</b>
-        <p>7500 ⭐ или $85 USDT</p>
-        <button class="btn btn-accent" onclick="buyPlan('pro12','stars')">Оплатить ⭐</button>
-        <button class="btn btn-outline" onclick="buyPlan('pro12','crypto')">Оплатить USDT</button>
-      </div>
+          <article class="price-option">
+            <div class="price-option-top"><span>6 месяцев</span><span class="option-tag">6 MO</span></div>
+            <div class="price-main">$27</div>
+            <div class="price-stars">или 2 300 ⭐</div>
+            <div class="price-note">Для долгого использования</div>
+            <div class="price-actions">
+              <button class="pay-button pay-stars" onclick="buyPlan('6months','stars')">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('6months','crypto')">Оплатить USDT</button>
+            </div>
+          </article>
 
-      <button class="btn btn-outline" onclick="switchTab('budget')">
-        ← Назад в бюджет
-      </button>
-    </div>
+          <article class="price-option price-option-featured">
+            <div class="price-option-top"><span>12 месяцев</span><span class="option-tag option-tag-featured">BEST VALUE</span></div>
+            <div class="price-main">$45</div>
+            <div class="price-stars">или 3 900 ⭐</div>
+            <div class="price-note">Самая низкая цена за месяц</div>
+            <div class="price-actions">
+              <button class="pay-button pay-stars" onclick="buyPlan('12months','stars')">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('12months','crypto')">Оплатить USDT</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="pricing-group pricing-group-pro">
+        <div class="pricing-group-head">
+          <div class="pricing-plan-icon pro-icon">✦</div>
+          <div>
+            <h3>PRO</h3>
+            <p>Подписка PRO</p>
+          </div>
+          <span class="pro-label">PRO PLAN</span>
+        </div>
+
+        <div class="pricing-options pricing-options-pro">
+          <article class="price-option price-option-pro">
+            <div class="price-option-top"><span>1 месяц</span><span class="option-tag">FLEX</span></div>
+            <div class="price-main">$12</div>
+            <div class="price-stars">или 1 000 ⭐</div>
+            <div class="price-actions">
+              <button class="pay-button pay-stars" onclick="buyPlan('pro1','stars')">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('pro1','crypto')">Оплатить USDT</button>
+            </div>
+          </article>
+
+          <article class="price-option price-option-pro price-option-featured">
+            <div class="price-option-top"><span>12 месяцев</span><span class="option-tag option-tag-featured">YEAR</span></div>
+            <div class="price-main">$85</div>
+            <div class="price-stars">или 7 500 ⭐</div>
+            <div class="price-note">Выгоднее оплаты по месяцам</div>
+            <div class="price-actions">
+              <button class="pay-button pay-stars" onclick="buyPlan('pro12','stars')">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('pro12','crypto')">Оплатить USDT</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <div class="pricing-secure-note"><span>🔒</span> Оплата через Telegram Stars или Crypto Pay (USDT)</div>
+      <button class="btn btn-outline pricing-back" onclick="switchTab('budget')">← Назад в бюджет</button>
+    </section>
   </div>
 
-  
-  <div id="tab-budget" class="tab-content">
+    <div id="tab-budget" class="tab-content">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-weight:800;font-size:15px">Family Budget</div>
       <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>

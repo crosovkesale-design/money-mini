@@ -644,3 +644,6 @@ function showExportToast(message) {
         setTimeout(() => toast.remove(), 300);
     }, 3500);
 }
+
+// Initialize the app after the HTML has been parsed.
+document.addEventListener('DOMContentLoaded', initApp);

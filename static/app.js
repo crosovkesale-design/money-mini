@@ -11,6 +11,7 @@ let appData = JSON.parse(localStorage.getItem(appStorageKey)) || {
 };
 
 let canUseProFeatures = false;
+let referralStats = { count: 0, coupons10: 0, coupons20: 0 };
 
 function saveData(){ localStorage.setItem(appStorageKey, JSON.stringify(appData)); }
 function t(k){ return (TRANSLATIONS[appData.lang] && TRANSLATIONS[appData.lang][k]) || TRANSLATIONS['ru'][k] || k; }
@@ -68,6 +69,15 @@ function openWallpaperUpload(){
   document.getElementById('wallpaperFile').click();
 }
 
+function renderReferralStats(){
+  const refs = document.getElementById('referralCountValue');
+  const c10 = document.getElementById('coupon10CountValue');
+  const c20 = document.getElementById('coupon20CountValue');
+  if(refs) refs.textContent = String(Number(referralStats.count || 0));
+  if(c10) c10.textContent = String(Number(referralStats.coupons10 || 0));
+  if(c20) c20.textContent = String(Number(referralStats.coupons20 || 0));
+}
+
 function updateProFeatureControls(){
   [
     'customCategoryProTag',
@@ -100,6 +110,8 @@ async function loadPlanStatus(){
     if(!response.ok) throw new Error('Subscription status HTTP ' + response.status);
     const data = await response.json();
     canUseProFeatures = Boolean(data?.features?.pro);
+    referralStats = data?.referral || { count: 0, coupons10: 0, coupons20: 0 };
+    renderReferralStats();
   } catch(error){
     console.error('Could not load subscription access:', error);
     canUseProFeatures = false;

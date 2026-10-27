@@ -91,8 +91,12 @@ function requestProFeature(feature){
 }
 
 let pendingReceiptDraft = null;
+let receiptEditingTxId = null;
+let editingEnvelopeId = null;
+let editingBankId = null;
 
 function openReceiptEntry(){
+  receiptEditingTxId = null;
   if(appData.activeTxType !== 'expense'){
     alert('Чек можно прикрепить только к расходу.');
     return;
@@ -108,7 +112,7 @@ function openReceiptEntry(){
   openModal('modalReceiptEntry');
 }
 
-function saveReceiptDraft(){
+async function saveReceiptDraft(){
   const store = document.getElementById('receiptStoreInput').value.trim();
   const date = document.getElementById('receiptDateInput').value || new Date().toISOString().slice(0,10);
   const rawItems = document.getElementById('receiptItemsInput').value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
@@ -127,7 +131,24 @@ function saveReceiptDraft(){
   if(!store){ error.textContent = 'Укажи название магазина.'; return; }
   if(!parsedItems.length){ error.textContent = 'Добавь хотя бы один товар. Формат: Название; цена; количество.'; return; }
   if(!Number.isFinite(total) || total <= 0){ error.textContent = 'Укажи сумму чека или цены товаров.'; return; }
-  pendingReceiptDraft = {store, date, items:parsedItems, total:Math.round(total*100)/100, source:'manual'};
+  const draft = {store, date, items:parsedItems, total:Math.round(total*100)/100, source:'manual'};
+  if(receiptEditingTxId !== null){
+    try{
+      const tx = budgetMode==='family' ? familyTransactions.find(item=>String(item.id)===String(receiptEditingTxId)) : appData.history.find(item=>String(item.id)===String(receiptEditingTxId));
+      if(!tx) throw new Error('Операция не найдена.');
+      if(budgetMode==='family' && currentFamily){
+        await familyRequest('/api/family/transactions/'+encodeURIComponent(String(receiptEditingTxId)),'PATCH',{receipt:draft,amount:draft.total,title:tx.title || draft.store});
+        await loadFamilyTransactions();
+      } else {
+        const oldAmount=Number(tx.amount||0), nextAmount=draft.total, delta=nextAmount-oldAmount;
+        tx.receipt=draft; tx.amount=nextAmount; tx.title=tx.title || draft.store;
+        if(tx.type==='expense'){appData.balance-=delta;appData.monthExpense+=delta;}else{appData.balance+=delta;appData.monthIncome+=delta;}
+        saveData(); renderAll();
+      }
+      receiptEditingTxId=null; closeModal('modalReceiptEntry'); return;
+    }catch(e){ if(error)error.textContent=e.message||'Не удалось изменить чек.'; return; }
+  }
+  pendingReceiptDraft = draft;
   const amountInput = document.getElementById('txAmountInput');
   const commentInput = document.getElementById('txCommentInput');
   if(amountInput) amountInput.value = String(pendingReceiptDraft.total);
@@ -135,6 +156,34 @@ function saveReceiptDraft(){
   const status = document.getElementById('receiptDraftStatus');
   if(status){ status.style.display = 'block'; status.textContent = '🧾 Чек добавлен: ' + store + ' · ' + pendingReceiptDraft.items.length + ' поз. · ' + fmtMoney(pendingReceiptDraft.total); }
   closeModal('modalReceiptEntry');
+}
+
+function editReceipt(id){
+  const tx = budgetMode==='family' ? familyTransactions.find(item=>String(item.id)===String(id)) : appData.history.find(item=>String(item.id)===String(id));
+  if(!tx || !tx.receipt) return;
+  receiptEditingTxId = id;
+  const receipt=tx.receipt;
+  document.getElementById('receiptStoreInput').value=receipt.store||'';
+  document.getElementById('receiptDateInput').value=receipt.date||new Date().toISOString().slice(0,10);
+  document.getElementById('receiptItemsInput').value=(receipt.items||[]).map(item=>item.name+'; '+(item.price==null?'':item.price)+'; '+(item.quantity||1)).join('\n');
+  document.getElementById('receiptTotalInput').value=receipt.total||tx.amount||'';
+  const error=document.getElementById('receiptEntryError'); if(error)error.textContent='';
+  openModal('modalReceiptEntry');
+}
+
+async function deleteReceipt(id){
+  const tx = budgetMode==='family' ? familyTransactions.find(item=>String(item.id)===String(id)) : appData.history.find(item=>String(item.id)===String(id));
+  if(!tx || !tx.receipt) return;
+  if(!window.confirm('Убрать чек? Сам расход останется в истории.')) return;
+  try{
+    if(budgetMode==='family' && currentFamily){
+      await familyRequest('/api/family/transactions/'+encodeURIComponent(String(id)),'PATCH',{receipt:null});
+      await loadFamilyTransactions();
+    } else {
+      tx.receipt=null;
+      saveData(); renderAll();
+    }
+  }catch(e){alert(e.message||'Не удалось удалить чек.');}
 }
 
 function openReceiptPhoto(){

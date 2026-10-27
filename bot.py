@@ -1380,6 +1380,49 @@ async def api_family_envelope_create(request: Request, uid: str = Depends(curren
     return {"ok": True, "id": envelope_id}
 
 
+
+@app.patch("/api/family/envelopes/{envelope_id}")
+async def api_family_envelope_update(envelope_id: str, request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Ты не состоишь в семейной группе.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if not family or family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейной группе.")
+    existing = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
+    if not isinstance(existing, dict):
+        raise HTTPException(404, "Конверт не найден.")
+    body = await request.json()
+    name = " ".join(str(body.get("name") or "").split())[:64]
+    try:
+        target = float(body.get("target") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Укажи корректный лимит конверта.")
+    if not name or not math.isfinite(target) or target <= 0:
+        raise HTTPException(400, "Укажи название и лимит больше нуля.")
+    await fb.patch(f"/families/{fid}/envelopes/{envelope_id}", {"name": name, "target": target, "updatedAt": now_ms()})
+    return {"ok": True, "id": envelope_id}
+
+
+@app.delete("/api/family/envelopes/{envelope_id}")
+async def api_family_envelope_delete(envelope_id: str, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Ты не состоишь в семейной группе.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if not family or family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейной группе.")
+    existing = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
+    if not isinstance(existing, dict):
+        raise HTTPException(404, "Конверт не найден.")
+    await fb.delete(f"/families/{fid}/envelopes/{envelope_id}")
+    return {"ok": True, "id": envelope_id}
+
+
 def sanitize_receipt(raw):
     """Keep only small, structured receipt fields before storing family transaction data."""
     if not isinstance(raw, dict):
@@ -1474,6 +1517,42 @@ async def api_family_transaction_delete(tx_id: str, uid: str = Depends(current_u
         raise HTTPException(403, "Удалить эту операцию может только её автор или владелец семьи.")
 
     await fb.delete(f"/families/{family_id}/transactions/{tx_id}")
+    return {"ok": True, "id": tx_id}
+
+
+@app.patch("/api/family/transactions/{tx_id}")
+async def api_family_transaction_update(tx_id: str, request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Ты не состоишь в семейной группе.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if not family or family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейной группе.")
+    tx = await fb.get(f"/families/{fid}/transactions/{tx_id}")
+    if not isinstance(tx, dict):
+        raise HTTPException(404, "Операция не найдена.")
+    if str(tx.get("uid") or "") != uid and str(family.get("ownerId") or "") != uid:
+        raise HTTPException(403, "Изменять эту операцию может только её автор или владелец семьи.")
+    body = await request.json()
+    patch = {}
+    if "receipt" in body:
+        receipt = body.get("receipt")
+        patch["receipt"] = sanitize_receipt(receipt) if receipt is not None else None
+    if "amount" in body:
+        try:
+            amount = float(body.get("amount") or 0)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "Укажи корректную сумму.")
+        if not math.isfinite(amount) or amount <= 0:
+            raise HTTPException(400, "Сумма должна быть больше нуля.")
+        patch["amount"] = amount
+    if "title" in body:
+        patch["title"] = str(body.get("title") or tx.get("title") or "Операция")[:120]
+    if not patch:
+        raise HTTPException(400, "Нет данных для изменения.")
+    await fb.patch(f"/families/{fid}/transactions/{tx_id}", patch)
     return {"ok": True, "id": tx_id}
 
 

@@ -1982,10 +1982,10 @@ async def api_family_bank_contribute(bank_id: str, request: Request, uid: str = 
         contributor_name = str(contributor.get("name") or "Участник семьи")[:64]
         bank_name = str(bank.get("name") or "Копилка")[:64]
         message_text = (
-            "🎉 <b>Семейная цель достигнута!</b>\\n\\n"
-            f"🏦 Копилка: <b>{escape(bank_name)}</b>\\n"
-            f"👤 Последнее пополнение: <b>{escape(contributor_name)}</b>\\n"
-            f"💰 Пополнение: <b>{amount:,.2f}</b>\\n"
+            "🎉 <b>Семейная цель достигнута!</b>\n\n"
+            f"🏦 Копилка: <b>{escape(bank_name)}</b>\n"
+            f"👤 Последнее пополнение: <b>{escape(contributor_name)}</b>\n"
+            f"💰 Пополнение: <b>{amount:,.2f}</b>\n"
             f"✅ Накоплено: <b>{new_balance:,.2f} / {target:,.2f}</b>"
         )
         for member_uid in members:

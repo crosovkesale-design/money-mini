@@ -979,6 +979,8 @@ async def api_family_get(uid: str = Depends(current_uid)):
 @app.post("/api/family/create")
 async def api_family_create(request: Request, uid: str = Depends(current_uid)):
     user = await get_user(uid)
+    if not has_pro_access(user):
+        raise HTTPException(403, "Создание семейного бюджета доступно в PRO.")
     if user.get("familyId"):
         raise HTTPException(409, "Ты уже состоишь в семье. Сначала выйди из текущей семьи.")
 
@@ -1046,8 +1048,12 @@ async def api_family_join(request: Request, uid: str = Depends(current_uid)):
         await fb.patch(f"/users/{uid}", {"familyId": code, "familyRole": "member"})
         family["id"] = code
         return {"ok": True, "family": family, "alreadyMember": True}
-    if len(members) >= 20:
-        raise HTTPException(409, "В семье уже достигнут лимит в 20 участников.")
+    owner_id = str(family.get("ownerId") or "")
+    owner = await get_user(owner_id) if owner_id else {}
+    if not has_pro_access(owner):
+        raise HTTPException(403, "Владелец семьи должен иметь активный PRO, чтобы приглашать участников.")
+    if len(members) >= 6:
+        raise HTTPException(409, "В PRO можно объединить до 6 участников вместе с владельцем.")
 
     ts = now_ms()
     members[uid] = {

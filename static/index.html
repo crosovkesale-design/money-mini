@@ -58,12 +58,12 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-help-advantages" defer></script>
+<script src="./app.js?v=20261027-main-advantages-tab" defer></script>
 
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./style.css?v=20261027-help-advantages">
+<link rel="stylesheet" href="./style.css?v=20261027-main-advantages-tab">
 </head>
 <body>
 <div class="container">
@@ -223,8 +223,33 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </section>
 
-      <div class="pricing-difference"><div class="pricing-difference-title">Почему Money Mini?</div><div class="pricing-difference-grid"><div><b>⚡ Прямо в Telegram</b><span>Не нужно устанавливать отдельное приложение</span></div><div><b>📊 Понятная картина</b><span>Доходы, расходы и аналитика в одном месте</span></div><div><b>🎯 Под твои привычки</b><span>Валюты, категории, конверты и финансовые цели</span></div><div><b>🎁 Выгода за активность</b><span>30 дней пробного доступа, купоны и скидки</span></div></div><button type="button" class="pricing-more-info" onclick="openHelp('advantages')">Все преимущества <span>→</span></button></div><div class="pricing-secure-note"><span>🔒</span> Оплата через Telegram Stars или Crypto Pay (USDT)</div>
+<div class="pricing-secure-note"><span>🔒</span> Оплата через Telegram Stars или Crypto Pay (USDT)</div>
       <button class="btn btn-outline pricing-back" onclick="switchTab('budget')">← Назад в бюджет</button>
+    </section>
+  </div>
+
+  <div id="tab-advantages" class="tab-content" style="display:none">
+    <section class="pricing-page advantages-page">
+      <div class="pricing-hero">
+        <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> MONEY MINI • ПОЧЕМУ МЫ</div>
+        <h2>Бюджет под контролем — без лишней сложности</h2>
+        <p>Money Mini помогает видеть свои деньги целиком и принимать решения увереннее — прямо в Telegram.</p>
+      </div>
+      <div class="pricing-difference advantages-feature-grid">
+        <div class="pricing-difference-title">Что делает Money Mini удобным?</div>
+        <div class="pricing-difference-grid">
+          <div><b>⚡ Всегда под рукой</b><span>Работает внутри Telegram — не нужно устанавливать отдельное приложение.</span></div>
+          <div><b>📊 Финансы в одном месте</b><span>Доходы, расходы, история операций и аналитика собраны вместе.</span></div>
+          <div><b>🎯 Под твой стиль</b><span>Несколько валют, категории, конверты и финансовые цели помогают организовать бюджет.</span></div>
+          <div><b>🔎 Больше ясности</b><span>Отслеживай траты и замечай, куда уходят деньги.</span></div>
+          <div><b>💎 Больше возможностей с PRO</b><span>Свои категории, персональный фон, Excel-отчёты и ежедневные напоминания.</span></div>
+          <div><b>🎁 Выгодный старт</b><span>30 дней пробного доступа для новых пользователей, а также купоны и скидки.</span></div>
+        </div>
+      </div>
+      <div class="advantages-cta">
+        <div><b>Попробуй Money Mini в деле</b><span>Выбери подходящий тариф или начни с пробного периода.</span></div>
+        <button type="button" class="btn btn-accent" onclick="switchTab('pay')">💎 Посмотреть тарифы</button>
+      </div>
     </section>
   </div>
 
@@ -405,6 +430,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span data-i18n="envelopes">Конверты</span></div>
   <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="banks">Банки</span></div>
   <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="settings">Настройки</span></div>
+  <div class="nav-item" id="nav-advantages" onclick="switchTab('advantages')"><i class="fa-solid fa-sparkles"></i><span>Почему Mini</span></div>
 </div>
 
 <div class="modal" id="modalTransaction">

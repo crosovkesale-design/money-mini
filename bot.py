@@ -644,6 +644,13 @@ if bot:
             existing_payment = await fb.get(payment_path)
 
             if existing_payment:
+                # Повторное событие не продлевает подписку повторно, но позволяет
+                # восстановить бонус рефереру, если предыдущая попытка завершилась ошибкой.
+                if isinstance(existing_payment, dict) and existing_payment.get("status") == "paid":
+                    try:
+                        await award_referral_coupon(uid, payment_path)
+                    except Exception:
+                        log.exception("Could not retry Stars referral reward %s", charge_key)
                 await message.answer(
                     "✅ Этот платёж уже обработан. "
                     "Проверь статус подписки командой /status."
@@ -1374,6 +1381,12 @@ async def cryptopay_webhook(request: Request):
     existing = await fb.get(payment_path)
 
     if isinstance(existing, dict) and existing.get("status") == "paid":
+        # Не активируем подписку повторно, но повторяем начисление бонуса,
+        # если первая попытка начисления завершилась ошибкой.
+        try:
+            await award_referral_coupon(uid, payment_path)
+        except Exception:
+            log.exception("Could not retry crypto referral reward for invoice %s", invoice_id)
         return {"ok": True, "already_processed": True}
 
     now = now_ms()

@@ -1032,7 +1032,7 @@ async def api_family_join(request: Request, uid: str = Depends(current_uid)):
         raise HTTPException(409, "Ты уже состоишь в семье. Сначала выйди из текущей семьи.")
 
     body = await request.json()
-    code = re.sub(r"\\s+", "", str(body.get("code") or "")).upper()
+    code = re.sub(r"\s+", "", str(body.get("code") or "")).upper()
     if not re.fullmatch(r"FAM-[A-HJ-NP-Z2-9]{6}", code):
         raise HTTPException(400, "Проверь код: он должен выглядеть как FAM-ABC234.")
 

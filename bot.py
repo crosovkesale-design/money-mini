@@ -1748,6 +1748,194 @@ async def api_family_transaction_update(tx_id: str, request: Request, uid: str =
     return {"ok": True, "id": tx_id}
 
 
+@app.get("/api/family/banks")
+async def api_family_banks(uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Семейный бюджет не найден.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейному бюджету.")
+    records = family.get("banks") or {}
+    banks = []
+    for bank_id, bank in records.items():
+        if not isinstance(bank, dict):
+            continue
+        try:
+            balance = max(0.0, float(bank.get("balance") or 0))
+            target = max(0.0, float(bank.get("target") or 0))
+        except (TypeError, ValueError):
+            balance, target = 0.0, 0.0
+        banks.append({
+            "id": str(bank_id),
+            "name": str(bank.get("name") or "Копилка")[:64],
+            "target": target,
+            "balance": balance,
+            "deadline": str(bank.get("deadline") or "")[:10] or None,
+        })
+    return {"banks": banks}
+
+
+@app.post("/api/family/banks")
+async def api_family_bank_create(request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Семейный бюджет не найден.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейному бюджету.")
+    body = await request.json()
+    name = " ".join(str(body.get("name") or "").split())[:64]
+    try:
+        target = float(body.get("target") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Укажи корректную цель накопления.")
+    if not name or not math.isfinite(target) or target <= 0:
+        raise HTTPException(400, "Укажи название и цель больше нуля.")
+    deadline = str(body.get("deadline") or "")[:10]
+    if deadline:
+        try:
+            datetime.strptime(deadline, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(400, "Укажи корректный дедлайн.")
+    bank_id = await fb.push(f"/families/{fid}/banks", {
+        "name": name, "target": round(target, 2), "balance": 0,
+        "deadline": deadline or None, "createdBy": uid, "ts": now_ms(),
+        "contributions": {}
+    })
+    return {"ok": True, "id": bank_id}
+
+
+@app.patch("/api/family/banks/{bank_id}")
+async def api_family_bank_update(bank_id: str, request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Семейный бюджет не найден.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейному бюджету.")
+    bank = await fb.get(f"/families/{fid}/banks/{bank_id}")
+    if not isinstance(bank, dict):
+        raise HTTPException(404, "Копилка не найдена.")
+    body = await request.json()
+    patch = {}
+    if "name" in body:
+        name = " ".join(str(body.get("name") or "").split())[:64]
+        if not name:
+            raise HTTPException(400, "Название копилки не может быть пустым.")
+        patch["name"] = name
+    if "target" in body:
+        try:
+            target = float(body.get("target") or 0)
+        except (TypeError, ValueError):
+            raise HTTPException(400, "Укажи корректную цель накопления.")
+        if not math.isfinite(target) or target <= 0:
+            raise HTTPException(400, "Цель должна быть больше нуля.")
+        patch["target"] = round(target, 2)
+    if "deadline" in body:
+        deadline = str(body.get("deadline") or "")[:10]
+        if deadline:
+            try:
+                datetime.strptime(deadline, "%Y-%m-%d")
+            except ValueError:
+                raise HTTPException(400, "Укажи корректный дедлайн.")
+        patch["deadline"] = deadline or None
+    if not patch:
+        raise HTTPException(400, "Нет изменений для сохранения.")
+    patch["updatedAt"] = now_ms()
+    await fb.patch(f"/families/{fid}/banks/{bank_id}", patch)
+    return {"ok": True, "id": bank_id}
+
+
+@app.delete("/api/family/banks/{bank_id}")
+async def api_family_bank_delete(bank_id: str, uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Семейный бюджет не найден.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейному бюджету.")
+    bank = await fb.get(f"/families/{fid}/banks/{bank_id}")
+    if not isinstance(bank, dict):
+        raise HTTPException(404, "Копилка не найдена.")
+    balance = float(bank.get("balance") or 0)
+    if balance > 0:
+        # Removing a jar returns its saved amount to the shared available balance.
+        tx = {
+            "uid": uid, "type": "income", "amount": round(balance, 2),
+            "title": "Возврат из копилки: " + str(bank.get("name") or "Копилка")[:64],
+            "category": "Копилки", "icon": "🏦", "date": datetime.now(KYIV).date().isoformat(),
+            "currency": "UAH", "envelopeId": None, "receipt": None, "ts": now_ms()
+        }
+        await fb.push(f"/families/{fid}/transactions", tx)
+    await fb.delete(f"/families/{fid}/banks/{bank_id}")
+    return {"ok": True, "id": bank_id}
+
+
+@app.post("/api/family/banks/{bank_id}/contributions")
+async def api_family_bank_contribute(bank_id: str, request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Семейный бюджет не найден.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Нет доступа к семейному бюджету.")
+    bank = await fb.get(f"/families/{fid}/banks/{bank_id}")
+    if not isinstance(bank, dict):
+        raise HTTPException(404, "Копилка не найдена.")
+    body = await request.json()
+    try:
+        amount = float(body.get("amount") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Укажи корректную сумму.")
+    if not math.isfinite(amount) or amount <= 0:
+        raise HTTPException(400, "Сумма пополнения должна быть больше нуля.")
+    transactions = (await fb.get(f"/families/{fid}/transactions")) or {}
+    available_balance = 0.0
+    if isinstance(transactions, dict):
+        for tx in transactions.values():
+            if not isinstance(tx, dict):
+                continue
+            try:
+                tx_amount = float(tx.get("amount") or 0)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(tx_amount) and tx_amount > 0 and str(tx.get("uid") or "") in members:
+                available_balance += tx_amount if tx.get("type") == "income" else -tx_amount
+    if amount > available_balance:
+        raise HTTPException(400, "На семейном балансе недостаточно денег.")
+    old_balance = float(bank.get("balance") or 0)
+    contributions = bank.get("contributions") or {}
+    contribution = {
+        "uid": uid, "amount": round(amount, 2),
+        "date": datetime.now(KYIV).date().isoformat(), "ts": now_ms()
+    }
+    contribution_id = await fb.push(f"/families/{fid}/banks/{bank_id}/contributions", contribution)
+    await fb.patch(f"/families/{fid}/banks/{bank_id}", {
+        "balance": round(old_balance + amount, 2), "updatedAt": now_ms()
+    })
+    await fb.push(f"/families/{fid}/transactions", {
+        "uid": uid, "type": "expense", "amount": round(amount, 2),
+        "title": "Пополнение копилки: " + str(bank.get("name") or "Копилка")[:64],
+        "category": "Копилки", "icon": "🏦",
+        "date": datetime.now(KYIV).date().isoformat(),
+        "currency": str(body.get("currency") or "UAH")[:8],
+        "envelopeId": None, "receipt": None, "ts": now_ms(),
+        "bankId": bank_id, "contributionId": contribution_id
+    })
+    return {"ok": True, "id": contribution_id, "balance": round(old_balance + amount, 2)}
+
+
 @app.post("/api/envelope")
 async def api_env_create(request: Request, uid: str = Depends(current_uid)):
     u = await get_user(uid)

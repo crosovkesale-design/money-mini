@@ -1543,12 +1543,27 @@ function renderAll(){
   if(balance)balance.innerText=fmtMoney(visibleBudget.balance);if(income)income.innerText='+'+fmtMoney(visibleBudget.monthIncome);if(expense)expense.innerText='-'+fmtMoney(visibleBudget.monthExpense);
   const title=document.getElementById('budgetBalanceTitle');if(title)title.textContent=visibleBudget.isFamily?'Общий баланс семьи':'Личный баланс';
   const search=document.getElementById('histSearch'),q=search?search.value.toLowerCase():'';
-  const filtered=visibleBudget.history.filter(tx =>
-    !q ||
-    String(tx.title || '').toLowerCase().includes(q) ||
-    tCat(tx.category || '').toLowerCase().includes(q) ||
-    String(tx.memberName || '').toLowerCase().includes(q)
-  );
+  const memberFilter=document.getElementById('histMemberFilter');
+  if(memberFilter){
+    const currentMember=memberFilter.value;
+    const members=[...new Set(visibleBudget.history.map(tx=>String(tx.memberName||'').trim()).filter(Boolean))].sort((x,y)=>x.localeCompare(y,'ru'));
+    memberFilter.style.display=visibleBudget.isFamily?'block':'none';
+    const options='<option value="">Все участники</option>'+members.map(name=>'<option value="'+name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</option>').join('');
+    if(memberFilter.dataset.options!==options){
+      memberFilter.innerHTML=options;
+      memberFilter.dataset.options=options;
+      memberFilter.value=members.includes(currentMember)?currentMember:'';
+    }
+  }
+  const selectedMember=memberFilter&&visibleBudget.isFamily?memberFilter.value:'';
+  const filtered=visibleBudget.history.filter(tx => {
+    const matchesSearch=!q ||
+      String(tx.title || '').toLowerCase().includes(q) ||
+      tCat(tx.category || '').toLowerCase().includes(q) ||
+      String(tx.memberName || '').toLowerCase().includes(q);
+    const matchesMember=!selectedMember||String(tx.memberName||'')===selectedMember;
+    return matchesSearch&&matchesMember;
+  });
 
   const hist = document.getElementById('historyContainer');
 

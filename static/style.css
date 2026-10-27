@@ -1568,3 +1568,56 @@ select:focus-visible {
 @media (max-width: 360px) {
   .pricing-difference-grid { grid-template-columns: 1fr; }
 }
+
+/* Main-menu "Why Money Mini?" tab */
+.advantages-page .pricing-hero h2 {
+  max-width: 520px;
+}
+.advantages-feature-grid {
+  margin-top: 4px;
+}
+.advantages-feature-grid .pricing-difference-title {
+  margin-bottom: 16px;
+}
+.advantages-feature-grid .pricing-difference-grid > div {
+  min-height: 100px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+}
+.advantages-feature-grid .pricing-difference-grid b {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.advantages-feature-grid .pricing-difference-grid span {
+  display: block;
+  line-height: 1.5;
+}
+.advantages-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 16px 0 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(139,124,255,.15), rgba(94,231,183,.08));
+}
+.advantages-cta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.advantages-cta > div b { font-size: 14px; }
+.advantages-cta > div span { color: var(--muted); font-size: 12px; line-height: 1.45; }
+.advantages-cta .btn { flex-shrink: 0; }
+.nav-item { width: 16.666%; font-size: 9px; }
+.nav-item i { font-size: 17px; }
+@media (max-width: 380px) {
+  .nav-item { gap: 4px; font-size: 8px; }
+  .nav-item i { font-size: 16px; }
+  .advantages-cta { align-items: stretch; flex-direction: column; }
+}

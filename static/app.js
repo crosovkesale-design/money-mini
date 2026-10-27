@@ -492,8 +492,9 @@ async function exportCSV() {
         'X-Init-Data': tg.initData
       },
       body: JSON.stringify({
-        transactions: appData.history,
-        currency: appData.currency
+        transactions: getVisibleBudget().history,
+        currency: appData.currency,
+        mode: budgetMode
       })
     });
 

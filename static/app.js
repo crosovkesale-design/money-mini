@@ -97,6 +97,8 @@ let editingBankId = null;
 
 function openReceiptEntry(){
   receiptEditingTxId = null;
+  const receiptSaveButton=document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
+  if(receiptSaveButton)receiptSaveButton.innerHTML='<i class="fa-solid fa-check"></i> Добавить чек к операции';
   if(appData.activeTxType !== 'expense'){
     alert('Чек можно прикрепить только к расходу.');
     return;
@@ -168,6 +170,8 @@ function editReceipt(id){
   document.getElementById('receiptItemsInput').value=(receipt.items||[]).map(item=>item.name+'; '+(item.price==null?'':item.price)+'; '+(item.quantity||1)).join('\n');
   document.getElementById('receiptTotalInput').value=receipt.total||tx.amount||'';
   const error=document.getElementById('receiptEntryError'); if(error)error.textContent='';
+  const saveButton=document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
+  if(saveButton)saveButton.innerHTML='<i class="fa-solid fa-check"></i> Сохранить изменения';
   openModal('modalReceiptEntry');
 }
 
@@ -564,7 +568,7 @@ async function saveEnvelope(){
   const target = parseFloat(document.getElementById('envTargetInput').value);
   if(!name || !Number.isFinite(target) || target <= 0) return;
   if(budgetMode==='family'&&currentFamily){
-    try{if(editingEnvelopeId!==null){await familyRequest('/api/family/envelopes/'+encodeURIComponent(String(editingEnvelopeId)),'PATCH',{name,target});editingEnvelopeId=null;}else{await familyRequest('/api/family/envelopes','POST',{name,target});}document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';closeModal('modalAddEnvelope');await loadFamilyEnvelopes();}
+    try{if(editingEnvelopeId!==null){await familyRequest('/api/family/envelopes/'+encodeURIComponent(String(editingEnvelopeId)),'PATCH',{name,target});editingEnvelopeId=null;}else{await familyRequest('/api/family/envelopes','POST',{name,target});}document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';closeModal('modalAddEnvelope');const envTitle=document.querySelector('#modalAddEnvelope .modal-header h3');if(envTitle)envTitle.textContent='Новый конверт';const envBtn=document.querySelector('#modalAddEnvelope button[onclick="saveEnvelope()"]');if(envBtn)envBtn.textContent='Создать';await loadFamilyEnvelopes();}
     catch(e){alert(e.message||'Не удалось создать семейный конверт.');}
     return;
   }

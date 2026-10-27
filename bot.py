@@ -1211,11 +1211,29 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
         raise HTTPException(503, "Bot is unavailable")
 
     body = await request.json()
+    mode = str(body.get("mode") or "personal")
+    currency = str(body.get("currency") or "UAH")[:8]
     transactions = body.get("transactions", [])
-    currency = str(body.get("currency") or "UAH")
 
-    if not isinstance(transactions, list):
-        raise HTTPException(400, "Invalid transactions")
+    if mode == "family":
+        user = await get_user(uid) or {}
+        fid = str(user.get("familyId") or "")
+        if not fid:
+            raise HTTPException(404, "Семейный бюджет не найден.")
+        family = (await fb.get(f"/families/{fid}")) or {}
+        members = family.get("members") or {}
+        if family.get("archived") or not isinstance(members, dict) or uid not in members:
+            raise HTTPException(403, "Нет доступа к семейному бюджету.")
+        records = family.get("transactions") or {}
+        transactions = [
+            tx for tx in records.values()
+            if isinstance(tx, dict) and str(tx.get("uid") or "") in members
+        ]
+    elif mode != "personal":
+        raise HTTPException(400, "Invalid export mode")
+
+    if not isinstance(transactions, list) or len(transactions) > 5000:
+        raise HTTPException(400, "Слишком много операций для одного отчёта.")
 
     from datetime import datetime
     from openpyxl.styles import (
@@ -1629,6 +1647,7 @@ async def api_family_transaction_update(tx_id: str, request: Request, uid: str =
         raise HTTPException(404, "Операция не найдена.")
     if str(tx.get("uid") or "") != uid and str(family.get("ownerId") or "") != uid:
         raise HTTPException(403, "Изменять эту операцию может только её автор или владелец семьи.")
+
     body = await request.json()
     patch = {}
     if "receipt" in body:
@@ -1641,9 +1660,36 @@ async def api_family_transaction_update(tx_id: str, request: Request, uid: str =
             raise HTTPException(400, "Укажи корректную сумму.")
         if not math.isfinite(amount) or amount <= 0:
             raise HTTPException(400, "Сумма должна быть больше нуля.")
-        patch["amount"] = amount
+        patch["amount"] = round(amount, 2)
+    if "type" in body:
+        kind = str(body.get("type") or "").lower()
+        if kind not in ("income", "expense"):
+            raise HTTPException(400, "Выбери доход или расход.")
+        patch["type"] = kind
     if "title" in body:
-        patch["title"] = str(body.get("title") or tx.get("title") or "Операция")[:120]
+        title = " ".join(str(body.get("title") or "").split())[:120]
+        if not title:
+            raise HTTPException(400, "Укажи описание операции.")
+        patch["title"] = title
+    if "category" in body:
+        patch["category"] = " ".join(str(body.get("category") or "Разное").split())[:64] or "Разное"
+    if "icon" in body:
+        patch["icon"] = str(body.get("icon") or "📦")[:12]
+    if "date" in body:
+        date_value = str(body.get("date") or "")[:10]
+        try:
+            date_obj = datetime.strptime(date_value, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(400, "Укажи корректную дату операции.")
+        patch["date"] = date_value
+        patch["ts"] = int(date_obj.replace(hour=12, tzinfo=KYIV).timestamp() * 1000)
+    if "envelopeId" in body:
+        envelope_id = str(body.get("envelopeId") or "")
+        if envelope_id and envelope_id not in (family.get("envelopes") or {}):
+            raise HTTPException(400, "Выбранный семейный конверт не найден.")
+        patch["envelopeId"] = envelope_id or None
+    if patch.get("type", tx.get("type")) != "expense":
+        patch["envelopeId"] = None
     if not patch:
         raise HTTPException(400, "Нет данных для изменения.")
     await fb.patch(f"/families/{fid}/transactions/{tx_id}", patch)

@@ -1686,3 +1686,12 @@ select:focus-visible {
 .pro-insights-lock .btn{min-height:34px}
 [data-theme="light"] .pro-insights-card{background:linear-gradient(145deg,rgba(139,124,255,.08),rgba(54,217,255,.03)),var(--card)}
 @media(max-width:360px){.pro-insights-card{padding:12px}.pro-insight-metric{padding:10px}.pro-insight-metric b{font-size:14px}}
+
+
+/* PRO budget control alerts */
+.pro-insights-alerts{margin:14px 0 18px;padding:14px;border:1px solid var(--border-color,rgba(128,128,128,.2));border-radius:16px;background:var(--card-bg,rgba(128,128,128,.045))}
+.pro-insight-alert{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border-radius:11px;margin-top:8px}
+.pro-insight-alert p{margin:0;font-size:13px;line-height:1.45}
+.pro-insight-alert.warning{background:rgba(245,158,11,.11);color:var(--text-color,inherit);border:1px solid rgba(245,158,11,.3)}
+.pro-insight-alert.ok{background:rgba(34,197,94,.08);color:var(--text-color,inherit);border:1px solid rgba(34,197,94,.2)}
+.pro-insight-alert>span{flex:0 0 auto}

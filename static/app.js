@@ -530,18 +530,70 @@ async function deleteTx(id){
   saveData(); renderAll();
 }
 
+function openEnvelopeEditor(id){
+  const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;
+  const item=list.find(x=>String(x.id)===String(id)); if(!item)return;
+  editingEnvelopeId=id;
+  document.getElementById('envNameInput').value=item.name||'';
+  document.getElementById('envTargetInput').value=item.target||'';
+  const title=document.querySelector('#modalAddEnvelope .modal-header h3'); if(title)title.textContent='Изменить конверт';
+  const btn=document.querySelector('#modalAddEnvelope button[onclick="saveEnvelope()"]'); if(btn)btn.textContent='Сохранить изменения';
+  openModal('modalAddEnvelope');
+}
+
+async function deleteEnvelope(id){
+  const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;
+  const item=list.find(x=>String(x.id)===String(id));if(!item)return;
+  if(!window.confirm('Удалить конверт «'+item.name+'»?'))return;
+  try{
+    if(budgetMode==='family'&&currentFamily){
+      await familyRequest('/api/family/envelopes/'+encodeURIComponent(String(id)),'DELETE');
+      familyEnvelopes=familyEnvelopes.filter(x=>String(x.id)!==String(id));
+      familyTransactions.forEach(tx=>{if(String(tx.envelopeId||'')===String(id))tx.envelopeId='';});
+      renderAll();
+    }else{
+      appData.envelopes=appData.envelopes.filter(x=>String(x.id)!==String(id));
+      appData.history.forEach(tx=>{if(String(tx.envelopeId||'')===String(id))tx.envelopeId=null;});
+      saveData();renderAll();
+    }
+  }catch(e){alert(e.message||'Не удалось удалить конверт.');}
+}
+
 async function saveEnvelope(){
   const name = document.getElementById('envNameInput').value.trim();
   const target = parseFloat(document.getElementById('envTargetInput').value);
   if(!name || !Number.isFinite(target) || target <= 0) return;
   if(budgetMode==='family'&&currentFamily){
-    try{await familyRequest('/api/family/envelopes','POST',{name,target});document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';closeModal('modalAddEnvelope');await loadFamilyEnvelopes();}
+    try{if(editingEnvelopeId!==null){await familyRequest('/api/family/envelopes/'+encodeURIComponent(String(editingEnvelopeId)),'PATCH',{name,target});editingEnvelopeId=null;}else{await familyRequest('/api/family/envelopes','POST',{name,target});}document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';closeModal('modalAddEnvelope');await loadFamilyEnvelopes();}
     catch(e){alert(e.message||'Не удалось создать семейный конверт.');}
     return;
   }
-  appData.envelopes.push({ id: Date.now(), name, target });
+  if(editingEnvelopeId!==null){
+    const item=appData.envelopes.find(x=>String(x.id)===String(editingEnvelopeId));
+    if(item){item.name=name;item.target=target;} editingEnvelopeId=null;
+  }else appData.envelopes.push({ id: Date.now(), name, target });
   document.getElementById('envNameInput').value='';document.getElementById('envTargetInput').value='';
+  const envTitle=document.querySelector('#modalAddEnvelope .modal-header h3');if(envTitle)envTitle.textContent='Новый конверт';
+  const envBtn=document.querySelector('#modalAddEnvelope button[onclick="saveEnvelope()"]');if(envBtn)envBtn.textContent='Создать';
   saveData(); closeModal('modalAddEnvelope'); renderAll();
+}
+
+function openBankEditor(id){
+  const item=appData.banks.find(x=>String(x.id)===String(id));if(!item)return;
+  editingBankId=id;
+  document.getElementById('bankNameInput').value=item.name||'';
+  document.getElementById('bankTargetInput').value=item.target||'';
+  document.getElementById('bankDeadlineInput').value=item.deadline||'';
+  const title=document.querySelector('#modalAddBank .modal-header h3');if(title)title.textContent='Изменить копилку';
+  const btn=document.querySelector('#modalAddBank button[onclick="saveBank()"]');if(btn)btn.textContent='Сохранить изменения';
+  openModal('modalAddBank');
+}
+function deleteBank(id){
+  const item=appData.banks.find(x=>String(x.id)===String(id));if(!item)return;
+  if(!window.confirm('Удалить копилку «'+item.name+'»?'))return;
+  appData.banks=appData.banks.filter(x=>String(x.id)!==String(id));
+  if(String(selectedBankIdForContribution)===String(id))selectedBankIdForContribution=null;
+  saveData();renderAll();
 }
 
 function saveBank(){
@@ -549,10 +601,16 @@ function saveBank(){
   const target = parseFloat(document.getElementById('bankTargetInput').value);
   const deadline = document.getElementById('bankDeadlineInput').value || null;
   if(!name || !Number.isFinite(target) || target <= 0) return;
-  appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline });
+  if(editingBankId!==null){
+    const bank=appData.banks.find(item=>String(item.id)===String(editingBankId));
+    if(bank){bank.name=name;bank.target=target;bank.deadline=deadline;}
+    editingBankId=null;
+  }else appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline });
   document.getElementById('bankNameInput').value='';
   document.getElementById('bankTargetInput').value='';
   document.getElementById('bankDeadlineInput').value='';
+  const bankTitle=document.querySelector('#modalAddBank .modal-header h3');if(bankTitle)bankTitle.textContent='Новая банка';
+  const bankBtn=document.querySelector('#modalAddBank button[onclick="saveBank()"]');if(bankBtn)bankBtn.textContent='Создать';
   saveData(); closeModal('modalAddBank'); renderAll();
 }
 

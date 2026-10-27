@@ -37,6 +37,7 @@ from auth import verify_cryptopay_sig, verify_init_data
 from fb import Firebase
 from pay import CryptoPay
 from bank_statement import MAX_UPLOAD_BYTES, parse_bank_statement
+from ocr import extract_receipt
 
 load_dotenv()
 
@@ -1119,6 +1120,37 @@ async def api_family_leave(uid: str = Depends(current_uid)):
         "archived": archived,
         "newOwnerId": new_owner_id,
         "familyDataPreserved": True,
+    }
+
+
+@app.post("/api/receipt/recognize")
+async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends(current_uid)):
+    """Recognize a receipt photo in memory; the original image is never persisted."""
+    user = await get_user(uid)
+    if not has_pro_access(user):
+        raise HTTPException(403, "Распознавание чека по фото доступно в PRO.")
+    content_type = str(file.content_type or "").lower()
+    filename = str(file.filename or "").lower()
+    if not content_type.startswith("image/") and not filename.endswith((".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff")):
+        raise HTTPException(400, "Загрузи изображение чека в формате JPG, PNG или WebP.")
+    data = await file.read(8 * 1024 * 1024 + 1)
+    await file.close()
+    if not data:
+        raise HTTPException(400, "Файл пустой.")
+    if len(data) > 8 * 1024 * 1024:
+        raise HTTPException(413, "Фото должно быть меньше 8 МБ.")
+    try:
+        result = extract_receipt(data)
+    except Exception as exc:
+        log.exception("Receipt OCR failed for user %s", uid)
+        if "tesseract" in str(exc).lower() or exc.__class__.__name__ == "TesseractNotFoundError":
+            raise HTTPException(503, "На сервере пока не установлен OCR-движок. Фото не сохранено; можно ввести чек вручную.")
+        raise HTTPException(400, "Не удалось распознать это фото. Попробуй сделать снимок ровнее и при хорошем освещении.")
+    return {
+        "ok": True,
+        "text": str(result.get("text") or "")[:2000],
+        "lines": [str(line)[:160] for line in (result.get("lines") or [])[:30]],
+        "amount_guess": float(result.get("amount_guess") or 0),
     }
 
 

@@ -58,7 +58,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-more-categories-expense-receipts-only" defer></script>
+<script src="./app.js?v=20261027-bank-statement-import-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -293,6 +293,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <button class="btn btn-danger" onclick="openTransactionModal('expense')" data-i18n="btn_expense">Расход</button>
     </div>
 
+    <div class="bank-import-launch">
+      <div><b>Импорт выписки</b><small>CSV / Excel из любого банка</small></div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="openBankImport()"><i class="fa-solid fa-file-import"></i> Загрузить</button>
+    </div>
     <div class="row-between">
       <h4 data-i18n="history">История</h4>
       <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" placeholder="Поиск..." oninput="renderAll()">
@@ -433,6 +437,22 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="banks">Банки</span></div>
   <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="settings">Настройки</span></div>
   <div class="nav-item" id="nav-advantages" onclick="switchTab('advantages')"><i class="fa-solid fa-sparkles"></i><span>Почему Mini</span></div>
+</div>
+
+<div class="modal" id="modalBankImport">
+  <div class="modal-content bank-import-modal">
+    <div class="modal-header"><h3>Импорт банковской выписки</h3><span class="modal-close" onclick="closeBankImport()">×</span></div>
+    <p class="bank-import-hint">Загрузи CSV или XLSX, скачанный из банка. Файл обрабатывается временно и не сохраняется. Перед импортом проверь операции и категории.</p>
+    <label class="lbl" for="bankStatementFile">Файл выписки</label>
+    <input id="bankStatementFile" class="custom-input" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="previewBankStatement(this.files[0])">
+    <div id="bankImportStatus" class="bank-import-status" aria-live="polite"></div>
+    <div id="bankImportSummary" class="bank-import-summary" style="display:none"></div>
+    <div id="bankImportRows" class="bank-import-rows"></div>
+    <div class="bank-import-footer">
+      <button type="button" class="btn btn-outline" onclick="closeBankImport()">Отмена</button>
+      <button type="button" id="bankImportConfirm" class="btn btn-accent" onclick="confirmBankImport()" disabled>Импортировать</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="modalTransaction">

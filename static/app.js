@@ -909,17 +909,25 @@ async function saveBankContribution(){
   if(!bank||!Number.isFinite(amount)||amount<=0){alert('Введи сумму больше нуля.');return;}
   if(amount>available){alert('На доступном балансе недостаточно денег.');return;}
   try{
+    const oldBalance=Number(bank.balance||0);
+    const target=Number(bank.target||0);
+    let newBalance;
     if(familyMode){
-      await familyRequest('/api/family/banks/'+encodeURIComponent(String(bank.id))+'/contributions','POST',{amount,currency:appData.currency||'UAH'});
+      const result=await familyRequest('/api/family/banks/'+encodeURIComponent(String(bank.id))+'/contributions','POST',{amount,currency:appData.currency||'UAH'});
+      newBalance=Number(result.balance);
       await Promise.all([loadFamilyBanks(),loadFamilyTransactions()]);
     }else{
       appData.balance-=amount;
-      bank.balance=Number(bank.balance||0)+amount;
+      bank.balance=oldBalance+amount;
+      newBalance=bank.balance;
       bank.contributions=Array.isArray(bank.contributions)?bank.contributions:[];
       bank.contributions.push({amount,date:new Date().toLocaleDateString('ru-RU')});
       saveData();
     }
     selectedBankIdForContribution=null;closeModal('modalBankContribution');renderAll();
+    if(target>0&&oldBalance<target&&newBalance>=target){
+      alert('🎉 Цель достигнута!\n\nКопилка «'+bank.name+'» собрала '+fmtMoney(newBalance)+' из '+fmtMoney(target)+'.');
+    }
   }catch(e){alert(e.message||'Не удалось пополнить копилку.');}
 }
 

@@ -58,7 +58,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-bank-statement-import-v1" defer></script>
+<script src="./app.js?v=20261027-pro-analytics-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -196,7 +196,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="pricing-benefit pro-benefit"><span>✧</span><div><b>Свои категории</b><p>Создавай категории доходов и расходов под себя</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>◈</span><div><b>Персональные обои</b><p>Настраивай фон интерфейса на свой вкус</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b>Экспорт Excel</b><p>Отправляй финансовый отчёт в Telegram</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span><i class="fa-solid fa-camera"></i></span><div><b>Чеки по фото</b><p>Фото чека — распознавание подключим следующим этапом</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>⌁</span><div><b>Расширенная аналитика</b><p>Прогноз расходов, сравнение месяцев и топ категорий</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>👨‍👩‍👧‍👦</span><div><b>Семейный бюджет</b><p>Общий учёт для семьи до 6 участников</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>◷</span><div><b>Ежедневные напоминания</b><p>Бот поможет не забыть записать траты</p></div></div>
         </div>
 
@@ -308,6 +309,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4>
     <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
     <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
+    <div id="proInsightsCard" class="pro-insights-card"></div>
   </div>
 
   <div id="tab-envelopes" class="tab-content" style="display:none">

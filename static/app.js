@@ -80,6 +80,27 @@ function renderReferralStats(){
   if(link) link.value = referralStats.link || '';
 }
 
+function updateCouponSelector(){
+  const select = document.getElementById('couponTypeSelect');
+  const info = document.getElementById('couponAvailabilityText');
+  if(!select) return;
+  const count10 = Number(referralStats.coupons10 || 0);
+  const count20 = Number(referralStats.coupons20 || 0);
+  const option10 = select.querySelector('option[value="10"]');
+  const option20 = select.querySelector('option[value="20"]');
+  if(option10){
+    option10.disabled = count10 <= 0;
+    option10.textContent = 'Скидка 10% — доступно: ' + count10;
+  }
+  if(option20){
+    option20.disabled = count20 <= 0;
+    option20.textContent = 'Скидка 20% — доступно: ' + count20;
+  }
+  if(select.value === '10' && count10 <= 0) select.value = '';
+  if(select.value === '20' && count20 <= 0) select.value = '';
+  if(info) info.textContent = 'Доступно купонов: −10% — ' + count10 + ', −20% — ' + count20 + '. Купон списывается после подтверждения оплаты.';
+}
+
 function updateProFeatureControls(){
   [
     'customCategoryProTag',
@@ -114,6 +135,7 @@ async function loadPlanStatus(){
     canUseProFeatures = Boolean(data?.features?.pro);
     referralStats = data?.referral || { count: 0, coupons10: 0, coupons20: 0 };
     renderReferralStats();
+    updateCouponSelector();
   } catch(error){
     console.error('Could not load subscription access:', error);
     canUseProFeatures = false;
@@ -1005,7 +1027,10 @@ async function buyPlan(plan, method){
         'Content-Type': 'application/json',
         'X-Init-Data': initData
       },
-      body: JSON.stringify({plan})
+      body: JSON.stringify({
+        plan,
+        couponType: document.getElementById('couponTypeSelect')?.value || ''
+      })
     });
 
     const data = await response.json();

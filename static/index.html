@@ -60,7 +60,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-referral-counters" defer></script>
+<script src="./app.js?v=20261027-referral-settings" defer></script>
 
 <link rel="stylesheet"
 
@@ -286,6 +286,25 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div style="display:flex;gap:8px">
         <button id="wallpaperUploadBtn" class="btn btn-outline btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="openWallpaperUpload()"><span data-i18n="upload">Загрузить</span><span id="wallpaperProTag" class="pro-mini-tag">PRO</span></button>
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="clearWallpaper()" data-i18n="remove">Убрать</button>
+      </div>
+    </div>
+
+    <div class="card referral-card">
+      <h5>👥 Рефералы и купоны</h5>
+      <p class="muted" style="margin:0 0 12px;font-size:13px">Статистика твоих приглашений и доступных скидок</p>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
+          <div style="font-size:22px;font-weight:800" id="referralCountValue">—</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">Рефералов</div>
+        </div>
+        <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
+          <div style="font-size:22px;font-weight:800" id="coupon10CountValue">—</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">Купоны −10%</div>
+        </div>
+        <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
+          <div style="font-size:22px;font-weight:800" id="coupon20CountValue">—</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">Купоны −20%</div>
+        </div>
       </div>
     </div>
 

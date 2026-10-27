@@ -1518,3 +1518,53 @@ select:focus-visible {
 .price-stars-current{color:#5ee7b7;font-weight:850}
 .price-main .pro-period{margin-left:3px}
 [data-theme="light"] .price-current,[data-theme="light"] .price-stars-current{color:#087f5b}
+
+
+/* Contextual help and product advantages */
+.info-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  margin-left: 4px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(139, 124, 255, 0.13);
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 800;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.info-dot-pro { color: #c6a7ff; }
+.coupon-heading-copy { position: relative; }
+.coupon-heading-copy .info-dot { position: absolute; top: 0; right: -28px; }
+.pricing-difference {
+  margin: 18px 0 14px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(139,124,255,.13), rgba(54,217,255,.06)), var(--surface);
+}
+.pricing-difference-title { margin-bottom: 13px; font-size: 17px; font-weight: 850; }
+.pricing-difference-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px 11px; }
+.pricing-difference-grid > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pricing-difference-grid b { font-size: 12px; }
+.pricing-difference-grid span { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.pricing-more-info {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  margin-top: 14px; padding: 11px 12px; border: 1px solid var(--border);
+  border-radius: 12px; background: rgba(139,124,255,.10); color: var(--text);
+  font-size: 13px; font-weight: 750; cursor: pointer;
+}
+.help-content { text-align: left; }
+.help-body { color: var(--text); font-size: 14px; line-height: 1.55; }
+.help-body p { margin: 0 0 12px; }
+.help-body ul { display: flex; flex-direction: column; gap: 9px; margin: 10px 0 14px; padding-left: 20px; }
+.help-body li { padding-left: 2px; }
+.help-body b { color: var(--text); }
+.help-note { padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(54,217,255,.07); color: var(--muted); }
+@media (max-width: 360px) {
+  .pricing-difference-grid { grid-template-columns: 1fr; }
+}

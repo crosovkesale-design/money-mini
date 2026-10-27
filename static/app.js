@@ -668,6 +668,90 @@ async function submitTransaction(){
   saveData();closeModal('modalTransaction');renderAll();
 }
 
+let editingTxId = null;
+
+function txDateForInput(tx){
+  const raw=String(tx && tx.date || '').trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(raw))return raw.slice(0,10);
+  const ru=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(ru)return ru[3]+'-'+String(ru[2]).padStart(2,'0')+'-'+String(ru[1]).padStart(2,'0');
+  if(tx && tx.ts){const d=new Date(Number(tx.ts));if(!Number.isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  return new Date().toISOString().slice(0,10);
+}
+
+function openTxEditor(id){
+  const list=budgetMode==='family'&&currentFamily?familyTransactions:appData.history;
+  const tx=list.find(item=>String(item.id)===String(id));
+  if(!tx)return;
+  editingTxId=id;
+  document.getElementById('editTxType').value=tx.type==='income'?'income':'expense';
+  document.getElementById('editTxAmount').value=Number(tx.amount||0);
+  document.getElementById('editTxTitle').value=tx.title||tx.note||tx.category||'Операция';
+  document.getElementById('editTxCategory').value=tx.category||'Разное';
+  document.getElementById('editTxDate').value=txDateForInput(tx);
+  const select=document.getElementById('editTxEnvelope');
+  const envelopes=budgetMode==='family'&&currentFamily?familyEnvelopes:(appData.envelopes||[]);
+  select.innerHTML='<option value="">Без конверта</option>'+envelopes.map(e=>'<option value="'+bankEscape(e.id)+'">'+bankEscape(e.name)+'</option>').join('');
+  select.value=tx.envelopeId==null?'':String(tx.envelopeId);
+  select.disabled=document.getElementById('editTxType').value!=='expense';
+  document.getElementById('editTxType').onchange=()=>{select.disabled=document.getElementById('editTxType').value!=='expense';if(select.disabled)select.value='';};
+  const error=document.getElementById('editTxError');if(error)error.textContent='';
+  openModal('modalEditTransaction');
+}
+
+function isTransactionInCurrentMonth(tx,dateOverride){
+  let d=null;
+  if(dateOverride){d=new Date(dateOverride+'T12:00:00');}
+  else{
+    const raw=String(tx && tx.date || '');
+    if(/^\d{4}-\d{2}-\d{2}/.test(raw))d=new Date(raw.slice(0,10)+'T12:00:00');
+    else {const m=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(m)d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));}
+    if((!d||Number.isNaN(d.getTime()))&&tx&&tx.ts)d=new Date(Number(tx.ts));
+  }
+  if(!d||Number.isNaN(d.getTime()))return false;
+  const now=new Date();return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+}
+
+async function saveTxEdits(){
+  if(editingTxId===null)return;
+  const type=document.getElementById('editTxType').value;
+  const amount=Number(document.getElementById('editTxAmount').value);
+  const title=document.getElementById('editTxTitle').value.trim();
+  const category=document.getElementById('editTxCategory').value.trim()||'Разное';
+  const date=document.getElementById('editTxDate').value;
+  const envelopeSelect=document.getElementById('editTxEnvelope');
+  const envelopeId=type==='expense'?(envelopeSelect.value||''):'';
+  const error=document.getElementById('editTxError');
+  if(!['income','expense'].includes(type)||!Number.isFinite(amount)||amount<=0||!title||!date){if(error)error.textContent='Проверь тип, сумму, описание и дату операции.';return;}
+  const familyMode=budgetMode==='family'&&currentFamily;
+  const list=familyMode?familyTransactions:appData.history;
+  const tx=list.find(item=>String(item.id)===String(editingTxId));
+  if(!tx){if(error)error.textContent='Операция не найдена.';return;}
+  const old={type:tx.type,amount:Number(tx.amount||0)};
+  const icon=bankCategoryIcon(category,type);
+  try{
+    if(familyMode){
+      await familyRequest('/api/family/transactions/'+encodeURIComponent(String(editingTxId)),'PATCH',{type,amount,title,category,icon,date,envelopeId,currency:tx.currency||appData.currency});
+      await loadFamilyTransactions();
+      await loadFamilyEnvelopes();
+    }else{
+      const oldImpact=(old.type==='income'?1:-1)*old.amount;
+      const newImpact=(type==='income'?1:-1)*amount;
+      appData.balance=Number(appData.balance||0)-oldImpact+newImpact;
+      if(isTransactionInCurrentMonth(tx)){
+        if(old.type==='income')appData.monthIncome-=old.amount;else appData.monthExpense-=old.amount;
+      }
+      if(isTransactionInCurrentMonth(tx,date)){
+        if(type==='income')appData.monthIncome+=amount;else appData.monthExpense+=amount;
+      }
+      tx.type=type;tx.amount=amount;tx.title=title;tx.note=title;tx.category=category;tx.icon=icon;
+      tx.date=date.split('-').reverse().join('.');tx.envelopeId=envelopeId||null;
+      saveData();renderAll();
+    }
+    editingTxId=null;closeModal('modalEditTransaction');
+  }catch(e){if(error)error.textContent=e.message||'Не удалось сохранить операцию.';}
+}
+
 async function deleteTx(id){
   if(budgetMode==='family' && currentFamily){
     const tx = familyTransactions.find(item => String(item.id) === String(id));
@@ -1416,6 +1500,7 @@ function renderAll(){
             ${tx.type === 'expense' ? '-' : '+'}${fmtMoney(tx.amount)}
           </div>
           ${tx.receipt ? '<div class="history-receipt-actions"><button class="card-action" aria-label="Изменить чек" onclick="editReceipt('+JSON.stringify(String(tx.id))+')"><i class="fa-solid fa-pen"></i></button><button class="card-action danger" aria-label="Удалить чек" onclick="deleteReceipt('+JSON.stringify(String(tx.id))+')"><i class="fa-solid fa-trash"></i></button></div>' : ''}
+          <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${JSON.stringify(String(tx.id))})"><i class="fa-solid fa-pen"></i></button>
           <button class="card-del" style="position:static" aria-label="Удалить операцию" onclick="deleteTx(${JSON.stringify(String(tx.id))})">✕</button>
         </div>
       `).join('')

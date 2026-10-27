@@ -1585,6 +1585,10 @@ function renderAll(){
     banks.innerHTML = bankItems.map(b => {
       const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
       const contributionHistory=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributions)?b.contributions:[];
+      const contributorTotals=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributors)?b.contributors:[];
+      const contributorTotalsHtml=contributorTotals.length
+        ? '<div class="bank-contribution-history"><b>Всего внесли</b>'+contributorTotals.slice(0,8).map(c=>'<div class="bank-contribution-row"><span>'+bankEscape(c.memberName||'Участник')+'</span><strong>'+fmtMoney(Number(c.amount)||0)+'</strong></div>').join('')+'</div>'
+        : '';
       const contributionHistoryHtml=contributionHistory.length
         ? '<div class="bank-contribution-history"><b>История пополнений</b>'+contributionHistory.slice(0,8).map(c=>'<div class="bank-contribution-row"><span>'+bankEscape(c.memberName||'Участник')+'<small>'+bankEscape(c.date?new Date(c.date+'T12:00:00').toLocaleDateString('ru-RU'):'Дата не указана')+'</small></span><strong>+'+fmtMoney(Number(c.amount)||0)+'</strong></div>').join('')+'</div>'
         : (budgetMode==='family'&&currentFamily?'<div class="bank-contribution-history muted">Пополнений пока нет.</div>':'');
@@ -1606,6 +1610,7 @@ function renderAll(){
         <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
         ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">Дедлайн: ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString('ru-RU') + ' · ' + deadlineText + '</div>' : ''}
+        ${contributorTotalsHtml}
         ${contributionHistoryHtml}
         <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openBankEditor('${b.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteBank('${b.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>
         <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank('${b.id}')">＋ Пополнить</button>

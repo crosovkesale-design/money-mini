@@ -65,7 +65,7 @@ function openHelp(topic='general'){
     },
     pro: {
       title: 'Что даёт PRO',
-      html: '<ul><li><b>Всё из Basic.</b></li><li><b>Свои категории:</b> настрой под свои источники дохода и виды расходов.</li><li><b>Персональные обои:</b> измени оформление интерфейса.</li><li><b>Экспорт Excel:</b> сохраняй подробный отчёт и анализируй расходы.</li><li><b>Ежедневные напоминания:</b> меньше шансов забыть записать траты.</li></ul><p>PRO полезен тем, кто хочет вести бюджет системно и анализировать данные подробнее.</p>'
+      html: '<ul><li><b>Всё из Basic.</b></li><li><b>Свои категории:</b> настрой под свои источники дохода и виды расходов.</li><li><b>Персональные обои:</b> измени оформление интерфейса.</li><li><b>Экспорт Excel:</b> сохраняй подробный отчёт и анализируй расходы.</li><li><b>Чеки по фото:</b> добавление фотографии чека; распознавание подключим отдельным этапом.</li><li><b>Ежедневные напоминания:</b> меньше шансов забыть записать траты.</li></ul><p>PRO полезен тем, кто хочет вести бюджет системно и анализировать данные подробнее.</p>'
     },
     coupons: {
       title: 'Как работают купоны',
@@ -374,6 +374,9 @@ function tCat(name){
 
 
 function openTransactionModal(type) {
+  pendingReceiptDraft = null;
+  const receiptStatus = document.getElementById('receiptDraftStatus');
+  if(receiptStatus) receiptStatus.style.display = 'none';
   appData.activeTxType = type;
 
   // Очищаем поля при каждом новом открытии
@@ -1066,7 +1069,7 @@ function renderAll(){
           <div class="history-left">
             <div class="history-icon">${tx.icon || '📦'}</div>
             <div>
-              <div class="history-title">${tx.title || tCat(tx.category || 'Разное')}</div>
+              <div class="history-title">${tx.title || tCat(tx.category || 'Разное')} ${tx.receipt ? '🧾' : ''}</div>
               <div class="history-sub">${visibleBudget.isFamily ? ((tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : '') + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</div>
             </div>
           </div>

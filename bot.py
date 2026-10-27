@@ -1412,6 +1412,58 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="344563")
 
+    # Дополнительный лист: распределение доходов и расходов по категориям
+    category_totals = {}
+    for tx in transactions:
+        if not isinstance(tx, dict):
+            continue
+        kind = str(tx.get("type") or "").lower()
+        if kind not in ("income", "expense"):
+            continue
+        try:
+            amount = float(tx.get("amount") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(amount) or amount <= 0:
+            continue
+        category = str(tx.get("category") or "Без категории")[:64]
+        item = category_totals.setdefault(category, {"income": 0.0, "expense": 0.0, "count": 0})
+        item[kind] += amount
+        item["count"] += 1
+
+    category_ws = wb.create_sheet("По категориям")
+    category_ws.sheet_view.showGridLines = False
+    category_ws.merge_cells("A1:E1")
+    category_ws["A1"] = "ДОХОДЫ И РАСХОДЫ ПО КАТЕГОРИЯМ"
+    category_ws["A1"].font = Font(size=15, bold=True, color="FFFFFF")
+    category_ws["A1"].fill = PatternFill("solid", fgColor="242B45")
+    category_ws["A1"].alignment = Alignment(horizontal="center")
+    category_ws.row_dimensions[1].height = 30
+    category_ws.append(["Категория", "Расходы", "Доходы", "Итог", "Операций"])
+    for cell in category_ws[2]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="344563")
+        cell.alignment = Alignment(horizontal="center", wrap_text=True)
+
+    category_row = 3
+    for category, values in sorted(category_totals.items(), key=lambda pair: pair[1]["expense"], reverse=True):
+        category_ws.cell(category_row, 1, category)
+        category_ws.cell(category_row, 2, values["expense"])
+        category_ws.cell(category_row, 3, values["income"])
+        category_ws.cell(category_row, 4, values["income"] - values["expense"])
+        category_ws.cell(category_row, 5, values["count"])
+        for col in range(1, 6):
+            category_ws.cell(category_row, col).border = Border(bottom=thin_gray)
+            category_ws.cell(category_row, col).alignment = Alignment(vertical="center", wrap_text=True)
+        for col in (2, 3, 4):
+            category_ws.cell(category_row, col).number_format = money_format
+        category_row += 1
+
+    category_ws.auto_filter.ref = f"A2:E{max(category_row - 1, 2)}"
+    category_ws.freeze_panes = "A3"
+    for col, width in {"A": 28, "B": 18, "C": 18, "D": 18, "E": 14}.items():
+        category_ws.column_dimensions[col].width = width
+
     # Сохранение Excel в памяти
     output = BytesIO()
     wb.save(output)

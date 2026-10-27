@@ -37,7 +37,7 @@ function switchTab(name){
   const nav = document.getElementById('nav-' + name);
   if(nav) nav.classList.add('active');
   if(name === 'analytics') renderCharts();
-  if(name !== 'advantages' && name !== 'pay') renderAll();
+  renderAll();
 }
 
 function openModal(id){ document.getElementById(id).classList.add('active'); }

@@ -1587,7 +1587,7 @@ function renderAll(){
       const contributionHistory=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributions)?b.contributions:[];
       const contributorTotals=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributors)?b.contributors:[];
       const contributorTotalsHtml=contributorTotals.length
-        ? '<div class="bank-contribution-history"><b>Всего внесли</b>'+contributorTotals.slice(0,8).map(c=>'<div class="bank-contribution-row"><span>'+bankEscape(c.memberName||'Участник')+'</span><strong>'+fmtMoney(Number(c.amount)||0)+'</strong></div>').join('')+'</div>'
+        ? '<div class="bank-contribution-history"><b>Всего внесли</b>'+contributorTotals.slice(0,8).map(c=>'<div class="bank-contribution-row"><span>'+bankEscape(c.memberName||'Участник')+'<small>'+Number(c.count||0)+' пополнений</small></span><strong>'+fmtMoney(Number(c.amount)||0)+'</strong></div>').join('')+'</div>'
         : '';
       const contributionHistoryHtml=contributionHistory.length
         ? '<div class="bank-contribution-history"><b>История пополнений</b>'+contributionHistory.slice(0,8).map(c=>'<div class="bank-contribution-row"><span>'+bankEscape(c.memberName||'Участник')+'<small>'+bankEscape(c.date?new Date(c.date+'T12:00:00').toLocaleDateString('ru-RU'):'Дата не указана')+'</small></span><strong>+'+fmtMoney(Number(c.amount)||0)+'</strong></div>').join('')+'</div>'

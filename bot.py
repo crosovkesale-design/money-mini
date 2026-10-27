@@ -1419,6 +1419,11 @@ async def api_family_envelope_delete(envelope_id: str, uid: str = Depends(curren
     existing = await fb.get(f"/families/{fid}/envelopes/{envelope_id}")
     if not isinstance(existing, dict):
         raise HTTPException(404, "Конверт не найден.")
+    transactions = (await fb.get(f"/families/{fid}/transactions")) or {}
+    if isinstance(transactions, dict):
+        for tx_id, tx in transactions.items():
+            if isinstance(tx, dict) and str(tx.get("envelopeId") or "") == str(envelope_id):
+                await fb.patch(f"/families/{fid}/transactions/{tx_id}", {"envelopeId": None})
     await fb.delete(f"/families/{fid}/envelopes/{envelope_id}")
     return {"ok": True, "id": envelope_id}
 

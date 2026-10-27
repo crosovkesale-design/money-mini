@@ -526,6 +526,81 @@ if bot:
         await cb.message.edit_text(f"🎁 Приглашай друзей!\nТвоя ссылка:\n<code>{link}</code>", parse_mode="HTML", reply_markup=kb)
         await cb.answer()
 
+    @dp.callback_query(F.data == "menu_stats")
+    async def cb_menu_stats(cb: CallbackQuery):
+        users = (await fb.get("/users")) or {}
+        if not isinstance(users, dict):
+            users = {}
+        total = len(users)
+        trial = 0
+        active_paid = 0
+        current_time = now_ms()
+        for user in users.values():
+            if not isinstance(user, dict):
+                continue
+            end = int(user.get("subEnd") or 0)
+            if 0 < end < 10**11:
+                end *= 1000
+            if end <= current_time:
+                continue
+            if str(user.get("tariff") or "trial").lower() == "trial":
+                trial += 1
+            else:
+                active_paid += 1
+        await cb.message.answer(
+            "📊 <b>Money Mini · статистика</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"👥 Пользователей: <b>{total:,}</b>\n"
+            f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
+            f"💎 Активная платная подписка: <b>{active_paid:,}</b>",
+            parse_mode="HTML"
+        )
+        await cb.answer()
+
+    @dp.callback_query(F.data == "menu_status")
+    async def cb_menu_status(cb: CallbackQuery):
+        user = await get_user(str(cb.from_user.id))
+        end = int(user.get("subEnd") or 0)
+        if 0 < end < 10**11:
+            end *= 1000
+        active = end > now_ms()
+        days = max(0, math.ceil((end - now_ms()) / 86400000))
+        names = {
+            "trial": "Пробный период",
+            "1month": "Basic · 1 месяц",
+            "3months": "Basic · 3 месяца",
+            "6months": "Basic · 6 месяцев",
+            "12months": "Basic · 12 месяцев",
+            "pro1": "PRO · 1 месяц",
+            "pro12": "PRO · 12 месяцев",
+        }
+        tariff = str(user.get("tariff") or "trial")
+        end_text = datetime.fromtimestamp(end / 1000, tz=KYIV).strftime("%d.%m.%Y") if end else "не указана"
+        await cb.message.answer(
+            "🛡 <b>Твоя подписка</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"{'🟢' if active else '🔴'} Статус: <b>{'Активна' if active else 'Не активна'}</b>\n"
+            f"💼 Тариф: <b>{names.get(tariff, tariff)}</b>\n"
+            f"⏳ Осталось: <b>{days} дн.</b>\n"
+            f"📅 Действует до: <b>{end_text}</b>",
+            parse_mode="HTML"
+        )
+        await cb.answer()
+
+    @dp.callback_query(F.data == "go_start")
+    async def cb_go_start(cb: CallbackQuery):
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📊 Открыть бюджет", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Подписка и оплата", callback_data="show_pay")],
+            [InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")]
+        ])
+        await cb.message.answer(
+            "👋 <b>Money Mini</b>\n\nТвой бюджет, подписка и бонусы — в одном меню.",
+            reply_markup=kb,
+            parse_mode="HTML"
+        )
+        await cb.answer()
+
     @dp.callback_query(F.data == "show_pay")
     async def cb_show_pay(cb: CallbackQuery):
         kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))]])

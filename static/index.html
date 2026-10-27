@@ -60,7 +60,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-referral-settings" defer></script>
+<script src="./app.js?v=20261027-referral-link" defer></script>
 
 <link rel="stylesheet"
 
@@ -292,6 +292,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="card referral-card">
       <h5>👥 Рефералы и купоны</h5>
       <p class="muted" style="margin:0 0 12px;font-size:13px">Статистика твоих приглашений и доступных скидок</p>
+      <p class="muted" style="margin:0 0 8px;font-size:13px">Твоя реферальная ссылка — отправляй её новым пользователям</p>
+      <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:14px">
+        <input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…" style="margin:0;min-width:0;flex:1;font-size:12px">
+        <button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()" style="white-space:nowrap">Копировать</button>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
         <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
           <div style="font-size:22px;font-weight:800" id="referralCountValue">—</div>

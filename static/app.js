@@ -337,13 +337,45 @@ function openReceiptPhoto(){
   if(picker) picker.click();
 }
 
-function handleReceiptPhotoSelected(event){
+async function handleReceiptPhotoSelected(event){
   const file = event.target.files && event.target.files[0];
   if(!file) return;
-  if(!file.type.startsWith('image/')){ alert('Выбери изображение чека.'); event.target.value=''; return; }
-  if(file.size > 12 * 1024 * 1024){ alert('Фото должно быть меньше 12 МБ.'); event.target.value=''; return; }
-  alert('Фото выбрано. Автоматическое распознавание чека подключим следующим этапом. Сейчас можно добавить чек вручную.');
-  event.target.value = '';
+  const picker = event.target;
+  if(!file.type.startsWith('image/')){ alert('Выбери изображение чека.'); picker.value=''; return; }
+  if(file.size > 8 * 1024 * 1024){ alert('Фото должно быть меньше 8 МБ.'); picker.value=''; return; }
+  const tg = window.Telegram?.WebApp;
+  if(!tg?.initData){ alert('Открой приложение через Telegram, чтобы распознать чек.'); picker.value=''; return; }
+  const status = document.getElementById('receiptDraftStatus');
+  if(status){ status.style.display='block'; status.textContent='📷 Распознаю чек…'; }
+  try{
+    const form = new FormData();
+    form.append('file', file, file.name || 'receipt.jpg');
+    const response = await fetch('/api/receipt/recognize', {
+      method:'POST',
+      headers:{'X-Init-Data':tg.initData},
+      body:form
+    });
+    const data = await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
+    const lines = (data.lines || []).map(line=>String(line).trim()).filter(Boolean);
+    const store = (lines.find(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{3}/.test(line)) || '').slice(0,80);
+    const itemLines = lines.filter(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{2}/.test(line)).slice(0,30);
+    document.getElementById('receiptStoreInput').value = store;
+    document.getElementById('receiptDateInput').value = new Date().toISOString().slice(0,10);
+    document.getElementById('receiptItemsInput').value = itemLines.join('\n');
+    document.getElementById('receiptTotalInput').value = Number(data.amount_guess || 0) > 0 ? String(data.amount_guess) : '';
+    const error = document.getElementById('receiptEntryError');
+    if(error) error.textContent = 'Проверь магазин, товары и итоговую сумму: распознавание может ошибаться.';
+    const saveButton = document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
+    if(saveButton) saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Проверить и сохранить чек';
+    if(status){ status.style.display='block'; status.textContent='🧾 Текст распознан. Проверь данные и нажми «Сохранить».'; }
+    openModal('modalReceiptEntry');
+  }catch(error){
+    if(status){ status.style.display='block'; status.textContent='Не удалось распознать фото: '+(error.message || 'ошибка сервера'); }
+    else alert(error.message || 'Не удалось распознать фото.');
+  }finally{
+    picker.value = '';
+  }
 }
 
 function openCustomCategoryModal(){

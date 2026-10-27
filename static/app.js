@@ -1133,6 +1133,7 @@ function renderAll(){
           <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">
             ${tx.type === 'expense' ? '-' : '+'}${fmtMoney(tx.amount)}
           </div>
+          ${tx.receipt ? '<div class="history-receipt-actions"><button class="card-action" aria-label="Изменить чек" onclick="editReceipt('+JSON.stringify(String(tx.id))+')"><i class="fa-solid fa-pen"></i></button><button class="card-action danger" aria-label="Удалить чек" onclick="deleteReceipt('+JSON.stringify(String(tx.id))+')"><i class="fa-solid fa-trash"></i></button></div>' : ''}
           <button class="card-del" style="position:static" aria-label="Удалить операцию" onclick="deleteTx(${JSON.stringify(String(tx.id))})">✕</button>
         </div>
       `).join('')

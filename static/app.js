@@ -1596,7 +1596,7 @@ function renderAll(){
     const bankItems=budgetMode==='family'&&currentFamily?familyBanks:appData.banks;
     banks.innerHTML = bankItems.map(b => {
       const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
-      const goalStatusHtml=target>0&&saved>=target?'<div class="bank-goal-achieved">🎉 Цель достигнута! Можно отметить победу.</div>':'';
+      const goalStatusHtml=target>0?(saved>=target?'<div class="bank-goal-achieved">🎉 Цель достигнута! Можно отметить победу.</div>':'<div class="bank-goal-remaining">Осталось собрать: <b>'+fmtMoney(Math.max(0,target-saved))+'</b></div>'):'';
       const contributionHistory=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributions)?b.contributions:[];
       const contributorTotals=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributors)?b.contributors:[];
       const contributorTotalsHtml=contributorTotals.length

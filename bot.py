@@ -186,17 +186,26 @@ if bot:
             upd.update({"firstSeen": ts, "tariff": "trial", "subStart": ts, "subEnd": ts + 30 * 86400000, "status": "active", "reminderSent": 0})
         await fb.patch(f"/users/{uid}", upd)
 
-        if ref_id and ref_id != uid and not existing.get("referredBy"):
-            await fb.patch(f"/users/{uid}", {"referredBy": ref_id, "referredAt": ts})
-            refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
-            refs[uid] = ts
-            await fb.put(f"/users/{ref_id}/referrals", refs)
-            # Начисление купона за приглашение
+        # Реферал засчитывается только при первом запуске бота новым пользователем.
+        # Уже существующий пользователь не может позже привязаться к другому пригласившему.
+        if ref_id and ref_id != uid and not existing.get("firstSeen") and not existing.get("referredBy"):
             ref_u = await get_user(ref_id)
-            c10 = ref_u.get("couponsEarned") or 0
-            await fb.patch(f"/users/{ref_id}", {"couponsEarned": c10 + 1})
-            if bot:
-                try: await bot.send_message(int(ref_id), "🎁 Ты пригласил друга! Начислен купон 10%.", parse_mode="HTML")
+            if ref_u:
+                await fb.patch(f"/users/{uid}", {"referredBy": ref_id, "referredAt": ts})
+                refs = (await fb.get(f"/users/{ref_id}/referrals")) or {}
+                if not isinstance(refs, dict):
+                    refs = {}
+                # Проверка UID не позволяет повторно добавить одного и того же человека.
+                if uid not in refs:
+                    refs[uid] = ts
+                    await fb.put(f"/users/{ref_id}/referrals", refs)
+                    c10 = int(ref_u.get("couponsEarned") or 0)
+                    await fb.patch(f"/users/{ref_id}", {"couponsEarned": c10 + 1})
+                    if bot:
+                        try:
+                            await bot.send_message(int(ref_id), "🎁 Ты пригласил нового пользователя! Начислен купон 10%.", parse_mode="HTML")
+                        except Exception:
+                            pass
                 except: pass
 
         kb = InlineKeyboardMarkup(inline_keyboard=[

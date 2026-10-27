@@ -1695,3 +1695,12 @@ select:focus-visible {
 .pro-insight-alert.warning{background:rgba(245,158,11,.11);color:var(--text-color,inherit);border:1px solid rgba(245,158,11,.3)}
 .pro-insight-alert.ok{background:rgba(34,197,94,.08);color:var(--text-color,inherit);border:1px solid rgba(34,197,94,.2)}
 .pro-insight-alert>span{flex:0 0 auto}
+
+
+/* Family savings contribution history */
+.bank-contribution-history{margin:12px 0 10px;padding:11px 12px;border-radius:12px;background:rgba(128,128,128,.07)}
+.bank-contribution-history>b{display:block;font-size:12px;margin-bottom:7px}
+.bank-contribution-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--border-color,rgba(128,128,128,.16));font-size:12px}
+.bank-contribution-row>span{min-width:0;overflow-wrap:anywhere}
+.bank-contribution-row small{display:block;margin-top:3px;opacity:.65;font-size:11px}
+.bank-contribution-row strong{white-space:nowrap;font-size:12px}

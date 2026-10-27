@@ -986,6 +986,7 @@ function hideFamilyForms(){
 
 function showFamilyCreateForm(){
   if(familyBusy) return;
+  if(!canUseProFeatures){requestProFeature('Создание семейного бюджета');return;}
   familyFeedback('');
   const createForm = document.getElementById('familyCreateForm');
   const joinForm = document.getElementById('familyJoinForm');

@@ -1415,6 +1415,36 @@ async def api_family_transaction_create(request: Request, uid: str = Depends(cur
     rid=await fb.push(f"/families/{fid}/transactions",tx)
     return {"ok":True,"id":rid}
 
+
+@app.delete("/api/family/transactions/{tx_id}")
+async def api_family_transaction_delete(tx_id: str, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    family_id = user.get("familyId")
+    if not family_id:
+        raise HTTPException(404, "Ты не состоишь в семейной группе.")
+
+    family = (await fb.get(f"/families/{family_id}")) or {}
+    members = family.get("members") or {}
+    if (
+        not family
+        or family.get("archived")
+        or not isinstance(members, dict)
+        or uid not in members
+    ):
+        raise HTTPException(403, "Нет доступа к этой семейной группе.")
+
+    # A member may delete their own operation; the family owner can moderate all.
+    tx = await fb.get(f"/families/{family_id}/transactions/{tx_id}")
+    if not isinstance(tx, dict):
+        raise HTTPException(404, "Операция уже удалена или не найдена.")
+
+    if str(tx.get("uid") or "") != uid and str(family.get("ownerId") or "") != uid:
+        raise HTTPException(403, "Удалить эту операцию может только её автор или владелец семьи.")
+
+    await fb.delete(f"/families/{family_id}/transactions/{tx_id}")
+    return {"ok": True, "id": tx_id}
+
+
 @app.post("/api/envelope")
 async def api_env_create(request: Request, uid: str = Depends(current_uid)):
     u = await get_user(uid)

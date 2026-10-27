@@ -138,6 +138,47 @@ async def consume_coupon(uid: str, coupon_type):
     await fb.patch(f"/users/{uid}", {field: used + 1})
 
 
+async def award_referral_coupon(paid_uid: str, payment_path: str):
+    """Award one 10% coupon to the referrer for this confirmed payment."""
+    payment = await fb.get(payment_path)
+    if not isinstance(payment, dict) or payment.get("status") != "paid":
+        return False
+    if payment.get("referralRewarded"):
+        return False
+
+    buyer = await get_user(str(paid_uid)) or {}
+    referrer_id = str(buyer.get("referredBy") or "").strip()
+    if not referrer_id or referrer_id == str(paid_uid):
+        await fb.patch(payment_path, {"referralRewarded": True, "referralRewardedTo": None})
+        return False
+
+    referrer = await get_user(referrer_id)
+    if not referrer:
+        await fb.patch(payment_path, {"referralRewarded": True, "referralRewardedTo": None})
+        return False
+
+    earned = int(referrer.get("couponsEarned") or 0)
+    await fb.patch(f"/users/{referrer_id}", {"couponsEarned": earned + 1})
+    await fb.patch(payment_path, {
+        "referralRewarded": True,
+        "referralRewardedTo": referrer_id,
+        "referralRewardPercent": 10,
+    })
+
+    if bot:
+        try:
+            await bot.send_message(
+                int(referrer_id),
+                "🎉 <b>Твой реферал пополнил подписку!</b>\n\n"
+                "За подтверждённую оплату начислен новый купон <b>10%</b>.\n"
+                "Приглашай друзей и получай купоны за их покупки!",
+                parse_mode="HTML",
+            )
+        except Exception:
+            log.exception("Could not notify referrer %s about payment reward", referrer_id)
+    return True
+
+
 class ReviewState(StatesGroup):
     waiting_text = State()
     waiting_msg = State()
@@ -641,6 +682,8 @@ if bot:
             if percent:
                 await consume_coupon(uid, str(percent))
                 await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
+
+            await award_referral_coupon(uid, payment_path)
 
             await message.answer(
                 "🎉 <b>Оплата прошла успешно!</b>\n\n"
@@ -1368,6 +1411,11 @@ async def cryptopay_webhook(request: Request):
             await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
         except Exception:
             log.exception("Could not mark used crypto coupon for invoice %s", invoice_id)
+
+    try:
+        await award_referral_coupon(uid, payment_path)
+    except Exception:
+        log.exception("Could not award referral coupon for crypto invoice %s", invoice_id)
 
     if bot:
         try:

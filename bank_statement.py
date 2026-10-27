@@ -90,7 +90,12 @@ def _header_index(headers, choices):
             return i
     for i, h in enumerate(headers):
         hn = _norm(h)
-        if any(c in hn for c in choices if len(c) >= 5):
+        for candidate in choices:
+            if len(candidate) < 4 or candidate not in hn:
+                continue
+            # Avoid mistaking a "transaction type" column for a description.
+            if candidate == "transaction" and "type" in hn:
+                continue
             return i
     return None
 

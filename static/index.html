@@ -87,6 +87,17 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="trial-tag">FREE</div>
       </div>
 
+      <div class="card" style="margin:16px 0;padding:16px">
+        <h3 style="margin:0 0 8px">🎟 Твои купоны</h3>
+        <p class="muted" style="font-size:13px;margin:0 0 10px">Купон −10% начисляется за приглашённого нового пользователя, купон −20% — за опубликованный отзыв. Один купон применяется к одной покупке.</p>
+        <select id="couponTypeSelect" class="custom-input" style="width:100%;margin:0 0 8px" onchange="updateCouponSelector()">
+          <option value="">Без купона</option>
+          <option value="10">Скидка 10%</option>
+          <option value="20">Скидка 20%</option>
+        </select>
+        <div id="couponAvailabilityText" class="muted" style="font-size:12px">Загружаем доступные купоны…</div>
+      </div>
+
       <section class="pricing-group">
         <div class="pricing-group-head">
           <div class="pricing-plan-icon basic-icon">◈</div>

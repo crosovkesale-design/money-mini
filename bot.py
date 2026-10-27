@@ -1222,7 +1222,7 @@ async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     stars = int(round(base_stars * (100 - percent) / 100))
     payload = {"uid": uid, "plan": plan, "couponType": str(percent) if percent else ""}
     link = await bot.create_invoice_link(
-        title="Money Mini", description=f"Подписка{f' со скидкой {percent}%' if percent else ''}",
+        title="Money Mini", description=("Подписка со скидкой " + str(percent) + "%") if percent else "Оплата подписки",
         payload=json.dumps(payload),
         currency="XTR", prices=[LabeledPrice(label="Подписка", amount=stars)]
     )
@@ -1253,7 +1253,7 @@ async def api_pay_crypto(
     result = await cp.call("createInvoice", {
         "asset": "USDT",
         "amount": str(amount),
-        "description": f"{tariff['name']}{f' со скидкой {percent}%' if percent else ''}",
+        "description": (tariff["name"] + " со скидкой " + str(percent) + "%") if percent else tariff["name"],
         "payload": json.dumps({
             "uid": uid,
             "plan": plan,

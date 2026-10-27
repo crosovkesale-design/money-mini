@@ -1173,6 +1173,10 @@ async def api_import_family(request: Request, uid: str = Depends(current_uid)):
         if not math.isfinite(amount) or amount <= 0:
             continue
         tx_date = str(raw.get("date") or "")[:10]
+        try:
+            parsed_date = datetime.strptime(tx_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
         title = str(raw.get("title") or raw.get("category") or "Операция")[:120]
         currency = str(raw.get("currency") or "UAH").upper()[:8]
         fingerprint = str(raw.get("importFingerprint") or "")[:128]
@@ -1184,7 +1188,7 @@ async def api_import_family(request: Request, uid: str = Depends(current_uid)):
             "category": str(raw.get("category") or "Разное")[:64],
             "icon": str(raw.get("icon") or "📦")[:12],
             "date": tx_date, "currency": currency, "envelopeId": None,
-            "receipt": None, "ts": now_ms(), "importFingerprint": fingerprint or None,
+            "receipt": None, "ts": int(parsed_date.timestamp() * 1000), "importFingerprint": fingerprint or None,
         }
         await fb.push(f"/families/{fid}/transactions", tx)
         if fingerprint:

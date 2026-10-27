@@ -1708,3 +1708,6 @@ select:focus-visible {
 
 /* Savings goal reached status */
 .bank-goal-achieved{margin:10px 0;padding:10px 12px;border:1px solid rgba(34,197,94,.28);border-radius:12px;background:rgba(34,197,94,.09);font-size:12px;font-weight:600;line-height:1.45}
+
+.bank-goal-remaining{margin:10px 0;padding:9px 12px;border-radius:10px;background:rgba(128,128,128,.07);font-size:12px;line-height:1.4;color:var(--muted)}
+.bank-goal-remaining b{color:var(--text-color,inherit);font-weight:700}

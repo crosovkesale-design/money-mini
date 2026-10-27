@@ -279,8 +279,10 @@ async function saveReceiptDraft(){
         await loadFamilyTransactions();
       } else {
         const oldAmount=Number(tx.amount||0), nextAmount=draft.total, delta=nextAmount-oldAmount;
+        const affectsCurrentMonth=isTransactionInCurrentMonth(tx);
         tx.receipt=draft; tx.amount=nextAmount; tx.title=tx.title || draft.store;
-        if(tx.type==='expense'){appData.balance-=delta;appData.monthExpense+=delta;}else{appData.balance+=delta;appData.monthIncome+=delta;}
+        if(tx.type==='expense'){appData.balance-=delta;if(affectsCurrentMonth)appData.monthExpense+=delta;}
+        else{appData.balance+=delta;if(affectsCurrentMonth)appData.monthIncome+=delta;}
         saveData(); renderAll();
       }
       receiptEditingTxId=null; closeModal('modalReceiptEntry'); return;
@@ -745,7 +747,7 @@ async function saveTxEdits(){
         if(type==='income')appData.monthIncome+=amount;else appData.monthExpense+=amount;
       }
       tx.type=type;tx.amount=amount;tx.title=title;tx.note=title;tx.category=category;tx.icon=icon;
-      tx.date=date.split('-').reverse().join('.');tx.envelopeId=envelopeId||null;
+      tx.date=date.split('-').reverse().join('.');tx.ts=new Date(date+'T12:00:00').getTime();tx.envelopeId=envelopeId||null;
       saveData();renderAll();
     }
     editingTxId=null;closeModal('modalEditTransaction');
@@ -770,8 +772,12 @@ async function deleteTx(id){
   const tx = appData.history.find(x => String(x.id) === String(id));
   if(!tx) return;
   if(!window.confirm('Удалить эту операцию?')) return;
-  if(tx.type === 'expense'){ appData.balance += tx.amount; appData.monthExpense -= tx.amount; }
-  else { appData.balance -= tx.amount; appData.monthIncome -= tx.amount; }
+  if(tx.type === 'expense'){ appData.balance += Number(tx.amount||0); }
+  else { appData.balance -= Number(tx.amount||0); }
+  if(isTransactionInCurrentMonth(tx)){
+    if(tx.type === 'expense') appData.monthExpense -= Number(tx.amount||0);
+    else appData.monthIncome -= Number(tx.amount||0);
+  }
   appData.history = appData.history.filter(x => String(x.id) !== String(id));
   saveData(); renderAll();
 }

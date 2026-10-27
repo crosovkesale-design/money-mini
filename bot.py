@@ -1969,7 +1969,31 @@ async def api_family_bank_contribute(bank_id: str, request: Request, uid: str = 
         "envelopeId": None, "receipt": None, "ts": now_ms(),
         "bankId": bank_id, "contributionId": contribution_id
     })
-    return {"ok": True, "id": contribution_id, "balance": round(old_balance + amount, 2)}
+
+    new_balance = round(old_balance + amount, 2)
+    try:
+        target = float(bank.get("target") or 0)
+    except (TypeError, ValueError):
+        target = 0.0
+    # Notify the family only once: when this contribution crosses the goal.
+    if bot and math.isfinite(target) and target > 0 and old_balance < target <= new_balance:
+        contributor = members.get(uid) or {}
+        contributor_name = str(contributor.get("name") or "Участник семьи")[:64]
+        bank_name = str(bank.get("name") or "Копилка")[:64]
+        message_text = (
+            "🎉 <b>Семейная цель достигнута!</b>\\n\\n"
+            f"🏦 Копилка: <b>{bank_name}</b>\\n"
+            f"👤 Последнее пополнение: <b>{contributor_name}</b>\\n"
+            f"💰 Пополнение: <b>{amount:,.2f}</b>\\n"
+            f"✅ Накоплено: <b>{new_balance:,.2f} / {target:,.2f}</b>"
+        )
+        for member_uid in members:
+            try:
+                await bot.send_message(int(member_uid), message_text, parse_mode="HTML")
+            except Exception:
+                log.warning("Could not send family goal notification to member %s", member_uid, exc_info=True)
+
+    return {"ok": True, "id": contribution_id, "balance": new_balance}
 
 
 @app.post("/api/envelope")

@@ -27,7 +27,7 @@ def extract_receipt(image_bytes: bytes) -> dict:
         found = []
         for line in lines_to_scan:
             for match in MONEY_RE.finditer(line):
-                raw = match.group(1).replace("\\u00a0", "").replace(" ", "")
+                raw = match.group(1).replace("\u00a0", "").replace(" ", "")
                 # Interpret the last separator as decimal only when it has 1–2 digits after it.
                 if "," in raw and "." in raw:
                     decimal_sep = "," if raw.rfind(",") > raw.rfind(".") else "."

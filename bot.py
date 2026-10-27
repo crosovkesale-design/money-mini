@@ -1770,12 +1770,14 @@ async def api_family_banks(uid: str = Depends(current_uid)):
             balance, target = 0.0, 0.0
         raw_contributions = bank.get("contributions") or {}
         contributions = []
+        contributor_totals = {}
         if isinstance(raw_contributions, dict):
             for contribution_id, contribution in raw_contributions.items():
                 if not isinstance(contribution, dict):
                     continue
                 contributor_uid = str(contribution.get("uid") or "")
                 member = members.get(contributor_uid) or {}
+                member_name = str(member.get("name") or "Участник")[:64]
                 try:
                     contribution_amount = float(contribution.get("amount") or 0)
                     contribution_ts = int(contribution.get("ts") or 0)
@@ -1788,9 +1790,19 @@ async def api_family_banks(uid: str = Depends(current_uid)):
                     "amount": round(contribution_amount, 2),
                     "date": str(contribution.get("date") or "")[:10],
                     "ts": contribution_ts,
-                    "memberName": str(member.get("name") or "Участник")[:64],
+                    "memberName": member_name,
                 })
+                contributor_totals[contributor_uid or member_name] = {
+                    "memberName": member_name,
+                    "amount": round(
+                        contributor_totals.get(contributor_uid or member_name, {}).get("amount", 0)
+                        + contribution_amount, 2
+                    ),
+                }
         contributions.sort(key=lambda item: item["ts"], reverse=True)
+        contributors = sorted(
+            contributor_totals.values(), key=lambda item: item["amount"], reverse=True
+        )
         banks.append({
             "id": str(bank_id),
             "name": str(bank.get("name") or "Копилка")[:64],
@@ -1798,6 +1810,7 @@ async def api_family_banks(uid: str = Depends(current_uid)):
             "balance": balance,
             "deadline": str(bank.get("deadline") or "")[:10] or None,
             "contributions": contributions[:50],
+            "contributors": contributors[:20],
         })
     return {"banks": banks}
 

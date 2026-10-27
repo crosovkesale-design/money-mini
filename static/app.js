@@ -73,9 +73,11 @@ function renderReferralStats(){
   const refs = document.getElementById('referralCountValue');
   const c10 = document.getElementById('coupon10CountValue');
   const c20 = document.getElementById('coupon20CountValue');
+  const link = document.getElementById('referralLinkInput');
   if(refs) refs.textContent = String(Number(referralStats.count || 0));
   if(c10) c10.textContent = String(Number(referralStats.coupons10 || 0));
   if(c20) c20.textContent = String(Number(referralStats.coupons20 || 0));
+  if(link) link.value = referralStats.link || '';
 }
 
 function updateProFeatureControls(){
@@ -639,6 +641,23 @@ async function joinFamily(){
     familyFeedback(error.message || 'Не удалось присоединиться к семье.', true);
   } finally {
     setFamilyBusy(false);
+  }
+}
+
+async function copyReferralLink(){
+  const link = referralStats.link || document.getElementById('referralLinkInput')?.value || '';
+  if(!link) return;
+  try{
+    await navigator.clipboard.writeText(link);
+    const tg = window.Telegram?.WebApp;
+    if(tg?.showAlert) tg.showAlert('Реферальная ссылка скопирована!');
+    else alert('Реферальная ссылка скопирована!');
+  } catch(error){
+    const input = document.getElementById('referralLinkInput');
+    if(input){ input.focus(); input.select(); }
+    const tg = window.Telegram?.WebApp;
+    if(tg?.showAlert) tg.showAlert('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.');
+    else alert('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.');
   }
 }
 

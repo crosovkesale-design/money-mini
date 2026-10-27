@@ -4,6 +4,7 @@ import io
 import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
+from itertools import islice
 
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 MAX_ROWS = 2000
@@ -120,7 +121,7 @@ def parse_bank_statement(filename, data):
             from openpyxl import load_workbook
             wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
             ws = wb.active
-            raw = list(ws.iter_rows(values_only=True))
+            raw = list(islice(ws.iter_rows(values_only=True), MAX_ROWS + 16))
             wb.close()
         except Exception as exc:
             raise ValueError("Не удалось прочитать XLSX. Сохрани выписку заново в Excel.") from exc
@@ -131,7 +132,7 @@ def parse_bank_statement(filename, data):
             delimiter = dialect.delimiter
         except csv.Error:
             delimiter = ";" if decoded.count(";") > decoded.count(",") else ","
-        raw = list(csv.reader(io.StringIO(decoded), delimiter=delimiter))
+        raw = list(islice(csv.reader(io.StringIO(decoded), delimiter=delimiter), MAX_ROWS + 16))
     if not raw:
         raise ValueError("Файл пустой.")
     raw = [list(row) for row in raw if row and any(str(v or "").strip() for v in row)]

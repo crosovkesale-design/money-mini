@@ -683,7 +683,10 @@ if bot:
                 await consume_coupon(uid, str(percent))
                 await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
 
-            await award_referral_coupon(uid, payment_path)
+            try:
+                await award_referral_coupon(uid, payment_path)
+            except Exception:
+                log.exception("Could not award referral coupon for Stars payment %s", charge_key)
 
             await message.answer(
                 "🎉 <b>Оплата прошла успешно!</b>\n\n"

@@ -65,7 +65,7 @@
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./style.css?v=20261026-access1">
+<link rel="stylesheet" href="./style.css?v=20261027-coupon-menu">
 </head>
 <body>
 <div class="container">
@@ -87,16 +87,36 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="trial-tag">FREE</div>
       </div>
 
-      <div class="card" style="margin:16px 0;padding:16px">
-        <h3 style="margin:0 0 8px">🎟 Твои купоны</h3>
-        <p class="muted" style="font-size:13px;margin:0 0 10px">Купон −10% начисляется за приглашённого нового пользователя, купон −20% — за опубликованный отзыв. Один купон применяется к одной покупке.</p>
-        <select id="couponTypeSelect" class="custom-input" style="width:100%;margin:0 0 8px" onchange="updateCouponSelector()">
-          <option value="">Без купона</option>
-          <option value="10">Скидка 10%</option>
-          <option value="20">Скидка 20%</option>
+      <section class="coupon-panel">
+        <div class="coupon-panel-head">
+          <div class="coupon-heading-icon"><i class="fa-solid fa-ticket"></i></div>
+          <div class="coupon-heading-copy">
+            <span class="coupon-eyebrow">ТВОИ БОНУСЫ</span>
+            <h3>Купоны и скидки</h3>
+            <p>Выбери бонус перед оплатой</p>
+          </div>
+          <div class="coupon-spark">✦</div>
+        </div>
+        <select id="couponTypeSelect" class="coupon-hidden-select" aria-label="Выбор купона" onchange="updateCouponSelector()">
+          <option value="">Без купона</option><option value="10">Скидка 10%</option><option value="20">Скидка 20%</option>
         </select>
-        <div id="couponAvailabilityText" class="muted" style="font-size:12px">Загружаем доступные купоны…</div>
-      </div>
+        <div class="coupon-choice-list">
+          <button type="button" class="coupon-choice coupon-choice-10" id="couponChoice10" onclick="selectCoupon('10')">
+            <span class="coupon-choice-icon"><i class="fa-solid fa-user-plus"></i></span>
+            <span class="coupon-choice-copy"><strong>Пригласи друга</strong><small>Скидка за нового пользователя</small><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
+            <span class="coupon-discount">−10%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
+          </button>
+          <button type="button" class="coupon-choice coupon-choice-20" id="couponChoice20" onclick="selectCoupon('20')">
+            <span class="coupon-choice-icon"><i class="fa-solid fa-star"></i></span>
+            <span class="coupon-choice-copy"><strong>Поделись отзывом</strong><small>Бонус за опубликованный отзыв</small><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
+            <span class="coupon-discount">−20%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
+          </button>
+        </div>
+        <button type="button" class="coupon-none" id="couponChoiceNone" onclick="selectCoupon('')">
+          <span><i class="fa-solid fa-ban"></i> Продолжить без купона</span><i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div class="coupon-footer" id="couponAvailabilityText"><i class="fa-solid fa-shield-halved"></i><span>Купон применяется к одной покупке и списывается после оплаты.</span></div>
+      </section>
 
       <section class="pricing-group">
         <div class="pricing-group-head">

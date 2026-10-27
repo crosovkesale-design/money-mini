@@ -31,10 +31,13 @@ function applyLang(){
 function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-  document.getElementById('tab-' + name).style.display = 'block';
-  document.getElementById('nav-' + name).classList.add('active');
+  const tab = document.getElementById('tab-' + name);
+  if(!tab) return;
+  tab.style.display = 'block';
+  const nav = document.getElementById('nav-' + name);
+  if(nav) nav.classList.add('active');
   if(name === 'analytics') renderCharts();
-  renderAll();
+  if(name !== 'advantages' && name !== 'pay') renderAll();
 }
 
 function openModal(id){ document.getElementById(id).classList.add('active'); }

@@ -1768,12 +1768,36 @@ async def api_family_banks(uid: str = Depends(current_uid)):
             target = max(0.0, float(bank.get("target") or 0))
         except (TypeError, ValueError):
             balance, target = 0.0, 0.0
+        raw_contributions = bank.get("contributions") or {}
+        contributions = []
+        if isinstance(raw_contributions, dict):
+            for contribution_id, contribution in raw_contributions.items():
+                if not isinstance(contribution, dict):
+                    continue
+                contributor_uid = str(contribution.get("uid") or "")
+                member = members.get(contributor_uid) or {}
+                try:
+                    contribution_amount = float(contribution.get("amount") or 0)
+                    contribution_ts = int(contribution.get("ts") or 0)
+                except (TypeError, ValueError):
+                    continue
+                if not math.isfinite(contribution_amount) or contribution_amount <= 0:
+                    continue
+                contributions.append({
+                    "id": str(contribution_id),
+                    "amount": round(contribution_amount, 2),
+                    "date": str(contribution.get("date") or "")[:10],
+                    "ts": contribution_ts,
+                    "memberName": str(member.get("name") or "Участник")[:64],
+                })
+        contributions.sort(key=lambda item: item["ts"], reverse=True)
         banks.append({
             "id": str(bank_id),
             "name": str(bank.get("name") or "Копилка")[:64],
             "target": target,
             "balance": balance,
             "deadline": str(bank.get("deadline") or "")[:10] or None,
+            "contributions": contributions[:50],
         })
     return {"banks": banks}
 

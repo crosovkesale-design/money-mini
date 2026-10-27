@@ -80,6 +80,13 @@ function renderReferralStats(){
   if(link) link.value = referralStats.link || '';
 }
 
+function selectCoupon(value){
+  const select = document.getElementById('couponTypeSelect');
+  if(!select) return;
+  select.value = value;
+  updateCouponSelector();
+}
+
 function updateCouponSelector(){
   const select = document.getElementById('couponTypeSelect');
   const info = document.getElementById('couponAvailabilityText');
@@ -88,17 +95,37 @@ function updateCouponSelector(){
   const count20 = Number(referralStats.coupons20 || 0);
   const option10 = select.querySelector('option[value="10"]');
   const option20 = select.querySelector('option[value="20"]');
-  if(option10){
-    option10.disabled = count10 <= 0;
-    option10.textContent = 'Скидка 10% — доступно: ' + count10;
-  }
-  if(option20){
-    option20.disabled = count20 <= 0;
-    option20.textContent = 'Скидка 20% — доступно: ' + count20;
-  }
+  if(option10) option10.disabled = count10 <= 0;
+  if(option20) option20.disabled = count20 <= 0;
   if(select.value === '10' && count10 <= 0) select.value = '';
   if(select.value === '20' && count20 <= 0) select.value = '';
-  if(info) info.textContent = 'Доступно купонов: −10% — ' + count10 + ', −20% — ' + count20 + '. Купон списывается после подтверждения оплаты.';
+
+  const choice10 = document.getElementById('couponChoice10');
+  const choice20 = document.getElementById('couponChoice20');
+  const choiceNone = document.getElementById('couponChoiceNone');
+  const stock10 = document.getElementById('coupon10Stock');
+  const stock20 = document.getElementById('coupon20Stock');
+  if(choice10){
+    choice10.disabled = count10 <= 0;
+    choice10.classList.toggle('selected', select.value === '10');
+    choice10.setAttribute('aria-pressed', String(select.value === '10'));
+  }
+  if(choice20){
+    choice20.disabled = count20 <= 0;
+    choice20.classList.toggle('selected', select.value === '20');
+    choice20.setAttribute('aria-pressed', String(select.value === '20'));
+  }
+  if(choiceNone){
+    choiceNone.classList.toggle('selected', !select.value);
+    choiceNone.setAttribute('aria-pressed', String(!select.value));
+  }
+  if(stock10) stock10.textContent = count10 > 0 ? 'Доступно купонов: ' + count10 : 'Пока нет купонов';
+  if(stock20) stock20.textContent = count20 > 0 ? 'Доступно купонов: ' + count20 : 'Пока нет купонов';
+  if(info){
+    if(select.value === '10') info.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Скидка 10% выбрана. Купон спишется после подтверждения оплаты.</span>';
+    else if(select.value === '20') info.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Скидка 20% выбрана. Купон спишется после подтверждения оплаты.</span>';
+    else info.innerHTML = '<i class="fa-solid fa-shield-halved"></i><span>Выбери доступный купон или продолжай без скидки. Купон списывается только после оплаты.</span>';
+  }
 }
 
 function updateProFeatureControls(){

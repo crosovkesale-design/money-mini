@@ -1646,3 +1646,10 @@ select:focus-visible {
 .manage-card-actions .btn{font-size:11px;padding:6px 9px}
 .history-item{flex-wrap:wrap}
 @media(max-width:380px){.history-receipt-actions{gap:3px}.card-action{width:28px;height:28px}}
+
+
+/* Bank statement import */
+.bank-import-launch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:15px;background:var(--surface)}
+.bank-import-launch>div{display:flex;flex-direction:column;gap:4px;min-width:0}.bank-import-launch b{font-size:12px}.bank-import-launch small{font-size:10px;color:var(--muted)}
+.bank-import-launch .btn{flex-shrink:0}.bank-import-modal{max-height:92vh}.bank-import-hint{font-size:12px;line-height:1.5;color:var(--muted);margin:0 0 12px}.bank-import-status{font-size:12px;line-height:1.45;color:var(--accent-2);margin:9px 0}.bank-import-summary{font-size:12px;padding:10px;margin:8px 0;border-radius:10px;background:var(--surface);border:1px solid var(--border)}
+.bank-import-rows{display:flex;flex-direction:column;gap:9px;max-height:48vh;overflow:auto}.bank-import-row{padding:11px;border:1px solid var(--border);border-radius:13px;background:var(--card)}.bank-import-row.is-excluded{opacity:.55}.bank-import-row-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}.bank-import-row-top label{display:flex;align-items:flex-start;gap:7px;min-width:0;font-size:12px;line-height:1.4}.bank-import-row-top label span{overflow-wrap:anywhere}.bank-import-row-top input{margin-top:2px;flex-shrink:0}.bank-import-row-top strong{font-size:12px;white-space:nowrap}.bank-import-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bank-import-fields label{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--muted);min-width:0}.bank-import-fields input,.bank-import-fields select{width:100%;min-width:0;padding:8px 6px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:12px}.bank-import-footer{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.bank-import-footer .btn{width:100%}

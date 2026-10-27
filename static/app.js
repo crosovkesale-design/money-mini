@@ -365,14 +365,29 @@ const EXPENSE_CATS = [
   {icon:'🎉',name:'Досуг'},{icon:'🎁',name:'Подарки'},{icon:'🐾',name:'Питомцы'},{icon:'✈️',name:'Путешествия'},
   {icon:'📚',name:'Образование'},{icon:'🔧',name:'Ремонт'},{icon:'🧴',name:'Хозтовары'},{icon:'💳',name:'Кредит'},
   {icon:'👨‍👧',name:'Алименты'},{icon:'🍷',name:'Алкоголь'},{icon:'🚬',name:'Сигареты'},{icon:'🛍️',name:'Маркетплейсы'},
-  {icon:'🏦',name:'Банк/комиссия'},{icon:'📦',name:'Разное'}
+  {icon:'🏦',name:'Банк/комиссия'},{icon:'📦',name:'Разное'},
+  {icon:'🏥',name:'Врачи и лечение'},{icon:'🦷',name:'Стоматолог'},{icon:'🧪',name:'Анализы'},{icon:'🧒',name:'Дети'},
+  {icon:'🍼',name:'Детские товары'},{icon:'🏫',name:'Детский сад/школа'},{icon:'🐕',name:'Ветеринар'},{icon:'🧹',name:'Уборка'},
+  {icon:'🛏️',name:'Мебель'},{icon:'🔌',name:'Техника'},{icon:'🛠️',name:'Инструменты'},{icon:'🚘',name:'Автообслуживание'},
+  {icon:'🅿️',name:'Парковка'},{icon:'🚦',name:'Штрафы'},{icon:'🚆',name:'Билеты'},{icon:'🏨',name:'Отель'},
+  {icon:'🍽️',name:'Рестораны'},{icon:'🥤',name:'Напитки'},{icon:'🍰',name:'Сладости'},{icon:'🥦',name:'Овощи и фрукты'},
+  {icon:'🥩',name:'Мясо и рыба'},{icon:'🧾',name:'Налоги'},{icon:'⚖️',name:'Юридические услуги'},{icon:'💸',name:'Переводы'},
+  {icon:'💰',name:'Снятие наличных'},{icon:'🎟️',name:'Мероприятия'},{icon:'🎨',name:'Хобби'},{icon:'📦',name:'Доставка'},
+  {icon:'🧳',name:'Багаж'},{icon:'💍',name:'Украшения'},{icon:'🧥',name:'Аксессуары'},{icon:'🧺',name:'Прачечная'},
+  {icon:'🛡️',name:'Страхование'},{icon:'🏛️',name:'Госпошлины'},{icon:'🤲',name:'Благотворительность'},{icon:'🪙',name:'Комиссии и сборы'}
 ];
 
 const INCOME_CATS = [
   {icon:'💰',name:'Зарплата'},{icon:'💵',name:'Аванс'},{icon:'🏆',name:'Премия'},{icon:'💸',name:'Кэшбэк'},
   {icon:'📈',name:'Инвестиции'},{icon:'📊',name:'Дивиденды'},{icon:'💼',name:'Фриланс'},{icon:'🏪',name:'Бизнес'},
   {icon:'🎯',name:'Продажа'},{icon:'🎁',name:'Подарок'},{icon:'🤝',name:'Помощь'},{icon:'🥇',name:'Выигрыш'},
-  {icon:'↩️',name:'Возврат'},{icon:'🎓',name:'Стипендия'},{icon:'👴',name:'Пенсия'},{icon:'🪙',name:'Прочее'}
+  {icon:'↩️',name:'Возврат'},{icon:'🎓',name:'Стипендия'},{icon:'👴',name:'Пенсия'},{icon:'🪙',name:'Прочее'},
+  {icon:'🏦',name:'Проценты по вкладу'},{icon:'🧑‍💻',name:'Удалённая работа'},{icon:'🧾',name:'Подработка'},{icon:'🏠',name:'Аренда жилья'},
+  {icon:'🚗',name:'Аренда имущества'},{icon:'🛒',name:'Возврат покупки'},{icon:'🪙',name:'Продажа криптовалюты'},{icon:'💹',name:'Прибыль от торговли'},
+  {icon:'🧑‍🏫',name:'Репетиторство'},{icon:'🧑‍🔧',name:'Услуги и заказы'},{icon:'📦',name:'Продажа вещей'},{icon:'🎨',name:'Творчество и контент'},
+  {icon:'📱',name:'Монетизация соцсетей'},{icon:'▶️',name:'Доход от видео'},{icon:'🧑‍🤝‍🧑',name:'Реферальный доход'},{icon:'🌐',name:'Партнёрские программы'},
+  {icon:'🧑‍🌾',name:'Сельское хозяйство'},{icon:'🏅',name:'Грант или стипендия'},{icon:'🧓',name:'Социальная помощь'},{icon:'👶',name:'Пособие на ребёнка'},
+  {icon:'💒',name:'Наследство'},{icon:'🧳',name:'Компенсация расходов'},{icon:'⚖️',name:'Страховая выплата'},{icon:'🎰',name:'Приз'}
 ];
 
 const CAT_I18N = {
@@ -455,6 +470,10 @@ function openTransactionModal(type) {
   document.getElementById('txModalTitle').innerText =
     type === 'expense' ? t('btn_expense') : t('btn_income');
 
+  const receiptActions = document.querySelector('.receipt-action-row');
+  if(receiptActions) receiptActions.style.display = type === 'expense' ? 'flex' : 'none';
+  if(type !== 'expense') pendingReceiptDraft = null;
+
   const baseCats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
   const cats = baseCats.concat(canUseProFeatures ? (appData.customCategories || []) : []);
   const grid = document.getElementById('categoryGrid');
@@ -498,14 +517,16 @@ function saveCustomCategory(){
   saveData(); closeModal('modalAddCategory'); openTransactionModal(appData.activeTxType);
 }
 
+function txTypeReceiptAllowed(type){ return type === 'expense'; }
+
 async function submitTransaction(){
   const amount=parseFloat(document.getElementById('txAmountInput').value);if(!amount||amount<=0)return;
   const title=document.getElementById('txCommentInput').value||tCat(appData.selectedCategory);
   const envelopeSelect=document.getElementById('txEnvelopeSelect');
   const selectedEnvelopeId=appData.activeTxType==='expense'&&envelopeSelect&&envelopeSelect.value?envelopeSelect.value:null;
-  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId,receipt:pendingReceiptDraft});closeModal('modalTransaction');pendingReceiptDraft=null;await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
+  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId,receipt:appData.activeTxType==='expense'?pendingReceiptDraft:null});closeModal('modalTransaction');pendingReceiptDraft=null;await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
   const envelopeId=selectedEnvelopeId?Number(selectedEnvelopeId):null;
-  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU'),receipt:pendingReceiptDraft};appData.history.unshift(tx);pendingReceiptDraft=null;
+  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU'),receipt:txTypeReceiptAllowed(appData.activeTxType)?pendingReceiptDraft:null};appData.history.unshift(tx);pendingReceiptDraft=null;
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
   saveData();closeModal('modalTransaction');renderAll();
 }

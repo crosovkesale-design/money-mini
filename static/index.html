@@ -58,12 +58,12 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-family-budget-brand" defer></script>
+<script src="./app.js?v=20261027-receipts-basic-pro" defer></script>
 
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./style.css?v=20261027-family-budget-brand">
+<link rel="stylesheet" href="./style.css?v=20261027-receipts-basic-pro">
 </head>
 <body>
 <div class="container">
@@ -131,6 +131,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="pricing-benefit"><span>✓</span><p>Конверты, банки и финансовые цели</p></div>
           <div class="pricing-benefit"><span>✓</span><p>Аналитика и прогноз расходов</p></div>
           <div class="pricing-benefit"><span>✓</span><p>Планирование регулярных платежей</p></div>
+          <div class="pricing-benefit"><span><i class="fa-solid fa-receipt"></i></span><p>Чеки вручную: магазин, товары и суммы</p></div>
         </div>
 
         <div class="pricing-options">
@@ -195,6 +196,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="pricing-benefit pro-benefit"><span>✧</span><div><b>Свои категории</b><p>Создавай категории доходов и расходов под себя</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>◈</span><div><b>Персональные обои</b><p>Настраивай фон интерфейса на свой вкус</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b>Экспорт Excel</b><p>Отправляй финансовый отчёт в Telegram</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span><i class="fa-solid fa-camera"></i></span><div><b>Чеки по фото</b><p>Фото чека — распознавание подключим следующим этапом</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>◷</span><div><b>Ежедневные напоминания</b><p>Бот поможет не забыть записать траты</p></div></div>
         </div>
 
@@ -447,9 +449,32 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div id="categoryGrid" class="icon-grid"></div>
     <input type="number" id="txAmountInput" class="custom-input" data-i18n="amount_lbl" placeholder="Сумма">
     <input type="text" id="txCommentInput" class="custom-input" data-i18n="comment_lbl" placeholder="Комментарий">
+    <div class="receipt-action-row">
+      <button type="button" class="btn btn-outline receipt-action" onclick="openReceiptEntry()"><i class="fa-solid fa-receipt"></i><span>Ввести чек вручную</span><small>Basic</small></button>
+      <button type="button" class="btn btn-outline receipt-action receipt-photo-action" onclick="openReceiptPhoto()"><i class="fa-solid fa-camera"></i><span>Чек по фото</span><small class="pro-mini-tag">PRO</small></button>
+    </div>
+    <div id="receiptDraftStatus" class="receipt-draft-status" style="display:none"></div>
     <button class="btn btn-accent" style="width:100%" onclick="submitTransaction()" data-i18n="save">Сохранить</button>
   </div>
 </div>
+
+<div class="modal" id="modalReceiptEntry">
+  <div class="modal-content receipt-modal-content">
+    <div class="modal-header"><h3><i class="fa-solid fa-receipt"></i> Чек из магазина</h3><span class="modal-close" onclick="closeModal(\'modalReceiptEntry\')">×</span></div>
+    <p class="receipt-modal-hint">Basic: внеси данные чека вручную. Каждая строка товара — название; цена; количество.</p>
+    <label class="lbl" for="receiptStoreInput">Магазин</label>
+    <input type="text" id="receiptStoreInput" class="custom-input" maxlength="80" placeholder="Например, АТБ">
+    <label class="lbl" for="receiptDateInput">Дата покупки</label>
+    <input type="date" id="receiptDateInput" class="custom-input">
+    <label class="lbl" for="receiptItemsInput">Товары</label>
+    <textarea id="receiptItemsInput" class="custom-input receipt-items-input" rows="5" placeholder="Молоко; 42.50; 1&#10;Хлеб; 28; 2&#10;Яблоки; 35; 1.5"></textarea>
+    <label class="lbl" for="receiptTotalInput">Итого по чеку</label>
+    <input type="number" id="receiptTotalInput" class="custom-input" min="0" step="0.01" placeholder="Сумма чека">
+    <div id="receiptEntryError" class="receipt-entry-error" role="alert"></div>
+    <button type="button" class="btn btn-accent" style="width:100%" onclick="saveReceiptDraft()"><i class="fa-solid fa-check"></i> Добавить чек к операции</button>
+  </div>
+</div>
+<input id="receiptPhotoInput" type="file" accept="image/*" capture="environment" hidden onchange="handleReceiptPhotoSelected(event)">
 
 <div class="modal" id="modalAddCategory">
   <div class="modal-content">

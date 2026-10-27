@@ -25,6 +25,7 @@ from aiogram.types import (
     Message,
     PreCheckoutQuery,
     WebAppInfo,
+    BotCommand,
 )
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
@@ -287,28 +288,113 @@ if bot:
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
-        await message.answer("/start — бюджет\n/help — справка\n/pay — подписка\n/status — твоя подписка\n/stats — сколько нас\n/referrals — рефералы\n/review — отзыв\n/support — поддержка")
+        text = (
+            "✨ <b>Money Mini — меню команд</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "📊 <b>/stats</b> — статистика сообщества\n"
+            "💎 <b>/pay</b> — тарифы и способы оплаты\n"
+            "🛡 <b>/status</b> — статус твоей подписки\n"
+            "🎁 <b>/referrals</b> — приглашения и бонусы\n"
+            "✍️ <b>/review</b> — оставить отзыв\n"
+            "🆘 <b>/support</b> — помощь и поддержка\n"
+            "🏠 <b>/start</b> — главное меню\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "<i>Выбирай команду из меню Telegram или нажми на неё в списке.</i>"
+        )
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📊 Статистика", callback_data="menu_stats"),
+             InlineKeyboardButton(text="🛡 Моя подписка", callback_data="menu_status")],
+            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
+             InlineKeyboardButton(text="🎁 Рефералы", callback_data="ref_link")]
+        ])
+        await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
         users = (await fb.get("/users")) or {}
+        if not isinstance(users, dict):
+            users = {}
         total = len(users)
-        trial = sum(1 for u in users.values() if isinstance(u, dict) and (u.get("tariff") or "").startswith("trial"))
-        paid = total - trial
-        await message.answer(f"📊 Всего: <b>{total}</b>\n🎁 На триале: {trial}\n💎 С подпиской: {paid}", parse_mode="HTML")
+        trial = 0
+        active_paid = 0
+        for user in users.values():
+            if not isinstance(user, dict):
+                continue
+            end = int(user.get("subEnd") or 0)
+            if 0 < end < 10**11:
+                end *= 1000
+            if end <= now_ms():
+                continue
+            tariff = str(user.get("tariff") or "trial").lower()
+            if tariff == "trial":
+                trial += 1
+            else:
+                active_paid += 1
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="💎 Выбрать тариф", callback_data="show_pay"),
+             InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
+        ])
+        await message.answer(
+            "📊 <b>Money Mini · статистика</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"👥 Пользователей: <b>{total:,}</b>\n"
+            f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
+            f"💎 Активная платная подписка: <b>{active_paid:,}</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "<i>Статистика обновляется по данным приложения.</i>",
+            reply_markup=kb, parse_mode="HTML"
+        )
 
     @dp.message(Command("status"))
     async def cmd_status(message: Message):
         u = await get_user(str(message.from_user.id))
         sub_end = int(u.get("subEnd") or 0)
-        if sub_end < 10**11: sub_end *= 1000
+        if 0 < sub_end < 10**11:
+            sub_end *= 1000
         days = max(0, math.ceil((sub_end - now_ms()) / 86400000))
-        await message.answer(f"📊 Тариф: <b>{u.get('tariff', 'trial')}</b>\nОсталось: <b>{days} дн.</b>", parse_mode="HTML")
+        active = sub_end > now_ms()
+        tariff_key = str(u.get("tariff") or "trial")
+        tariff_names = {
+            "trial": "Пробный период",
+            "1month": "Basic · 1 месяц",
+            "3months": "Basic · 3 месяца",
+            "6months": "Basic · 6 месяцев",
+            "12months": "Basic · 12 месяцев",
+            "pro1": "PRO · 1 месяц",
+            "pro12": "PRO · 12 месяцев",
+        }
+        end_text = datetime.fromtimestamp(sub_end / 1000, tz=KYIV).strftime("%d.%m.%Y") if sub_end else "не указана"
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="💎 Продлить подписку", callback_data="show_pay")],
+            [InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
+        ])
+        await message.answer(
+            "🛡 <b>Твоя подписка</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"{'🟢' if active else '🔴'} Статус: <b>{'Активна' if active else 'Не активна'}</b>\n"
+            f"💼 Тариф: <b>{tariff_names.get(tariff_key, tariff_key)}</b>\n"
+            f"⏳ Осталось: <b>{days} дн.</b>\n"
+            f"📅 Действует до: <b>{end_text}</b>\n"
+            "━━━━━━━━━━━━━━━━━━",
+            reply_markup=kb, parse_mode="HTML"
+        )
 
     @dp.message(Command("pay"))
     async def cmd_pay(message: Message):
-        kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))]])
-        await message.answer("Выбери тариф для оплаты:", reply_markup=kb)
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="💎 Смотреть тарифы", web_app=WebAppInfo(url=MINI_APP_URL.rstrip("/") + "?screen=pay"))],
+            [InlineKeyboardButton(text="🎁 Как получить скидку", callback_data="ref_link")]
+        ])
+        await message.answer(
+            "💎 <b>Тарифы Money Mini</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "Выбери подходящий срок и получи доступ к инструментам контроля бюджета.\n\n"
+            "✨ <b>Basic</b> — учёт доходов и расходов, история, аналитика и финансовые цели.\n"
+            "👑 <b>PRO</b> — всё из Basic плюс свои категории, оформление, Excel-отчёты и напоминания.\n\n"
+            "🎁 <b>Новым пользователям — 30 дней пробного доступа.</b>\n"
+            "💳 Оплата через Telegram Stars или USDT.",
+            reply_markup=kb, parse_mode="HTML"
+        )
 
 
     @dp.message(Command("referrals"))
@@ -722,6 +808,16 @@ STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 async def lifespan(app: FastAPI):
     tasks = []
     if bot:
+        await bot.set_my_commands([
+            BotCommand(command="start", description="🏠 Главное меню"),
+            BotCommand(command="stats", description="📊 Статистика сообщества"),
+            BotCommand(command="pay", description="💎 Тарифы и оплата"),
+            BotCommand(command="status", description="🛡 Моя подписка"),
+            BotCommand(command="referrals", description="🎁 Пригласить друзей"),
+            BotCommand(command="review", description="✍️ Оставить отзыв"),
+            BotCommand(command="support", description="🆘 Поддержка"),
+            BotCommand(command="help", description="ℹ️ Справка по командам"),
+        ])
         await bot.delete_webhook(drop_pending_updates=True)
         tasks.append(asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())))
         tasks.append(asyncio.create_task(daily_check()))

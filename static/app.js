@@ -1484,6 +1484,18 @@ function renderProInsights(){
   }).join(''):'<p class="muted">Пока нет расходов за текущий месяц — добавь операции, и здесь появится анализ.</p>';
   const compareText=difference===null?'Нет данных за прошлый месяц':(difference>0?'Расходы выросли на ':'Расходы снизились на ')+Math.abs(Math.round(difference))+'% к прошлому месяцу';
   const compareClass=difference===null?'neutral':difference>0?'negative':'positive';
+  const envelopeItems=budgetMode==='family'&&currentFamily?familyEnvelopes:(appData.envelopes||[]);
+  const historyForAlerts=budget.history||[];
+  const envelopeWarnings=envelopeItems.map(env=>{
+    const spent=historyForAlerts.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(env.id)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0);
+    const target=Number(env.target||0);
+    return {name:String(env.name||'Конверт'),spent,target,over:spent-target};
+  }).filter(env=>env.target>0&&env.over>0);
+  const alerts=[];
+  if(currentExpense>currentIncome&&currentExpense>0)alerts.push({level:'warning',text:'Расходы за месяц превышают доходы на '+fmtMoney(currentExpense-currentIncome)+'.'});
+  envelopeWarnings.slice(0,3).forEach(env=>alerts.push({level:'warning',text:'Конверт «'+env.name+'»: превышение лимита на '+fmtMoney(env.over)+'.'}));
+  if(currentExpense===0&&envelopeWarnings.length===0)alerts.push({level:'ok',text:'Пока нет признаков перерасхода. Добавляй операции, чтобы отслеживать бюджет.'});
+  const alertsHtml='<div class="pro-insights-alerts"><div class="pro-insights-section-title">Контроль бюджета</div>'+alerts.map(a=>'<div class="pro-insight-alert '+a.level+'"><span>'+(a.level==='warning'?'⚠️':'✓')+'</span><p>'+bankEscape(a.text)+'</p></div>').join('')+'</div>';
   node.innerHTML='<div class="pro-insights-head"><div><span class="pro-insights-eyebrow">PRO ANALYTICS</span><h4>Финансовая картина</h4><p>На основе операций текущего и прошлого месяца</p></div><span class="pro-insights-crown">♛</span></div>'+
     '<div class="pro-insights-metrics">'+
       '<div class="pro-insight-metric"><span>Прогноз расходов</span><b>'+fmtMoney(projected)+'</b><small>к концу месяца</small></div>'+
@@ -1492,6 +1504,7 @@ function renderProInsights(){
       '<div class="pro-insight-metric"><span>Траты за месяц</span><b>'+fmtMoney(currentExpense)+'</b><small>из '+daysInMonth+' дней</small></div>'+
     '</div>'+
     '<div class="pro-insight-comparison '+compareClass+'"><span>Сравнение с прошлым месяцем</span><b>'+bankEscape(compareText)+'</b>'+(previousExpense>0?'<small>Прошлый месяц: '+fmtMoney(previousExpense)+'</small>':'')+'</div>'+
+    alertsHtml+
     '<div class="pro-insights-categories"><div class="pro-insights-section-title">Куда уходят деньги</div>'+categoryHtml+'</div>'+
     '<p class="pro-insights-note">Прогноз — ориентир по средним расходам с начала месяца, а не гарантия будущих трат.</p>';
 }

@@ -1057,6 +1057,10 @@ function updateBudgetModeControls(){
  if(!currentFamily&&budgetMode==='family'){budgetMode='personal';localStorage.setItem('budgetMode_'+telegramUserId,'personal');}
 }
 function setBudgetMode(mode){if(!['personal','family'].includes(mode)||(mode==='family'&&!currentFamily))return;budgetMode=mode;localStorage.setItem('budgetMode_'+telegramUserId,mode);updateBudgetModeControls();if(mode==='family')loadFamilyTransactions();renderAll();}
+function refreshFamilyData(){
+ if(!currentFamily)return;
+ return Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes(),loadFamilyBanks()]);
+}
 async function loadFamilyTransactions(){if(!currentFamily||familyTransactionsBusy)return;familyTransactionsBusy=true;try{const r=await familyRequest('/api/family/transactions');familyTransactions=Array.isArray(r.transactions)?r.transactions:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные операции.',true);}finally{familyTransactionsBusy=false;renderAll();}}
 async function loadFamilyEnvelopes(){if(!currentFamily||familyEnvelopesBusy)return;familyEnvelopesBusy=true;try{const r=await familyRequest('/api/family/envelopes');familyEnvelopes=Array.isArray(r.envelopes)?r.envelopes:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные конверты.',true);}finally{familyEnvelopesBusy=false;renderAll();}}
 async function loadFamilyBanks(){if(!currentFamily||familyBanksBusy)return;familyBanksBusy=true;try{const r=await familyRequest('/api/family/banks');familyBanks=Array.isArray(r.banks)?r.banks:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные копилки.',true);}finally{familyBanksBusy=false;renderAll();}}
@@ -1227,7 +1231,7 @@ async function createFamily(){
 async function joinFamily(){
   if(familyBusy) return;
   const input = document.getElementById('familyInviteCode');
-  const code = (input?.value || '').replace(/\\s+/g, '').toUpperCase();
+  const code = (input?.value || '').replace(/\s+/g, '').toUpperCase();
   if(!code){
     familyFeedback('Введи код приглашения.', true);
     return;
@@ -1678,6 +1682,15 @@ function initApp(){
 
   loadPlanStatus();
   loadFamilyStatus();
+
+  // Keep shared family data fresh when another member makes changes.
+  window.addEventListener('focus', refreshFamilyData);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshFamilyData();
+  });
+  window.setInterval(() => {
+    if (!document.hidden) refreshFamilyData();
+  }, 20000);
 }
 
 async function buyPlan(plan, method){

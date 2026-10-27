@@ -389,13 +389,27 @@ async function submitTransaction(){
   saveData();closeModal('modalTransaction');renderAll();
 }
 
-function deleteTx(id){
-  if(budgetMode==='family'){alert('Удаление семейных операций пока недоступно.');return;}
-  const tx = appData.history.find(x => x.id === id);
+async function deleteTx(id){
+  if(budgetMode==='family' && currentFamily){
+    const tx = familyTransactions.find(item => String(item.id) === String(id));
+    if(!tx) return;
+    if(!window.confirm('Удалить эту семейную операцию?')) return;
+    try{
+      await familyRequest('/api/family/transactions/' + encodeURIComponent(String(id)), 'DELETE');
+      familyTransactions = familyTransactions.filter(item => String(item.id) !== String(id));
+      renderAll();
+      familyFeedback('Операция удалена.');
+    }catch(error){
+      familyFeedback(error.message || 'Не удалось удалить операцию.', true);
+    }
+    return;
+  }
+  const tx = appData.history.find(x => String(x.id) === String(id));
   if(!tx) return;
+  if(!window.confirm('Удалить эту операцию?')) return;
   if(tx.type === 'expense'){ appData.balance += tx.amount; appData.monthExpense -= tx.amount; }
   else { appData.balance -= tx.amount; appData.monthIncome -= tx.amount; }
-  appData.history = appData.history.filter(x => x.id !== id);
+  appData.history = appData.history.filter(x => String(x.id) !== String(id));
   saveData(); renderAll();
 }
 
@@ -1001,7 +1015,7 @@ function renderAll(){
           <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">
             ${tx.type === 'expense' ? '-' : '+'}${fmtMoney(tx.amount)}
           </div>
-          ${visibleBudget.isFamily ? '' : `<button class="card-del" style="position:static" onclick="deleteTx(${tx.id})">✕</button>`}
+          <button class="card-del" style="position:static" aria-label="Удалить операцию" onclick="deleteTx(${JSON.stringify(String(tx.id))})">✕</button>
         </div>
       `).join('')
       : `<div class="muted" style="text-align:center">${t('no_rules')}</div>`;

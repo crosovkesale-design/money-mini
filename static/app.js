@@ -490,6 +490,7 @@ async function loadPlanStatus(){
 
   updateProFeatureControls();
   applyWallpaper();
+  renderProInsights();
 }
 
 const EXPENSE_CATS = [
@@ -1307,6 +1308,67 @@ function renderCharts(){
   });
 }
 
+function analyticsDateKey(tx){
+  if(tx && tx.ts){
+    const d=new Date(Number(tx.ts));
+    if(!Number.isNaN(d.getTime())) return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  const raw=String(tx?.date||'').trim();
+  let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m)return m[1]+'-'+m[2]+'-'+m[3];
+  m=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(m)return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+  return '';
+}
+
+function renderProInsights(){
+  const node=document.getElementById('proInsightsCard');
+  if(!node)return;
+  if(!canUseProFeatures){
+    node.innerHTML='<div class="pro-insights-lock"><div class="pro-insights-lock-icon">✦</div><div><b>Расширенная аналитика PRO</b><p>Сравнение с прошлым месяцем, топ категорий, средние дневные траты и прогноз до конца месяца.</p><button class="btn btn-accent btn-sm" onclick="switchTab(\'pay\')">Открыть PRO</button></div></div>';
+    return;
+  }
+  const budget=getVisibleBudget();
+  const now=new Date();
+  const currentKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const previousKey=prevDate.getFullYear()+'-'+String(prevDate.getMonth()+1).padStart(2,'0');
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const day=Math.max(1,now.getDate());
+  let currentExpense=0,previousExpense=0,currentIncome=0;
+  const categories={};
+  (budget.history||[]).forEach(tx=>{
+    const key=analyticsDateKey(tx).slice(0,7);
+    const amount=Number(tx.amount||0);
+    if(!Number.isFinite(amount)||amount<=0)return;
+    if(key===currentKey&&tx.type==='expense'){
+      currentExpense+=amount;
+      const category=String(tx.category||'Разное');
+      categories[category]=(categories[category]||0)+amount;
+    }else if(key===previousKey&&tx.type==='expense')previousExpense+=amount;
+    if(key===currentKey&&tx.type==='income')currentIncome+=amount;
+  });
+  const projected=currentExpense/day*daysInMonth;
+  const difference=previousExpense>0?((currentExpense-previousExpense)/previousExpense)*100:null;
+  const top=Object.entries(categories).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const categoryHtml=top.length?top.map(([name,amount],i)=>{
+    const pct=currentExpense>0?Math.round(amount/currentExpense*100):0;
+    return '<div class="pro-insight-category"><div class="pro-insight-category-top"><span><i>'+String(i+1)+'</i>'+bankEscape(tCat(name))+'</span><b>'+fmtMoney(amount)+'</b></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><small>'+pct+'% расходов за месяц</small></div>';
+  }).join(''):'<p class="muted">Пока нет расходов за текущий месяц — добавь операции, и здесь появится анализ.</p>';
+  const compareText=difference===null?'Нет данных за прошлый месяц':(difference>0?'Расходы выросли на ':'Расходы снизились на ')+Math.abs(Math.round(difference))+'% к прошлому месяцу';
+  const compareClass=difference===null?'neutral':difference>0?'negative':'positive';
+  node.innerHTML='<div class="pro-insights-head"><div><span class="pro-insights-eyebrow">PRO ANALYTICS</span><h4>Финансовая картина</h4><p>На основе операций текущего и прошлого месяца</p></div><span class="pro-insights-crown">♛</span></div>'+
+    '<div class="pro-insights-metrics">'+
+      '<div class="pro-insight-metric"><span>Прогноз расходов</span><b>'+fmtMoney(projected)+'</b><small>к концу месяца</small></div>'+
+      '<div class="pro-insight-metric"><span>В среднем в день</span><b>'+fmtMoney(currentExpense/day)+'</b><small>за '+day+' дн. текущего месяца</small></div>'+
+      '<div class="pro-insight-metric"><span>Доходы за месяц</span><b>'+fmtMoney(currentIncome)+'</b><small>по записанным операциям</small></div>'+
+      '<div class="pro-insight-metric"><span>Траты за месяц</span><b>'+fmtMoney(currentExpense)+'</b><small>из '+daysInMonth+' дней</small></div>'+
+    '</div>'+
+    '<div class="pro-insight-comparison '+compareClass+'"><span>Сравнение с прошлым месяцем</span><b>'+bankEscape(compareText)+'</b>'+(previousExpense>0?'<small>Прошлый месяц: '+fmtMoney(previousExpense)+'</small>':'')+'</div>'+
+    '<div class="pro-insights-categories"><div class="pro-insights-section-title">Куда уходят деньги</div>'+categoryHtml+'</div>'+
+    '<p class="pro-insights-note">Прогноз — ориентир по средним расходам с начала месяца, а не гарантия будущих трат.</p>';
+}
+
 function renderForecast(){
   const card = document.getElementById('forecastCard');
   if(!card) return;
@@ -1415,6 +1477,7 @@ function renderAll(){
 
   applyLang();
   renderForecast();
+  renderProInsights();
   updateProFeatureControls();
 }
 

@@ -1792,13 +1792,12 @@ async def api_family_banks(uid: str = Depends(current_uid)):
                     "ts": contribution_ts,
                     "memberName": member_name,
                 })
-                contributor_totals[contributor_uid or member_name] = {
-                    "memberName": member_name,
-                    "amount": round(
-                        contributor_totals.get(contributor_uid or member_name, {}).get("amount", 0)
-                        + contribution_amount, 2
-                    ),
-                }
+                total_key = contributor_uid or member_name
+                totals = contributor_totals.setdefault(total_key, {
+                    "memberName": member_name, "amount": 0.0, "count": 0
+                })
+                totals["amount"] = round(totals["amount"] + contribution_amount, 2)
+                totals["count"] += 1
         contributions.sort(key=lambda item: item["ts"], reverse=True)
         contributors = sorted(
             contributor_totals.values(), key=lambda item: item["amount"], reverse=True

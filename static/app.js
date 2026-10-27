@@ -90,6 +90,63 @@ function requestProFeature(feature){
   }
 }
 
+let pendingReceiptDraft = null;
+
+function openReceiptEntry(){
+  const error = document.getElementById('receiptEntryError');
+  if(error) error.textContent = '';
+  const date = document.getElementById('receiptDateInput');
+  if(date && !date.value) date.value = new Date().toISOString().slice(0,10);
+  openModal('modalReceiptEntry');
+}
+
+function saveReceiptDraft(){
+  const store = document.getElementById('receiptStoreInput').value.trim();
+  const date = document.getElementById('receiptDateInput').value || new Date().toISOString().slice(0,10);
+  const rawItems = document.getElementById('receiptItemsInput').value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const error = document.getElementById('receiptEntryError');
+  const parsedItems = rawItems.map(line => {
+    const parts = line.split(';').map(part => part.trim());
+    const name = (parts[0] || '').slice(0,80);
+    const price = parts[1] === undefined || parts[1] === '' ? null : Number(parts[1].replace(',', '.'));
+    const quantity = parts[2] === undefined || parts[2] === '' ? 1 : Number(parts[2].replace(',', '.'));
+    return {name, price: Number.isFinite(price) && price >= 0 ? price : null, quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1};
+  }).filter(item => item.name).slice(0,50);
+  const enteredRaw = document.getElementById('receiptTotalInput').value;
+  const enteredTotal = enteredRaw === '' ? NaN : Number(enteredRaw.replace(',', '.'));
+  const calculatedTotal = parsedItems.reduce((sum, item) => sum + (item.price === null ? 0 : item.price * item.quantity), 0);
+  const total = Number.isFinite(enteredTotal) && enteredTotal > 0 ? enteredTotal : calculatedTotal;
+  if(!store){ error.textContent = 'Укажи название магазина.'; return; }
+  if(!parsedItems.length){ error.textContent = 'Добавь хотя бы один товар. Формат: Название; цена; количество.'; return; }
+  if(!Number.isFinite(total) || total <= 0){ error.textContent = 'Укажи сумму чека или цены товаров.'; return; }
+  pendingReceiptDraft = {store, date, items:parsedItems, total:Math.round(total*100)/100, source:'manual'};
+  const amountInput = document.getElementById('txAmountInput');
+  const commentInput = document.getElementById('txCommentInput');
+  if(amountInput) amountInput.value = String(pendingReceiptDraft.total);
+  if(commentInput && !commentInput.value.trim()) commentInput.value = store;
+  const status = document.getElementById('receiptDraftStatus');
+  if(status){ status.style.display = 'block'; status.textContent = '🧾 Чек добавлен: ' + store + ' · ' + pendingReceiptDraft.items.length + ' поз. · ' + fmtMoney(pendingReceiptDraft.total); }
+  closeModal('modalReceiptEntry');
+}
+
+function openReceiptPhoto(){
+  if(!canUseProFeatures){
+    requestProFeature('Добавление чека по фото');
+    return;
+  }
+  const picker = document.getElementById('receiptPhotoInput');
+  if(picker) picker.click();
+}
+
+function handleReceiptPhotoSelected(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ alert('Выбери изображение чека.'); event.target.value=''; return; }
+  if(file.size > 12 * 1024 * 1024){ alert('Фото должно быть меньше 12 МБ.'); event.target.value=''; return; }
+  alert('Фото выбрано. Автоматическое распознавание чека подключим следующим этапом. Сейчас можно добавить чек вручную.');
+  event.target.value = '';
+}
+
 function openCustomCategoryModal(){
   if(!canUseProFeatures){
     requestProFeature('Свои категории');
@@ -382,9 +439,9 @@ async function submitTransaction(){
   const title=document.getElementById('txCommentInput').value||tCat(appData.selectedCategory);
   const envelopeSelect=document.getElementById('txEnvelopeSelect');
   const selectedEnvelopeId=appData.activeTxType==='expense'&&envelopeSelect&&envelopeSelect.value?envelopeSelect.value:null;
-  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId});closeModal('modalTransaction');await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
+  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId,receipt:pendingReceiptDraft});closeModal('modalTransaction');pendingReceiptDraft=null;await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
   const envelopeId=selectedEnvelopeId?Number(selectedEnvelopeId):null;
-  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU')};appData.history.unshift(tx);
+  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU'),receipt:pendingReceiptDraft};appData.history.unshift(tx);pendingReceiptDraft=null;
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
   saveData();closeModal('modalTransaction');renderAll();
 }

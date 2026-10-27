@@ -1592,6 +1592,7 @@ function renderAll(){
     const bankItems=budgetMode==='family'&&currentFamily?familyBanks:appData.banks;
     banks.innerHTML = bankItems.map(b => {
       const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
+      const goalStatusHtml=target>0&&saved>=target?'<div class="bank-goal-achieved">🎉 Цель достигнута! Можно отметить победу.</div>':'';
       const contributionHistory=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributions)?b.contributions:[];
       const contributorTotals=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributors)?b.contributors:[];
       const contributorTotalsHtml=contributorTotals.length
@@ -1617,6 +1618,7 @@ function renderAll(){
         <div class="bank-card-top"><b>🏦 ${b.name}</b><span class="bank-saved">${fmtMoney(saved)}</span></div>
         <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
+        ${goalStatusHtml}
         <div class="muted" style="font-size:12px;margin:6px 0 10px">${target>0&&saved>=target?'🎉 Цель достигнута':target>0?'Осталось собрать: '+fmtMoney(target-saved):''}</div>
         ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">Дедлайн: ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString('ru-RU') + ' · ' + deadlineText + '</div>' : ''}
         ${contributorTotalsHtml}

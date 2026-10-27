@@ -5,6 +5,7 @@ import math
 import os
 import re
 import secrets
+from html import escape
 from io import BytesIO
 from openpyxl import Workbook
 from contextlib import asynccontextmanager
@@ -1982,8 +1983,8 @@ async def api_family_bank_contribute(bank_id: str, request: Request, uid: str = 
         bank_name = str(bank.get("name") or "Копилка")[:64]
         message_text = (
             "🎉 <b>Семейная цель достигнута!</b>\\n\\n"
-            f"🏦 Копилка: <b>{bank_name}</b>\\n"
-            f"👤 Последнее пополнение: <b>{contributor_name}</b>\\n"
+            f"🏦 Копилка: <b>{escape(bank_name)}</b>\\n"
+            f"👤 Последнее пополнение: <b>{escape(contributor_name)}</b>\\n"
             f"💰 Пополнение: <b>{amount:,.2f}</b>\\n"
             f"✅ Накоплено: <b>{new_balance:,.2f} / {target:,.2f}</b>"
         )

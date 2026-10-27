@@ -897,7 +897,7 @@ function contributeToBank(id){
   selectedBankIdForContribution=bank.id;
   document.getElementById('bankContributionTitle').textContent='Пополнить: '+bank.name;
   document.getElementById('bankContributionAmount').value='';
-  document.getElementById('bankContributionHint').textContent='Доступно на личном балансе: '+fmtMoney(appData.balance);
+  document.getElementById('bankContributionHint').textContent=(familyMode?'Доступно на семейном балансе: ':'Доступно на личном балансе: ')+fmtMoney(familyMode?getVisibleBudget().balance:appData.balance);
   openModal('modalBankContribution');
 }
 async function saveBankContribution(){

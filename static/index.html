@@ -58,7 +58,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js" defer></script>
-<script src="./app.js?v=20261027-family-goal-status-v3" defer></script>
+<script src="./app.js?v=20261027-family-history-member-filter-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -301,6 +301,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="row-between">
       <h4 data-i18n="history">История</h4>
       <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" placeholder="Поиск..." oninput="renderAll()">
+      <select id="histMemberFilter" class="custom-input" style="display:none;margin:6px 0 0;width:100%;padding:8px;font-size:12px" onchange="renderAll()"><option value="">Все участники</option></select>
     </div>
     <div id="historyContainer" class="history-list"></div>
   </div>

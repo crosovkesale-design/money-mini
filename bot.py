@@ -1380,6 +1380,37 @@ async def api_family_envelope_create(request: Request, uid: str = Depends(curren
     return {"ok": True, "id": envelope_id}
 
 
+def sanitize_receipt(raw):
+    """Keep only small, structured receipt fields before storing family transaction data."""
+    if not isinstance(raw, dict):
+        return None
+    store = str(raw.get("store") or "").strip()[:80]
+    receipt_date = str(raw.get("date") or "")[:10]
+    items = []
+    raw_items = raw.get("items") if isinstance(raw.get("items"), list) else []
+    for item in raw_items[:50]:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip()[:80]
+        if not name:
+            continue
+        try:
+            price = float(item.get("price")) if item.get("price") is not None else None
+            quantity = float(item.get("quantity") or 1)
+        except (TypeError, ValueError):
+            continue
+        if (price is not None and (not math.isfinite(price) or price < 0)) or not math.isfinite(quantity) or quantity <= 0:
+            continue
+        items.append({"name": name, "price": price, "quantity": quantity})
+    try:
+        total = float(raw.get("total") or 0)
+    except (TypeError, ValueError):
+        return None
+    if not store or not items or not math.isfinite(total) or total <= 0:
+        return None
+    return {"store": store, "date": receipt_date, "items": items, "total": round(total, 2), "source": "manual"}
+
+
 @app.get("/api/family/transactions")
 async def api_family_transactions(uid: str = Depends(current_uid)):
     user=await get_user(uid); fid=user.get("familyId")
@@ -1390,7 +1421,7 @@ async def api_family_transactions(uid: str = Depends(current_uid)):
     for rid,tx in records.items():
         if not isinstance(tx,dict) or str(tx.get("uid") or "") not in members: continue
         member=members.get(str(tx.get("uid") or ""),{})
-        result.append({"id":str(rid),"type":str(tx.get("type") or "expense"),"amount":float(tx.get("amount") or 0),"title":str(tx.get("title") or tx.get("note") or tx.get("category") or "Операция")[:120],"category":str(tx.get("category") or "Разное")[:64],"icon":str(tx.get("icon") or "📦")[:12],"date":str(tx.get("date") or ""),"ts":int(tx.get("ts") or 0),"currency":str(tx.get("currency") or "UAH")[:8],"envelopeId":str(tx.get("envelopeId") or ""),"memberName":str(member.get("name") or "Участник")[:64]})
+        result.append({"id":str(rid),"type":str(tx.get("type") or "expense"),"amount":float(tx.get("amount") or 0),"title":str(tx.get("title") or tx.get("note") or tx.get("category") or "Операция")[:120],"category":str(tx.get("category") or "Разное")[:64],"icon":str(tx.get("icon") or "📦")[:12],"date":str(tx.get("date") or ""),"ts":int(tx.get("ts") or 0),"currency":str(tx.get("currency") or "UAH")[:8],"envelopeId":str(tx.get("envelopeId") or ""),"memberName":str(member.get("name") or "Участник")[:64],"receipt":sanitize_receipt(tx.get("receipt"))})
     result.sort(key=lambda item:item["ts"],reverse=True)
     return {"transactions":result}
 
@@ -1411,7 +1442,8 @@ async def api_family_transaction_create(request: Request, uid: str = Depends(cur
         envelope_id = ""
     if envelope_id and envelope_id not in (family.get("envelopes") or {}):
         raise HTTPException(400, "Выбранный семейный конверт не найден.")
-    tx={"uid":uid,"type":kind,"amount":amount,"title":str(body.get("title") or body.get("category") or "Операция")[:120],"category":str(body.get("category") or "Разное")[:64],"icon":str(body.get("icon") or "📦")[:12],"date":str(body.get("date") or ""),"currency":str(body.get("currency") or "UAH")[:8],"envelopeId":envelope_id or None,"ts":now_ms()}
+    receipt = sanitize_receipt(body.get("receipt"))
+    tx={"uid":uid,"type":kind,"amount":amount,"title":str(body.get("title") or body.get("category") or "Операция")[:120],"category":str(body.get("category") or "Разное")[:64],"icon":str(body.get("icon") or "📦")[:12],"date":str(body.get("date") or ""),"currency":str(body.get("currency") or "UAH")[:8],"envelopeId":envelope_id or None,"receipt":receipt,"ts":now_ms()}
     rid=await fb.push(f"/families/{fid}/transactions",tx)
     return {"ok":True,"id":rid}
 

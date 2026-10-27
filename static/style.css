@@ -1635,3 +1635,14 @@ select:focus-visible {
 .receipt-items-input{min-height:110px;resize:vertical;font-family:inherit;line-height:1.5}
 .receipt-entry-error{color:#ff6685;font-size:12px;margin:6px 0}
 @media(max-width:380px){.receipt-action-row{grid-template-columns:1fr}.receipt-action{justify-content:flex-start}}
+
+
+/* Manage receipts, envelopes and savings goals */
+.history-receipt-actions,.manage-card-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.history-receipt-actions{margin-left:auto}
+.card-action{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer}
+.card-action.danger,.manage-card-actions .danger{color:#ff6685}
+.manage-card-actions{margin:2px 0 4px}
+.manage-card-actions .btn{font-size:11px;padding:6px 9px}
+.history-item{flex-wrap:wrap}
+@media(max-width:380px){.history-receipt-actions{gap:3px}.card-action{width:28px;height:28px}}

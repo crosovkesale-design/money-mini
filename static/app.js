@@ -93,10 +93,18 @@ function requestProFeature(feature){
 let pendingReceiptDraft = null;
 
 function openReceiptEntry(){
+  if(appData.activeTxType !== 'expense'){
+    alert('Чек можно прикрепить только к расходу.');
+    return;
+  }
   const error = document.getElementById('receiptEntryError');
   if(error) error.textContent = '';
-  const date = document.getElementById('receiptDateInput');
-  if(date && !date.value) date.value = new Date().toISOString().slice(0,10);
+  if(!pendingReceiptDraft){
+    document.getElementById('receiptStoreInput').value = '';
+    document.getElementById('receiptItemsInput').value = '';
+    document.getElementById('receiptTotalInput').value = '';
+    document.getElementById('receiptDateInput').value = new Date().toISOString().slice(0,10);
+  }
   openModal('modalReceiptEntry');
 }
 

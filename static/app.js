@@ -13,6 +13,138 @@ let appData = JSON.parse(localStorage.getItem(appStorageKey)) || {
 let canUseProFeatures = false;
 let referralStats = { count: 0, coupons10: 0, coupons20: 0 };
 
+let bankImportRows = [];
+let bankImportBusy = false;
+
+function bankEscape(value){
+  return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function bankGuessCategory(title, type){
+  const text=String(title||'').toLowerCase();
+  if(type==='income'){
+    if(/salary|зарплат|зарплата|payroll|wage|заробіт|stipend/.test(text)) return 'Зарплата';
+    if(/cashback|кешбек|кэшбэк|cash back/.test(text)) return 'Кэшбэк';
+    if(/interest|відсот|процент по вкладу/.test(text)) return 'Проценты по вкладу';
+    if(/refund|повернен|возврат|reversal/.test(text)) return 'Возврат';
+    return 'Прочее';
+  }
+  if(/grocery|supermarket|market|продукт|сільпо|сильпо|атб|novus|fora|варус|магазин/.test(text)) return 'Продукты';
+  if(/restaurant|cafe|coffee|food|pizza|кафе|ресторан|еда|обед|ужин|кофе|макдон|mcdonald|kfc/.test(text)) return 'Еда';
+  if(/taxi|uber|bolt|такси/.test(text)) return 'Такси';
+  if(/fuel|petrol|gas station|бензин|заправ/.test(text)) return 'Бензин';
+  if(/pharmacy|аптек|pharma/.test(text)) return 'Аптека';
+  if(/electric|water|utility|коммунал|газопост|водоканал/.test(text)) return 'Коммуналка';
+  if(/mobile|internet|telecom|lifecell|kyivstar|vodafone|зв'язок|связь|інтернет/.test(text)) return 'Связь';
+  if(/subscription|netflix|spotify|youtube premium|подписк/.test(text)) return 'Подписки';
+  if(/clothes|fashion|одежд|одяг|обув/.test(text)) return 'Одежда';
+  if(/transfer|переказ|перевод/.test(text)) return 'Переводы';
+  return 'Разное';
+}
+function bankCategoryIcon(name, type){
+  const list=(type==='income'?INCOME_CATS:EXPENSE_CATS);
+  const found=list.find(c=>c.name===name);
+  return found?.icon || '📦';
+}
+function bankFingerprint(row){
+  return [row.date,Number(row.amount).toFixed(2),String(row.currency||appData.currency||'UAH').toUpperCase(),String(row.title||'').trim().toLowerCase(),row.type].join('|').slice(0,128);
+}
+function openBankImport(){
+  bankImportRows=[];bankImportBusy=false;
+  const file=document.getElementById('bankStatementFile');if(file)file.value='';
+  document.getElementById('bankImportStatus').textContent='';
+  document.getElementById('bankImportSummary').style.display='none';
+  document.getElementById('bankImportRows').innerHTML='';
+  document.getElementById('bankImportConfirm').disabled=true;
+  openModal('modalBankImport');
+}
+function closeBankImport(){if(!bankImportBusy)closeModal('modalBankImport');}
+async function previewBankStatement(file){
+  if(!file)return;
+  const status=document.getElementById('bankImportStatus');
+  const rowsNode=document.getElementById('bankImportRows');
+  const confirm=document.getElementById('bankImportConfirm');
+  const tg=window.Telegram?.WebApp;
+  if(!tg?.initData){status.textContent='Открой приложение через Telegram, чтобы загрузить выписку.';return;}
+  if(!/\.(csv|xlsx)$/i.test(file.name)){status.textContent='Выбери файл CSV или XLSX.';return;}
+  if(file.size>8*1024*1024){status.textContent='Файл больше 8 МБ. Раздели выписку на несколько файлов.';return;}
+  bankImportBusy=true;confirm.disabled=true;rowsNode.innerHTML='';status.textContent='Читаю выписку…';
+  try{
+    const form=new FormData();form.append('file',file,file.name);
+    const response=await fetch('/api/import/preview',{method:'POST',headers:{'X-Init-Data':tg.initData},body:form});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось прочитать выписку.');
+    bankImportRows=(data.rows||[]).map((row,index)=>{
+      const type=row.type==='income'?'income':'expense';
+      return {...row,type,category:bankGuessCategory(row.title,type),icon:bankCategoryIcon(bankGuessCategory(row.title,type),type),include:row.type!=='transfer',rowId:index,currency:row.currency||appData.currency||'UAH'};
+    });
+    const summary=document.getElementById('bankImportSummary');
+    summary.style.display='block';
+    summary.textContent='Найдено операций: '+bankImportRows.length+(data.skipped?' · Пропущено строк без даты/суммы: '+data.skipped:'')+(data.truncated?' · Показаны первые 2000 операций.':'');
+    renderBankImportRows();
+    status.textContent=bankImportRows.length?'Проверь суммы, типы и категории. Операции с возможными переводами отключены.':'В выписке не найдено операций.';
+    confirm.disabled=!bankImportRows.some(r=>r.include);
+  }catch(error){status.textContent=error.message||'Ошибка импорта.';bankImportRows=[];rowsNode.innerHTML='';}
+  finally{bankImportBusy=false;}
+}
+function renderBankImportRows(){
+  const node=document.getElementById('bankImportRows');
+  const expenseOptions=EXPENSE_CATS.map(c=>({name:c.name,icon:c.icon}));
+  const incomeOptions=INCOME_CATS.map(c=>({name:c.name,icon:c.icon}));
+  node.innerHTML=bankImportRows.map((row,i)=>{
+    const cats=row.type==='income'?incomeOptions:expenseOptions;
+    const options=cats.map(c=>'<option value="'+bankEscape(c.name)+'" '+(c.name===row.category?'selected':'')+'>'+bankEscape(c.icon+' '+tCat(c.name))+'</option>').join('');
+    return '<div class="bank-import-row '+(row.include?'':'is-excluded')+'" data-bank-row="'+i+'">'+
+      '<div class="bank-import-row-top"><label><input type="checkbox" '+(row.include?'checked':'')+' onchange="updateBankImportRow('+i+',\'include\',this.checked)"> <span>'+bankEscape(row.title||'Операция без описания')+'</span></label>'+
+      '<strong>'+bankEscape(Number(row.amount).toLocaleString(appData.lang,{maximumFractionDigits:2}))+' '+bankEscape(row.currency||appData.currency)+'</strong></div>'+
+      '<div class="bank-import-fields"><label>Дата<input type="date" value="'+bankEscape(row.date)+'" onchange="updateBankImportRow('+i+',\'date\',this.value)"></label>'+
+      '<label>Тип<select onchange="updateBankImportRow('+i+',\'type\',this.value)"><option value="expense" '+(row.type==='expense'?'selected':'')+'>Расход</option><option value="income" '+(row.type==='income'?'selected':'')+'>Доход</option></select></label>'+
+      '<label>Категория<select onchange="updateBankImportRow('+i+',\'category\',this.value)">'+options+'</select></label>'+
+      '<label>Сумма<input type="number" min="0.01" step="0.01" value="'+bankEscape(row.amount)+'" onchange="updateBankImportRow('+i+',\'amount\',this.value)"></label></div></div>';
+  }).join('');
+}
+function updateBankImportRow(index,field,value){
+  const row=bankImportRows[index];if(!row)return;
+  if(field==='amount'){const amount=Number(value);if(!Number.isFinite(amount)||amount<=0){row.include=false;}else row.amount=amount;}
+  else if(field==='type'){row.type=value==='income'?'income':'expense';row.category=bankGuessCategory(row.title,row.type);row.icon=bankCategoryIcon(row.category,row.type);}
+  else if(field==='category'){row.category=String(value);row.icon=bankCategoryIcon(row.category,row.type);}
+  else if(field==='include')row.include=Boolean(value);
+  else if(field==='date')row.date=String(value);
+  const card=document.querySelector('[data-bank-row="'+index+'"]');if(card)card.classList.toggle('is-excluded',!row.include);
+  if(field==='type'||field==='category')renderBankImportRows();
+  document.getElementById('bankImportConfirm').disabled=!bankImportRows.some(r=>r.include&&Number(r.amount)>0&&r.date);
+}
+async function confirmBankImport(){
+  if(bankImportBusy)return;
+  const selected=bankImportRows.filter(r=>r.include&&Number.isFinite(Number(r.amount))&&Number(r.amount)>0&&/^\d{4}-\d{2}-\d{2}$/.test(r.date));
+  if(!selected.length){alert('Выбери хотя бы одну корректную операцию.');return;}
+  const unique=[],seen=new Set();
+  selected.forEach(row=>{row.amount=Number(row.amount);row.currency=String(row.currency||appData.currency||'UAH').toUpperCase();row.icon=bankCategoryIcon(row.category,row.type);row.importFingerprint=bankFingerprint(row);if(!seen.has(row.importFingerprint)){seen.add(row.importFingerprint);unique.push(row);}});
+  if(!unique.length)return;
+  bankImportBusy=true;const button=document.getElementById('bankImportConfirm');button.disabled=true;button.textContent='Импорт…';
+  try{
+    let imported=0,duplicates=0;
+    if(budgetMode==='family'&&currentFamily){
+      const tg=window.Telegram?.WebApp;
+      const response=await fetch('/api/import/family',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({transactions:unique.map(r=>({type:r.type,amount:r.amount,date:r.date,title:r.title,category:r.category,icon:r.icon,currency:r.currency,importFingerprint:r.importFingerprint}))})});
+      const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.detail||'Не удалось импортировать семейные операции.');
+      imported=Number(data.imported||0);duplicates=Number(data.duplicates||0);
+      await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);
+    }else{
+      const existing=new Set((appData.history||[]).map(tx=>tx.importFingerprint).filter(Boolean));
+      for(const row of unique){
+        if(existing.has(row.importFingerprint)){duplicates++;continue;}
+        const tx={id:Date.now()+imported,type:row.type,title:String(row.title||row.category).slice(0,120),category:row.category,icon:row.icon,amount:row.amount,date:row.date,currency:row.currency,receipt:null,importFingerprint:row.importFingerprint,source:'bank-import'};
+        appData.history.unshift(tx);existing.add(row.importFingerprint);imported++;
+        if(row.type==='expense'){appData.balance-=row.amount;appData.monthExpense+=row.amount;}else{appData.balance+=row.amount;appData.monthIncome+=row.amount;}
+      }
+      saveData();renderAll();
+    }
+    closeModal('modalBankImport');
+    alert('Импорт завершён. Добавлено: '+imported+(duplicates?' · Дубликаты пропущены: '+duplicates:'')+'.');
+  }catch(error){alert(error.message||'Не удалось импортировать операции.');}
+  finally{bankImportBusy=false;button.disabled=false;button.textContent='Импортировать';}
+}
+
 function saveData(){ localStorage.setItem(appStorageKey, JSON.stringify(appData)); }
 function t(k){ return (TRANSLATIONS[appData.lang] && TRANSLATIONS[appData.lang][k]) || TRANSLATIONS['ru'][k] || k; }
 

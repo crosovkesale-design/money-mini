@@ -63,7 +63,7 @@
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./style.css?v=20261027-coupon-menu">
+<link rel="stylesheet" href="./style.css?v=20261027-help-advantages">
 </head>
 <body>
 <div class="container">
@@ -72,7 +72,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="pricing-page">
       <div class="pricing-hero">
         <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> MONEY MINI MEMBERSHIP</div>
-        <h2>Выбери свой тариф</h2>
+        <h2>Выбери свой тариф <button type="button" class="info-dot" aria-label="О тарифах" onclick="openHelp('plans')">?</button></h2>
         <p>Удобный срок подписки и оплата привычным способом.</p>
       </div>
 
@@ -91,7 +91,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="coupon-heading-copy">
             <span class="coupon-eyebrow">ТВОИ БОНУСЫ</span>
             <h3>Купоны и скидки</h3>
-            <p>Выбери бонус перед оплатой</p>
+            <p>Экономь на подписке за активность</p><button type="button" class="info-dot" aria-label="Как работают купоны" onclick="openHelp('coupons')">?</button>
           </div>
           <div class="coupon-spark">✦</div>
         </div>
@@ -120,7 +120,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="pricing-group-head">
           <div class="pricing-plan-icon basic-icon">◈</div>
           <div>
-            <h3>Basic</h3>
+            <h3>Basic <button type="button" class="info-dot" aria-label="Что входит в Basic" onclick="openHelp('basic')">?</button></h3>
             <p>Всё необходимое для ежедневного бюджета</p>
           </div>
         </div>
@@ -184,7 +184,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="pricing-group-head pricing-group-head-pro">
           <div class="pricing-plan-icon pro-icon">♛</div>
           <div class="pro-title-copy">
-            <h3>PRO</h3>
+            <h3>PRO <button type="button" class="info-dot info-dot-pro" aria-label="Что входит в PRO" onclick="openHelp('pro')">?</button></h3>
             <p>Больше удобства для системного контроля бюджета</p>
           </div>
           <span class="pro-label">PREMIUM</span>
@@ -223,7 +223,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </section>
 
-      <div class="pricing-secure-note"><span>🔒</span> Оплата через Telegram Stars или Crypto Pay (USDT)</div>
+      <div class="pricing-difference"><div class="pricing-difference-title">Почему Money Mini?</div><div class="pricing-difference-grid"><div><b>⚡ Прямо в Telegram</b><span>Не нужно устанавливать отдельное приложение</span></div><div><b>📊 Понятная картина</b><span>Доходы, расходы и аналитика в одном месте</span></div><div><b>🎯 Под твои привычки</b><span>Валюты, категории, конверты и финансовые цели</span></div><div><b>🎁 Выгода за активность</b><span>30 дней пробного доступа, купоны и скидки</span></div></div><button type="button" class="pricing-more-info" onclick="openHelp('advantages')">Все преимущества <span>→</span></button></div><div class="pricing-secure-note"><span>🔒</span> Оплата через Telegram Stars или Crypto Pay (USDT)</div>
       <button class="btn btn-outline pricing-back" onclick="switchTab('budget')">← Назад в бюджет</button>
     </section>
   </div>
@@ -474,10 +474,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 </div>
 
 <div class="modal" id="modalHelp">
-  <div class="modal-content">
-    <div class="modal-header"><h3 data-i18n="help">Справка</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
-    <p class="muted" data-i18n="help_text"></p>
-    <button class="btn btn-accent" style="width:100%;margin-top:12px" onclick="closeModal('modalHelp')" data-i18n="ok">Понятно</button>
+  <div class="modal-content help-content">
+    <div class="modal-header"><h3 id="helpModalTitle">Money Mini — справка</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
+    <div id="helpModalBody" class="help-body"></div>
+    <button class="btn btn-accent" style="width:100%;margin-top:16px" onclick="closeModal('modalHelp')">Понятно</button>
   </div>
 </div>
 

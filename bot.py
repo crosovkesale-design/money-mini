@@ -206,8 +206,7 @@ if bot:
                             await bot.send_message(int(ref_id), "🎁 Ты пригласил нового пользователя! Начислен купон 10%.", parse_mode="HTML")
                         except Exception:
                             pass
-                except: pass
-
+ 
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📊 Открыть бюджет", web_app=WebAppInfo(url=MINI_APP_URL))],
             [InlineKeyboardButton(text="💎 Подписка и оплата", callback_data="show_pay")],

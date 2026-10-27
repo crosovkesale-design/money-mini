@@ -289,7 +289,7 @@ if bot:
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         text = (
-            "✨ <b>Money Mini — меню команд</b>\n"
+            "✨ <b>Семейный бюджет — меню команд</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "📊 <b>/stats</b> — статистика сообщества\n"
             "💎 <b>/pay</b> — тарифы и способы оплаты\n"
@@ -335,7 +335,7 @@ if bot:
              InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
         ])
         await message.answer(
-            "📊 <b>Money Mini · статистика</b>\n"
+            "📊 <b>Семейный бюджет · статистика</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Пользователей: <b>{total:,}</b>\n"
             f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
@@ -386,7 +386,7 @@ if bot:
             [InlineKeyboardButton(text="🎁 Как получить скидку", callback_data="ref_link")]
         ])
         await message.answer(
-            "💎 <b>Тарифы Money Mini</b>\n"
+            "💎 <b>Тарифы «Семейный бюджет»</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Выбери подходящий срок и получи доступ к инструментам контроля бюджета.\n\n"
             "✨ <b>Basic</b> — учёт доходов и расходов, история, аналитика и финансовые цели.\n"
@@ -548,7 +548,7 @@ if bot:
             else:
                 active_paid += 1
         await cb.message.answer(
-            "📊 <b>Money Mini · статистика</b>\n"
+            "📊 <b>Семейный бюджет · статистика</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Пользователей: <b>{total:,}</b>\n"
             f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
@@ -595,7 +595,7 @@ if bot:
             [InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")]
         ])
         await cb.message.answer(
-            "👋 <b>Money Mini</b>\n\nТвой бюджет, подписка и бонусы — в одном меню.",
+            "👋 <b>Семейный бюджет</b>\n\nТвой бюджет, подписка и бонусы — в одном меню.",
             reply_markup=kb,
             parse_mode="HTML"
         )
@@ -612,7 +612,7 @@ if bot:
     async def cmd_review(message: Message, state: FSMContext):
         await state.set_state(ReviewState.waiting_text)
         await message.answer(
-            "📝 Напиши свой отзыв о Money Mini.\n\n"
+            "📝 Напиши свой отзыв о «Семейный бюджет».\n\n"
             "Требования:\n"
             "• Минимум 20 символов\n"
             "• Минимум 4 слова\n"
@@ -716,7 +716,7 @@ if bot:
 
                 await bot.send_message(
                     target,
-                    f"📝 <b>Новый отзыв Money Mini</b>\n\n"
+                    f"📝 <b>Новый отзыв Семейный бюджет</b>\n\n"
                     f"{safe_text}\n\n"
                     f"— {safe_name}",
                     parse_mode="HTML",
@@ -1140,7 +1140,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
 
     # Заголовок отчёта
     ws.merge_cells("A1:H1")
-    ws["A1"] = "MONEY MINI — ИСТОРИЯ ФИНАНСОВ"
+    ws["A1"] = "СЕМЕЙНЫЙ БЮДЖЕТ — ИСТОРИЯ ФИНАНСОВ"
     ws["A1"].font = Font(
         name="Arial", size=16, bold=True, color="FFFFFF"
     )
@@ -1258,7 +1258,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
     summary = wb.create_sheet("Итоги")
     summary.sheet_view.showGridLines = False
     summary.merge_cells("A1:B1")
-    summary["A1"] = "MONEY MINI — ФИНАНСОВЫЙ ИТОГ"
+    summary["A1"] = "СЕМЕЙНЫЙ БЮДЖЕТ — ФИНАНСОВЫЙ ИТОГ"
     summary["A1"].font = Font(
         size=16, bold=True, color="FFFFFF"
     )
@@ -1319,7 +1319,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
         await bot.send_document(
             chat_id=int(uid),
             document=document,
-            caption="📊 Твой финансовый отчёт Money Mini"
+            caption="📊 Твой финансовый отчёт «Семейный бюджет»"
         )
     except Exception:
         log.exception("Excel export failed")
@@ -1476,7 +1476,7 @@ async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     stars = int(round(base_stars * (100 - percent) / 100))
     payload = {"uid": uid, "plan": plan, "couponType": str(percent) if percent else ""}
     link = await bot.create_invoice_link(
-        title="Money Mini", description=("Подписка со скидкой " + str(percent) + "%") if percent else "Оплата подписки",
+        title="Семейный бюджет", description=("Подписка со скидкой " + str(percent) + "%") if percent else "Оплата подписки",
         payload=json.dumps(payload),
         currency="XTR", prices=[LabeledPrice(label="Подписка", amount=stars)]
     )

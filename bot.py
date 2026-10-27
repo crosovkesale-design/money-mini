@@ -28,13 +28,14 @@ from aiogram.types import (
     BotCommand,
 )
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from auth import verify_cryptopay_sig, verify_init_data
 from fb import Firebase
 from pay import CryptoPay
+from bank_statement import MAX_UPLOAD_BYTES, parse_bank_statement
 
 load_dotenv()
 
@@ -1112,6 +1113,84 @@ async def api_family_leave(uid: str = Depends(current_uid)):
         "newOwnerId": new_owner_id,
         "familyDataPreserved": True,
     }
+
+
+@app.post("/api/import/preview")
+async def api_import_preview(file: UploadFile = File(...), uid: str = Depends(current_uid)):
+    # Parse in memory only: the original statement is never written to disk.
+    filename = str(file.filename or "")
+    if filename.lower().rsplit(".", 1)[-1] not in {"csv", "xlsx"}:
+        raise HTTPException(400, "Поддерживаются только файлы CSV и XLSX.")
+    data = await file.read(MAX_UPLOAD_BYTES + 1)
+    await file.close()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "Файл больше 8 МБ.")
+    try:
+        parsed = parse_bank_statement(filename, data)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    except Exception:
+        log.exception("Bank statement parsing failed for user %s", uid)
+        raise HTTPException(400, "Не удалось прочитать выписку. Проверь файл и попробуй ещё раз.")
+    return parsed
+
+
+@app.post("/api/import/family")
+async def api_import_family(request: Request, uid: str = Depends(current_uid)):
+    user = await get_user(uid)
+    fid = user.get("familyId")
+    if not fid:
+        raise HTTPException(404, "Сначала выбери семейный бюджет.")
+    family = (await fb.get(f"/families/{fid}")) or {}
+    members = family.get("members") or {}
+    if not family or family.get("archived") or not isinstance(members, dict) or uid not in members:
+        raise HTTPException(403, "Ты не состоишь в этой семейной группе.")
+    body = await request.json()
+    transactions = body.get("transactions")
+    if not isinstance(transactions, list) or not transactions or len(transactions) > 500:
+        raise HTTPException(400, "Импорт должен содержать от 1 до 500 операций.")
+    records = family.get("transactions") or {}
+    existing = set()
+    if isinstance(records, dict):
+        for tx in records.values():
+            if not isinstance(tx, dict):
+                continue
+            fp = str(tx.get("importFingerprint") or "")
+            if fp:
+                existing.add(fp)
+    imported = 0
+    duplicates = 0
+    for raw in transactions:
+        if not isinstance(raw, dict):
+            continue
+        kind = str(raw.get("type") or "").lower()
+        if kind not in {"income", "expense"}:
+            continue
+        try:
+            amount = float(raw.get("amount") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(amount) or amount <= 0:
+            continue
+        tx_date = str(raw.get("date") or "")[:10]
+        title = str(raw.get("title") or raw.get("category") or "Операция")[:120]
+        currency = str(raw.get("currency") or "UAH").upper()[:8]
+        fingerprint = str(raw.get("importFingerprint") or "")[:128]
+        if fingerprint and fingerprint in existing:
+            duplicates += 1
+            continue
+        tx = {
+            "uid": uid, "type": kind, "amount": amount, "title": title,
+            "category": str(raw.get("category") or "Разное")[:64],
+            "icon": str(raw.get("icon") or "📦")[:12],
+            "date": tx_date, "currency": currency, "envelopeId": None,
+            "receipt": None, "ts": now_ms(), "importFingerprint": fingerprint or None,
+        }
+        await fb.push(f"/families/{fid}/transactions", tx)
+        if fingerprint:
+            existing.add(fingerprint)
+        imported += 1
+    return {"ok": True, "imported": imported, "duplicates": duplicates}
 
 
 @app.post("/api/export")

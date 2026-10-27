@@ -111,6 +111,32 @@ def has_pro_access(user: dict) -> bool:
         sub_end *= 1000
     return sub_end > now_ms() and tariff in {"trial", "pro", "pro1", "pro12"}
 
+def coupon_percent(coupon_type) -> int:
+    value = str(coupon_type or "").strip()
+    return 10 if value == "10" else 20 if value == "20" else 0
+
+def available_coupons(user: dict, coupon_type) -> int:
+    percent = coupon_percent(coupon_type)
+    if percent == 10:
+        return max(0, int(user.get("couponsEarned") or 0) - int(user.get("couponsUsed10") or 0))
+    if percent == 20:
+        return max(0, int(user.get("coupons20Earned") or 0) - int(user.get("couponsUsed20") or 0))
+    return 0
+
+def discounted_amount(amount, percent: int):
+    return round(float(amount) * (100 - percent) / 100, 2)
+
+async def consume_coupon(uid: str, coupon_type):
+    percent = coupon_percent(coupon_type)
+    if percent not in (10, 20):
+        return
+    user = await get_user(uid) or {}
+    if available_coupons(user, str(percent)) <= 0:
+        raise ValueError(f"Купон {percent}% уже недоступен")
+    field = "couponsUsed10" if percent == 10 else "couponsUsed20"
+    used = int(user.get(field) or 0)
+    await fb.patch(f"/users/{uid}", {field: used + 1})
+
 
 class ReviewState(StatesGroup):
     waiting_text = State()
@@ -537,6 +563,8 @@ if bot:
             payload = json.loads(payment.invoice_payload)
             uid = str(message.from_user.id)
             plan = str(payload.get("plan") or "")
+            coupon_type = str(payload.get("couponType") or "")
+            percent = coupon_percent(coupon_type)
 
             # Проверяем тариф и владельца платежа.
             if str(payload.get("uid")) != uid:
@@ -548,7 +576,8 @@ if bot:
                 return
 
             tariff = TARIFFS.get(plan)
-            if not tariff or plan not in STARS_PRICES:
+            expected_stars = int(round(STARS_PRICES.get(plan, 0) * (100 - percent) / 100))
+            if not tariff or plan not in STARS_PRICES or payment.total_amount != expected_stars:
                 log.error("Unknown paid plan: %s", plan)
                 await message.answer(
                     "⚠️ Платёж получен, но тариф не распознан. "
@@ -609,12 +638,16 @@ if bot:
                 "status": "active",
                 "reminderSent": 0,
             })
+            if percent:
+                await consume_coupon(uid, str(percent))
+                await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
 
             await message.answer(
                 "🎉 <b>Оплата прошла успешно!</b>\n\n"
                 f"Тариф: <b>{tariff['name']}</b>\n"
                 f"Срок: <b>{tariff['days']} дней</b>\n"
-                "Подписка активирована.",
+                + (f"Применена скидка: <b>{percent}%</b>\n" if percent else "")
+                + "Подписка активирована.",
                 parse_mode="HTML",
             )
 
@@ -1177,13 +1210,23 @@ async def api_bank_create(request: Request, uid: str = Depends(current_uid)):
 @app.post("/api/pay/stars")
 async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     body = await request.json()
-    plan = body.get("plan")
-    stars = STARS_PRICES.get(plan)
+    plan = str(body.get("plan") or "")
+    base_stars = STARS_PRICES.get(plan)
+    if not bot or base_stars is None:
+        raise HTTPException(400, "Неизвестный тариф")
+    coupon_type = str(body.get("couponType") or "")
+    percent = coupon_percent(coupon_type)
+    user = await get_user(uid) or {}
+    if percent and available_coupons(user, str(percent)) <= 0:
+        raise HTTPException(400, f"Нет доступных купонов {percent}%")
+    stars = int(round(base_stars * (100 - percent) / 100))
+    payload = {"uid": uid, "plan": plan, "couponType": str(percent) if percent else ""}
     link = await bot.create_invoice_link(
-        title="Family Budget", description="Оплата", payload=json.dumps({"uid": uid, "plan": plan}),
+        title="Money Mini", description=f"Подписка{f' со скидкой {percent}%' if percent else ''}",
+        payload=json.dumps(payload),
         currency="XTR", prices=[LabeledPrice(label="Подписка", amount=stars)]
     )
-    return {"ok": True, "invoice_url": link}
+    return {"ok": True, "invoice_url": link, "amount": stars, "discount": percent}
 
 @app.post("/api/pay/crypto")
 async def api_pay_crypto(
@@ -1200,13 +1243,21 @@ async def api_pay_crypto(
     if not tariff:
         raise HTTPException(400, "Неизвестный тариф")
 
+    coupon_type = str(body.get("couponType") or "")
+    percent = coupon_percent(coupon_type)
+    user = await get_user(uid) or {}
+    if percent and available_coupons(user, str(percent)) <= 0:
+        raise HTTPException(400, f"Нет доступных купонов {percent}%")
+    amount = discounted_amount(tariff["price_usd"], percent)
+
     result = await cp.call("createInvoice", {
         "asset": "USDT",
-        "amount": str(tariff["price_usd"]),
-        "description": tariff["name"],
+        "amount": str(amount),
+        "description": f"{tariff['name']}{f' со скидкой {percent}%' if percent else ''}",
         "payload": json.dumps({
             "uid": uid,
             "plan": plan,
+            "couponType": str(percent) if percent else "",
         }),
         "allow_comments": False,
         "allow_anonymous": False,
@@ -1254,6 +1305,8 @@ async def cryptopay_webhook(request: Request):
         uid = str(plan_data.get("uid") or "")
         plan = str(plan_data.get("plan") or "")
         tariff = TARIFFS.get(plan)
+        coupon_type = str(plan_data.get("couponType") or "")
+        percent = coupon_percent(coupon_type)
 
         if not invoice_id or not uid or not tariff:
             raise HTTPException(400, "Invalid invoice data")
@@ -1261,8 +1314,8 @@ async def cryptopay_webhook(request: Request):
         if asset != "USDT":
             raise HTTPException(400, "Unexpected currency")
 
-        if abs(float(invoice.get("amount") or 0) -
-               float(tariff["price_usd"])) > 0.000001:
+        expected_amount = discounted_amount(tariff["price_usd"], percent)
+        if abs(float(invoice.get("amount") or 0) - expected_amount) > 0.000001:
             raise HTTPException(400, "Unexpected amount")
 
     except HTTPException:
@@ -1309,6 +1362,13 @@ async def cryptopay_webhook(request: Request):
 
     await fb.patch(payment_path, {"status": "paid"})
 
+    if percent:
+        try:
+            await consume_coupon(uid, str(percent))
+            await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
+        except Exception:
+            log.exception("Could not mark used crypto coupon for invoice %s", invoice_id)
+
     if bot:
         try:
             await bot.send_message(
@@ -1316,7 +1376,8 @@ async def cryptopay_webhook(request: Request):
                 "🎉 <b>Оплата USDT прошла успешно!</b>\n\n"
                 f"Тариф: <b>{tariff['name']}</b>\n"
                 f"Срок: <b>{tariff['days']} дней</b>\n"
-                "Подписка активирована.",
+                + (f"Применена скидка: <b>{percent}%</b>\n" if percent else "")
+                + "Подписка активирована.",
                 parse_mode="HTML",
             )
         except Exception:

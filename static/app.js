@@ -831,7 +831,8 @@ async function saveEnvelope(){
 }
 
 function openBankEditor(id){
-  const item=appData.banks.find(x=>String(x.id)===String(id));if(!item)return;
+  const bankItems=budgetMode==='family'&&currentFamily?familyBanks:appData.banks;
+  const item=bankItems.find(x=>String(x.id)===String(id));if(!item)return;
   editingBankId=id;
   document.getElementById('bankNameInput').value=item.name||'';
   document.getElementById('bankTargetInput').value=item.target||'';
@@ -840,36 +841,58 @@ function openBankEditor(id){
   const btn=document.querySelector('#modalAddBank button[onclick="saveBank()"]');if(btn)btn.textContent='Сохранить изменения';
   openModal('modalAddBank');
 }
-function deleteBank(id){
-  const item=appData.banks.find(x=>String(x.id)===String(id));if(!item)return;
+async function deleteBank(id){
+  const familyMode=budgetMode==='family'&&currentFamily;
+  const bankItems=familyMode?familyBanks:appData.banks;
+  const item=bankItems.find(x=>String(x.id)===String(id));if(!item)return;
   if(!window.confirm('Удалить копилку «'+item.name+'»?'))return;
-  appData.banks=appData.banks.filter(x=>String(x.id)!==String(id));
-  if(String(selectedBankIdForContribution)===String(id))selectedBankIdForContribution=null;
-  saveData();renderAll();
+  try{
+    if(familyMode){
+      await familyRequest('/api/family/banks/'+encodeURIComponent(String(id)),'DELETE');
+      familyBanks=familyBanks.filter(x=>String(x.id)!==String(id));
+    }else appData.banks=appData.banks.filter(x=>String(x.id)!==String(id));
+    if(String(selectedBankIdForContribution)===String(id))selectedBankIdForContribution=null;
+    if(!familyMode)saveData();
+    renderAll();
+  }catch(e){alert(e.message||'Не удалось удалить копилку.');}
 }
 
-function saveBank(){
+async function saveBank(){
   const name = document.getElementById('bankNameInput').value.trim();
   const target = parseFloat(document.getElementById('bankTargetInput').value);
   const deadline = document.getElementById('bankDeadlineInput').value || null;
-  if(!name || !Number.isFinite(target) || target <= 0) return;
-  if(editingBankId!==null){
-    const bank=appData.banks.find(item=>String(item.id)===String(editingBankId));
-    if(bank){bank.name=name;bank.target=target;bank.deadline=deadline;}
-    editingBankId=null;
-  }else appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline });
-  document.getElementById('bankNameInput').value='';
-  document.getElementById('bankTargetInput').value='';
-  document.getElementById('bankDeadlineInput').value='';
-  const bankTitle=document.querySelector('#modalAddBank .modal-header h3');if(bankTitle)bankTitle.textContent='Новая банка';
-  const bankBtn=document.querySelector('#modalAddBank button[onclick="saveBank()"]');if(bankBtn)bankBtn.textContent='Создать';
-  saveData(); closeModal('modalAddBank'); renderAll();
+  if(!name || !Number.isFinite(target) || target <= 0){alert('Укажи название и цель больше нуля.');return;}
+  const familyMode=budgetMode==='family'&&currentFamily;
+  try{
+    if(familyMode){
+      if(editingBankId!==null){
+        await familyRequest('/api/family/banks/'+encodeURIComponent(String(editingBankId)),'PATCH',{name,target,deadline});
+      }else{
+        await familyRequest('/api/family/banks','POST',{name,target,deadline});
+      }
+      editingBankId=null;
+      await loadFamilyBanks();
+    }else{
+      if(editingBankId!==null){
+        const bank=appData.banks.find(item=>String(item.id)===String(editingBankId));
+        if(bank){bank.name=name;bank.target=target;bank.deadline=deadline;}
+        editingBankId=null;
+      }else appData.banks.push({ id: Date.now(), name, target, balance: 0, deadline });
+      saveData();
+    }
+    document.getElementById('bankNameInput').value='';
+    document.getElementById('bankTargetInput').value='';
+    document.getElementById('bankDeadlineInput').value='';
+    const bankTitle=document.querySelector('#modalAddBank .modal-header h3');if(bankTitle)bankTitle.textContent='Новая банка';
+    const bankBtn=document.querySelector('#modalAddBank button[onclick="saveBank()"]');if(bankBtn)bankBtn.textContent='Создать';
+    closeModal('modalAddBank');renderAll();
+  }catch(e){alert(e.message||'Не удалось сохранить копилку.');}
 }
 
 let selectedBankIdForContribution = null;
 function contributeToBank(id){
-  if(budgetMode==='family'){alert('Семейные копилки пока не подключены к общему хранилищу.');return;}
-  const bank=appData.banks.find(item=>String(item.id)===String(id));
+  const familyMode=budgetMode==='family'&&currentFamily;
+  const bank=(familyMode?familyBanks:appData.banks).find(item=>String(item.id)===String(id));
   if(!bank)return;
   selectedBankIdForContribution=bank.id;
   document.getElementById('bankContributionTitle').textContent='Пополнить: '+bank.name;
@@ -877,17 +900,27 @@ function contributeToBank(id){
   document.getElementById('bankContributionHint').textContent='Доступно на личном балансе: '+fmtMoney(appData.balance);
   openModal('modalBankContribution');
 }
-function saveBankContribution(){
-  const bank=appData.banks.find(item=>String(item.id)===String(selectedBankIdForContribution));
+async function saveBankContribution(){
+  const familyMode=budgetMode==='family'&&currentFamily;
+  const bankItems=familyMode?familyBanks:appData.banks;
+  const bank=bankItems.find(item=>String(item.id)===String(selectedBankIdForContribution));
   const amount=Number(document.getElementById('bankContributionAmount').value);
+  const available=familyMode?getVisibleBudget().balance:Number(appData.balance||0);
   if(!bank||!Number.isFinite(amount)||amount<=0){alert('Введи сумму больше нуля.');return;}
-  if(amount>appData.balance){alert('На личном балансе недостаточно денег.');return;}
-  appData.balance-=amount;
-  bank.balance=Number(bank.balance||0)+amount;
-  bank.contributions=Array.isArray(bank.contributions)?bank.contributions:[];
-  bank.contributions.push({amount,date:new Date().toLocaleDateString('ru-RU')});
-  selectedBankIdForContribution=null;
-  saveData();closeModal('modalBankContribution');renderAll();
+  if(amount>available){alert('На доступном балансе недостаточно денег.');return;}
+  try{
+    if(familyMode){
+      await familyRequest('/api/family/banks/'+encodeURIComponent(String(bank.id))+'/contributions','POST',{amount,currency:appData.currency||'UAH'});
+      await Promise.all([loadFamilyBanks(),loadFamilyTransactions()]);
+    }else{
+      appData.balance-=amount;
+      bank.balance=Number(bank.balance||0)+amount;
+      bank.contributions=Array.isArray(bank.contributions)?bank.contributions:[];
+      bank.contributions.push({amount,date:new Date().toLocaleDateString('ru-RU')});
+      saveData();
+    }
+    selectedBankIdForContribution=null;closeModal('modalBankContribution');renderAll();
+  }catch(e){alert(e.message||'Не удалось пополнить копилку.');}
 }
 
 function saveRecurring(){
@@ -1004,6 +1037,8 @@ let currentFamily = null;
 let familyBusy = false;
 let familyTransactions = [];
 let familyEnvelopes = [];
+let familyBanks = [];
+let familyBanksBusy = false;
 let familyEnvelopesBusy = false;
 let familyTransactionsBusy = false;
 let budgetMode = localStorage.getItem('budgetMode_' + telegramUserId) === 'family' ? 'family' : 'personal';
@@ -1016,6 +1051,7 @@ function updateBudgetModeControls(){
 function setBudgetMode(mode){if(!['personal','family'].includes(mode)||(mode==='family'&&!currentFamily))return;budgetMode=mode;localStorage.setItem('budgetMode_'+telegramUserId,mode);updateBudgetModeControls();if(mode==='family')loadFamilyTransactions();renderAll();}
 async function loadFamilyTransactions(){if(!currentFamily||familyTransactionsBusy)return;familyTransactionsBusy=true;try{const r=await familyRequest('/api/family/transactions');familyTransactions=Array.isArray(r.transactions)?r.transactions:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные операции.',true);}finally{familyTransactionsBusy=false;renderAll();}}
 async function loadFamilyEnvelopes(){if(!currentFamily||familyEnvelopesBusy)return;familyEnvelopesBusy=true;try{const r=await familyRequest('/api/family/envelopes');familyEnvelopes=Array.isArray(r.envelopes)?r.envelopes:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные конверты.',true);}finally{familyEnvelopesBusy=false;renderAll();}}
+async function loadFamilyBanks(){if(!currentFamily||familyBanksBusy)return;familyBanksBusy=true;try{const r=await familyRequest('/api/family/banks');familyBanks=Array.isArray(r.banks)?r.banks:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные копилки.',true);}finally{familyBanksBusy=false;renderAll();}}
 function getVisibleBudget(){
  if(budgetMode!=='family'||!currentFamily)return {balance:appData.balance,monthIncome:appData.monthIncome,monthExpense:appData.monthExpense,history:appData.history,isFamily:false};
  const now=new Date(),history=familyTransactions.map(tx=>({...tx,title:tx.title||tx.note||tx.category||'Операция',date:tx.date||(tx.ts?new Date(Number(tx.ts)).toLocaleDateString('ru-RU'):'')}));
@@ -1108,7 +1144,7 @@ function cancelFamilyForms(){
 function renderFamilyStatus(family){
   currentFamily = family || null;
   updateBudgetModeControls();
-  if(currentFamily){loadFamilyEnvelopes();if(budgetMode==='family')loadFamilyTransactions();}
+  if(currentFamily){loadFamilyEnvelopes();loadFamilyBanks();if(budgetMode==='family')loadFamilyTransactions();}
   const status = document.getElementById('familyStatus');
   const currentInfo = document.getElementById('familyCurrentInfo');
   const emptyInfo = document.getElementById('familyEmptyInfo');
@@ -1532,7 +1568,8 @@ function renderAll(){
 
   const banks = document.getElementById('banksList');
   if(banks){
-    banks.innerHTML = appData.banks.map(b => {
+    const bankItems=budgetMode==='family'&&currentFamily?familyBanks:appData.banks;
+    banks.innerHTML = bankItems.map(b => {
       const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
       let deadlineText = '';
       if(b.deadline){

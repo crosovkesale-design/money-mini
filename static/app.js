@@ -1049,7 +1049,7 @@ let familyBanks = [];
 let familyBanksBusy = false;
 let familyEnvelopesBusy = false;
 let familyTransactionsBusy = false;
-let budgetMode = localStorage.getItem('budgetMode_' + telegramUserId) === 'family' ? 'family' : 'personal';
+let budgetMode = 'personal'; // Always open on the personal budget; family mode is selected explicitly.
 function updateBudgetModeControls(){
  const sw=document.getElementById('budgetModeSwitch'); if(sw)sw.style.display=currentFamily?'flex':'none';
  const p=document.getElementById('budgetModePersonal'),f=document.getElementById('budgetModeFamily');
@@ -1658,6 +1658,8 @@ function initApp(){
     return;
   }
   appInitialized = true;
+  budgetMode = 'personal';
+  localStorage.setItem('budgetMode_' + telegramUserId, 'personal');
 
   setTheme(appData.theme || 'dark');
   applyLang();

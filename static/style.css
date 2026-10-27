@@ -1508,3 +1508,13 @@ select:focus-visible {
 [data-theme="light"] .coupon-panel{background:radial-gradient(ellipse at 100% 0%,rgba(54,217,255,.13),transparent 42%),linear-gradient(145deg,rgba(255,255,255,.98),rgba(239,242,255,.98));border-color:rgba(105,95,205,.2);box-shadow:0 12px 28px rgba(70,80,130,.1)}
 [data-theme="light"] .coupon-choice{background-color:rgba(90,100,150,.035)}
 @media(max-width:360px){.coupon-panel{padding:13px}.coupon-choice{gap:7px;padding:10px 8px}.coupon-choice-icon{flex-basis:33px;width:33px;height:33px}.coupon-choice-copy strong{font-size:11px}.coupon-choice-copy small,.coupon-stock{font-size:9px}.coupon-discount{font-size:12px;padding:5px 6px}}
+
+
+/* Coupon-discounted tariff prices */
+.price-old,.price-stars-old{display:inline-block;margin-right:7px;color:var(--muted);font-size:.62em;font-weight:650;text-decoration:line-through;text-decoration-thickness:1.5px;opacity:.8;letter-spacing:0;vertical-align:middle}
+.price-current{display:inline-block;color:#5ee7b7;vertical-align:middle}
+.price-stars{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px}
+.price-stars-old{margin-right:0;font-size:10px}
+.price-stars-current{color:#5ee7b7;font-weight:850}
+.price-main .pro-period{margin-left:3px}
+[data-theme="light"] .price-current,[data-theme="light"] .price-stars-current{color:#087f5b}

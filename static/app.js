@@ -1208,6 +1208,7 @@ function renderAll(){
       const pct=Number(e.target)>0?Math.min(100,Math.max(0,spent/Number(e.target)*100)):0;
       return `<div class="card envelope-card">
         <div class="envelope-card-top"><b>📩 ${e.name}</b><span class="envelope-spent">${fmtMoney(spent)} / ${fmtMoney(e.target)}</span></div>
+        <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openEnvelopeEditor('\${e.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteEnvelope('\${e.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>
         <div class="progress-track"><div class="progress-fill ${pct>=100?'over-limit':''}" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>${remaining>=0?'Осталось':'Превышение'}: ${fmtMoney(Math.abs(remaining))}</span><span>${Math.round(pct)}%</span></div>
       </div>`;
@@ -1236,6 +1237,7 @@ function renderAll(){
         <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
         ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">Дедлайн: ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString('ru-RU') + ' · ' + deadlineText + '</div>' : ''}
+        <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openBankEditor('\${b.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteBank('\${b.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>
         <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank('${b.id}')">＋ Пополнить</button>
       </div>`;
     }).join('') || '<div class="muted">Пока нет копилок. Создай цель накопления.</div>';

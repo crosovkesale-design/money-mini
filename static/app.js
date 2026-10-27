@@ -120,6 +120,10 @@ async function confirmBankImport(){
   const unique=[],seen=new Set();
   selected.forEach(row=>{row.amount=Number(row.amount);row.currency=String(row.currency||appData.currency||'UAH').toUpperCase();row.icon=bankCategoryIcon(row.category,row.type);row.importFingerprint=bankFingerprint(row);if(!seen.has(row.importFingerprint)){seen.add(row.importFingerprint);unique.push(row);}});
   if(!unique.length)return;
+  if(unique.length>500){alert('За один раз можно импортировать не больше 500 операций. Сними галочки с лишних строк и повтори.');return;}
+  const currencies=[...new Set(unique.map(r=>String(r.currency||appData.currency||'UAH').toUpperCase()))];
+  if(currencies.length>1){alert('В этой выписке несколько валют. Чтобы не исказить баланс, импортируй каждую валюту отдельным файлом.');return;}
+  if(currencies[0]!==String(appData.currency||'UAH').toUpperCase()){alert('Валюта выписки — '+currencies[0]+', а валюта приложения — '+String(appData.currency||'UAH')+'. Сначала измени валюту приложения в Настройках на '+currencies[0]+', затем загрузи выписку снова.');return;}
   bankImportBusy=true;const button=document.getElementById('bankImportConfirm');button.disabled=true;button.textContent='Импорт…';
   try{
     let imported=0,duplicates=0;
@@ -135,7 +139,7 @@ async function confirmBankImport(){
         if(existing.has(row.importFingerprint)){duplicates++;continue;}
         const tx={id:Date.now()+imported,type:row.type,title:String(row.title||row.category).slice(0,120),category:row.category,icon:row.icon,amount:row.amount,date:row.date,currency:row.currency,receipt:null,importFingerprint:row.importFingerprint,source:'bank-import'};
         appData.history.unshift(tx);existing.add(row.importFingerprint);imported++;
-        if(row.type==='expense'){appData.balance-=row.amount;appData.monthExpense+=row.amount;}else{appData.balance+=row.amount;appData.monthIncome+=row.amount;}
+        if(row.type==='expense'){appData.balance-=row.amount;if(String(row.date).slice(0,7)===String(appData.currentMonth||''))appData.monthExpense+=row.amount;}else{appData.balance+=row.amount;if(String(row.date).slice(0,7)===String(appData.currentMonth||''))appData.monthIncome+=row.amount;}
       }
       saveData();renderAll();
     }

@@ -169,13 +169,24 @@ async def refund_ai_call(uid: str, reservation: dict | None) -> None:
 
     await fb.transaction(f"/users/{uid}", update)
 
-async def add_ai_credits(uid: str, amount: int) -> None:
-    """Atomically add purchased AI credits without overwriting concurrent user updates."""
+async def add_ai_credits(uid: str, amount: int, invoice_id: str = "") -> None:
+    """Atomically add AI credits; a paid invoice can only be applied once."""
     amount = max(0, int(amount))
+    result = {"added": False}
+
     def update(raw):
         user = dict(raw) if isinstance(raw, dict) else {}
+        applied = dict(user.get("aiCreditInvoices") or {})
+        if invoice_id and invoice_id in applied:
+            result["added"] = False
+            return user
         user["aiCredits"] = max(0, int(user.get("aiCredits") or 0)) + amount
+        if invoice_id:
+            applied[invoice_id] = now_ms()
+            user["aiCreditInvoices"] = applied
+        result["added"] = True
         return user
+
     await fb.transaction(f"/users/{uid}", update)
 
 
@@ -194,7 +205,7 @@ def available_coupons(user: dict, coupon_type) -> int:
 def discounted_amount(amount, percent: int):
     return round(float(amount) * (100 - percent) / 100, 2)
 
-async def consume_coupon(uid: str, coupon_type):
+async def consume_coupon(uid: str, coupon_type, invoice_id: str = ""):
     percent = coupon_percent(coupon_type)
     if percent not in (10, 20):
         return
@@ -204,13 +215,21 @@ async def consume_coupon(uid: str, coupon_type):
 
     def update(raw):
         user = dict(raw) if isinstance(raw, dict) else {}
+        used_invoices = dict(user.get("couponInvoicesUsed") or {})
         result.clear()
+        if invoice_id and invoice_id in used_invoices:
+            result["ok"] = True
+            result["already"] = True
+            return user
         earned = max(0, int(user.get(field_earned) or 0))
         used = max(0, int(user.get(field_used) or 0))
         if earned - used <= 0:
             result["ok"] = False
             return user
         user[field_used] = used + 1
+        if invoice_id:
+            used_invoices[invoice_id] = percent
+            user["couponInvoicesUsed"] = used_invoices
         result["ok"] = True
         return user
 
@@ -238,13 +257,29 @@ async def award_referral_coupon(paid_uid: str, payment_path: str):
         await fb.patch(payment_path, {"referralRewarded": True, "referralRewardedTo": None})
         return False
 
-    earned = int(referrer.get("couponsEarned") or 0)
-    await fb.patch(f"/users/{referrer_id}", {"couponsEarned": earned + 1})
+    invoice_key = payment_path.rsplit("/", 1)[-1]
+    awarded = {"ok": False}
+
+    def update_referrer(raw):
+        current = dict(raw) if isinstance(raw, dict) else {}
+        rewarded = dict(current.get("referralCouponPayments") or {})
+        if invoice_key in rewarded:
+            awarded["ok"] = False
+            return current
+        current["couponsEarned"] = max(0, int(current.get("couponsEarned") or 0)) + 1
+        rewarded[invoice_key] = now_ms()
+        current["referralCouponPayments"] = rewarded
+        awarded["ok"] = True
+        return current
+
+    await fb.transaction(f"/users/{referrer_id}", update_referrer)
     await fb.patch(payment_path, {
         "referralRewarded": True,
         "referralRewardedTo": referrer_id,
         "referralRewardPercent": 10,
     })
+    if not awarded.get("ok"):
+        return False
 
     if bot:
         try:
@@ -2924,7 +2959,7 @@ async def cryptopay_webhook(request: Request):
     if isinstance(existing, dict) and existing.get("status") == "paid":
         # Repair a partially completed AI-pack credit if the webhook was interrupted.
         if existing.get("kind") == "ai_pack" and not existing.get("creditsAdded") and ai_pack:
-            await add_ai_credits(uid, int(ai_pack["credits"]))
+            await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
             await fb.patch(payment_path, {"creditsAdded": True})
             if bot:
                 try:
@@ -2946,7 +2981,7 @@ async def cryptopay_webhook(request: Request):
             "currency": asset, "amount": invoice["amount"],
             "invoiceId": invoice_id, "paidAt": now, "status": "paid",
         })
-        await add_ai_credits(uid, int(ai_pack["credits"]))
+        await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
         await fb.patch(payment_path, {"creditsAdded": True})
         if bot:
             try:
@@ -2956,16 +2991,34 @@ async def cryptopay_webhook(request: Request):
         return {"ok": True, "ai_pack": True}
 
     now = now_ms()
-    user = await get_user(uid) or {}
+    activation = {}
 
-    if isinstance(existing, dict) and existing.get("newEnd"):
-        new_end = int(existing["newEnd"])
-    else:
+    def activate_subscription(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        processed = dict(user.get("cryptoSubscriptionInvoices") or {})
+        if invoice_id in processed:
+            activation["newEnd"] = int(processed[invoice_id])
+            activation["already"] = True
+            return user
         sub_end = int(user.get("subEnd") or 0)
         if 0 < sub_end < 10**11:
             sub_end *= 1000
         new_end = max(sub_end, now) + int(tariff["days"]) * 86400000
+        processed[invoice_id] = new_end
+        user.update({
+            "tariff": plan,
+            "subStart": now,
+            "subEnd": new_end,
+            "status": "active",
+            "reminderSent": 0,
+            "cryptoSubscriptionInvoices": processed,
+        })
+        activation["newEnd"] = new_end
+        activation["already"] = False
+        return user
 
+    await fb.transaction(f"/users/{uid}", activate_subscription)
+    new_end = int(activation["newEnd"])
     await fb.put(payment_path, {
         "uid": uid,
         "plan": plan,
@@ -2976,20 +3029,11 @@ async def cryptopay_webhook(request: Request):
         "newEnd": new_end,
         "status": "processing",
     })
-
-    await fb.patch(f"/users/{uid}", {
-        "tariff": plan,
-        "subStart": now,
-        "subEnd": new_end,
-        "status": "active",
-        "reminderSent": 0,
-    })
-
     await fb.patch(payment_path, {"status": "paid"})
 
     if percent:
         try:
-            await consume_coupon(uid, str(percent))
+            await consume_coupon(uid, str(percent), invoice_id)
             await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
         except Exception:
             log.exception("Could not mark used crypto coupon for invoice %s", invoice_id)

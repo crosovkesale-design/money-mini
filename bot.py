@@ -560,36 +560,46 @@ if bot:
                             pass
  
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Открыть бюджет", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="💎 Подписка и оплата", callback_data="show_pay")],
-            [InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")]
+            [InlineKeyboardButton(text="📊 Открыть Family Budget", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
+             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Отзывы пользователей", url="https://t.me/familybudget_reviews")],
+            [InlineKeyboardButton(text="📣 Наш канал", url="https://t.me/familybudjet")]
         ])
         await message.answer(
-            "👋 Привет! Это <b>Family Budget</b> — семейный учёт доходов и расходов.\n\n"
-            "Нажми кнопку, чтобы начать.",
+            "👋 <b>Добро пожаловать в Family Budget!</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "💰 <b>Твой бюджет — под контролем.</b>\n\n"
+            "Записывай доходы и расходы, следи за аналитикой, планируй накопления и управляй семейными финансами в одном месте.\n\n"
+            "🎁 <b>Новым пользователям доступен пробный период на 30 дней.</b>\n\n"
+            "👇 Нажми <b>«Открыть Family Budget»</b>, чтобы начать.\n\n"
+            "💬 Отзывы, новости и обновления — по кнопкам ниже.",
             reply_markup=kb, parse_mode="HTML"
         )
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         text = (
-            "✨ <b>Семейный бюджет — меню команд</b>\n"
+            "✨ <b>FAMILY BUDGET · ЦЕНТР КОМАНД</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            "📊 <b>/stats</b> — статистика сообщества\n"
-            "💎 <b>/pay</b> — тарифы и способы оплаты\n"
-            "🛡 <b>/status</b> — статус твоей подписки\n"
-            "🎁 <b>/referrals</b> — приглашения и бонусы\n"
-            "✍️ <b>/review</b> — оставить отзыв\n"
-            "🆘 <b>/support</b> — помощь и поддержка\n"
-            "🏠 <b>/start</b> — главное меню\n"
+            "🏠 <b>/start</b> — открыть главное меню и приложение\n"
+            "📊 <b>/stats</b> — общая статистика проекта\n"
+            "💎 <b>/pay</b> — тарифы, преимущества и оплата\n"
+            "🛡 <b>/status</b> — твой тариф и срок действия\n"
+            "🎁 <b>/referrals</b> — реферальная ссылка и купоны\n"
+            "✍️ <b>/review</b> — поделиться впечатлением и получить бонус\n"
+            "🆘 <b>/support</b> — связаться с поддержкой\n"
+            "ℹ️ <b>/help</b> — эта справка\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            "<i>Выбирай команду из меню Telegram или нажми на неё в списке.</i>"
+            "📌 <i>Выбери команду в меню Telegram или нажми одну из кнопок ниже.</i>"
         )
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📊 Статистика", callback_data="menu_stats"),
              InlineKeyboardButton(text="🛡 Моя подписка", callback_data="menu_status")],
             [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
-             InlineKeyboardButton(text="🎁 Рефералы", callback_data="ref_link")]
+             InlineKeyboardButton(text="🎁 Рефералы", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews"),
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
         ])
         await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
@@ -633,13 +643,13 @@ if bot:
              InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
         ])
         await message.answer(
-            "📊 <b>Семейный бюджет · статистика</b>\n"
+            "📊 <b>FAMILY BUDGET · СТАТИСТИКА</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            f"👥 Пользователей: <b>{total:,}</b>\n"
-            f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
-            f"💎 Активная платная подписка: <b>{active_paid:,}</b>\n"
+            f"👥 Всего пользователей: <b>{total:,}</b>\n"
+            f"🎁 На пробном периоде: <b>{trial:,}</b>\n"
+            f"💎 С платной подпиской: <b>{active_paid:,}</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            "<i>Статистика обновляется по данным приложения.</i>",
+            "<i>Цифры обновляются автоматически по данным приложения.</i>",
             reply_markup=kb, parse_mode="HTML"
         )
 
@@ -667,13 +677,14 @@ if bot:
             [InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
         ])
         await message.answer(
-            "🛡 <b>Твоя подписка</b>\n"
+            "🛡 <b>ТВОЯ ПОДПИСКА</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            f"{'🟢' if active else '🔴'} Статус: <b>{'Активна' if active else 'Не активна'}</b>\n"
-            f"💼 Тариф: <b>{tariff_names.get(tariff_key, tariff_key)}</b>\n"
-            f"⏳ Осталось: <b>{days} дн.</b>\n"
-            f"📅 Действует до: <b>{end_text}</b>\n"
-            "━━━━━━━━━━━━━━━━━━",
+            f"{'🟢' if active else '🔴'} Состояние: <b>{'Активна' if active else 'Не активна'}</b>\n"
+            f"💼 Твой тариф: <b>{tariff_names.get(tariff_key, tariff_key)}</b>\n"
+            f"⏳ Осталось времени: <b>{days} дн.</b>\n"
+            f"📅 Дата окончания: <b>{end_text}</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "<i>Продлить или сменить тариф можно в разделе оплаты.</i>",
             reply_markup=kb, parse_mode="HTML"
         )
 
@@ -684,13 +695,16 @@ if bot:
             [InlineKeyboardButton(text="🎁 Как получить скидку", callback_data="ref_link")]
         ])
         await message.answer(
-            "💎 <b>Тарифы «Семейный бюджет»</b>\n"
+            "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            "Выбери подходящий срок и получи доступ к инструментам контроля бюджета.\n\n"
-            "✨ <b>Basic</b> — учёт доходов и расходов, история, аналитика и финансовые цели.\n"
-            "👑 <b>PRO</b> — всё из Basic плюс свои категории, оформление, Excel-отчёты и напоминания.\n\n"
-            "🎁 <b>Новым пользователям — 30 дней пробного доступа.</b>\n"
-            "💳 Оплата через Telegram Stars или USDT.",
+            "Выбери план под свои задачи и управляй финансами удобнее.\n\n"
+            "✨ <b>Basic</b>\n"
+            "Доходы и расходы, история операций, базовая аналитика и финансовые цели.\n\n"
+            "👑 <b>PRO</b>\n"
+            "Возможности Basic плюс персональные категории, оформление, Excel-отчёты и напоминания.\n\n"
+            "🎁 <b>Первый старт — 30 дней пробного доступа.</b>\n"
+            "💳 Оплата доступна через Telegram Stars или USDT.\n\n"
+            "👇 Нажми кнопку ниже, чтобы посмотреть цены и выбрать срок.",
             reply_markup=kb, parse_mode="HTML"
         )
 
@@ -791,16 +805,18 @@ if bot:
         )
 
         text = (
-            "👥 <b>ТВОЯ РЕФЕРАЛЬНАЯ СИСТЕМА</b>\n\n"
-            f"Всего приглашено: <b>{total}</b>\n"
-            f"🎁 Активный триал: <b>{trial_count}</b>\n"
+            "🎁 <b>ТВОИ РЕФЕРАЛЫ И БОНУСЫ</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"👥 Всего приглашено: <b>{total}</b>\n"
+            f"🎁 Активный пробный период: <b>{trial_count}</b>\n"
             f"💎 Активная подписка: <b>{paid_count}</b>\n"
-            f"⏳ Истёкшая подписка: <b>{expired_count}</b>\n\n"
-            "🎟 <b>Доступные купоны</b>\n"
-            f"Купоны 10%: <b>{coupons10}</b>\n"
-            f"Купоны 20%: <b>{coupons20}</b>\n\n"
-            "🔗 <b>Твоя ссылка:</b>\n"
-            f"<code>{html.escape(link)}</code>\n\n"
+            f"⏳ Подписка завершилась: <b>{expired_count}</b>\n\n"
+            "🎟 <b>ТВОЙ БАЛАНС КУПОНОВ</b>\n"
+            f"🏷️ Скидка 10%: <b>{coupons10}</b>\n"
+            f"🏷️ Скидка 20%: <b>{coupons20}</b>\n\n"
+            "🔗 <b>Личная ссылка для приглашений</b>\n"
+            f"<code>{html.escape(link)}</code>\n"
+            "<i>Поделись ссылкой с друзьями — приглашения и бонусы будут отображаться здесь.</i>\n\n"
         )
 
         if lines:
@@ -821,7 +837,14 @@ if bot:
         link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
         share = f"https://t.me/share/url?url={link}&text=Заходи в Family Budget!"
         kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="📤 Поделиться", url=share)]])
-        await cb.message.edit_text(f"🎁 Приглашай друзей!\nТвоя ссылка:\n<code>{link}</code>", parse_mode="HTML", reply_markup=kb)
+        await cb.message.edit_text(
+            "🎁 <b>ПРИГЛАШАЙ ДРУЗЕЙ — ПОЛУЧАЙ БОНУСЫ</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "Отправь личную ссылку друзьям. Когда новый пользователь впервые запустит бота по ней, приглашение будет учтено.\n\n"
+            f"🔗 <b>Твоя ссылка:</b>\n<code>{link}</code>\n\n"
+            "🎟️ Следи за балансом купонов в разделе рефералов.",
+            parse_mode="HTML", reply_markup=kb
+        )
         await cb.answer()
 
     @dp.callback_query(F.data == "menu_stats")
@@ -909,13 +932,19 @@ if bot:
     @dp.message(Command("review"))
     async def cmd_review(message: Message, state: FSMContext):
         await state.set_state(ReviewState.waiting_text)
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")],
+            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")]
+        ])
         await message.answer(
-            "📝 Напиши свой отзыв о «Семейный бюджет».\n\n"
-            "Требования:\n"
-            "• Минимум 20 символов\n"
-            "• Минимум 4 слова\n"
-            "• Опиши свой реальный опыт использования\n\n"
-            "🎁 За первый принятый отзыв начисляется купон 20%."
+            "✍️ <b>ТВОЙ ОТЗЫВ ВАЖЕН</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "Расскажи, как тебе Family Budget и что помогло в управлении деньгами.\n\n"
+            "📌 <b>Перед отправкой:</b> минимум 20 символов и 4 слова — опиши свой реальный опыт.\n\n"
+            "🎁 <b>Бонус:</b> за первый принятый отзыв начисляется купон на скидку 20%.\n\n"
+            "Напиши отзыв следующим сообщением.\n\n"
+            "💬 Уже опубликованные отзывы можно посмотреть в группе по кнопке ниже.",
+            reply_markup=kb, parse_mode="HTML"
         )
 
     @dp.message(ReviewState.waiting_text)
@@ -1045,7 +1074,17 @@ if bot:
     @dp.message(Command("support"))
     async def cmd_support(message: Message, state: FSMContext):
         await state.set_state(ReviewState.waiting_msg)
-        await message.answer("💬 Напиши свой вопрос одним сообщением:")
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")]
+        ])
+        await message.answer(
+            "🆘 <b>ПОДДЕРЖКА FAMILY BUDGET</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "Опиши вопрос или проблему одним сообщением. Если можешь, добавь скриншот и напиши, что делал перед ошибкой.\n\n"
+            "💬 Сообщение будет передано команде поддержки. Мы ответим, как только сможем.",
+            reply_markup=kb, parse_mode="HTML"
+        )
 
     @dp.message(ReviewState.waiting_msg)
     async def support_msg(message: Message, state: FSMContext):
@@ -1053,7 +1092,12 @@ if bot:
             try: await bot.send_message(int(ADMIN_CHAT_ID), f"💬 Вопрос от {message.from_user.id}:\n\n{message.text}")
             except: pass
         await state.clear()
-        await message.answer("✅ Отправлено. Мы ответим вам в ближайшее время.")
+        await message.answer(
+            "✅ <b>Сообщение передано!</b>\n\n"
+            "Спасибо, что написал в поддержку Family Budget. Команда ответит, как только сможет.\n\n"
+            "📣 Новости и обновления — в нашем канале: https://t.me/familybudjet",
+            parse_mode="HTML"
+        )
 
     @dp.message(F.successful_payment)
     async def successful_payment(message: Message):
@@ -1262,14 +1306,14 @@ async def lifespan(app: FastAPI):
     async def initialize_bot():
         try:
             await bot.set_my_commands([
-                BotCommand(command="start", description="🏠 Главное меню"),
-                BotCommand(command="stats", description="📊 Статистика сообщества"),
-                BotCommand(command="pay", description="💎 Тарифы и оплата"),
-                BotCommand(command="status", description="🛡 Моя подписка"),
-                BotCommand(command="referrals", description="🎁 Пригласить друзей"),
-                BotCommand(command="review", description="✍️ Оставить отзыв"),
-                BotCommand(command="support", description="🆘 Поддержка"),
-                BotCommand(command="help", description="ℹ️ Справка по командам"),
+                BotCommand(command="start", description="🏠 Запустить Family Budget"),
+                BotCommand(command="stats", description="📊 Статистика проекта"),
+                BotCommand(command="pay", description="💎 Тарифы и способы оплаты"),
+                BotCommand(command="status", description="🛡 Мой тариф и срок"),
+                BotCommand(command="referrals", description="🎁 Рефералы и купоны"),
+                BotCommand(command="review", description="✍️ Отзыв и бонус 20%"),
+                BotCommand(command="support", description="🆘 Связаться с поддержкой"),
+                BotCommand(command="help", description="ℹ️ Все команды бота"),
             ])
             await bot.delete_webhook(drop_pending_updates=True)
             tasks.append(asyncio.create_task(telegram_polling_guard()))

@@ -1244,20 +1244,31 @@ async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends
         raise HTTPException(400, "Файл пустой.")
     if len(data) > 8 * 1024 * 1024:
         raise HTTPException(413, "Фото должно быть меньше 8 МБ.")
+
     try:
-        result = extract_receipt(data)
+        # OCR is CPU-bound; run it in a worker thread instead of blocking FastAPI.
+        from starlette.concurrency import run_in_threadpool
+        result = await run_in_threadpool(extract_receipt, data)
     except Exception as exc:
         log.exception("Receipt OCR failed for user %s", uid)
-        if "tesseract" in str(exc).lower() or exc.__class__.__name__ == "TesseractNotFoundError":
-            raise HTTPException(503, "На сервере пока не установлен OCR-движок. Фото не сохранено; можно ввести чек вручную.")
-        raise HTTPException(400, "Не удалось распознать это фото. Попробуй сделать снимок ровнее и при хорошем освещении.")
+        if "OCR_ENGINE_MISSING" in str(exc) or "tesseract" in str(exc).lower() or exc.__class__.__name__ == "TesseractNotFoundError":
+            raise HTTPException(503, "На сервере не установлен OCR-движок Tesseract. Проверь, что Render собирает проект через Dockerfile.")
+        if "OCR_TIMEOUT" in str(exc) or isinstance(exc, TimeoutError):
+            raise HTTPException(504, "Распознавание заняло слишком много времени. Попробуй более чёткое фото, снятое ближе к чеку.")
+        if isinstance(exc, ValueError):
+            raise HTTPException(400, str(exc))
+        raise HTTPException(400, "Не удалось распознать это фото. Проверь формат и попробуй снимок без бликов.")
+
+    lines = result.get("lines") or []
+    text_result = str(result.get("text") or "")
+    if not lines and not text_result.strip():
+        raise HTTPException(422, "На фото не удалось прочитать текст. Попробуй сделать снимок ровно и при хорошем освещении.")
     return {
         "ok": True,
-        "text": str(result.get("text") or "")[:2000],
-        "lines": [str(line)[:160] for line in (result.get("lines") or [])[:30]],
+        "text": text_result[:2000],
+        "lines": [str(line)[:160] for line in lines[:30]],
         "amount_guess": float(result.get("amount_guess") or 0),
     }
-
 
 @app.post("/api/import/preview")
 async def api_import_preview(file: UploadFile = File(...), uid: str = Depends(current_uid)):

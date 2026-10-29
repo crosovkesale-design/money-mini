@@ -12,7 +12,7 @@ let appData = JSON.parse(localStorage.getItem(appStorageKey)) || {
 
 let canUseProFeatures = false;
 let referralStats = { count: 0, coupons10: 0, coupons20: 0 };
-let battlePassStats = { paidCount: 0, volumeUsd: 0, monthKey: '', monthLabel: '', daysLeft: 0, claimed: { free: [], pro: [] } };
+let battlePassStats = { paidCount: 0, volumeUsd: 0, monthKey: '', monthLabel: '', daysLeft: 0, endDate: '', claimed: { free: [], pro: [] } };
 let battlePassTrack = 'free';
 const BATTLE_PASS_TASKS = [
   {key:'invite1',title:'Первый шаг',desc:'Пригласи 1 пользователя',metric:'count',target:1},
@@ -503,8 +503,8 @@ function renderReferralStats(){
   if(paid)paid.textContent=String(Number(battlePassStats.paidCount||0));
   if(volume)volume.textContent='$'+Number(battlePassStats.volumeUsd||0).toLocaleString('en-US',{maximumFractionDigits:2});
   const now=new Date();
-  const localDaysLeft=Math.max(0,new Date(now.getFullYear(),now.getMonth()+1,1).getDate()-now.getDate()-1);
-  const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft||0):localDaysLeft;
+  const seasonIndex=Math.floor(((now.getMonth()+1-9+12)%12)/3);const startMonth=((9+seasonIndex*3-1)%12)+1;const startYear=startMonth<=(now.getMonth()+1)?now.getFullYear():now.getFullYear()-1;const endDate=new Date(startYear,startMonth-1+3,0);const localDaysLeft=Math.max(0,Math.ceil((new Date(endDate.getFullYear(),endDate.getMonth(),endDate.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000));
+  const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft??localDaysLeft):localDaysLeft;
   if(days)days.textContent=String(daysLeft);
   const tgUserId=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const fallbackLink=tgUserId?('https://t.me/moneyfamilybudget_bot?start=ref_'+tgUserId):'';

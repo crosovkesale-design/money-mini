@@ -122,35 +122,52 @@ def has_pro_access(user: dict) -> bool:
     return sub_end > now_ms() and tariff in {"trial", "pro", "pro1", "pro12"}
 
 async def reserve_ai_call(uid: str) -> dict:
-    """Reserve one AI call from PRO monthly quota first, then purchased credits."""
-    user = await get_user(uid) or {}
+    """Atomically reserve one PRO monthly call or one purchased credit."""
     month_key = datetime.now(KYIV).strftime("%Y-%m")
-    if has_pro_access(user):
-        current_month = str(user.get("aiUsageMonth") or "")
-        used = max(0, int(user.get("aiUsageCount") or 0)) if current_month == month_key else 0
-        if used < AI_MONTHLY_LIMIT:
-            await fb.patch(f"/users/{uid}", {"aiUsageMonth": month_key, "aiUsageCount": used + 1})
-            return {"kind": "monthly", "month": month_key}
-    credits = max(0, int(user.get("aiCredits") or 0))
-    if credits > 0:
-        await fb.patch(f"/users/{uid}", {"aiCredits": credits - 1})
-        return {"kind": "credits"}
-    raise HTTPException(402, "Лимит ИИ-запросов исчерпан. Купи пакет запросов за USDT или используй включённые запросы PRO.")
+    reservation = {"kind": "none"}
+
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        if has_pro_access(user):
+            current_month = str(user.get("aiUsageMonth") or "")
+            used = max(0, int(user.get("aiUsageCount") or 0)) if current_month == month_key else 0
+            if used < AI_MONTHLY_LIMIT:
+                user["aiUsageMonth"] = month_key
+                user["aiUsageCount"] = used + 1
+                reservation.clear()
+                reservation.update({"kind": "monthly", "month": month_key})
+                return user
+        credits = max(0, int(user.get("aiCredits") or 0))
+        if credits > 0:
+            user["aiCredits"] = credits - 1
+            reservation.clear()
+            reservation.update({"kind": "credits"})
+        return user
+
+    await fb.transaction(f"/users/{uid}", update)
+    if reservation.get("kind") == "none":
+        raise HTTPException(402, "Лимит ИИ-запросов исчерпан. Купи пакет запросов за USDT или используй включённые запросы PRO.")
+    return reservation
 
 
 async def refund_ai_call(uid: str, reservation: dict | None) -> None:
-    """Refund a reserved call when the AI provider fails."""
+    """Atomically refund a reserved call when the AI provider fails."""
     if not reservation:
         return
-    user = await get_user(uid) or {}
-    if reservation.get("kind") == "monthly":
-        month_key = str(reservation.get("month") or "")
-        if str(user.get("aiUsageMonth") or "") == month_key:
-            used = max(0, int(user.get("aiUsageCount") or 0))
-            if used > 0:
-                await fb.patch(f"/users/{uid}", {"aiUsageCount": used - 1})
-    elif reservation.get("kind") == "credits":
-        await fb.patch(f"/users/{uid}", {"aiCredits": max(0, int(user.get("aiCredits") or 0)) + 1})
+
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        if reservation.get("kind") == "monthly":
+            month_key = str(reservation.get("month") or "")
+            if str(user.get("aiUsageMonth") or "") == month_key:
+                used = max(0, int(user.get("aiUsageCount") or 0))
+                if used > 0:
+                    user["aiUsageCount"] = used - 1
+        elif reservation.get("kind") == "credits":
+            user["aiCredits"] = max(0, int(user.get("aiCredits") or 0)) + 1
+        return user
+
+    await fb.transaction(f"/users/{uid}", update)
 
 
 def coupon_percent(coupon_type) -> int:

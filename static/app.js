@@ -232,12 +232,10 @@ function _translateHardcodedNode(node){
   const trimmed=source.trim();
   if(!trimmed || trimmed.length>220) return;
   const translated=_autoTextMap()[trimmed];
-  if(translated && translated!==trimmed){
+  if(translated){
     const start=source.indexOf(trimmed), end=start+trimmed.length;
     const next=source.slice(0,start)+translated+source.slice(end);
     if(node.nodeValue!==next) node.nodeValue=next;
-  } else if(node.nodeValue!==source && _autoTextOriginals.has(node)) {
-    // Keep an unrecognized source untouched rather than guessing a translation.
   }
 }
 function translateHardcodedText(root=document.body){

@@ -504,22 +504,23 @@ modal.querySelector('[data-act="c20"]').onclick = function(){
     });
   };
 }
-var ADMIN_KEY = "kodnastya";
-var API_BASE = "https://money-mini.onrender.com";
+var adminApiKey = "";
+var API_BASE = "";
 function grantCoupon(uid, kind, modal){
   var btn = modal.querySelector('[data-act="' + kind + '"]');
   if(btn){ btn.disabled = true; btn.textContent = "..."; }
-  alert("Старт: " + uid + " / " + kind + " / key=" + ADMIN_KEY);
-
-  alert("Сейчас отправлю на " + API_BASE);
-  fetch(API_BASE + "/api/admin/grant-coupon", {
+  if(!adminApiKey){
+    adminApiKey = window.prompt("Введи ADMIN_KEY из настроек Render");
+    if(!adminApiKey){ if(btn){ btn.disabled = false; btn.textContent = kind === "c10" ? "🎁 Купон 10%" : "🎁 Купон 20%"; } return; }
+  }
+  fetch("/api/admin/grant-coupon", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Admin-Key": ADMIN_KEY
+      "X-Admin-Key": adminApiKey
     },
     body: JSON.stringify({ uid: uid, kind: kind })
-  }).then(function(r){ return r.json(); }).then(function(j){
+  }).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.detail || j.error || ("HTTP " + r.status)); return j; }); }).then(function(j){
     if(j && j.ok){
       alert("Купон " + (kind === "c10" ? "10%" : "20%") + " выдан. Всего: " + j.value);
       modal.remove();
@@ -529,7 +530,8 @@ function grantCoupon(uid, kind, modal){
       if(btn){ btn.disabled = false; btn.textContent = kind === "c10" ? "🎁 Купон 10%" : "🎁 Купон 20%"; }
     }
   }).catch(function(e){
-    alert("Сеть: " + e.message);
+    if(String(e.message).indexOf("ключ администратора") >= 0 || String(e.message).indexOf("401") >= 0){ adminApiKey = ""; }
+    alert("Не удалось выдать купон: " + e.message);
     if(btn){ btn.disabled = false; btn.textContent = kind === "c10" ? "🎁 Купон 10%" : "🎁 Купон 20%"; }
   });
   }

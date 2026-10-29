@@ -980,7 +980,7 @@ async function syncPaymentReminders(){
   const recurring=ensureRecurringIds().map(item=>({
     id:String(item.id),name:String(item.name||'').slice(0,100),
     amount:Number(item.amount)||0,day:Math.min(31,Math.max(1,parseInt(item.day)||1)),
-    currency:String(appData.currency||'')
+    currency:String((CURRENCIES.find(c=>c.id===appData.currency)||{}).sym||appData.currency||''),lang:String(appData.lang||'en')
   }));
   try{
     const response=await fetch('/api/payment-reminders',{

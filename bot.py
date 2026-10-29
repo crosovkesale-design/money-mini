@@ -1,4 +1,7 @@
 import asyncio
+import base64
+import hashlib
+import hmac
 import gzip
 import json
 import logging
@@ -50,6 +53,7 @@ TEST_WEBHOOK_KEY = os.getenv("TEST_WEBHOOK_KEY", "")
 MINI_APP_URL = os.getenv("MINI_APP_URL", "")
 CRYPTOPAY_TOKEN = os.getenv("CRYPTOPAY_TOKEN", "")
 CRYPTOPAY_NETWORK = os.getenv("CRYPTOPAY_NETWORK", "USDT")
+WALLET_PAY_API_KEY = os.getenv("WALLET_PAY_API_KEY", "").strip()
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "")
 ADMIN_KEY = os.getenv("ADMIN_KEY", "")
 FIREBASE_URL = os.getenv("FIREBASE_URL", "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app")
@@ -3641,6 +3645,211 @@ async def cryptopay_webhook(request: Request):
 
     return {"ok": True}
 
+
+
+@app.post("/api/pay/walletpay")
+async def api_pay_walletpay(request: Request, uid: str = Depends(current_uid)):
+    """Create a Wallet Pay order for a subscription; payment is confirmed server-side by webhook."""
+    if not WALLET_PAY_API_KEY:
+        raise HTTPException(503, "Wallet Pay пока не настроен. Добавь WALLET_PAY_API_KEY в Render.")
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Некорректный запрос")
+
+    plan = str((body or {}).get("plan") or "")
+    tariff = TARIFFS.get(plan)
+    if not tariff:
+        raise HTTPException(400, "Неизвестный тариф")
+
+    coupon_type = str((body or {}).get("couponType") or "")
+    percent = coupon_percent(coupon_type)
+    user = await get_user(uid) or {}
+    if percent and available_coupons(user, str(percent)) <= 0:
+        raise HTTPException(400, f"Нет доступных купонов {percent}%")
+
+    amount = discounted_amount(tariff["price_usd"], percent)
+    external_id = "fb_" + secrets.token_hex(16)
+    description = tariff["name"] + (f" — скидка {percent}%" if percent else "")
+    order_body = {
+        "amount": {"amount": amount, "currencyCode": "USDT"},
+        "externalId": external_id,
+        "customerTelegramUserId": int(uid),
+        "timeoutSeconds": 3600,
+        "description": description,
+        "returnUrl": "https://t.me/moneyfamilybudget_bot",
+        "failReturnUrl": "https://t.me/moneyfamilybudget_bot",
+        "customData": json.dumps({"uid": uid, "plan": plan}, separators=(",", ":")),
+    }
+    try:
+        async with __import__("httpx").AsyncClient(timeout=20) as client:
+            response = await client.post(
+                "https://pay.wallet.tg/wpay/store-api/v1/order",
+                headers={
+                    "Wpay-Store-Api-Key": WALLET_PAY_API_KEY,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                json=order_body,
+            )
+        data = response.json()
+    except Exception:
+        log.exception("Wallet Pay order creation failed")
+        raise HTTPException(502, "Не удалось связаться с Wallet Pay")
+
+    if response.status_code != 200 or data.get("status") != "SUCCESS":
+        log.error("Wallet Pay order API error: HTTP %s, response=%s", response.status_code, data)
+        if response.status_code == 401:
+            raise HTTPException(503, "Wallet Pay отклонил API-ключ. Проверь WALLET_PAY_API_KEY в Render.")
+        raise HTTPException(502, "Wallet Pay не смог создать счёт")
+
+    order = data.get("data") or {}
+    pay_url = order.get("directPayLink") or order.get("payLink")
+    order_id = str(order.get("id") or "")
+    if not pay_url or not order_id:
+        log.error("Wallet Pay response missing order link/id: %s", data)
+        raise HTTPException(502, "Wallet Pay вернул неполный ответ")
+
+    await fb.put(f"/payments/walletpay/{external_id}", {
+        "uid": uid,
+        "plan": plan,
+        "currency": "USDT",
+        "amount": amount,
+        "discount": percent,
+        "couponType": str(percent) if percent else "",
+        "externalId": external_id,
+        "walletPayOrderId": order_id,
+        "status": "pending",
+        "createdAt": now_ms(),
+        "provider": "walletpay",
+    })
+    return {"ok": True, "invoice_url": pay_url, "external_id": external_id, "amount": amount, "currency": "USDT"}
+
+
+@app.post("/api/walletpay/webhook")
+async def walletpay_webhook(request: Request):
+    """Verify Wallet Pay signature and activate a subscription only for a paid order."""
+    raw_body = await request.body()
+    timestamp = request.headers.get("walletpay-timestamp", "")
+    signature = request.headers.get("walletpay-signature", "")
+    if not WALLET_PAY_API_KEY or not timestamp or not signature:
+        raise HTTPException(401, "Missing Wallet Pay webhook signature")
+
+    body_b64 = base64.b64encode(raw_body).decode("ascii")
+    signed = f"POST.{request.url.path}.{timestamp}.{body_b64}".encode()
+    expected = base64.b64encode(hmac.new(WALLET_PAY_API_KEY.encode(), signed, hashlib.sha256).digest()).decode("ascii")
+    if not hmac.compare_digest(signature, expected):
+        raise HTTPException(401, "Invalid Wallet Pay webhook signature")
+
+    try:
+        events = json.loads(raw_body)
+        if isinstance(events, dict):
+            events = [events]
+        if not isinstance(events, list):
+            raise ValueError("Expected a list of webhook events")
+    except Exception:
+        raise HTTPException(400, "Invalid Wallet Pay webhook payload")
+
+    for event in events:
+        if not isinstance(event, dict) or event.get("type") != "ORDER_PAID":
+            continue
+        payload = event.get("payload") or {}
+        external_id = str(payload.get("externalId") or "").strip()
+        if not external_id or not re.fullmatch(r"fb_[a-f0-9]{32}", external_id):
+            log.warning("Wallet Pay webhook has invalid externalId")
+            continue
+
+        payment_path = f"/payments/walletpay/{external_id}"
+        payment = await fb.get(payment_path)
+        if not isinstance(payment, dict):
+            log.warning("Wallet Pay webhook has no matching order: %s", external_id)
+            continue
+        if payment.get("status") == "paid":
+            continue
+
+        amount_data = payload.get("orderAmount") or {}
+        paid_currency = str(amount_data.get("currencyCode") or "").upper()
+        try:
+            paid_amount = round(float(amount_data.get("amount") or 0), 2)
+            expected_amount = round(float(payment.get("amount") or 0), 2)
+        except (TypeError, ValueError):
+            continue
+        if paid_currency != "USDT" or abs(paid_amount - expected_amount) > 0.001:
+            log.error("Wallet Pay amount/currency mismatch for order %s", external_id)
+            continue
+
+        uid = str(payment.get("uid") or "")
+        plan = str(payment.get("plan") or "")
+        tariff = TARIFFS.get(plan)
+        if not uid.isdigit() or not tariff:
+            log.error("Wallet Pay order has invalid local metadata: %s", external_id)
+            continue
+
+        now = now_ms()
+        activation = {}
+
+        def activate_walletpay(raw):
+            user = dict(raw) if isinstance(raw, dict) else {}
+            processed = dict(user.get("walletPayInvoices") or {})
+            if external_id in processed:
+                activation["newEnd"] = int(processed[external_id])
+                activation["already"] = True
+                return user
+            sub_end = int(user.get("subEnd") or 0)
+            if 0 < sub_end < 10**11:
+                sub_end *= 1000
+            new_end = max(sub_end, now) + int(tariff["days"]) * 86400000
+            processed[external_id] = new_end
+            user.update({
+                "tariff": plan,
+                "subStart": now,
+                "subEnd": new_end,
+                "status": "active",
+                "reminderSent": 0,
+                "walletPayInvoices": processed,
+            })
+            activation["newEnd"] = new_end
+            activation["already"] = False
+            return user
+
+        await fb.transaction(f"/users/{uid}", activate_walletpay)
+        new_end = int(activation["newEnd"])
+        await fb.put(payment_path, {
+            **payment,
+            "status": "paid",
+            "paidAt": now,
+            "newEnd": new_end,
+            "walletPayEventId": str(event.get("eventId") or ""),
+        })
+
+        percent = coupon_percent(payment.get("couponType"))
+        if percent:
+            try:
+                await consume_coupon(uid, str(percent), external_id)
+                await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
+            except Exception:
+                log.exception("Could not mark used Wallet Pay coupon for order %s", external_id)
+
+        try:
+            await award_referral_coupon(uid, payment_path)
+        except Exception:
+            log.exception("Could not award referral coupon for Wallet Pay order %s", external_id)
+
+        if bot:
+            try:
+                await bot.send_message(
+                    int(uid),
+                    "🎉 <b>Оплата через Wallet Pay прошла успешно!</b>\n\n"
+                    f"Тариф: <b>{tariff['name']}</b>\n"
+                    f"Срок: <b>{tariff['days']} дней</b>\n"
+                    + (f"Применена скидка: <b>{percent}%</b>\n" if percent else "")
+                    + "Подписка активирована автоматически.",
+                    parse_mode="HTML",
+                )
+            except Exception:
+                log.exception("Wallet Pay success notification failed for order %s", external_id)
+
+    return {"ok": True}
 
 @app.post("/api/admin/grant-coupon")
 async def api_admin_grant_coupon(request: Request, x_admin_key: str = Header(default="")):

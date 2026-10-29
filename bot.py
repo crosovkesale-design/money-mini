@@ -1161,10 +1161,9 @@ if bot:
             username = str(ticket.get("username") or "").strip()
             name = str(ticket.get("name") or "Без имени").strip()
             user_label = ("@" + username) if username else name
-            status = str(ticket.get("status") or "🟠 Ожидает ответа")
-            created = str(ticket.get("createdAt") or "")
+            tariff_label = str(ticket.get("tariffLabel") or "Тариф не сохранён")
             rows.append([InlineKeyboardButton(
-                text=f"🟠 {user_label[:32]} · {status[:18]}",
+                text=f"{'💎' if 'PRO' in tariff_label else '🔵' if 'Basic' in tariff_label else '🎁'} {user_label[:22]} · {tariff_label[:12]}",
                 callback_data=f"support_ticket:{ticket_id}"
             )])
         rows.append([InlineKeyboardButton(text="🔄 Обновить список", callback_data="support_list")])
@@ -1214,6 +1213,21 @@ if bot:
         status = str(ticket.get("status") or "🟠 Ожидает ответа")
         created = str(ticket.get("createdAt") or "неизвестно")
         ticket_text = str(ticket.get("text") or "Текст отсутствует")
+        user_data = await get_user(str(ticket.get("userId") or ""))
+        tariff_key = str(ticket.get("tariff") or user_data.get("tariff") or "trial").lower()
+        tariff_names = {
+            "trial": "🎁 Пробный период",
+            "1month": "🔵 Basic · 1 месяц", "3months": "🔵 Basic · 3 месяца",
+            "6months": "🔵 Basic · 6 месяцев", "12months": "🔵 Basic · 12 месяцев",
+            "pro": "💎 PRO", "pro1": "💎 PRO · 1 месяц", "pro12": "💎 PRO · 12 месяцев",
+        }
+        tariff_label = str(ticket.get("tariffLabel") or tariff_names.get(tariff_key, tariff_key.upper()))
+        sub_end = int(ticket.get("subEnd") or user_data.get("subEnd") or 0)
+        if 0 < sub_end < 10**11:
+            sub_end *= 1000
+        tariff_active = bool(ticket.get("tariffActive")) if "tariffActive" in ticket else sub_end > now_ms()
+        tariff_status = "активен" if tariff_active else "не активен / истёк"
+        tariff_end = datetime.fromtimestamp(sub_end / 1000, tz=KYIV).strftime("%d.%m.%Y") if sub_end else "не указана"
         markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="✍️ Ответить пользователю", callback_data=f"support_reply:{ticket_id}")],
             [InlineKeyboardButton(text="⬅️ К списку обращений", callback_data="support_list")],
@@ -1224,7 +1238,10 @@ if bot:
             "━━━━━━━━━━━━━━━━━━\n"
             f"👤 Пользователь: <b>{escape(user_label)}</b>\n"
             f"🆔 ID: <code>{escape(str(ticket.get('userId') or ''))}</code>\n"
-            f"📌 Статус: <b>{escape(status)}</b>\n"
+            f"📌 Статус обращения: <b>{escape(status)}</b>\n"
+            f"💼 Тариф: <b>{escape(tariff_label)}</b>\n"
+            f"🔐 Подписка: <b>{tariff_status}</b>\n"
+            f"📅 Действует до: <b>{escape(tariff_end)}</b>\n"
             f"🕒 Создано: {escape(created)}\n\n"
             f"💬 <b>Сообщение:</b>\n{escape(ticket_text[:3000])}",
             parse_mode="HTML", reply_markup=markup
@@ -1321,11 +1338,27 @@ if bot:
         body = (message.text or message.caption or "").strip()
         if not body:
             body = "[Пользователь отправил вложение без текста]"
+        user_data = await get_user(str(user.id))
+        tariff_key = str(user_data.get("tariff") or "trial").lower()
+        tariff_names = {
+            "trial": "🎁 Пробный период",
+            "1month": "🔵 Basic", "3months": "🔵 Basic",
+            "6months": "🔵 Basic", "12months": "🔵 Basic",
+            "pro": "💎 PRO", "pro1": "💎 PRO", "pro12": "💎 PRO",
+        }
+        tariff_label = tariff_names.get(tariff_key, tariff_key.upper())
+        sub_end = int(user_data.get("subEnd") or 0)
+        if 0 < sub_end < 10**11:
+            sub_end *= 1000
         ticket = {
             "userId": str(user.id),
             "username": user.username or "",
             "name": user.full_name or user.first_name or "Без имени",
             "text": body[:4000],
+            "tariff": tariff_key,
+            "tariffLabel": tariff_label,
+            "tariffActive": sub_end > now_ms(),
+            "subEnd": sub_end,
             "status": "🟠 Ожидает ответа",
             "createdAt": datetime.now(timezone.utc).isoformat(),
         }

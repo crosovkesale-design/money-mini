@@ -369,7 +369,7 @@ async function handleReceiptPhotoSelected(event){
     if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
     const lines = (Array.isArray(data.lines) ? data.lines : String(data.text||'').split(/\r?\n/))
       .map(line=>String(line).replace(/\s+/g,' ').trim())
-      .filter(line=>line && /[A-Za-zА-Яа-яІіЇїЄєҐґ]/.test(line));
+      .filter(Boolean);
     if(!lines.length) throw new Error('Фото получено, но текст не удалось прочитать. Сделай снимок ровно, без бликов, чтобы весь чек был в кадре.');
 
     // Don't dump the whole OCR output into the form: it contains fiscal codes,

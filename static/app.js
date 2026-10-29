@@ -963,13 +963,55 @@ async function saveBankContribution(){
   }catch(e){alert(e.message||'Не удалось пополнить копилку.');}
 }
 
+function ensureRecurringIds(){
+  if(!Array.isArray(appData.recurring))appData.recurring=[];
+  let changed=false;
+  appData.recurring.forEach(item=>{
+    if(!item.id){item.id=String(Date.now())+'_'+Math.random().toString(36).slice(2,9);changed=true;}
+  });
+  if(changed)saveData();
+  return appData.recurring;
+}
+
+async function syncPaymentReminders(){
+  const tg=window.Telegram?.WebApp;
+  if(!tg?.initData)return;
+  const recurring=ensureRecurringIds().map(item=>({
+    id:String(item.id),name:String(item.name||'').slice(0,100),
+    amount:Number(item.amount)||0,day:Math.min(31,Math.max(1,parseInt(item.day)||1))
+  }));
+  try{
+    const response=await fetch('/api/payment-reminders',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},
+      body:JSON.stringify({items:recurring})
+    });
+    if(!response.ok)throw new Error('HTTP '+response.status);
+  }catch(error){console.warn('Не удалось синхронизировать напоминания об автоплатежах:',error);}
+}
+
 function saveRecurring(){
-  const name = document.getElementById('recName').value;
-  const amount = parseFloat(document.getElementById('recAmount').value);
-  const day = parseInt(document.getElementById('recDay').value) || 1;
-  if(!name || !amount) return;
-  appData.recurring.push({ name, amount, day, lastRun: '' });
-  saveData(); closeModal('modalAddRecurring'); renderAll();
+  const name=document.getElementById('recName').value.trim();
+  const amount=Number(document.getElementById('recAmount').value);
+  const day=Number.parseInt(document.getElementById('recDay').value,10);
+  if(!name){alert('Укажи название платежа.');return;}
+  if(!Number.isFinite(amount)||amount<=0){alert('Укажи сумму больше нуля.');return;}
+  if(!Number.isInteger(day)||day<1||day>31){alert('Укажи день оплаты от 1 до 31.');return;}
+  ensureRecurringIds().push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2,9),name,amount,day,lastRun:''});
+  saveData();closeModal('modalAddRecurring');
+  document.getElementById('recName').value='';
+  document.getElementById('recAmount').value='';
+  document.getElementById('recDay').value='';
+  renderAll();
+  syncPaymentReminders();
+}
+
+function deleteRecurring(id){
+  const items=ensureRecurringIds();
+  const item=items.find(entry=>String(entry.id)===String(id));
+  if(!item||!confirm('Удалить автоплатёж «'+String(item.name||'').replace(/[<>]/g,'')+'»?'))return;
+  appData.recurring=items.filter(entry=>String(entry.id)!==String(id));
+  saveData();renderAll();syncPaymentReminders();
 }
 
 async function exportCSV() {
@@ -1682,9 +1724,10 @@ function renderAll(){
 
   const recurring = document.getElementById('recurringList');
   if(recurring){
+    ensureRecurringIds();
     recurring.innerHTML = appData.recurring.length
       ? appData.recurring.map(r =>
-          `<div>${r.name}: ${fmtMoney(r.amount)} (${r.day})</div>`
+          `<div class="recurring-item"><span><b>${bankEscape(r.name)}</b><small>${fmtMoney(r.amount)} · День оплаты: ${r.day}</small><small class="recurring-reminder-note">🔔 Напоминание в Telegram в день оплаты</small></span><button type="button" class="financial-item-delete" aria-label="Удалить автоплатёж" onclick="deleteRecurring('${String(r.id)}')">×</button></div>`
         ).join('')
       : t('no_rules');
   }
@@ -1820,6 +1863,7 @@ function initApp(){
 
   loadPlanStatus();
   loadFamilyStatus();
+  syncPaymentReminders();
 
   // Keep shared family data fresh when another member makes changes.
   window.addEventListener('focus', refreshFamilyData);

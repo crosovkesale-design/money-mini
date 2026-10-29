@@ -330,10 +330,6 @@ async function deleteReceipt(id){
 }
 
 function openReceiptPhoto(){
-  if(!canUseProFeatures){
-    requestProFeature('Добавление чека по фото');
-    return;
-  }
   const picker = document.getElementById('receiptPhotoInput');
   if(picker) picker.click();
 }
@@ -367,6 +363,7 @@ async function handleReceiptPhotoSelected(event){
     clearTimeout(timeoutId);
     const data = await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
+    refreshAIStatus();
     // Prefer structured fields from the vision model over OCR line heuristics.
     if(data.receipt && typeof data.receipt === "object"){
       const receipt = data.receipt;
@@ -710,10 +707,6 @@ function tCat(name){
 
 
 async function parseTransactionWithAI(){
-  if(!canUseProFeatures){
-    requestProFeature('Добавление операций через ИИ');
-    return;
-  }
   const input=document.getElementById('aiTransactionText');
   const status=document.getElementById('aiTransactionStatus');
   const button=document.getElementById('aiTransactionParseBtn');
@@ -731,6 +724,7 @@ async function parseTransactionWithAI(){
     });
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.detail||'Не удалось разобрать операцию.');
+    refreshAIStatus();
     const draft=data.draft||{};
     if(!Number(draft.amount)||Number(draft.amount)<=0){
       if(status)status.textContent='Не нашёл сумму. Укажи её в тексте, например «кофе 85 грн».';
@@ -2021,6 +2015,7 @@ function initApp(){
   }
 
   loadPlanStatus();
+  refreshAIStatus();
   loadFamilyStatus();
   syncPaymentReminders();
 
@@ -2175,12 +2170,48 @@ function financeAssistantContext(){
   };
 }
 
+async function refreshAIStatus(){
+  const node=document.getElementById('aiUsageStatus');
+  if(!node)return;
+  const tg=window.Telegram?.WebApp;
+  if(!tg?.initData){node.textContent='Открой приложение через Telegram, чтобы увидеть баланс ИИ-запросов.';return;}
+  try{
+    const response=await fetch('/api/ai/status',{headers:{'X-Init-Data':tg.initData}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось проверить баланс.');
+    const parts=[];
+    if(data.is_pro)parts.push('PRO: осталось '+Number(data.monthly_remaining||0)+' из '+Number(data.monthly_limit||30)+' запросов в этом месяце');
+    if(Number(data.credits||0)>0)parts.push('Купленные запросы: '+Number(data.credits));
+    node.textContent=parts.join(' · ')||'Пока нет доступных ИИ-запросов. Купи пакет ниже.';
+  }catch(error){node.textContent='Не удалось загрузить баланс ИИ-запросов.';}
+}
+
+async function buyAIPack(packId){
+  const tg=window.Telegram?.WebApp;
+  const status=document.getElementById('aiPackStatus');
+  if(!tg?.initData){if(status)status.textContent='Открой Family Budget через Telegram для покупки.';return;}
+  const buttons=[...document.querySelectorAll('.ai-credit-packs button')];
+  buttons.forEach(button=>button.disabled=true);
+  if(status)status.textContent='Создаю счёт в USDT…';
+  try{
+    const response=await fetch('/api/ai/pack/crypto',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},
+      body:JSON.stringify({pack:packId})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось создать счёт.');
+    if(status)status.textContent='Счёт создан. После оплаты запросы автоматически появятся на балансе.';
+    if(data.invoice_url){
+      if(typeof tg.openLink==='function')tg.openLink(data.invoice_url);
+      else window.open(data.invoice_url,'_blank','noopener');
+    }
+  }catch(error){if(status)status.textContent=error.message||'Ошибка создания счёта.';}
+  finally{buttons.forEach(button=>button.disabled=false);}
+}
+
 async function sendFinanceQuestion(){
   if(financeAssistantBusy) return;
-  if(!canUseProFeatures){
-    requestProFeature('Финансовый ИИ-помощник');
-    return;
-  }
   const input = document.getElementById('financeAssistantInput');
   const question = String(input?.value || '').trim();
   if(!question) return;
@@ -2208,6 +2239,7 @@ async function sendFinanceQuestion(){
     const data = await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(data.detail || 'Не удалось получить ответ от ИИ.');
     financeAssistantMessages.push({role:'assistant',content:String(data.answer || 'Не удалось сформировать ответ.')});
+    refreshAIStatus();
   }catch(error){
     financeAssistantMessages.push({role:'assistant',content:'Не получилось получить ответ: '+(error.message || 'попробуй ещё раз чуть позже.')});
   }finally{

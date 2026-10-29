@@ -2059,6 +2059,118 @@ function showExportToast(message) {
     }, 3500);
 }
 
+let financeAssistantMessages = [];
+let financeAssistantBusy = false;
+
+function renderFinanceAssistantMessages(){
+  const box = document.getElementById('financeAssistantMessages');
+  if(!box) return;
+  box.innerHTML = '';
+  if(!financeAssistantMessages.length){
+    const welcome = document.createElement('div');
+    welcome.className = 'finance-assistant-welcome';
+    welcome.textContent = 'Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.';
+    box.appendChild(welcome);
+  }
+  financeAssistantMessages.slice(-12).forEach(message => {
+    const item = document.createElement('div');
+    item.className = 'finance-assistant-message ' + (message.role === 'user' ? 'is-user' : 'is-assistant');
+    item.textContent = message.content;
+    box.appendChild(item);
+  });
+  if(financeAssistantBusy){
+    const loading = document.createElement('div');
+    loading.className = 'finance-assistant-message is-assistant is-loading';
+    loading.textContent = 'ИИ анализирует бюджет…';
+    box.appendChild(loading);
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+function financeAssistantContext(){
+  const period = String(appData.currentMonth || new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  let source = [];
+  const familyMode = typeof budgetMode !== 'undefined' && budgetMode === 'family' && typeof currentFamily !== 'undefined' && currentFamily;
+  if(familyMode && typeof familyTransactions !== 'undefined' && Array.isArray(familyTransactions)){
+    source = familyTransactions;
+  } else {
+    source = Array.isArray(appData.history) ? appData.history : [];
+  }
+  const transactions = source.map(tx => {
+    const date = String(tx.date || (tx.ts ? new Date(Number(tx.ts)).toISOString().slice(0,10) : '')).slice(0,10);
+    return {
+      type: tx.type === 'income' ? 'income' : 'expense',
+      amount: Number(tx.amount || 0),
+      currency: String(tx.currency || appData.currency || 'UAH'),
+      date,
+      category: String(tx.category || 'Разное').slice(0,64),
+      title: String(tx.title || tx.note || tx.category || 'Операция').slice(0,100)
+    };
+  }).filter(tx => Number.isFinite(tx.amount) && tx.amount > 0)
+    .sort((a,b) => b.date.localeCompare(a.date));
+  const monthTransactions = transactions.filter(tx => tx.date.startsWith(period));
+  const totalIncome = list => list.filter(tx=>tx.type==='income').reduce((sum,tx)=>sum+tx.amount,0);
+  const totalExpense = list => list.filter(tx=>tx.type==='expense').reduce((sum,tx)=>sum+tx.amount,0);
+  return {
+    summary: {
+      balance: familyMode ? totalIncome(transactions)-totalExpense(transactions) : Number(appData.balance || 0),
+      monthIncome: familyMode ? totalIncome(monthTransactions) : Number(appData.monthIncome || 0),
+      monthExpense: familyMode ? totalExpense(monthTransactions) : Number(appData.monthExpense || 0),
+      currency: String(appData.currency || 'UAH'),
+      period
+    },
+    transactions: transactions.slice(0,60)
+  };
+}
+
+async function sendFinanceQuestion(){
+  if(financeAssistantBusy) return;
+  if(!canUseProFeatures){
+    requestProFeature('Финансовый ИИ-помощник');
+    return;
+  }
+  const input = document.getElementById('financeAssistantInput');
+  const question = String(input?.value || '').trim();
+  if(!question) return;
+  const tg = window.Telegram?.WebApp;
+  if(!tg?.initData){
+    alert('Открой Family Budget через Telegram, чтобы пользоваться ИИ-помощником.');
+    return;
+  }
+  financeAssistantMessages.push({role:'user',content:question.slice(0,1200)});
+  if(input) input.value = '';
+  financeAssistantBusy = true;
+  const send = document.getElementById('financeAssistantSend');
+  if(send) send.disabled = true;
+  renderFinanceAssistantMessages();
+  try{
+    const response = await fetch('/api/assistant/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},
+      body:JSON.stringify({
+        question:question.slice(0,1200),
+        messages:financeAssistantMessages.slice(0,-1).slice(-8),
+        context:financeAssistantContext()
+      })
+    });
+    const data = await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.detail || 'Не удалось получить ответ от ИИ.');
+    financeAssistantMessages.push({role:'assistant',content:String(data.answer || 'Не удалось сформировать ответ.')});
+  }catch(error){
+    financeAssistantMessages.push({role:'assistant',content:'Не получилось получить ответ: '+(error.message || 'попробуй ещё раз чуть позже.')});
+  }finally{
+    financeAssistantBusy = false;
+    if(send) send.disabled = false;
+    renderFinanceAssistantMessages();
+  }
+}
+
+function askFinanceSuggestion(question){
+  const input = document.getElementById('financeAssistantInput');
+  if(input) input.value = question;
+  sendFinanceQuestion();
+}
+
 // Initialize safely whether this file runs before or after DOMContentLoaded.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp, { once: true });

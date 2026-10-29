@@ -1780,3 +1780,13 @@ select:focus-visible {
 .ai-transaction-status{font-size:11px;line-height:1.45;color:var(--muted);margin:8px 0 0}
 .ai-transaction-draft button:disabled{opacity:.6;cursor:wait}
 @media(max-width:360px){.ai-transaction-draft{padding:9px}.ai-transaction-draft-row{align-items:stretch;flex-direction:column}.ai-transaction-draft-row button{width:100%}}
+
+
+/* AI credits and standalone USDT packs */
+.ai-credit-panel{margin:12px 0 14px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+.ai-credit-panel>p{margin:0 0 9px;color:var(--muted);font-size:11px;line-height:1.45}
+.ai-credit-packs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ai-credit-packs .btn{min-height:39px;padding:8px 7px;font-size:11px;line-height:1.35;white-space:normal}
+.ai-credit-packs .btn:disabled{opacity:.6;cursor:wait}
+.ai-credit-panel .ai-credit-note{margin:9px 0 0;font-size:10px}
+@media(max-width:360px){.ai-credit-packs{grid-template-columns:1fr}.ai-credit-packs .btn{width:100%}}

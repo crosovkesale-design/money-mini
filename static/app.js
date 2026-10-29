@@ -909,16 +909,55 @@ function saveCustomCategory(){
 
 function txTypeReceiptAllowed(type){ return type === 'expense'; }
 
+
+
+function notifyEnvelopeThresholds(envelopeId, spentBefore, addedAmount, envelopeItems){
+  if(!envelopeId||!Number.isFinite(Number(addedAmount))||Number(addedAmount)<=0)return;
+  const envelope=(envelopeItems||[]).find(item=>String(item.id)===String(envelopeId));
+  if(!envelope)return;
+  const target=Number(envelope.target||0);
+  if(!Number.isFinite(target)||target<=0)return;
+  const before=Math.max(0,Number(spentBefore)||0);
+  const after=before+Number(addedAmount);
+  const thresholds=[60,90,100].filter(percent=>before/target*100<percent&&after/target*100>=percent);
+  if(!thresholds.length)return;
+  const name=String(envelope.name||'Конверт');
+  const lines=thresholds.map(percent=>{
+    if(percent===100)return '🛑 Лимит исчерпан (100%). Дальнейшие траты превысят бюджет.';
+    if(percent===90)return '🔴 Использовано 90% лимита — осталось '+fmtMoney(Math.max(0,target-after))+'.';
+    return '🟡 Использовано 60% лимита — следи за оставшимся бюджетом.';
+  });
+  const message='⚠️ Конверт «'+name+'»\n\n'+lines.join('\n')+'\n\nПотрачено: '+fmtMoney(after)+' из '+fmtMoney(target)+'.';
+  const tg=window.Telegram?.WebApp;
+  if(tg?.showAlert)tg.showAlert(message);
+  else alert(message);
+}
+
 async function submitTransaction(){
   const amount=parseFloat(document.getElementById('txAmountInput').value);if(!amount||amount<=0)return;
   const title=document.getElementById('txCommentInput').value||tCat(appData.selectedCategory);
   const envelopeSelect=document.getElementById('txEnvelopeSelect');
   const selectedEnvelopeId=appData.activeTxType==='expense'&&envelopeSelect&&envelopeSelect.value?envelopeSelect.value:null;
-  if(budgetMode==='family'&&currentFamily){try{await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId,receipt:appData.activeTxType==='expense'?pendingReceiptDraft:null});closeModal('modalTransaction');pendingReceiptDraft=null;await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);}catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}return;}
+  if(budgetMode==='family'&&currentFamily){
+    const familyEnvelopeItems=familyEnvelopes||[];
+    const spentBefore=selectedEnvelopeId&&appData.activeTxType==='expense'
+      ?familyTransactions.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(selectedEnvelopeId)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0):0;
+    try{
+      await familyRequest('/api/family/transactions','POST',{type:appData.activeTxType,amount,title,category:appData.selectedCategory,icon:appData.currentIcon,date:new Date().toISOString(),currency:appData.currency||'UAH',envelopeId:selectedEnvelopeId,receipt:appData.activeTxType==='expense'?pendingReceiptDraft:null});
+      closeModal('modalTransaction');pendingReceiptDraft=null;
+      await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes()]);
+      if(appData.activeTxType==='expense')notifyEnvelopeThresholds(selectedEnvelopeId,spentBefore,amount,familyEnvelopeItems);
+    }catch(e){alert(e.message||'Не удалось сохранить семейную операцию.');}
+    return;
+  }
   const envelopeId=selectedEnvelopeId?Number(selectedEnvelopeId):null;
+  const personalEnvelopeItems=appData.envelopes||[];
+  const spentBefore=envelopeId&&appData.activeTxType==='expense'
+    ?appData.history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(envelopeId)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0):0;
   const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU'),receipt:txTypeReceiptAllowed(appData.activeTxType)?pendingReceiptDraft:null};appData.history.unshift(tx);pendingReceiptDraft=null;
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
   saveData();closeModal('modalTransaction');renderAll();
+  if(tx.type==='expense')notifyEnvelopeThresholds(envelopeId,spentBefore,amount,personalEnvelopeItems);
 }
 
 let editingTxId = null;

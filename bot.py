@@ -360,6 +360,10 @@ class ReviewState(StatesGroup):
     waiting_text = State()
     waiting_msg = State()
 
+class AdminSupportState(StatesGroup):
+    waiting_reply = State()
+
+
 # ---------- ФОНОВЫЕ ЗАДАЧИ ----------
 async def daily_check():
     while True:
@@ -1132,18 +1136,234 @@ if bot:
             reply_markup=kb, parse_mode="HTML"
         )
 
-    @dp.message(ReviewState.waiting_msg)
-    async def support_msg(message: Message, state: FSMContext):
-        if ADMIN_CHAT_ID:
-            try: await bot.send_message(int(ADMIN_CHAT_ID), f"💬 Вопрос от {message.from_user.id}:\n\n{message.text}")
-            except: pass
+    def _support_back_keyboard():
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
+        ])
+
+    async def _show_support_inbox(target: Message | CallbackQuery):
+        if not ADMIN_CHAT_ID or str(target.from_user.id) != str(ADMIN_CHAT_ID):
+            if isinstance(target, CallbackQuery):
+                await target.answer("Эта панель доступна только администратору.", show_alert=True)
+            else:
+                await target.answer("⛔ Эта команда доступна только администратору.")
+            return
+        tickets = await fb.get("/supportTicketsOpen") or {}
+        if not isinstance(tickets, dict):
+            tickets = {}
+        rows = []
+        for ticket_id, ticket in sorted(
+            tickets.items(),
+            key=lambda item: str((item[1] or {}).get("createdAt", "")) if isinstance(item[1], dict) else "",
+        ):
+            if not isinstance(ticket, dict):
+                continue
+            username = str(ticket.get("username") or "").strip()
+            name = str(ticket.get("name") or "Без имени").strip()
+            user_label = ("@" + username) if username else name
+            status = str(ticket.get("status") or "🟠 Ожидает ответа")
+            created = str(ticket.get("createdAt") or "")
+            rows.append([InlineKeyboardButton(
+                text=f"🟠 {user_label[:32]} · {status[:18]}",
+                callback_data=f"support_ticket:{ticket_id}"
+            )])
+        rows.append([InlineKeyboardButton(text="🔄 Обновить список", callback_data="support_list")])
+        rows.append([InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")])
+        text_body = (
+            "🛟 <b>ПРИОРИТЕТНАЯ ПОДДЕРЖКА</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"🟠 Ожидают ответа: <b>{len(rows) - 2}</b>\n\n"
+            "Выбери обращение, чтобы посмотреть сообщение и ответить."
+        )
+        markup = InlineKeyboardMarkup(inline_keyboard=rows)
+        if isinstance(target, CallbackQuery):
+            await target.answer()
+            try:
+                await target.message.edit_text(text_body, reply_markup=markup, parse_mode="HTML")
+            except Exception:
+                await target.message.answer(text_body, reply_markup=markup, parse_mode="HTML")
+        else:
+            await target.answer(text_body, reply_markup=markup, parse_mode="HTML")
+
+    @dp.message(Command("support_admin"))
+    async def cmd_support_admin(message: Message, state: FSMContext):
+        await state.clear()
+        await _show_support_inbox(message)
+
+    @dp.callback_query(F.data == "support_list")
+    async def cb_support_list(cb: CallbackQuery):
+        await _show_support_inbox(cb)
+
+    @dp.callback_query(F.data.startswith("support_ticket:"))
+    async def cb_support_ticket(cb: CallbackQuery, state: FSMContext):
+        if not ADMIN_CHAT_ID or str(cb.from_user.id) != str(ADMIN_CHAT_ID):
+            await cb.answer("Только для администратора.", show_alert=True)
+            return
+        ticket_id = cb.data.split(":", 1)[1]
+        ticket = await fb.get(f"/supportTicketsOpen/{ticket_id}")
+        if not isinstance(ticket, dict):
+            await cb.answer("Обращение уже закрыто или не найдено.", show_alert=True)
+            await _show_support_inbox(cb)
+            return
+        await cb.answer()
+        username = str(ticket.get("username") or "")
+        name = str(ticket.get("name") or "Без имени")
+        user_label = f"@{username}" if username else name
+        status = str(ticket.get("status") or "🟠 Ожидает ответа")
+        created = str(ticket.get("createdAt") or "неизвестно")
+        ticket_text = str(ticket.get("text") or "Текст отсутствует")
+        markup = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✍️ Ответить пользователю", callback_data=f"support_reply:{ticket_id}")],
+            [InlineKeyboardButton(text="⬅️ К списку обращений", callback_data="support_list")],
+            [InlineKeyboardButton(text="⬅️ В главное меню", callback_data="go_start")]
+        ])
+        await cb.message.edit_text(
+            "🛟 <b>ОБРАЩЕНИЕ В ПОДДЕРЖКУ</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"👤 Пользователь: <b>{escape(user_label)}</b>\n"
+            f"🆔 ID: <code>{escape(str(ticket.get('userId') or ''))}</code>\n"
+            f"📌 Статус: <b>{escape(status)}</b>\n"
+            f"🕒 Создано: {escape(created)}\n\n"
+            f"💬 <b>Сообщение:</b>\n{escape(ticket_text[:3000])}",
+            parse_mode="HTML", reply_markup=markup
+        )
+
+    @dp.callback_query(F.data.startswith("support_reply:"))
+    async def cb_support_reply(cb: CallbackQuery, state: FSMContext):
+        if not ADMIN_CHAT_ID or str(cb.from_user.id) != str(ADMIN_CHAT_ID):
+            await cb.answer("Только для администратора.", show_alert=True)
+            return
+        ticket_id = cb.data.split(":", 1)[1]
+        ticket = await fb.get(f"/supportTicketsOpen/{ticket_id}")
+        if not isinstance(ticket, dict):
+            await cb.answer("Обращение уже закрыто или не найдено.", show_alert=True)
+            await _show_support_inbox(cb)
+            return
+        await state.clear()
+        await state.set_state(AdminSupportState.waiting_reply)
+        await state.update_data(support_ticket_id=ticket_id)
+        await cb.answer()
+        username = str(ticket.get("username") or "")
+        user_label = f"@{username}" if username else str(ticket.get("name") or "пользователь")
+        await cb.message.answer(
+            f"✍️ <b>Ответ пользователю {escape(user_label)}</b>\n\n"
+            "Отправь следующим сообщением текст ответа. После успешной отправки обращение исчезнет из списка.",
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="❌ Отменить ответ", callback_data="support_list")],
+                [InlineKeyboardButton(text="⬅️ В главное меню", callback_data="go_start")]
+            ])
+        )
+
+    @dp.message(AdminSupportState.waiting_reply)
+    async def support_admin_reply(message: Message, state: FSMContext):
+        if not ADMIN_CHAT_ID or str(message.from_user.id) != str(ADMIN_CHAT_ID):
+            await state.clear()
+            return
+        reply_text = (message.text or message.caption or "").strip()
+        if not reply_text:
+            await message.answer(
+                "Пришли ответ текстом или добавь подпись к фото/документу.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="⬅️ К обращениям", callback_data="support_list")]
+                ])
+            )
+            return
+        data = await state.get_data()
+        ticket_id = str(data.get("support_ticket_id") or "")
+        ticket = await fb.get(f"/supportTicketsOpen/{ticket_id}") if ticket_id else None
+        if not isinstance(ticket, dict):
+            await state.clear()
+            await message.answer("Обращение уже закрыто или не найдено.", reply_markup=_support_back_keyboard())
+            return
+        user_id = str(ticket.get("userId") or "")
+        try:
+            await bot.send_message(
+                int(user_id),
+                "💬 <b>Ответ поддержки Family Budget</b>\n\n" + escape(reply_text),
+                parse_mode="HTML",
+            )
+        except Exception:
+            log.exception("Failed to deliver support reply to user %s", user_id)
+            await message.answer(
+                "❌ Не удалось доставить ответ пользователю. Обращение осталось в списке. "
+                "Возможно, пользователь заблокировал бота.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="🔄 Вернуться к обращению", callback_data=f"support_ticket:{ticket_id}")],
+                    [InlineKeyboardButton(text="⬅️ К списку обращений", callback_data="support_list")]
+                ])
+            )
+            await state.clear()
+            return
+        ticket["status"] = "✅ Ответ отправлен"
+        ticket["answeredAt"] = datetime.now(timezone.utc).isoformat()
+        ticket["answer"] = reply_text[:4000]
+        await fb.put(f"/supportTicketsClosed/{ticket_id}", ticket)
+        await fb.delete(f"/supportTicketsOpen/{ticket_id}")
         await state.clear()
         await message.answer(
-            "✅ <b>Сообщение передано!</b>\n\n"
-            "Спасибо, что написал в поддержку Family Budget. Команда ответит, как только сможет.\n\n"
-            "📣 Новости и обновления — в нашем канале: https://t.me/familybudjet",
+            "✅ <b>Ответ отправлен!</b> Обращение убрано из списка ожидающих.",
             parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="🛟 Открытые обращения", callback_data="support_list")],
+                [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
+            ])
+        )
+
+    @dp.message(ReviewState.waiting_msg)
+    async def support_msg(message: Message, state: FSMContext):
+        user = message.from_user
+        if not user:
+            await state.clear()
+            return
+        body = (message.text or message.caption or "").strip()
+        if not body:
+            body = "[Пользователь отправил вложение без текста]"
+        ticket = {
+            "userId": str(user.id),
+            "username": user.username or "",
+            "name": user.full_name or user.first_name or "Без имени",
+            "text": body[:4000],
+            "status": "🟠 Ожидает ответа",
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        }
+        try:
+            ticket_id = await fb.push("/supportTicketsOpen", ticket)
+        except Exception:
+            log.exception("Failed to save support ticket")
+            await state.clear()
+            await message.answer(
+                "❌ Не получилось сохранить обращение. Попробуй отправить его ещё раз позже.",
+                reply_markup=_support_back_keyboard()
+            )
+            return
+        if ADMIN_CHAT_ID:
+            try:
+                username = f"@{user.username}" if user.username else (user.full_name or "Без имени")
+                admin_kb = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="✍️ Открыть и ответить", callback_data=f"support_ticket:{ticket_id}")],
+                    [InlineKeyboardButton(text="🛟 Все обращения", callback_data="support_list")]
+                ])
+                await bot.send_message(
+                    int(ADMIN_CHAT_ID),
+                    "🟠 <b>НОВОЕ ОБРАЩЕНИЕ</b>\n"
+                    "━━━━━━━━━━━━━━━━━━\n"
+                    f"👤 Пользователь: <b>{escape(username)}</b>\n"
+                    f"🆔 ID: <code>{user.id}</code>\n"
+                    "📌 Статус: <b>Ожидает ответа</b>\n\n"
+                    f"💬 {escape(body[:2500])}",
+                    parse_mode="HTML", reply_markup=admin_kb
+                )
+            except Exception:
+                log.exception("Could not notify admin about support ticket %s", ticket_id)
+        await state.clear()
+        await message.answer(
+            "✅ <b>Обращение зарегистрировано!</b>\n\n"
+            "Мы передали сообщение в приоритетную очередь поддержки. Ответ придёт сюда в этот чат.",
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
+            ])
         )
 
     @dp.message(F.successful_payment)

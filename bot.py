@@ -271,12 +271,13 @@ async def payment_reminder():
                                     continue
                                 name = escape(str(item.get("name") or "Автоплатёж")[:100])
                                 amount = float(item.get("amount") or 0)
+                                currency = escape(str(item.get("currency") or "")[:10])
                                 if amount <= 0 or not math.isfinite(amount):
                                     continue
                                 await bot.send_message(
                                     int(uid),
-                                    f"🔔 <b>Напоминание об автоплатеже</b>\\n\\n"
-                                    f"<b>{name}</b>\\nСумма: <b>{amount:,.2f}</b>\\n"
+                                    f"🔔 <b>Напоминание об автоплатеже</b>\n\n"
+                                    f"<b>{name}</b>\nСумма: <b>{amount:,.2f}</b>\n"
                                     f"Сегодня запланирован этот платёж.",
                                     parse_mode="HTML",
                                 )

@@ -1854,3 +1854,6 @@ select:focus-visible {
 
 /* Seven bottom navigation items, including the dedicated referrals tab */
 @media(max-width:520px){.nav-item{width:14.2857%!important;min-width:0!important;font-size:8px!important}.nav-item span{font-size:8px!important;white-space:nowrap}.nav-item i{font-size:15px!important}}
+
+.nav-item{width:14.2857%!important;min-width:0}
+.nav-item span{white-space:nowrap}

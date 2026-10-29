@@ -723,8 +723,7 @@ const TRANSLATIONS = {
     ok: '知道了',
     confirm_delete: '确定吗？这将清除财务记录。',
     limit: '储蓄目标',
-    goal: '目标'
-  },
+    goal: '目标',
     fin_overview: "💰 财务概览",
     fin_overview_desc: "个人资金、资产和债务",
     add_item: "＋ 添加",
@@ -758,4 +757,5 @@ const TRANSLATIONS = {
     invalid_payment_day: "请输入 1 到 31 之间的付款日期。",
     due_day: "付款日期：{day}",
     payment_reminder_label: "🔔 付款日 Telegram 提醒"
+  }
 };

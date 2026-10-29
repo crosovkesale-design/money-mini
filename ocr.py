@@ -2,12 +2,13 @@
 import io
 import re
 
-from PIL import Image, ImageOps, ImageFilter, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
 import pytesseract
 from pytesseract import TesseractNotFoundError
 
 MONEY_RE = re.compile(r"(\d{1,3}(?:[ \u00a0,]\d{3})*(?:[.,]\d{1,2})?)", re.I)
-MAX_IMAGE_SIDE = 2400
+# Smaller images and fewer OCR language models keep processing practical on Render's free instance.
+MAX_IMAGE_SIDE = 1600
 OCR_TIMEOUT_SECONDS = 20
 
 
@@ -20,17 +21,14 @@ def extract_receipt(image_bytes: bytes) -> dict:
     except (UnidentifiedImageError, OSError, ValueError) as exc:
         raise ValueError("Не удалось открыть изображение. Загрузи JPG, PNG или WebP.") from exc
 
-    # Keep high-resolution phone photos from causing excessive CPU usage.
+    # Downscale large phone photos; avoid upscaling small images, which wastes CPU.
     img.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE), Image.Resampling.LANCZOS)
-    if max(img.size) < 1600:
-        scale = min(2, 1600 / max(img.size))
-        img = img.resize((max(1, int(img.width * scale)), max(1, int(img.height * scale))), Image.Resampling.LANCZOS)
     img = ImageOps.autocontrast(img)
-    img = img.filter(ImageFilter.SHARPEN)
 
     try:
+        # Ukrainian + English covers Ukrainian receipts and Latin store names/numbers.
         text = pytesseract.image_to_string(
-            img, lang="rus+ukr+eng", config="--psm 6", timeout=OCR_TIMEOUT_SECONDS
+            img, lang="ukr+eng", config="--oem 1 --psm 6", timeout=OCR_TIMEOUT_SECONDS
         )
     except TesseractNotFoundError as exc:
         raise RuntimeError("OCR_ENGINE_MISSING") from exc

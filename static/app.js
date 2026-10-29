@@ -367,6 +367,34 @@ async function handleReceiptPhotoSelected(event){
     clearTimeout(timeoutId);
     const data = await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
+    // Prefer structured fields from the vision model over OCR line heuristics.
+    if(data.receipt && typeof data.receipt === "object"){
+      const receipt = data.receipt;
+      const items = Array.isArray(receipt.items) ? receipt.items : [];
+      const storeInput = document.getElementById("receiptStoreInput");
+      const dateInput = document.getElementById("receiptDateInput");
+      const itemsInput = document.getElementById("receiptItemsInput");
+      const totalInput = document.getElementById("receiptTotalInput");
+      if(storeInput) storeInput.value = String(receipt.store || "");
+      if(dateInput) dateInput.value = /^\d{4}-\d{2}-\d{2}$/.test(String(receipt.date || "")) ? receipt.date : new Date().toISOString().slice(0,10);
+      if(itemsInput) itemsInput.value = items.slice(0,40).map(item=>{
+        const name = String(item.name || "").replace(/[;\r\n]+/g," ").trim();
+        const price = Number(item.price);
+        const quantity = Number(item.quantity || 1);
+        return name && Number.isFinite(price) && price > 0 ? name+"; "+price+"; "+(Number.isFinite(quantity)&&quantity>0?quantity:1) : "";
+      }).filter(Boolean).join("\n");
+      const total = Number(receipt.total || data.amount_guess || 0);
+      if(totalInput) totalInput.value = Number.isFinite(total) && total > 0 ? String(total) : "";
+      const error = document.getElementById("receiptEntryError");
+      if(error) error.textContent = items.length
+        ? "ИИ распознал товаров: "+items.length+". Проверь названия, количество и цены перед сохранением."
+        : "ИИ не смог уверенно прочитать товары. Проверь список и сумму перед сохранением.";
+      const saveButton = document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
+      if(saveButton) saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Проверить и сохранить чек';
+      setStatus(data.source === "ai" ? "✨ Чек обработан ИИ. Проверь распознанные данные перед сохранением." : "🧾 Использован резервный OCR. Проверь данные перед сохранением.");
+      openModal("modalReceiptEntry");
+      return;
+    }
     const lines = (Array.isArray(data.lines) ? data.lines : String(data.text||'').split(/\r?\n/))
       .map(line=>String(line).replace(/\s+/g,' ').trim())
       .filter(Boolean);

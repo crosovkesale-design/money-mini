@@ -152,23 +152,6 @@ async def refund_ai_call(uid: str, reservation: dict | None) -> None:
         await fb.patch(f"/users/{uid}", {"aiCredits": max(0, int(user.get("aiCredits") or 0)) + 1})
 
 
-@app.get("/api/ai/status")
-async def api_ai_status(uid: str = Depends(current_uid)):
-    user = await get_user(uid) or {}
-    month_key = datetime.now(KYIV).strftime("%Y-%m")
-    used = max(0, int(user.get("aiUsageCount") or 0)) if str(user.get("aiUsageMonth") or "") == month_key else 0
-    pro = has_pro_access(user)
-    return {
-        "ok": True,
-        "is_pro": pro,
-        "monthly_limit": AI_MONTHLY_LIMIT if pro else 0,
-        "monthly_used": used if pro else 0,
-        "monthly_remaining": max(0, AI_MONTHLY_LIMIT - used) if pro else 0,
-        "credits": max(0, int(user.get("aiCredits") or 0)),
-        "packs": {key: {"credits": value["credits"], "price_usd": value["price_usd"], "name": value["name"]} for key, value in AI_PACKS.items()},
-    }
-
-
 def coupon_percent(coupon_type) -> int:
     value = str(coupon_type or "").strip()
     return 10 if value == "10" else 20 if value == "20" else 0
@@ -1037,6 +1020,24 @@ async def current_user(x_init_data: str = Header(default="", alias="X-Init-Data"
 
 async def current_uid(user: dict = Depends(current_user)) -> str:
     return str(user["id"])
+
+@app.get("/api/ai/status")
+async def api_ai_status(uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    month_key = datetime.now(KYIV).strftime("%Y-%m")
+    used = max(0, int(user.get("aiUsageCount") or 0)) if str(user.get("aiUsageMonth") or "") == month_key else 0
+    pro = has_pro_access(user)
+    return {
+        "ok": True,
+        "is_pro": pro,
+        "monthly_limit": AI_MONTHLY_LIMIT if pro else 0,
+        "monthly_used": used if pro else 0,
+        "monthly_remaining": max(0, AI_MONTHLY_LIMIT - used) if pro else 0,
+        "credits": max(0, int(user.get("aiCredits") or 0)),
+        "packs": {key: {"credits": value["credits"], "price_usd": value["price_usd"], "name": value["name"]} for key, value in AI_PACKS.items()},
+    }
+
+
 
 @app.put("/api/payment-reminders")
 async def api_sync_payment_reminders(request: Request, uid: str = Depends(current_uid)):

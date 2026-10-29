@@ -140,6 +140,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-main" data-base-usd="6">$6</div>
             <div class="price-stars" data-base-stars="500">или 500 ⭐</div>
             <div class="price-actions">
+              <button class="pay-button pay-wallet" onclick="buyPlan('1month','walletpay')">👛 Wallet Pay</button>
               <button class="pay-button pay-stars" onclick="buyPlan('1month','stars')">Оплатить ⭐</button>
               <button class="pay-button pay-crypto" onclick="buyPlan('1month','crypto')">Оплатить USDT</button>
             </div>
@@ -151,6 +152,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-stars" data-base-stars="1300">или 1 300 ⭐</div>
             <div class="price-note">Выгоднее помесячной оплаты</div>
             <div class="price-actions">
+              <button class="pay-button pay-wallet" onclick="buyPlan('3months','walletpay')">👛 Wallet Pay</button>
               <button class="pay-button pay-stars" onclick="buyPlan('3months','stars')">Оплатить ⭐</button>
               <button class="pay-button pay-crypto" onclick="buyPlan('3months','crypto')">Оплатить USDT</button>
             </div>
@@ -162,6 +164,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-stars" data-base-stars="2300">или 2 300 ⭐</div>
             <div class="price-note">Для долгого использования</div>
             <div class="price-actions">
+              <button class="pay-button pay-wallet" onclick="buyPlan('6months','walletpay')">👛 Wallet Pay</button>
               <button class="pay-button pay-stars" onclick="buyPlan('6months','stars')">Оплатить ⭐</button>
               <button class="pay-button pay-crypto" onclick="buyPlan('6months','crypto')">Оплатить USDT</button>
             </div>
@@ -173,6 +176,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-stars" data-base-stars="3900">или 3 900 ⭐</div>
             <div class="price-note">Самая низкая цена за месяц</div>
             <div class="price-actions">
+              <button class="pay-button pay-wallet" onclick="buyPlan('12months','walletpay')">👛 Wallet Pay</button>
               <button class="pay-button pay-stars" onclick="buyPlan('12months','stars')">Оплатить ⭐</button>
               <button class="pay-button pay-crypto" onclick="buyPlan('12months','crypto')">Оплатить USDT</button>
             </div>
@@ -207,6 +211,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-main" data-base-usd="12">$12</div>
             <div class="price-stars" data-base-stars="1000">или 1 000 ⭐</div>
             <div class="price-actions">
+              <button class="pay-button pay-wallet" onclick="buyPlan('pro1','walletpay')">👛 Wallet Pay</button>
               <button class="pay-button pay-stars" onclick="buyPlan('pro1','stars')">Оплатить ⭐</button>
               <button class="pay-button pay-crypto" onclick="buyPlan('pro1','crypto')">Оплатить USDT</button>
             </div>
@@ -219,6 +224,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-note pro-price-note">≈ $7.08 в месяц при годовой оплате</div>
             <div class="pro-saving-badge"><span>Твоя экономия за год</span><b>$59 или 4 500 ⭐</b></div>
             <div class="price-actions">
+              <button class="pay-button pay-wallet" onclick="buyPlan('pro12','walletpay')">👛 Wallet Pay</button>
               <button class="pay-button pay-stars" onclick="buyPlan('pro12','stars')">Оплатить ⭐</button>
               <button class="pay-button pay-crypto" onclick="buyPlan('pro12','crypto')">Оплатить USDT</button>
             </div>
@@ -226,7 +232,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </section>
 
-<div class="pricing-secure-note"><span>🔒</span> Оплата через Telegram Stars или Crypto Pay (USDT)</div>
+<div class="pricing-secure-note"><span>🔒</span> Оплата через Wallet Pay, Telegram Stars или Crypto Pay (USDT)</div>
       <button class="btn btn-outline pricing-back" onclick="switchTab('budget')">← Назад в бюджет</button>
     </section>
   </div>

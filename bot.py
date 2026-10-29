@@ -599,7 +599,8 @@ if bot:
             [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
              InlineKeyboardButton(text="🎁 Рефералы", callback_data="ref_link")],
             [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(text, reply_markup=kb, parse_mode="HTML")
 
@@ -608,14 +609,15 @@ if bot:
         uid = str(message.from_user.id)
         if not ADMIN_CHAT_ID or uid != str(ADMIN_CHAT_ID):
             return
-        await message.answer("Создаю резервную копию базы…")
+        back_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
+        await message.answer("Создаю резервную копию базы…", reply_markup=back_kb)
         try:
             await send_database_backup(uid)
         except Exception as exc:
             log.exception("Manual database backup failed")
-            await message.answer("Не удалось создать копию. Проверь логи Render и размер базы.")
+            await message.answer("Не удалось создать копию. Проверь логи Render и размер базы.", reply_markup=back_kb)
             return
-        await message.answer("Готово: резервная копия отправлена документом выше.")
+        await message.answer("Готово: резервная копия отправлена документом выше.", reply_markup=back_kb)
 
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
@@ -640,7 +642,7 @@ if bot:
                 active_paid += 1
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="💎 Выбрать тариф", callback_data="show_pay"),
-             InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
+             InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
             "📊 <b>FAMILY BUDGET · СТАТИСТИКА</b>\n"
@@ -674,7 +676,7 @@ if bot:
         end_text = datetime.fromtimestamp(sub_end / 1000, tz=KYIV).strftime("%d.%m.%Y") if sub_end else "не указана"
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="💎 Продлить подписку", callback_data="show_pay")],
-            [InlineKeyboardButton(text="🏠 Главное меню", callback_data="go_start")]
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
             "🛡 <b>ТВОЯ ПОДПИСКА</b>\n"
@@ -694,7 +696,8 @@ if bot:
             [InlineKeyboardButton(text="💎 Смотреть тарифы", web_app=WebAppInfo(url=MINI_APP_URL.rstrip("/") + "?screen=pay"))],
             [InlineKeyboardButton(text="🎁 Как получить скидку", callback_data="ref_link")],
             [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
             "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n"
@@ -834,7 +837,8 @@ if bot:
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")]
+             InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(text, parse_mode="HTML", reply_markup=kb)
 
@@ -843,7 +847,10 @@ if bot:
         uid = str(cb.from_user.id)
         link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
         share = f"https://t.me/share/url?url={link}&text=Заходи в Family Budget!"
-        kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="📤 Поделиться", url=share)]])
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📤 Поделиться", url=share)],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
+        ])
         await cb.message.edit_text(
             "🎁 <b>ПРИГЛАШАЙ ДРУЗЕЙ — ПОЛУЧАЙ БОНУСЫ</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
@@ -875,13 +882,14 @@ if bot:
                 trial += 1
             else:
                 active_paid += 1
+        back_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
         await cb.message.answer(
             "📊 <b>Семейный бюджет · статистика</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Пользователей: <b>{total:,}</b>\n"
             f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
             f"💎 Активная платная подписка: <b>{active_paid:,}</b>",
-            parse_mode="HTML"
+            parse_mode="HTML", reply_markup=back_kb
         )
         await cb.answer()
 
@@ -904,6 +912,7 @@ if bot:
         }
         tariff = str(user.get("tariff") or "trial")
         end_text = datetime.fromtimestamp(end / 1000, tz=KYIV).strftime("%d.%m.%Y") if end else "не указана"
+        back_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
         await cb.message.answer(
             "🛡 <b>Твоя подписка</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
@@ -911,12 +920,13 @@ if bot:
             f"💼 Тариф: <b>{names.get(tariff, tariff)}</b>\n"
             f"⏳ Осталось: <b>{days} дн.</b>\n"
             f"📅 Действует до: <b>{end_text}</b>",
-            parse_mode="HTML"
+            parse_mode="HTML", reply_markup=back_kb
         )
         await cb.answer()
 
     @dp.callback_query(F.data == "go_start")
-    async def cb_go_start(cb: CallbackQuery):
+    async def cb_go_start(cb: CallbackQuery, state: FSMContext):
+        await state.clear()
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📊 Открыть Family Budget", web_app=WebAppInfo(url=MINI_APP_URL))],
             [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
@@ -953,7 +963,8 @@ if bot:
         await state.set_state(ReviewState.waiting_text)
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")],
-            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")]
+            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
             "✍️ <b>ТВОЙ ОТЗЫВ ВАЖЕН</b>\n"
@@ -976,7 +987,8 @@ if bot:
         if len(text) < 20:
             await message.answer(
                 "❌ Отзыв слишком короткий.\n"
-                "Напиши минимум 20 символов."
+                "Напиши минимум 20 символов.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
             )
             return
 
@@ -989,7 +1001,8 @@ if bot:
         if len(words) < 4:
             await message.answer(
                 "❌ Отзыв должен содержать минимум 4 слова.\n"
-                "Расскажи, что тебе понравилось или что стоит улучшить."
+                "Расскажи, что тебе понравилось или что стоит улучшить.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
             )
             return
 
@@ -999,7 +1012,8 @@ if bot:
         if len(letters) >= 8 and len(set(letters)) <= 2:
             await message.answer(
                 "❌ Похоже, это набор случайных букв.\n"
-                "Напиши отзыв обычными словами."
+                "Напиши отзыв обычными словами.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
             )
             return
 
@@ -1009,7 +1023,8 @@ if bot:
         if len(words) >= 4 and len(unique_words) == 1:
             await message.answer(
                 "❌ Нельзя отправлять отзыв из одного повторяющегося слова.\n"
-                "Опиши свой опыт использования приложения."
+                "Опиши свой опыт использования приложения.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
             )
             return
 
@@ -1017,7 +1032,8 @@ if bot:
         if len(words) >= 6 and len(unique_words) <= 2:
             await message.answer(
                 "❌ В отзыве слишком много повторений.\n"
-                "Напиши несколько предложений своими словами."
+                "Напиши несколько предложений своими словами.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
             )
             return
 
@@ -1075,7 +1091,8 @@ if bot:
         if not sent_to_group:
             await message.answer(
                 "⚠️ Отзыв сохранён, но не удалось отправить его в группу. "
-                "Попробуй позже или сообщи администратору."
+                "Попробуй позже или сообщи администратору.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
             )
             return
 
@@ -1103,7 +1120,8 @@ if bot:
         await state.set_state(ReviewState.waiting_msg)
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
-            [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")]
+            [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
             "🆘 <b>ПОДДЕРЖКА FAMILY BUDGET</b>\n"
@@ -1123,7 +1141,8 @@ if bot:
             "✅ <b>Сообщение передано!</b>\n\n"
             "Спасибо, что написал в поддержку Family Budget. Команда ответит, как только сможет.\n\n"
             "📣 Новости и обновления — в нашем канале: https://t.me/familybudjet",
-            parse_mode="HTML"
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
         )
 
     @dp.message(F.successful_payment)

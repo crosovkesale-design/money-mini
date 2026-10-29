@@ -72,7 +72,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Укажи сумму больше нуля.",
     invalid_payment_day: "Укажи день оплаты от 1 до 31.",
     due_day: "День оплаты: {day}",
-    payment_reminder_label: "🔔 Напоминание в Telegram в день оплаты"
+    payment_reminder_label: "🔔 Напоминание в Telegram в день оплаты",
+    
     pricing_title: 'Выбери свой тариф',
     pricing_subtitle: 'Удобный срок подписки и оплата привычным способом.',
     trial_title: '30 дней бесплатно для новых пользователей',
@@ -199,7 +200,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Вкажи суму більше нуля.",
     invalid_payment_day: "Вкажи день оплати від 1 до 31.",
     due_day: "День оплати: {day}",
-    payment_reminder_label: "🔔 Нагадування в Telegram у день оплати"
+    payment_reminder_label: "🔔 Нагадування в Telegram у день оплати",
+    
     pricing_title: 'Обери свій тариф',
     pricing_subtitle: 'Зручний термін підписки та звичний спосіб оплати.',
     trial_title: '30 днів безкоштовно для нових користувачів',
@@ -326,7 +328,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Enter an amount greater than zero.",
     invalid_payment_day: "Enter a payment day from 1 to 31.",
     due_day: "Payment day: {day}",
-    payment_reminder_label: "🔔 Telegram reminder on payment day"
+    payment_reminder_label: "🔔 Telegram reminder on payment day",
+    
     pricing_title: 'Choose your plan',
     pricing_subtitle: 'A convenient subscription period and familiar payment methods.',
     trial_title: '30 days free for new users',
@@ -453,7 +456,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Bitte einen Betrag größer als null eingeben.",
     invalid_payment_day: "Zahlungstag zwischen 1 und 31 eingeben.",
     due_day: "Zahlungstag: {day}",
-    payment_reminder_label: "🔔 Telegram-Erinnerung am Zahlungstag"
+    payment_reminder_label: "🔔 Telegram-Erinnerung am Zahlungstag",
+    
     pricing_title: 'Wähle deinen Tarif',
     pricing_subtitle: 'Flexible Laufzeit und vertraute Zahlungsmethoden.',
     trial_title: '30 Tage kostenlos für neue Nutzer',
@@ -580,7 +584,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Introduce un importe mayor que cero.",
     invalid_payment_day: "Introduce un día de pago del 1 al 31.",
     due_day: "Día de pago: {day}",
-    payment_reminder_label: "🔔 Recordatorio de Telegram el día del pago"
+    payment_reminder_label: "🔔 Recordatorio de Telegram el día del pago",
+    
     pricing_title: 'Elige tu plan',
     pricing_subtitle: 'Duración flexible y métodos de pago habituales.',
     trial_title: '30 días gratis para nuevos usuarios',
@@ -707,7 +712,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Saisissez un montant supérieur à zéro.",
     invalid_payment_day: "Saisissez un jour de paiement entre 1 et 31.",
     due_day: "Jour du paiement : {day}",
-    payment_reminder_label: "🔔 Rappel Telegram le jour du paiement"
+    payment_reminder_label: "🔔 Rappel Telegram le jour du paiement",
+    
     pricing_title: 'Choisissez votre offre',
     pricing_subtitle: 'Une durée d’abonnement pratique et des moyens de paiement habituels.',
     trial_title: '30 jours gratuits pour les nouveaux utilisateurs',
@@ -834,7 +840,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Inserisci un importo maggiore di zero.",
     invalid_payment_day: "Inserisci un giorno di pagamento da 1 a 31.",
     due_day: "Giorno del pagamento: {day}",
-    payment_reminder_label: "🔔 Promemoria Telegram il giorno del pagamento"
+    payment_reminder_label: "🔔 Promemoria Telegram il giorno del pagamento",
+    
     pricing_title: 'Scegli il tuo piano',
     pricing_subtitle: 'Durata flessibile e metodi di pagamento familiari.',
     trial_title: '30 giorni gratis per i nuovi utenti',
@@ -961,7 +968,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Wpisz kwotę większą od zera.",
     invalid_payment_day: "Wpisz dzień płatności od 1 do 31.",
     due_day: "Dzień płatności: {day}",
-    payment_reminder_label: "🔔 Przypomnienie w Telegramie w dniu płatności"
+    payment_reminder_label: "🔔 Przypomnienie w Telegramie w dniu płatności",
+    
     pricing_title: 'Wybierz swój plan',
     pricing_subtitle: 'Wygodny okres subskrypcji i znane metody płatności.',
     trial_title: '30 dni za darmo dla nowych użytkowników',
@@ -1088,7 +1096,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "Sıfırdan büyük bir tutar girin.",
     invalid_payment_day: "1 ile 31 arasında bir ödeme günü girin.",
     due_day: "Ödeme günü: {day}",
-    payment_reminder_label: "🔔 Ödeme günü Telegram hatırlatması"
+    payment_reminder_label: "🔔 Ödeme günü Telegram hatırlatması",
+    
     pricing_title: 'Planını seç',
     pricing_subtitle: 'Esnek abonelik süresi ve alışılmış ödeme yöntemleri.',
     trial_title: 'Yeni kullanıcılar için 30 gün ücretsiz',
@@ -1215,7 +1224,8 @@ const TRANSLATIONS = {
     invalid_payment_amount: "请输入大于零的金额。",
     invalid_payment_day: "请输入 1 到 31 之间的付款日期。",
     due_day: "付款日期：{day}",
-    payment_reminder_label: "🔔 付款日 Telegram 提醒"
+    payment_reminder_label: "🔔 付款日 Telegram 提醒",
+    
     pricing_title: '选择你的套餐',
     pricing_subtitle: '灵活的订阅期限和熟悉的付款方式。',
     trial_title: '新用户免费使用 30 天',

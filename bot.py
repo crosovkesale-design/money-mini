@@ -279,7 +279,9 @@ async def award_referral_coupon(paid_uid: str, payment_path: str):
             paid_users[str(paid_uid)] = True
             plan = str(payment.get("plan") or "")
             price_usd = float((TARIFFS.get(plan) or {}).get("price_usd") or 0)
-            bp["volumeUsd"] = round(float(bp.get("volumeUsd") or 0) + price_usd, 2)
+            discount_percent = max(0, min(100, int(payment.get("discount") or 0)))
+            actual_usd = round(price_usd * (100 - discount_percent) / 100, 2)
+            bp["volumeUsd"] = round(float(bp.get("volumeUsd") or 0) + actual_usd, 2)
             paid_invoices[invoice_key] = now_ms()
         bp["paidUsers"] = paid_users
         bp["paidInvoices"] = paid_invoices

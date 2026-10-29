@@ -2265,6 +2265,35 @@ async function claimDailyReward(){
   }catch(error){if(status)status.textContent=error.message||'Ошибка получения награды.';if(button)button.disabled=false;}
 }
 
+async function buyCryptoCoupon(percent){
+  const tg=window.Telegram?.WebApp;
+  const status=document.getElementById('cryptoCouponShopStatus');
+  if(!tg?.initData){
+    if(status)status.textContent='Открой приложение через Telegram, чтобы купить купон.';
+    return;
+  }
+  if(![10,20].includes(Number(percent))){
+    if(status)status.textContent='Выбери купон 10% или 20%.';
+    return;
+  }
+  const price=Number(percent)===10?1:2;
+  if(status)status.textContent='Создаю счёт Crypto Pay на '+price+' USDT…';
+  try{
+    const response=await fetch('/api/coupons/shop/crypto',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},
+      body:JSON.stringify({percent:String(percent)})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.invoice_url)throw new Error(data.detail||'Не удалось создать счёт Crypto Pay.');
+    if(status)status.textContent='Счёт создан на '+price+' USDT. После оплаты дождись подтверждения бота — купон появится в балансе.';
+    if(typeof tg.openLink==='function')tg.openLink(data.invoice_url);
+    else window.open(data.invoice_url,'_blank','noopener');
+  }catch(error){
+    if(status)status.textContent=error.message||'Не удалось создать счёт. Попробуй ещё раз.';
+  }
+}
+
 async function buyRewardCoupon(percent){
   const tg=window.Telegram?.WebApp;
   const status=document.getElementById('rewardStatusText');

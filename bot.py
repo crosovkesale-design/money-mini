@@ -51,6 +51,7 @@ MINI_APP_URL = os.getenv("MINI_APP_URL", "")
 CRYPTOPAY_TOKEN = os.getenv("CRYPTOPAY_TOKEN", "")
 CRYPTOPAY_NETWORK = os.getenv("CRYPTOPAY_NETWORK", "USDT")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID", "")
+ADMIN_KEY = os.getenv("ADMIN_KEY", "")
 FIREBASE_URL = os.getenv("FIREBASE_URL", "https://money-family-f9d8b-default-rtdb.europe-west1.firebasedatabase.app")
 
 KYIV = ZoneInfo("Europe/Kyiv")
@@ -3639,6 +3640,45 @@ async def cryptopay_webhook(request: Request):
             log.exception("Crypto payment notification failed")
 
     return {"ok": True}
+
+
+@app.post("/api/admin/grant-coupon")
+async def api_admin_grant_coupon(request: Request, x_admin_key: str = Header(default="")):
+    """Grant a coupon from the admin panel; requires a private Render environment key."""
+    if not ADMIN_KEY or not secrets.compare_digest(x_admin_key, ADMIN_KEY):
+        raise HTTPException(status_code=401, detail="Неверный ключ администратора")
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Некорректный JSON")
+
+    uid = str(body.get("uid") or "").strip()
+    kind = str(body.get("kind") or "").strip()
+    if not uid.isdigit():
+        raise HTTPException(status_code=400, detail="Некорректный ID пользователя")
+    if kind not in {"c10", "c20"}:
+        raise HTTPException(status_code=400, detail="Неизвестный тип купона")
+
+    field = "couponsEarned" if kind == "c10" else "coupons20Earned"
+    result = {"value": 0}
+
+    def grant(user_raw):
+        user = dict(user_raw) if isinstance(user_raw, dict) else {}
+        try:
+            value = max(0, int(user.get(field) or 0)) + 1
+        except (TypeError, ValueError):
+            value = 1
+        user[field] = value
+        result["value"] = value
+        return user
+
+    try:
+        await fb.transaction(f"/users/{uid}", grant)
+    except Exception:
+        log.exception("Admin coupon grant failed for uid=%s", uid)
+        raise HTTPException(status_code=502, detail="Не удалось обновить пользователя в Firebase")
+    return {"ok": True, "uid": uid, "kind": kind, "value": result["value"]}
 
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

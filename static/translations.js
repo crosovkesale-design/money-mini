@@ -1386,16 +1386,4 @@ const TRANSLATIONS = {
     pro_reminders_desc: "机器人会提醒你记录支出",
     why_features: "Family Budget 有哪些便利之处？",
   }
-    currency_UAH: "乌克兰格里夫纳",
-    currency_RUB: "俄罗斯卢布",
-    currency_USD: "美元",
-    currency_EUR: "欧元",
-    currency_PLN: "波兰兹罗提",
-    currency_GBP: "英镑",
-    currency_TRY: "土耳其里拉",
-    currency_CHF: "瑞士法郎",
-    currency_CZK: "捷克克朗",
-    currency_JPY: "日元",
-    currency_CNY: "人民币",
-
 };

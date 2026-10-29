@@ -311,6 +311,25 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
     <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
     <div id="proInsightsCard" class="pro-insights-card"></div>
+    <section class="card finance-assistant-card" id="financeAssistantCard">
+      <div class="finance-assistant-heading">
+        <div><h4>✨ Финансовый ИИ-помощник</h4><p>Ответы на основе твоих записей в Family Budget</p></div>
+        <span class="pro-mini-tag">PRO</span>
+      </div>
+      <div class="finance-assistant-suggestions">
+        <button type="button" onclick="askFinanceSuggestion('На что я больше всего трачу?')">На что больше трачу?</button>
+        <button type="button" onclick="askFinanceSuggestion('Как можно сократить расходы?')">Где сэкономить?</button>
+        <button type="button" onclick="askFinanceSuggestion('Сравни мои доходы и расходы за этот месяц.')">Доходы и расходы</button>
+      </div>
+      <div id="financeAssistantMessages" class="finance-assistant-messages" aria-live="polite">
+        <div class="finance-assistant-welcome">Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.</div>
+      </div>
+      <form class="finance-assistant-form" onsubmit="event.preventDefault();sendFinanceQuestion();">
+        <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" aria-label="Вопрос финансовому помощнику"></textarea>
+        <button id="financeAssistantSend" class="btn btn-accent" type="submit">Отправить</button>
+      </form>
+      <p class="finance-assistant-privacy">Для ответа отправляется только краткая сводка бюджета и последние операции. Переписка не сохраняется на сервере.</p>
+    </section>
   </div>
 
   <div id="tab-envelopes" class="tab-content" style="display:none">

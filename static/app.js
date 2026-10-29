@@ -2015,6 +2015,7 @@ function initApp(){
   }
 
   loadPlanStatus();
+  refreshRewardStatus();
   refreshAIStatus();
   loadFamilyStatus();
   syncPaymentReminders();
@@ -2168,6 +2169,57 @@ function financeAssistantContext(){
     },
     transactions: transactions.slice(0,60)
   };
+}
+
+async function refreshRewardStatus(){
+  const tg=window.Telegram?.WebApp;
+  const status=document.getElementById('rewardStatusText');
+  const claim=document.getElementById('dailyRewardClaimBtn');
+  if(!status)return;
+  if(!tg?.initData){status.textContent='Открой приложение через Telegram, чтобы получать награды.';if(claim)claim.disabled=true;return;}
+  try{
+    const response=await fetch('/api/rewards/status',{headers:{'X-Init-Data':tg.initData}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось загрузить награды.');
+    const points=document.getElementById('rewardPointsValue');
+    const streak=document.getElementById('rewardStreakValue');
+    if(points)points.textContent=String(Number(data.points||0));
+    if(streak)streak.textContent=String(Number(data.streak||0));
+    if(claim)claim.disabled=Boolean(data.claimed_today);
+    status.textContent=data.claimed_today
+      ? 'Сегодня награда уже получена. Возвращайся завтра, чтобы продолжить серию.'
+      : 'Забери +10 монет сегодня. Серия растёт за каждый день подряд.';
+  }catch(error){status.textContent=error.message||'Не удалось загрузить награды.';}
+}
+
+async function claimDailyReward(){
+  const tg=window.Telegram?.WebApp;
+  const status=document.getElementById('rewardStatusText');
+  const button=document.getElementById('dailyRewardClaimBtn');
+  if(!tg?.initData){if(status)status.textContent='Открой приложение через Telegram.';return;}
+  if(button)button.disabled=true;
+  try{
+    const response=await fetch('/api/rewards/claim',{method:'POST',headers:{'X-Init-Data':tg.initData}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду.');
+    if(status)status.textContent=data.claimed_today?'Награда за сегодня уже получена.':'Начислено '+Number(data.earned||0)+' монет'+(Number(data.bonus||0)>0?' (включая бонус серии +'+Number(data.bonus)+')':'')+'!';
+    await refreshRewardStatus();
+    await loadPlanStatus();
+  }catch(error){if(status)status.textContent=error.message||'Ошибка получения награды.';if(button)button.disabled=false;}
+}
+
+async function buyRewardCoupon(percent){
+  const tg=window.Telegram?.WebApp;
+  const status=document.getElementById('rewardStatusText');
+  if(!tg?.initData){if(status)status.textContent='Открой приложение через Telegram.';return;}
+  try{
+    const response=await fetch('/api/rewards/shop/buy',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({percent:String(percent)})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось купить купон.');
+    if(status)status.textContent='Купон −'+percent+'% куплен! Остаток: '+Number(data.points||0)+' монет.';
+    await refreshRewardStatus();
+    await loadPlanStatus();
+  }catch(error){if(status)status.textContent=error.message||'Не удалось купить купон.';}
 }
 
 async function refreshAIStatus(){

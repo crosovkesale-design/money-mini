@@ -200,12 +200,76 @@ function fmtMoney(v){
   return ['$','£','€'].includes(c.sym) ? `${c.sym}${n}` : `${n} ${c.sym}`;
 }
 
+// Translate hard-coded interface text as well as elements explicitly marked with data-i18n.
+const _autoTextOriginals = new WeakMap();
+let _autoTextObserver = null;
+function _autoTextMap(){
+  const map = Object.create(null);
+  const ru = TRANSLATIONS.ru || {};
+  for(const key of Object.keys(ru)){
+    const source = String(ru[key]);
+    if(source && !source.includes('{') && !source.includes('}') && !Object.prototype.hasOwnProperty.call(map,source)){
+      map[source] = t(key);
+    }
+  }
+  if(typeof CAT_I18N !== 'undefined'){
+    for(const [source,langs] of Object.entries(CAT_I18N)) map[source] = langs[appData.lang] || source;
+  }
+  const aliases = {
+    'Русский':'Русский','Українська':'Українська','English':'English','Deutsch':'Deutsch','Español':'Español','Français':'Français','Italiano':'Italiano','Polski':'Polski','Türkçe':'Türkçe','中文':'中文',
+    'Личный баланс':'Личный баланс','Общий баланс семьи':'Общий баланс семьи'
+  };
+  Object.assign(map,aliases);
+  return map;
+}
+function _translateHardcodedNode(node){
+  if(!node || node.nodeType !== 3) return;
+  const parent=node.parentElement;
+  if(!parent || parent.closest('[data-i18n]')) return;
+  if(['SCRIPT','STYLE','TEXTAREA','CODE','PRE'].includes(parent.tagName)) return;
+  let source=_autoTextOriginals.get(node);
+  if(source===undefined){ source=node.nodeValue; _autoTextOriginals.set(node,source); }
+  const trimmed=source.trim();
+  if(!trimmed || trimmed.length>220) return;
+  const translated=_autoTextMap()[trimmed];
+  if(translated && translated!==trimmed){
+    const start=source.indexOf(trimmed), end=start+trimmed.length;
+    const next=source.slice(0,start)+translated+source.slice(end);
+    if(node.nodeValue!==next) node.nodeValue=next;
+  } else if(node.nodeValue!==source && _autoTextOriginals.has(node)) {
+    // Keep an unrecognized source untouched rather than guessing a translation.
+  }
+}
+function translateHardcodedText(root=document.body){
+  if(!root)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())) _translateHardcodedNode(node);
+}
+function startHardcodedTextTranslation(){
+  translateHardcodedText();
+  if(_autoTextObserver)return;
+  _autoTextObserver=new MutationObserver(records=>{
+    for(const record of records){
+      if(record.type==='characterData') _translateHardcodedNode(record.target);
+      for(const added of record.addedNodes||[]){
+        if(added.nodeType===3) _translateHardcodedNode(added);
+        else if(added.nodeType===1) translateHardcodedText(added);
+      }
+    }
+  });
+  _autoTextObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+}
 function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
-  document.getElementById('langLabel').innerText = (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).flag + ' ' + (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).label;
+  const languageLabel=document.getElementById('langLabel');
+  if(languageLabel) languageLabel.innerText = (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).flag + ' ' + (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).label;
   const selectedCurrency = CURRENCIES.find(c=>c.id===appData.currency)||CURRENCIES[0];
-  document.getElementById('currLabel').innerText = selectedCurrency.sym + ' ' + tCurrency(selectedCurrency.id);
+  const currencyLabel=document.getElementById('currLabel');
+  if(currencyLabel) currencyLabel.innerText = selectedCurrency.sym + ' ' + tCurrency(selectedCurrency.id);
+  translateHardcodedText();
+  startHardcodedTextTranslation();
 }
 
 function switchTab(name){

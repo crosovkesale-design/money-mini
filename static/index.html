@@ -371,6 +371,30 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div id="banksList"></div>
   </div>
 
+  <div id="tab-referrals" class="tab-content" style="display:none">
+    <section class="referral-hero card">
+      <div class="referral-hero-top"><div><div class="eyebrow">FAMILY BUDGET · COMMUNITY</div><h2>Рефералы</h2><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
+      <label class="lbl" for="referralLinkInput">Твоя реферальная ссылка</label>
+      <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button></div>
+      <div class="referral-stats-grid">
+        <div class="referral-stat"><span>Приглашено</span><strong id="referralCountValue">0</strong><small>всего пользователей</small></div>
+        <div class="referral-stat"><span>Платные рефералы</span><strong id="referralPaidCountValue">0</strong><small>с оплатой подписки</small></div>
+        <div class="referral-stat"><span>Оборот за сезон</span><strong id="referralVolumeValue">$0</strong><small>подтверждённые подписки</small></div>
+        <div class="referral-stat"><span>Купоны 10%</span><strong id="coupon10CountValue">0</strong><small>доступно</small></div>
+        <div class="referral-stat"><span>Купоны 20%</span><strong id="coupon20CountValue">0</strong><small>доступно</small></div>
+        <div class="referral-stat"><span>До конца сезона</span><strong id="referralSeasonDays">—</strong><small>дней</small></div>
+      </div>
+    </section>
+    <section class="battlepass-card card">
+      <div class="battlepass-head"><div><div class="eyebrow">MONTHLY REWARDS</div><h3>Battle Pass</h3><p class="muted">Сезон обновляется в последний день каждого месяца. Прогресс сезона начинается заново.</p></div><div class="battlepass-season" id="battlePassSeason">Сезон</div></div>
+      <div class="battlepass-progress"><div class="battlepass-progress-label"><span>Выполнение заданий</span><b id="battlePassProgressText">0 / 10 заданий</b></div><div class="battlepass-progress-track"><span id="battlePassProgressBar" style="width:0%"></span></div></div>
+      <div class="battlepass-tasks" id="battlePassTasks"></div>
+      <div class="battlepass-pass-switch"><button type="button" class="battlepass-switch active" id="battlePassFreeBtn" onclick="setBattlePassTrack('free')">Бесплатный</button><button type="button" class="battlepass-switch" id="battlePassProBtn" onclick="setBattlePassTrack('pro')">PRO · платный</button></div>
+      <div class="battlepass-track-note" id="battlePassTrackNote">Бесплатные награды — меньше купонов, но доступны всем.</div>
+      <div class="battlepass-grid" id="battlePassRewards"></div>
+    </section>
+  </div>
+
   <div id="tab-settings" class="tab-content" style="display:none">
     <div class="card">
       <h5 data-i18n="settings">Настройки</h5>
@@ -391,30 +415,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div style="display:flex;gap:8px">
         <button id="wallpaperUploadBtn" class="btn btn-outline btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="openWallpaperUpload()"><span data-i18n="upload">Загрузить</span><span id="wallpaperProTag" class="pro-mini-tag">PRO</span></button>
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="clearWallpaper()" data-i18n="remove">Убрать</button>
-      </div>
-    </div>
-
-    <div class="card referral-card">
-      <h5>👥 Рефералы и купоны</h5>
-      <p class="muted" style="margin:0 0 12px;font-size:13px">Статистика твоих приглашений и доступных скидок</p>
-      <p class="muted" style="margin:0 0 8px;font-size:13px">Твоя реферальная ссылка — отправляй её новым пользователям</p>
-      <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:14px">
-        <input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…" style="margin:0;min-width:0;flex:1;font-size:12px">
-        <button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()" style="white-space:nowrap">Копировать</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
-        <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
-          <div style="font-size:22px;font-weight:800" id="referralCountValue">—</div>
-          <div class="muted" style="font-size:11px;margin-top:4px">Рефералов</div>
-        </div>
-        <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
-          <div style="font-size:22px;font-weight:800" id="coupon10CountValue">—</div>
-          <div class="muted" style="font-size:11px;margin-top:4px">Купоны −10%</div>
-        </div>
-        <div style="padding:12px 8px;border-radius:12px;background:var(--surface);text-align:center">
-          <div style="font-size:22px;font-weight:800" id="coupon20CountValue">—</div>
-          <div class="muted" style="font-size:11px;margin-top:4px">Купоны −20%</div>
-        </div>
       </div>
     </div>
 
@@ -497,6 +497,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="analytics">Аналитика</span></div>
   <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span data-i18n="envelopes">Конверты</span></div>
   <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="banks">Банки</span></div>
+  <div class="nav-item" id="nav-referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span>Рефералы</span></div>
   <div class="nav-item" id="nav-settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="settings">Настройки</span></div>
   <div class="nav-item" id="nav-advantages" onclick="switchTab('advantages')"><i class="fa-solid fa-sparkles"></i><span>Почему Mini</span></div>
 </div>

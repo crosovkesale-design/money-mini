@@ -12,6 +12,20 @@ let appData = JSON.parse(localStorage.getItem(appStorageKey)) || {
 
 let canUseProFeatures = false;
 let referralStats = { count: 0, coupons10: 0, coupons20: 0 };
+let battlePassStats = { paidCount: 0, volumeUsd: 0, monthKey: '', monthLabel: '', daysLeft: 0, claimed: { free: [], pro: [] } };
+let battlePassTrack = 'free';
+const BATTLE_PASS_TASKS = [
+  {key:'invite1',title:'Первый шаг',desc:'Пригласи 1 пользователя',metric:'count',target:1},
+  {key:'invite3',title:'Зови друзей',desc:'Пригласи 3 пользователей',metric:'count',target:3},
+  {key:'paid1',title:'Первая подписка',desc:'1 реферал оплачивает подписку',metric:'paidCount',target:1},
+  {key:'volume10',title:'Оборот растёт',desc:'Рефералы оплатили на $10',metric:'volumeUsd',target:10},
+  {key:'invite5',title:'Своя команда',desc:'Пригласи 5 пользователей',metric:'count',target:5},
+  {key:'paid3',title:'Команда платит',desc:'3 реферала оплатили подписку',metric:'paidCount',target:3},
+  {key:'volume25',title:'Первые $25',desc:'Рефералы оплатили на $25',metric:'volumeUsd',target:25},
+  {key:'invite10',title:'Организатор',desc:'Пригласи 10 пользователей',metric:'count',target:10},
+  {key:'paid5',title:'Пять подписок',desc:'5 платных рефералов',metric:'paidCount',target:5},
+  {key:'volume50',title:'Оборот $50',desc:'Рефералы оплатили на $50',metric:'volumeUsd',target:50}
+];
 
 let bankImportRows = [];
 let bankImportBusy = false;
@@ -481,14 +495,42 @@ function openWallpaperUpload(){
 }
 
 function renderReferralStats(){
-  const refs = document.getElementById('referralCountValue');
-  const c10 = document.getElementById('coupon10CountValue');
-  const c20 = document.getElementById('coupon20CountValue');
-  const link = document.getElementById('referralLinkInput');
-  if(refs) refs.textContent = String(Number(referralStats.count || 0));
-  if(c10) c10.textContent = String(Number(referralStats.coupons10 || 0));
-  if(c20) c20.textContent = String(Number(referralStats.coupons20 || 0));
-  if(link) link.value = referralStats.link || '';
+  const refs=document.getElementById('referralCountValue'),c10=document.getElementById('coupon10CountValue'),c20=document.getElementById('coupon20CountValue');
+  const paid=document.getElementById('referralPaidCountValue'),volume=document.getElementById('referralVolumeValue'),days=document.getElementById('referralSeasonDays'),link=document.getElementById('referralLinkInput');
+  if(refs)refs.textContent=String(Number(referralStats.count||0));
+  if(c10)c10.textContent=String(Number(referralStats.coupons10||0));
+  if(c20)c20.textContent=String(Number(referralStats.coupons20||0));
+  if(paid)paid.textContent=String(Number(battlePassStats.paidCount||0));
+  if(volume)volume.textContent='$'+Number(battlePassStats.volumeUsd||0).toLocaleString('en-US',{maximumFractionDigits:2});
+  if(days)days.textContent=String(Number(battlePassStats.daysLeft||0));
+  if(link)link.value=referralStats.link||'';
+  renderBattlePass();
+}
+function setBattlePassTrack(track){
+  battlePassTrack=track==='pro'?'pro':'free';
+  document.getElementById('battlePassFreeBtn')?.classList.toggle('active',battlePassTrack==='free');
+  document.getElementById('battlePassProBtn')?.classList.toggle('active',battlePassTrack==='pro');
+  renderBattlePass();
+}
+function battlePassTierRequirement(tier){
+  const task=BATTLE_PASS_TASKS[(tier-1)%BATTLE_PASS_TASKS.length];
+  return {...task,target:task.target*(Math.floor((tier-1)/BATTLE_PASS_TASKS.length)+1)};
+}
+function renderBattlePass(){
+  const tasksEl=document.getElementById('battlePassTasks'),rewardsEl=document.getElementById('battlePassRewards');
+  if(!tasksEl||!rewardsEl)return;
+  const stats={count:Number(referralStats.seasonCount||0),paidCount:Number(battlePassStats.paidCount||0),volumeUsd:Number(battlePassStats.volumeUsd||0)};
+  const completed=BATTLE_PASS_TASKS.filter(t=>stats[t.metric]>=t.target).length;
+  const season=document.getElementById('battlePassSeason');if(season)season.textContent=battlePassStats.monthLabel||'Текущий сезон';
+  const progressText=document.getElementById('battlePassProgressText');if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' заданий';
+  const bar=document.getElementById('battlePassProgressBar');if(bar)bar.style.width=(completed/BATTLE_PASS_TASKS.length*100)+'%';
+  tasksEl.innerHTML=BATTLE_PASS_TASKS.map(t=>{const val=stats[t.metric],done=val>=t.target,shown=t.metric==='volumeUsd'?'$'+Number(val).toLocaleString('en-US',{maximumFractionDigits:2}):String(val),target=t.metric==='volumeUsd'?'$'+t.target:String(t.target);return '<div class="battlepass-task '+(done?'is-done':'')+'"><span class="battlepass-task-icon">'+(done?'✓':'🎯')+'</span><div><b>'+t.title+'</b><small>'+t.desc+'</small><div class="battlepass-task-meter">'+shown+' / '+target+'</div></div></div>';}).join('');
+  const isPro=battlePassTrack==='pro',claimed=new Set((battlePassStats.claimed?.[battlePassTrack]||[]).map(Number)),hasPro=Boolean(canUseProFeatures);
+  rewardsEl.innerHTML=Array.from({length:30},(_,i)=>{const tier=i+1,task=battlePassTierRequirement(tier),unlocked=stats[task.metric]>=task.target,coupon=isPro||tier%5===0?10:0,earned=claimed.has(tier),proLocked=isPro&&!hasPro,label=coupon?'Купон −'+coupon+'%':(isPro?'PRO бонус':'Монеты'),status=earned?'Получено':proLocked?'Нужен PRO':unlocked?'Забрать':'Уровень '+tier,disabled=earned||proLocked||!unlocked;return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">УРОВЕНЬ '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':isPro?'💎':'🪙')+'</div><b>'+label+'</b><small>'+(coupon?'Награда сезона':isPro?'Бонус PRO':'Опыт сезона')+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';}).join('');
+  const note=document.getElementById('battlePassTrackNote');if(note)note.textContent=isPro?(hasPro?'PRO: купон 10% на каждом из 30 уровней.':'Платная дорожка доступна с активной подпиской PRO.'):'Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.';
+}
+async function claimBattlePassReward(track,tier){
+  try{const tg=window.Telegram?.WebApp,response=await fetch('/api/battlepass/claim',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg?.initData||''},body:JSON.stringify({track,tier})}),data=await response.json();if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду');battlePassStats.claimed=data.claimed||battlePassStats.claimed;referralStats.coupons10=Number(referralStats.coupons10||0)+Number(data.couponsAdded||0);renderReferralStats();updateCouponSelector();tg?.showAlert?.('Награда получена!');}catch(e){const tg=window.Telegram?.WebApp;if(tg?.showAlert)tg.showAlert(e.message||'Ошибка получения награды');else alert(e.message||'Ошибка получения награды');}
 }
 
 function selectCoupon(value){
@@ -601,6 +643,7 @@ async function loadPlanStatus(){
     const data = await response.json();
     canUseProFeatures = Boolean(data?.features?.pro);
     referralStats = data?.referral || { count: 0, coupons10: 0, coupons20: 0 };
+    battlePassStats = data?.battlepass || battlePassStats;
     renderReferralStats();
     updateCouponSelector();
   } catch(error){

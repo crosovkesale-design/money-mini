@@ -692,7 +692,9 @@ if bot:
     async def cmd_pay(message: Message):
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="💎 Смотреть тарифы", web_app=WebAppInfo(url=MINI_APP_URL.rstrip("/") + "?screen=pay"))],
-            [InlineKeyboardButton(text="🎁 Как получить скидку", callback_data="ref_link")]
+            [InlineKeyboardButton(text="🎁 Как получить скидку", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
         ])
         await message.answer(
             "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n"
@@ -830,7 +832,12 @@ if bot:
                 "Отправь её друзьям, чтобы начать приглашать!"
             )
 
-        await message.answer(text, parse_mode="HTML")
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews"),
+             InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")]
+        ])
+        await message.answer(text, parse_mode="HTML", reply_markup=kb)
+
     @dp.callback_query(F.data == "ref_link")
     async def cb_ref_link(cb: CallbackQuery):
         uid = str(cb.from_user.id)
@@ -911,12 +918,17 @@ if bot:
     @dp.callback_query(F.data == "go_start")
     async def cb_go_start(cb: CallbackQuery):
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Открыть бюджет", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="💎 Подписка и оплата", callback_data="show_pay")],
-            [InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")]
+            [InlineKeyboardButton(text="📊 Открыть Family Budget", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
+             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
         ])
         await cb.message.answer(
-            "👋 <b>Семейный бюджет</b>\n\nТвой бюджет, подписка и бонусы — в одном меню.",
+            "👋 <b>FAMILY BUDGET</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "Твой бюджет, подписка и бонусы — в одном месте.\n"
+            "Выбери нужный раздел ниже.",
             reply_markup=kb,
             parse_mode="HTML"
         )
@@ -924,8 +936,15 @@ if bot:
 
     @dp.callback_query(F.data == "show_pay")
     async def cb_show_pay(cb: CallbackQuery):
-        kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))]])
-        await cb.message.edit_text("Нажми кнопку, чтобы выбрать тариф:", reply_markup=kb)
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))],
+            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
+        ])
+        await cb.message.edit_text(
+            "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
+            reply_markup=kb, parse_mode="HTML"
+        )
         await cb.answer()
 
 
@@ -1060,15 +1079,23 @@ if bot:
             )
             return
 
+        review_done_kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⭐ Смотреть отзывы", url="https://t.me/familybudget_reviews")],
+            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")]
+        ])
         if already_received:
             await message.answer(
-                "✅ Спасибо за отзыв! Он опубликован.\n"
-                "🎟 Купон 20% за отзыв можно получить только один раз."
+                "✅ <b>Спасибо за отзыв!</b>\n"
+                "Твой отзыв опубликован.\n\n"
+                "🎟️ Купон 20% за отзыв начисляется только один раз.",
+                reply_markup=review_done_kb, parse_mode="HTML"
             )
         else:
             await message.answer(
-                "✅ Спасибо за отзыв! Он опубликован в группе.\n"
-                "🎁 Тебе начислен купон на скидку 20%."
+                "✅ <b>Спасибо за отзыв!</b>\n"
+                "Твой отзыв опубликован.\n\n"
+                "🎁 На баланс начислен купон на скидку <b>20%</b>.",
+                reply_markup=review_done_kb, parse_mode="HTML"
             )
 
     @dp.message(Command("support"))

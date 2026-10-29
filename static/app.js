@@ -368,19 +368,66 @@ async function handleReceiptPhotoSelected(event){
     const data = await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
     const lines = (Array.isArray(data.lines) ? data.lines : String(data.text||'').split(/\r?\n/))
-      .map(line=>String(line).trim()).filter(Boolean);
+      .map(line=>String(line).replace(/\s+/g,' ').trim())
+      .filter(line=>line && /[A-Za-zА-Яа-яІіЇїЄєҐґ]/.test(line));
     if(!lines.length) throw new Error('Фото получено, но текст не удалось прочитать. Сделай снимок ровно, без бликов, чтобы весь чек был в кадре.');
-    const store = (lines.find(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{3}/.test(line)) || '').slice(0,80);
-    const itemLines = lines.filter(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{2}/.test(line)).slice(0,30);
+
+    // Don't dump the whole OCR output into the form: it contains fiscal codes,
+    // payment details and recognition noise. Keep likely product rows only.
+    const skipLine = /итого|всього|разом|к оплате|до сплати|сума|total|subtotal|tax|пдв|ндс|решта|здача|касир|кассир|фіскал|фискал|чек №|receipt|термінал|терминал|готівк|наличн|безгот|картк|карта|дякуємо|спасибо|thank you|адрес|тел\.?|єдрпоу|едрпоу|фн\s*\d|рро|пн\s*\d/i;
+    const cleaned = lines.map(line=>line.replace(/^\s*\d{1,3}[.)]\s*/, '').trim())
+      .filter(line=>line.length>=3 && line.length<=90 && !skipLine.test(line));
+    const store = (cleaned.find(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{3}/.test(line)) || '').slice(0,80);
+    const moneyAtEnd = /^(.*?)[\s*]+(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:₴|грн\.?|uah)?$/i;
+    const moneyOnly = /^\s*(\d{1,5}(?:[.,]\d{1,2})?)\s*(?:₴|грн\.?|uah)?\s*$/i;
+    const productRows = [];
+    for(let i=0;i<cleaned.length;i++){
+      const line=cleaned[i];
+      if(skipLine.test(line)) continue;
+      const match=line.match(moneyAtEnd);
+      if(match && /[A-Za-zА-Яа-яІіЇїЄєҐґ]{2}/.test(match[1])){
+        const name=match[1].replace(/[|_]+/g,' ').trim().slice(0,80);
+        const price=Number(match[2].replace(',','.'));
+        if(name.length>=2 && Number.isFinite(price) && price>0 && price<100000){
+          productRows.push({name,price});
+          continue;
+        }
+      }
+      const next=cleaned[i+1]||'';
+      const nextPrice=next.match(moneyOnly);
+      if(nextPrice && /[A-Za-zА-Яа-яІіЇїЄєҐґ]{2}/.test(line)){
+        const price=Number(nextPrice[1].replace(',','.'));
+        if(Number.isFinite(price)&&price>0&&price<100000) productRows.push({name:line.slice(0,80),price});
+        i++;
+      }
+    }
+    // If OCR cannot reliably pair names with prices, show only a few clean names
+    // rather than dozens of technical lines. The user can correct them manually.
+    const uniqueRows=[];
+    const seenNames=new Set();
+    for(const row of productRows){
+      const key=row.name.toLowerCase();
+      if(!seenNames.has(key)){seenNames.add(key);uniqueRows.push(row);}
+    }
+    const fallbackNames = uniqueRows.length ? [] : cleaned
+      .filter(line=>line!==store && line.length>=3 && line.length<=55 && !/\d{5,}/.test(line))
+      .slice(0,8);
+    const itemLines = uniqueRows.length
+      ? uniqueRows.slice(0,20).map(row=>row.name+'; '+row.price+'; 1')
+      : fallbackNames;
     document.getElementById('receiptStoreInput').value = store;
     document.getElementById('receiptDateInput').value = new Date().toISOString().slice(0,10);
     document.getElementById('receiptItemsInput').value = itemLines.join('\n');
     document.getElementById('receiptTotalInput').value = Number(data.amount_guess || 0) > 0 ? String(data.amount_guess) : '';
     const error = document.getElementById('receiptEntryError');
-    if(error) error.textContent = 'Проверь распознанные данные — OCR может ошибаться.';
+    if(error) error.textContent = uniqueRows.length
+      ? 'Распознано товаров: '+uniqueRows.length+'. Проверь названия и цены перед сохранением.'
+      : 'Не удалось уверенно распознать цены. Я убрал технический текст — проверь или поправь товары вручную.';
     const saveButton = document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
     if(saveButton) saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Проверить и сохранить чек';
-    setStatus('🧾 Распознавание завершено. Проверь данные в открывшемся окне.');
+    setStatus(uniqueRows.length
+      ? '🧾 Чек распознан. Проверь очищенный список товаров и сумму.'
+      : '🧾 Текст распознан частично. Лишние технические строки скрыты; проверь товары и сумму.');
     openModal('modalReceiptEntry');
   }catch(error){
     clearTimeout(timeoutId);

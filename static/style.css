@@ -1769,3 +1769,14 @@ select:focus-visible {
 .finance-assistant-form .btn:disabled{opacity:.55;cursor:wait}
 .finance-assistant-privacy{font-size:10px;line-height:1.45;color:var(--muted);margin:9px 0 0}
 @media(max-width:360px){.finance-assistant-card{padding:11px}.finance-assistant-form{align-items:stretch;flex-direction:column}.finance-assistant-form .btn{width:100%}}
+
+
+/* AI natural-language transaction draft */
+.ai-transaction-draft{margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+.ai-transaction-draft .lbl{display:block;margin:0 0 8px;font-size:12px;font-weight:700}
+.ai-transaction-draft-row{display:flex;align-items:center;gap:8px}
+.ai-transaction-draft-row .custom-input{font-size:12px}
+.ai-transaction-draft-row button{flex-shrink:0;min-height:40px}
+.ai-transaction-status{font-size:11px;line-height:1.45;color:var(--muted);margin:8px 0 0}
+.ai-transaction-draft button:disabled{opacity:.6;cursor:wait}
+@media(max-width:360px){.ai-transaction-draft{padding:9px}.ai-transaction-draft-row{align-items:stretch;flex-direction:column}.ai-transaction-draft-row button{width:100%}}

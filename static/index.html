@@ -136,49 +136,49 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
         <div class="pricing-options">
           <article class="price-option">
-            <div class="price-option-top"><span>1 месяц</span><span class="option-tag">START</span></div>
+            <div class="price-option-top"><span data-i18n="month1">1 месяц</span><span class="option-tag">START</span></div>
             <div class="price-main" data-base-usd="6">$6</div>
             <div class="price-stars" data-base-stars="500">или 500 ⭐</div>
             <div class="price-actions">
               <button class="pay-button pay-wallet" onclick="buyPlan('1month','walletpay')">👛 Wallet Pay</button>
-              <button class="pay-button pay-stars" onclick="buyPlan('1month','stars')">Оплатить ⭐</button>
-              <button class="pay-button pay-crypto" onclick="buyPlan('1month','crypto')">Оплатить USDT</button>
+              <button class="pay-button pay-stars" onclick="buyPlan('1month','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('1month','crypto')" data-i18n="pay_crypto">Оплатить USDT</button>
             </div>
           </article>
 
           <article class="price-option">
-            <div class="price-option-top"><span>3 месяца</span><span class="option-tag">3 MO</span></div>
+            <div class="price-option-top"><span data-i18n="month3">3 месяца</span><span class="option-tag">3 MO</span></div>
             <div class="price-main" data-base-usd="15">$15</div>
             <div class="price-stars" data-base-stars="1300">или 1 300 ⭐</div>
-            <div class="price-note">Выгоднее помесячной оплаты</div>
+            <div class="price-note" data-i18n="monthly_saving">Выгоднее помесячной оплаты</div>
             <div class="price-actions">
               <button class="pay-button pay-wallet" onclick="buyPlan('3months','walletpay')">👛 Wallet Pay</button>
-              <button class="pay-button pay-stars" onclick="buyPlan('3months','stars')">Оплатить ⭐</button>
-              <button class="pay-button pay-crypto" onclick="buyPlan('3months','crypto')">Оплатить USDT</button>
+              <button class="pay-button pay-stars" onclick="buyPlan('3months','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('3months','crypto')" data-i18n="pay_crypto">Оплатить USDT</button>
             </div>
           </article>
 
           <article class="price-option">
-            <div class="price-option-top"><span>6 месяцев</span><span class="option-tag">6 MO</span></div>
+            <div class="price-option-top"><span data-i18n="month6">6 месяцев</span><span class="option-tag">6 MO</span></div>
             <div class="price-main" data-base-usd="27">$27</div>
             <div class="price-stars" data-base-stars="2300">или 2 300 ⭐</div>
-            <div class="price-note">Для долгого использования</div>
+            <div class="price-note" data-i18n="long_use">Для долгого использования</div>
             <div class="price-actions">
               <button class="pay-button pay-wallet" onclick="buyPlan('6months','walletpay')">👛 Wallet Pay</button>
-              <button class="pay-button pay-stars" onclick="buyPlan('6months','stars')">Оплатить ⭐</button>
-              <button class="pay-button pay-crypto" onclick="buyPlan('6months','crypto')">Оплатить USDT</button>
+              <button class="pay-button pay-stars" onclick="buyPlan('6months','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('6months','crypto')" data-i18n="pay_crypto">Оплатить USDT</button>
             </div>
           </article>
 
           <article class="price-option price-option-featured">
-            <div class="price-option-top"><span>12 месяцев</span><span class="option-tag option-tag-featured">BEST VALUE</span></div>
+            <div class="price-option-top"><span data-i18n="month12">12 месяцев</span><span class="option-tag option-tag-featured">BEST VALUE</span></div>
             <div class="price-main" data-base-usd="45">$45</div>
             <div class="price-stars" data-base-stars="3900">или 3 900 ⭐</div>
-            <div class="price-note">Самая низкая цена за месяц</div>
+            <div class="price-note" data-i18n="lowest_month">Самая низкая цена за месяц</div>
             <div class="price-actions">
               <button class="pay-button pay-wallet" onclick="buyPlan('12months','walletpay')">👛 Wallet Pay</button>
-              <button class="pay-button pay-stars" onclick="buyPlan('12months','stars')">Оплатить ⭐</button>
-              <button class="pay-button pay-crypto" onclick="buyPlan('12months','crypto')">Оплатить USDT</button>
+              <button class="pay-button pay-stars" onclick="buyPlan('12months','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('12months','crypto')" data-i18n="pay_crypto">Оплатить USDT</button>
             </div>
           </article>
         </div>
@@ -196,7 +196,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
 
         <div class="pricing-benefits pricing-benefits-pro" aria-label="Дополнительные возможности PRO">
-          <div class="pricing-benefit pro-benefit"><span>✦</span><div><b>Всё из Basic</b><p>Доходы, расходы, история, аналитика и цели</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>✦</span><div><b data-i18n="pro_all_basic">Всё из Basic</b><p>Доходы, расходы, история, аналитика и цели</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>✧</span><div><b data-i18n="pro_categories">Свои категории</b><p data-i18n="pro_categories_desc">Создавай категории доходов и расходов под себя</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>◈</span><div><b data-i18n="pro_wallpaper">Персональные обои</b><p data-i18n="pro_wallpaper_desc">Настраивай фон интерфейса на свой вкус</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b data-i18n="pro_excel">Экспорт Excel</b><p data-i18n="pro_excel_desc">Отправляй финансовый отчёт в Telegram</p></div></div>
@@ -207,26 +207,26 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
         <div class="pricing-options pricing-options-pro">
           <article class="price-option price-option-pro">
-            <div class="price-option-top"><span>1 месяц</span><span class="option-tag">1 MONTH</span></div>
+            <div class="price-option-top"><span data-i18n="month1">1 месяц</span><span class="option-tag">1 MONTH</span></div>
             <div class="price-main" data-base-usd="12">$12</div>
             <div class="price-stars" data-base-stars="1000">или 1 000 ⭐</div>
             <div class="price-actions">
               <button class="pay-button pay-wallet" onclick="buyPlan('pro1','walletpay')">👛 Wallet Pay</button>
-              <button class="pay-button pay-stars" onclick="buyPlan('pro1','stars')">Оплатить ⭐</button>
-              <button class="pay-button pay-crypto" onclick="buyPlan('pro1','crypto')">Оплатить USDT</button>
+              <button class="pay-button pay-stars" onclick="buyPlan('pro1','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('pro1','crypto')" data-i18n="pay_crypto">Оплатить USDT</button>
             </div>
           </article>
 
           <article class="price-option price-option-pro price-option-featured">
-            <div class="price-option-top"><span>12 месяцев</span><span class="option-tag option-tag-featured">BEST VALUE</span></div>
+            <div class="price-option-top"><span data-i18n="month12">12 месяцев</span><span class="option-tag option-tag-featured">BEST VALUE</span></div>
             <div class="price-main" data-base-usd="85">$85<span class="pro-period"> / год</span></div>
             <div class="price-stars" data-base-stars="7500">или 7 500 ⭐ за год</div>
             <div class="price-note pro-price-note">≈ $7.08 в месяц при годовой оплате</div>
             <div class="pro-saving-badge"><span>Твоя экономия за год</span><b>$59 или 4 500 ⭐</b></div>
             <div class="price-actions">
               <button class="pay-button pay-wallet" onclick="buyPlan('pro12','walletpay')">👛 Wallet Pay</button>
-              <button class="pay-button pay-stars" onclick="buyPlan('pro12','stars')">Оплатить ⭐</button>
-              <button class="pay-button pay-crypto" onclick="buyPlan('pro12','crypto')">Оплатить USDT</button>
+              <button class="pay-button pay-stars" onclick="buyPlan('pro12','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
+              <button class="pay-button pay-crypto" onclick="buyPlan('pro12','crypto')" data-i18n="pay_crypto">Оплатить USDT</button>
             </div>
           </article>
         </div>
@@ -461,7 +461,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div id="familyStatus" class="family-status" aria-live="polite">Проверяем семейную группу…</div>
 
       <div id="familyCurrentInfo" class="family-current-info" style="display:none">
-        <div class="family-detail-row"><span>Название</span><b id="familyNameText">Моя семья</b></div>
+        <div class="family-detail-row"><span data-i18n="item_name">Название</span><b id="familyNameText">Моя семья</b></div>
         <div class="family-code-box">
           <div class="family-code-main"><span>Код приглашения</span><code id="familyCodeText"></code></div>
           <button class="btn btn-outline btn-sm family-copy-btn" onclick="copyFamilyCode()">Копировать</button>
@@ -496,7 +496,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </div>
 
-      <button id="familyLeaveBtn" class="btn btn-danger btn-sm family-leave-btn" style="display:none" onclick="leaveFamily()">Выйти из семьи</button>
+      <button id="familyLeaveBtn" class="btn btn-danger btn-sm family-leave-btn" style="display:none" onclick="leaveFamily()" data-i18n="leave_family">Выйти из семьи</button>
       <div id="familyFeedback" class="family-feedback" role="status" aria-live="polite"></div>
     </div>
 
@@ -596,18 +596,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="modal-header"><h3>Изменить операцию</h3><span class="modal-close" onclick="closeModal('modalEditTransaction');editingTxId=null">×</span></div>
     <label class="lbl" for="editTxType">Тип операции</label>
     <select id="editTxType" class="custom-input"><option value="expense">Расход</option><option value="income">Доход</option></select>
-    <label class="lbl" for="editTxAmount">Сумма</label>
+    <label class="lbl" for="editTxAmount" data-i18n="item_amount">Сумма</label>
     <input type="number" id="editTxAmount" class="custom-input" min="0.01" step="0.01">
     <label class="lbl" for="editTxTitle">Описание</label>
     <input type="text" id="editTxTitle" class="custom-input" maxlength="120">
-    <label class="lbl" for="editTxCategory">Категория</label>
+    <label class="lbl" for="editTxCategory" data-i18n="category_lbl">Категория</label>
     <input type="text" id="editTxCategory" class="custom-input" maxlength="64">
     <label class="lbl" for="editTxDate">Дата</label>
     <input type="date" id="editTxDate" class="custom-input">
     <label class="lbl" for="editTxEnvelope">Конверт (для расходов)</label>
     <select id="editTxEnvelope" class="custom-input"><option value="">Без конверта</option></select>
     <div id="editTxError" class="receipt-entry-error" role="alert"></div>
-    <button type="button" class="btn btn-accent" style="width:100%" onclick="saveTxEdits()">Сохранить изменения</button>
+    <button type="button" class="btn btn-accent" style="width:100%" onclick="saveTxEdits()" data-i18n="save_changes">Сохранить изменения</button>
   </div>
 </div>
 
@@ -641,7 +641,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <input id="financialItemName" class="custom-input" type="text" maxlength="80" placeholder="Например, наличные или кредит" data-i18n-placeholder="name_placeholder">
     <label class="lbl" for="financialItemAmount" data-i18n="item_amount">Сумма</label>
     <input id="financialItemAmount" class="custom-input" type="number" min="0.01" step="0.01" placeholder="0">
-    <button id="financialItemSaveButton" class="btn btn-accent" style="width:100%" onclick="saveFinancialItem()">Сохранить</button>
+    <button id="financialItemSaveButton" class="btn btn-accent" style="width:100%" onclick="saveFinancialItem()" data-i18n="save">Сохранить</button>
   </div>
 </div>
 
@@ -659,7 +659,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="modal-header"><h3 data-i18n="recurring">Автоплатежи</h3><span class="modal-close" onclick="closeModal('modalAddRecurring')">×</span></div>
     <label class="lbl" for="recName" data-i18n="payment_name">Название платежа</label>
     <input type="text" id="recName" class="custom-input" maxlength="100" placeholder="Например, аренда или интернет" data-i18n-placeholder="payment_name">
-    <label class="lbl" for="recAmount">Сумма</label>
+    <label class="lbl" for="recAmount" data-i18n="item_amount">Сумма</label>
     <input type="number" id="recAmount" class="custom-input" min="0.01" step="0.01" placeholder="Сумма">
     <label class="lbl" for="recDay" data-i18n="payment_day">День месяца</label>
     <input type="number" id="recDay" class="custom-input" min="1" max="31" step="1" placeholder="От 1 до 31" data-i18n-placeholder="payment_day_hint">
@@ -672,7 +672,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div class="modal-content help-content">
     <div class="modal-header"><h3 id="helpModalTitle">Семейный бюджет — справка</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
     <div id="helpModalBody" class="help-body"></div>
-    <button class="btn btn-accent" style="width:100%;margin-top:16px" onclick="closeModal('modalHelp')">Понятно</button>
+    <button class="btn btn-accent" style="width:100%;margin-top:16px" onclick="closeModal('modalHelp')" data-i18n="ok">Понятно</button>
   </div>
 </div>
 

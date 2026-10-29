@@ -269,6 +269,21 @@ async def award_referral_coupon(paid_uid: str, payment_path: str):
         current["couponsEarned"] = max(0, int(current.get("couponsEarned") or 0)) + 1
         rewarded[invoice_key] = now_ms()
         current["referralCouponPayments"] = rewarded
+        month_key = datetime.now(KYIV).strftime("%Y-%m")
+        bp = dict(current.get("battlePassSeason") or {})
+        if str(bp.get("monthKey") or "") != month_key:
+            bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+        paid_users = dict(bp.get("paidUsers") or {})
+        paid_invoices = dict(bp.get("paidInvoices") or {})
+        if invoice_key not in paid_invoices:
+            paid_users[str(paid_uid)] = True
+            plan = str(payment.get("plan") or "")
+            price_usd = float((TARIFFS.get(plan) or {}).get("price_usd") or 0)
+            bp["volumeUsd"] = round(float(bp.get("volumeUsd") or 0) + price_usd, 2)
+            paid_invoices[invoice_key] = now_ms()
+        bp["paidUsers"] = paid_users
+        bp["paidInvoices"] = paid_invoices
+        current["battlePassSeason"] = bp
         awarded["ok"] = True
         return current
 
@@ -1421,18 +1436,113 @@ async def api_init(uid: str = Depends(current_uid)):
             u["familyRole"] = None
 
     refs = (await fb.get(f"/users/{uid}/referrals")) or {}
+    if not isinstance(refs, dict):
+        refs = {}
+    now_local = datetime.now(KYIV)
+    month_key = now_local.strftime("%Y-%m")
+    season_count = 0
+    for referred_at in refs.values():
+        try:
+            stamp = int(referred_at or 0)
+            if 0 < stamp < 10**11:
+                stamp *= 1000
+            if stamp and datetime.fromtimestamp(stamp / 1000, KYIV).strftime("%Y-%m") == month_key:
+                season_count += 1
+        except (TypeError, ValueError, OSError):
+            continue
+    bp = dict(u.get("battlePassSeason") or {})
+    if str(bp.get("monthKey") or "") != month_key:
+        bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+    claims = dict(u.get("battlePassClaims") or {})
+    month_claims = claims.get(month_key) if isinstance(claims.get(month_key), dict) else {}
+    last_day = calendar.monthrange(now_local.year, now_local.month)[1]
+    days_left = max(0, last_day - now_local.day)
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
         "features": {"pro": has_pro_access(u)},
         "family": family_info,
         "referral": {
             "count": len(refs),
+            "seasonCount": season_count,
             "code": "FAM-" + uid[-6:].upper(),
             "link": f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}",
             "coupons10": max(0, int(u.get("couponsEarned") or 0) - int(u.get("couponsUsed10") or 0)),
             "coupons20": max(0, int(u.get("coupons20Earned") or 0) - int(u.get("couponsUsed20") or 0)),
-        }
+        },
+        "battlepass": {
+            "paidCount": len(bp.get("paidUsers") or {}),
+            "volumeUsd": round(float(bp.get("volumeUsd") or 0), 2),
+            "monthKey": month_key,
+            "monthLabel": now_local.strftime("%B %Y"),
+            "daysLeft": days_left,
+            "claimed": {"free": list(month_claims.get("free") or []), "pro": list(month_claims.get("pro") or [])},
+        },
     }
+
+@app.post("/api/battlepass/claim")
+async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)):
+    payload = await request.json()
+    track = str(payload.get("track") or "free") if isinstance(payload, dict) else "free"
+    try:
+        tier = int(payload.get("tier") or 0)
+    except (TypeError, ValueError):
+        tier = 0
+    if track not in ("free", "pro") or not 1 <= tier <= 30:
+        raise HTTPException(status_code=400, detail="Неверная награда.")
+    user = await get_user(uid) or {}
+    if track == "pro" and not has_pro_access(user):
+        raise HTTPException(status_code=403, detail="Платная дорожка доступна с активным PRO.")
+    now_local = datetime.now(KYIV)
+    month_key = now_local.strftime("%Y-%m")
+    refs = (await fb.get(f"/users/{uid}/referrals")) or {}
+    season_count = 0
+    if isinstance(refs, dict):
+        for referred_at in refs.values():
+            try:
+                stamp = int(referred_at or 0)
+                if 0 < stamp < 10**11:
+                    stamp *= 1000
+                if stamp and datetime.fromtimestamp(stamp / 1000, KYIV).strftime("%Y-%m") == month_key:
+                    season_count += 1
+            except (TypeError, ValueError, OSError):
+                pass
+    bp = dict(user.get("battlePassSeason") or {})
+    if str(bp.get("monthKey") or "") != month_key:
+        bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+    stats = {"count": season_count, "paidCount": len(bp.get("paidUsers") or {}), "volumeUsd": float(bp.get("volumeUsd") or 0)}
+    task_defs = [
+        ("count", 1), ("count", 3), ("paidCount", 1), ("volumeUsd", 10), ("count", 5),
+        ("paidCount", 3), ("volumeUsd", 25), ("count", 10), ("paidCount", 5), ("volumeUsd", 50),
+    ]
+    metric, target = task_defs[(tier - 1) % len(task_defs)]
+    target *= (tier - 1) // len(task_defs) + 1
+    if stats[metric] < target:
+        raise HTTPException(status_code=400, detail="Сначала выполни задание этого уровня.")
+    coupon_percent = 10 if track == "pro" or tier % 5 == 0 else 0
+    result = {}
+    def claim_update(raw):
+        current = dict(raw) if isinstance(raw, dict) else {}
+        all_claims = dict(current.get("battlePassClaims") or {})
+        season_claims = dict(all_claims.get(month_key) or {})
+        claimed_track = list(season_claims.get(track) or [])
+        if tier in [int(x) for x in claimed_track]:
+            result.update({"ok": False, "reason": "already"})
+            return current
+        if coupon_percent:
+            current["couponsEarned"] = max(0, int(current.get("couponsEarned") or 0)) + 1
+        else:
+            current["rewardPoints"] = max(0, int(current.get("rewardPoints") or 0)) + 25
+        claimed_track.append(tier)
+        season_claims[track] = claimed_track
+        all_claims[month_key] = season_claims
+        current["battlePassClaims"] = all_claims
+        result.update({"ok": True, "claimed": {"free": list(season_claims.get("free") or []), "pro": list(season_claims.get("pro") or [])}, "couponsAdded": 1 if coupon_percent else 0, "pointsAdded": 0 if coupon_percent else 25})
+        return current
+    await fb.transaction(f"/users/{uid}", claim_update)
+    if not result.get("ok"):
+        raise HTTPException(status_code=409, detail="Эта награда уже получена в текущем сезоне.")
+    return result
+
 
 @app.get("/api/family")
 async def api_family_get(uid: str = Depends(current_uid)):

@@ -71,7 +71,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div id="tab-pay" class="tab-content" style="display:none">
     <section class="pricing-page">
       <div class="pricing-hero">
-        <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> СЕМЕЙНЫЙ БЮДЖЕТ · ТАРИФЫ</div>
+        <div class="pricing-kicker" data-i18n="pricing_kicker"><span class="pricing-kicker-dot"></span> СЕМЕЙНЫЙ БЮДЖЕТ · ТАРИФЫ</div>
         <h2><span data-i18n="pricing_title">Выбери свой тариф</span> <button type="button" class="info-dot" aria-label="О тарифах" onclick="openHelp('plans')">?</button></h2>
         <p data-i18n="pricing_subtitle">Удобный срок подписки и оплата привычным способом.</p>
       </div>
@@ -89,7 +89,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="coupon-panel-head">
           <div class="coupon-heading-icon"><i class="fa-solid fa-ticket"></i></div>
           <div class="coupon-heading-copy">
-            <span class="coupon-eyebrow">ТВОИ БОНУСЫ</span>
+            <span class="coupon-eyebrow" data-i18n="coupon_eyebrow">ТВОИ БОНУСЫ</span>
             <h3 data-i18n="coupon_title">Купоны и скидки</h3>
             <p data-i18n="coupon_desc">Экономь на подписке за активность</p><button type="button" class="info-dot" aria-label="Как работают купоны" onclick="openHelp('coupons')">?</button>
           </div>
@@ -101,19 +101,19 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="coupon-choice-list">
           <button type="button" class="coupon-choice coupon-choice-10" id="couponChoice10" onclick="selectCoupon('10')">
             <span class="coupon-choice-icon"><i class="fa-solid fa-user-plus"></i></span>
-            <span class="coupon-choice-copy"><strong data-i18n="coupon_friend">Пригласи друга</strong><small>Скидка за нового пользователя</small><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
+            <span class="coupon-choice-copy"><strong data-i18n="coupon_friend">Пригласи друга</strong><small data-i18n="coupon_friend_desc">Скидка за нового пользователя</small><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
             <span class="coupon-discount">−10%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
           <button type="button" class="coupon-choice coupon-choice-20" id="couponChoice20" onclick="selectCoupon('20')">
             <span class="coupon-choice-icon"><i class="fa-solid fa-star"></i></span>
-            <span class="coupon-choice-copy"><strong data-i18n="coupon_review">Поделись отзывом</strong><small>Бонус за опубликованный отзыв</small><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
+            <span class="coupon-choice-copy"><strong data-i18n="coupon_review">Поделись отзывом</strong><small data-i18n="coupon_review_desc">Бонус за опубликованный отзыв</small><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
             <span class="coupon-discount">−20%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
         </div>
         <button type="button" class="coupon-none" id="couponChoiceNone" onclick="selectCoupon('')">
           <span><i class="fa-solid fa-ban"></i> <span data-i18n="coupon_continue">Продолжить без купона</span><i class="fa-solid fa-chevron-right"></i>
         </button>
-        <div class="coupon-footer" id="couponAvailabilityText"><i class="fa-solid fa-shield-halved"></i><span>Купон применяется к одной покупке и списывается после оплаты.</span></div>
+        <div class="coupon-footer" id="couponAvailabilityText"><i class="fa-solid fa-shield-halved"></i><span data-i18n="coupon_note">Купон применяется к одной покупке и списывается после оплаты.</span></div>
       </section>
 
       <section class="pricing-group">
@@ -131,7 +131,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b3">Конверты, банки и финансовые цели</p></div>
           <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b4">Аналитика и прогноз расходов</p></div>
           <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b5">Планирование регулярных платежей</p></div>
-          <div class="pricing-benefit"><span><i class="fa-solid fa-receipt"></i></span><p>Чеки вручную: магазин, товары и суммы</p></div>
+          <div class="pricing-benefit"><span><i class="fa-solid fa-receipt"></i></span><p data-i18n="basic_b6">Чеки вручную: магазин, товары и суммы</p></div>
         </div>
 
         <div class="pricing-options">
@@ -197,12 +197,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
         <div class="pricing-benefits pricing-benefits-pro" aria-label="Дополнительные возможности PRO">
           <div class="pricing-benefit pro-benefit"><span>✦</span><div><b>Всё из Basic</b><p>Доходы, расходы, история, аналитика и цели</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>✧</span><div><b data-i18n="pro_categories">Свои категории</b><p>Создавай категории доходов и расходов под себя</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>◈</span><div><b data-i18n="pro_wallpaper">Персональные обои</b><p>Настраивай фон интерфейса на свой вкус</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b data-i18n="pro_excel">Экспорт Excel</b><p>Отправляй финансовый отчёт в Telegram</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>⌁</span><div><b data-i18n="pro_analytics">Расширенная аналитика</b><p>Прогноз расходов, сравнение месяцев и топ категорий</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>👨‍👩‍👧‍👦</span><div><b data-i18n="pro_family">Семейный бюджет</b><p>Общий учёт для семьи до 6 участников</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>◷</span><div><b data-i18n="pro_reminders">Ежедневные напоминания</b><p>Бот поможет не забыть записать траты</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>✧</span><div><b data-i18n="pro_categories">Свои категории</b><p data-i18n="pro_categories_desc">Создавай категории доходов и расходов под себя</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>◈</span><div><b data-i18n="pro_wallpaper">Персональные обои</b><p data-i18n="pro_wallpaper_desc">Настраивай фон интерфейса на свой вкус</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b data-i18n="pro_excel">Экспорт Excel</b><p data-i18n="pro_excel_desc">Отправляй финансовый отчёт в Telegram</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>⌁</span><div><b data-i18n="pro_analytics">Расширенная аналитика</b><p data-i18n="pro_analytics_desc">Прогноз расходов, сравнение месяцев и топ категорий</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>👨‍👩‍👧‍👦</span><div><b data-i18n="pro_family">Семейный бюджет</b><p data-i18n="pro_family_desc">Общий учёт для семьи до 6 участников</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>◷</span><div><b data-i18n="pro_reminders">Ежедневные напоминания</b><p data-i18n="pro_reminders_desc">Бот поможет не забыть записать траты</p></div></div>
         </div>
 
         <div class="pricing-options pricing-options-pro">
@@ -240,12 +240,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div id="tab-advantages" class="tab-content" style="display:none">
     <section class="pricing-page advantages-page">
       <div class="pricing-hero">
-        <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> СЕМЕЙНЫЙ БЮДЖЕТ • ПОЧЕМУ МЫ</div>
+        <div class="pricing-kicker" data-i18n="why_us"><span class="pricing-kicker-dot"></span> СЕМЕЙНЫЙ БЮДЖЕТ • ПОЧЕМУ МЫ</div>
         <h2 data-i18n="why_title">Бюджет под контролем — без лишней сложности</h2>
         <p data-i18n="why_desc">«Семейный бюджет» помогает видеть свои деньги целиком и принимать решения увереннее — прямо в Telegram.</p>
       </div>
       <div class="pricing-difference advantages-feature-grid">
-        <div class="pricing-difference-title">Что делает «Семейный бюджет» удобным?</div>
+        <div class="pricing-difference-title" data-i18n="why_features">Что делает «Семейный бюджет» удобным?</div>
         <div class="pricing-difference-grid">
           <div><b>⚡ Всегда под рукой</b><span>Работает внутри Telegram — не нужно устанавливать отдельное приложение.</span></div>
           <div><b>📊 Финансы в одном месте</b><span>Доходы, расходы, история операций и аналитика собраны вместе.</span></div>

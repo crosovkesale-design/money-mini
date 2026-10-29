@@ -1737,3 +1737,13 @@ select:focus-visible {
 .financial-item-row>strong{font-size:12px;white-space:nowrap}
 .financial-item-delete{width:28px;height:28px;flex:0 0 28px;border:0;border-radius:8px;background:rgba(239,68,68,.09);color:#ef4444;font-size:18px;cursor:pointer}
 @media(max-width:360px){.financial-overview-heading{flex-direction:column}.financial-net-worth strong{font-size:23px}.financial-metric{padding:9px}.financial-metric strong{font-size:12px}}
+
+
+/* Recurring payment reminders */
+.recurring-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border,rgba(128,128,128,.16))}
+.recurring-item:last-child{border-bottom:0}
+.recurring-item>span{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.recurring-item>span b{font-size:13px}
+.recurring-item>span small{font-size:11px;color:var(--muted)}
+.recurring-item>span .recurring-reminder-note{color:var(--accent,#22c55e)}
+.financial-item-edit{width:28px;height:28px;flex:0 0 28px;border:0;border-radius:8px;background:rgba(128,128,128,.12);color:var(--text);font-size:15px;cursor:pointer}

@@ -1022,6 +1022,11 @@ select:focus-visible {
   color: #0a0d19;
   background: linear-gradient(100deg, #b3aaff, #78e3f5);
 }
+.pay-wallet {
+  border: 1px solid rgba(51, 196, 140, .42);
+  color: #d8fff0;
+  background: linear-gradient(100deg, rgba(18, 122, 88, .38), rgba(44, 190, 140, .18));
+}
 .pay-crypto {
   border: 1px solid var(--border);
   color: var(--text);
@@ -1281,6 +1286,11 @@ select:focus-visible {
 .pricing-options-pro .pay-stars {
   color: #21180c;
   background: linear-gradient(105deg, #ffe9ac, #dca248);
+}
+.pricing-options-pro .pay-wallet {
+  color: #e0fff2;
+  border-color: rgba(76, 221, 168, .34);
+  background: rgba(32, 153, 110, .16);
 }
 .pricing-options-pro .pay-crypto {
   color: #ffe8be;

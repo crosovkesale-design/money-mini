@@ -90,6 +90,11 @@ TARIFFS = {
 
 BIG_TARIFFS = {"6months", "12months", "pro1", "pro12"}
 STARS_PRICES = {"1month": 500, "3months": 1300, "6months": 2300, "12months": 3900, "pro1": 1000, "pro12": 7500}
+AI_PACKS = {
+    "ai50": {"credits": 50, "price_usd": 2.99, "name": "ИИ-пакет — 50 запросов"},
+    "ai150": {"credits": 150, "price_usd": 4.99, "name": "ИИ-пакет — 150 запросов"},
+}
+AI_MONTHLY_LIMIT = 30
 FAMILY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 bot = Bot(token=BOT_TOKEN) if BOT_TOKEN else None
@@ -114,6 +119,55 @@ def has_pro_access(user: dict) -> bool:
     if 0 < sub_end < 10**11:
         sub_end *= 1000
     return sub_end > now_ms() and tariff in {"trial", "pro", "pro1", "pro12"}
+
+async def reserve_ai_call(uid: str) -> dict:
+    """Reserve one AI call from PRO monthly quota first, then purchased credits."""
+    user = await get_user(uid) or {}
+    month_key = datetime.now(KYIV).strftime("%Y-%m")
+    if has_pro_access(user):
+        current_month = str(user.get("aiUsageMonth") or "")
+        used = max(0, int(user.get("aiUsageCount") or 0)) if current_month == month_key else 0
+        if used < AI_MONTHLY_LIMIT:
+            await fb.patch(f"/users/{uid}", {"aiUsageMonth": month_key, "aiUsageCount": used + 1})
+            return {"kind": "monthly", "month": month_key}
+    credits = max(0, int(user.get("aiCredits") or 0))
+    if credits > 0:
+        await fb.patch(f"/users/{uid}", {"aiCredits": credits - 1})
+        return {"kind": "credits"}
+    raise HTTPException(402, "Лимит ИИ-запросов исчерпан. Купи пакет запросов за USDT или используй включённые запросы PRO.")
+
+
+async def refund_ai_call(uid: str, reservation: dict | None) -> None:
+    """Refund a reserved call when the AI provider fails."""
+    if not reservation:
+        return
+    user = await get_user(uid) or {}
+    if reservation.get("kind") == "monthly":
+        month_key = str(reservation.get("month") or "")
+        if str(user.get("aiUsageMonth") or "") == month_key:
+            used = max(0, int(user.get("aiUsageCount") or 0))
+            if used > 0:
+                await fb.patch(f"/users/{uid}", {"aiUsageCount": used - 1})
+    elif reservation.get("kind") == "credits":
+        await fb.patch(f"/users/{uid}", {"aiCredits": max(0, int(user.get("aiCredits") or 0)) + 1})
+
+
+@app.get("/api/ai/status")
+async def api_ai_status(uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    month_key = datetime.now(KYIV).strftime("%Y-%m")
+    used = max(0, int(user.get("aiUsageCount") or 0)) if str(user.get("aiUsageMonth") or "") == month_key else 0
+    pro = has_pro_access(user)
+    return {
+        "ok": True,
+        "is_pro": pro,
+        "monthly_limit": AI_MONTHLY_LIMIT if pro else 0,
+        "monthly_used": used if pro else 0,
+        "monthly_remaining": max(0, AI_MONTHLY_LIMIT - used) if pro else 0,
+        "credits": max(0, int(user.get("aiCredits") or 0)),
+        "packs": {key: {"credits": value["credits"], "price_usd": value["price_usd"], "name": value["name"]} for key, value in AI_PACKS.items()},
+    }
+
 
 def coupon_percent(coupon_type) -> int:
     value = str(coupon_type or "").strip()
@@ -1302,8 +1356,6 @@ async def recognize_receipt_with_ai(image_bytes: bytes, content_type: str) -> di
 async def api_finance_assistant(request: Request, uid: str = Depends(current_uid)):
     """Answer budget questions using a small, temporary snapshot supplied by the app."""
     user = await get_user(uid)
-    if not has_pro_access(user):
-        raise HTTPException(403, "Финансовый ИИ-помощник доступен в PRO.")
     api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(503, "ИИ-помощник пока не настроен на сервере.")
@@ -1360,6 +1412,7 @@ async def api_finance_assistant(request: Request, uid: str = Depends(current_uid
             text_value = re.sub(r"\\s+", " ", str(item.get("content") or "")).strip()[:1000]
             if role in {"user", "assistant"} and text_value:
                 messages.append({"role": role, "content": text_value})
+    reservation = await reserve_ai_call(uid)
     context_json = json.dumps({"summary": safe_summary, "transactions": safe_transactions}, ensure_ascii=False)
     system_prompt = (
         "Ты — финансовый помощник приложения Family Budget. Отвечай на языке последнего вопроса пользователя, "
@@ -1406,6 +1459,7 @@ async def api_finance_assistant(request: Request, uid: str = Depends(current_uid
             raise ValueError("AI returned an empty answer")
         return {"ok": True, "answer": answer}
     except Exception as exc:
+        await refund_ai_call(uid, reservation)
         log.warning("Finance assistant request failed for user %s: %s", uid, exc)
         raise HTTPException(502, "ИИ сейчас не ответил. Попробуй ещё раз через минуту.")
 
@@ -1414,8 +1468,6 @@ async def api_finance_assistant(request: Request, uid: str = Depends(current_uid
 async def api_parse_transaction(request: Request, uid: str = Depends(current_uid)):
     """Turn a natural-language transaction into a draft; never saves it automatically."""
     user = await get_user(uid)
-    if not has_pro_access(user):
-        raise HTTPException(403, "Добавление операций через ИИ доступно в PRO.")
     api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(503, "ИИ-помощник пока не настроен на сервере.")
@@ -1427,6 +1479,7 @@ async def api_parse_transaction(request: Request, uid: str = Depends(current_uid
     currency = re.sub(r"[^A-ZА-Яa-zа-я₴$€£]", "", str((body or {}).get("currency") or "UAH"))[:8] or "UAH"
     if not text_value:
         raise HTTPException(400, "Напиши сумму и описание операции.")
+    reservation = await reserve_ai_call(uid)
     prompt = (
         "Extract exactly one personal finance transaction from the user's text. Return ONLY JSON with keys "
         "type (expense or income), amount (number), currency (currency code or symbol), title (short description), "
@@ -1480,6 +1533,7 @@ async def api_parse_transaction(request: Request, uid: str = Depends(current_uid
     except HTTPException:
         raise
     except Exception as exc:
+        await refund_ai_call(uid, reservation)
         log.warning("AI transaction parsing failed for user %s: %s", uid, exc)
         raise HTTPException(502, "Не удалось разобрать операцию. Попробуй написать проще.")
 
@@ -1488,8 +1542,6 @@ async def api_parse_transaction(request: Request, uid: str = Depends(current_uid
 async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends(current_uid)):
     """Recognize a receipt in memory; the original image is never persisted."""
     user = await get_user(uid)
-    if not has_pro_access(user):
-        raise HTTPException(403, "Распознавание чека по фото доступно в PRO.")
     content_type = str(file.content_type or "").lower()
     filename = str(file.filename or "").lower()
     if not content_type.startswith("image/") and not filename.endswith((".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff")):
@@ -1501,13 +1553,21 @@ async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends
     if len(data) > 8 * 1024 * 1024:
         raise HTTPException(413, "Фото должно быть меньше 8 МБ.")
     ai_error = None
+    reservation = None
     if os.getenv("OPENROUTER_API_KEY", "").strip():
         try:
+            reservation = await reserve_ai_call(uid)
+        except HTTPException as exc:
+            if exc.status_code != 402:
+                raise
+        if reservation:
+          try:
             receipt = await recognize_receipt_with_ai(data, content_type)
             lines = [item["name"] + "; " + str(item["price"]) + "; " + str(item["quantity"]) for item in receipt.get("items", [])]
             return {"ok": True, "source": "ai", "receipt": receipt, "text": "\n".join(lines)[:2000], "lines": [str(line)[:160] for line in lines[:30]], "amount_guess": float(receipt.get("total") or 0)}
-        except Exception as exc:
+          except Exception as exc:
             ai_error = exc
+            await refund_ai_call(uid, reservation)
             log.warning("AI receipt recognition unavailable; falling back to OCR: %s", exc)
     try:
         from starlette.concurrency import run_in_threadpool
@@ -2454,6 +2514,36 @@ async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     )
     return {"ok": True, "invoice_url": link, "amount": stars, "discount": percent}
 
+@app.post("/api/ai/pack/crypto")
+async def api_buy_ai_pack(request: Request, uid: str = Depends(current_uid)):
+    if not CRYPTOPAY_TOKEN:
+        raise HTTPException(503, "Crypto Pay не настроен")
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Некорректный запрос")
+    pack_id = str((body or {}).get("pack") or "")
+    pack = AI_PACKS.get(pack_id)
+    if not pack:
+        raise HTTPException(400, "Неизвестный ИИ-пакет")
+    result = await cp.call("createInvoice", {
+        "asset": "USDT",
+        "amount": str(pack["price_usd"]),
+        "description": pack["name"],
+        "payload": json.dumps({"kind": "ai_pack", "uid": uid, "pack": pack_id}),
+        "allow_comments": False,
+        "allow_anonymous": False,
+    })
+    if not result.get("ok"):
+        log.error("Crypto Pay AI invoice error: %s", result)
+        raise HTTPException(502, "Не удалось создать счёт для ИИ-пакета")
+    invoice = result.get("result") or {}
+    pay_url = invoice.get("bot_invoice_url") or invoice.get("pay_url")
+    if not pay_url:
+        raise HTTPException(502, "Crypto Pay не вернул ссылку")
+    return {"ok": True, "invoice_url": pay_url, "invoice_id": invoice.get("invoice_id")}
+
+
 @app.post("/api/pay/crypto")
 async def api_pay_crypto(
     request: Request,
@@ -2529,18 +2619,26 @@ async def cryptopay_webhook(request: Request):
         asset = str(invoice.get("asset") or "")
         plan_data = json.loads(invoice.get("payload") or "{}")
         uid = str(plan_data.get("uid") or "")
+        payment_kind = str(plan_data.get("kind") or "subscription")
         plan = str(plan_data.get("plan") or "")
+        pack_id = str(plan_data.get("pack") or "")
         tariff = TARIFFS.get(plan)
+        ai_pack = AI_PACKS.get(pack_id) if payment_kind == "ai_pack" else None
         coupon_type = str(plan_data.get("couponType") or "")
         percent = coupon_percent(coupon_type)
 
-        if not invoice_id or not uid or not tariff:
+        if not invoice_id or not uid:
             raise HTTPException(400, "Invalid invoice data")
-
         if asset != "USDT":
             raise HTTPException(400, "Unexpected currency")
-
-        expected_amount = discounted_amount(tariff["price_usd"], percent)
+        if payment_kind == "ai_pack":
+            if not ai_pack:
+                raise HTTPException(400, "Invalid AI pack")
+            expected_amount = ai_pack["price_usd"]
+        else:
+            if not tariff:
+                raise HTTPException(400, "Invalid subscription plan")
+            expected_amount = discounted_amount(tariff["price_usd"], percent)
         if abs(float(invoice.get("amount") or 0) - expected_amount) > 0.000001:
             raise HTTPException(400, "Unexpected amount")
 
@@ -2561,6 +2659,25 @@ async def cryptopay_webhook(request: Request):
         except Exception:
             log.exception("Could not retry crypto referral reward for invoice %s", invoice_id)
         return {"ok": True, "already_processed": True}
+
+    if payment_kind == "ai_pack":
+        # Mark payment before crediting to make repeated webhooks idempotent.
+        now = now_ms()
+        await fb.put(payment_path, {
+            "uid": uid, "kind": "ai_pack", "pack": pack_id,
+            "currency": asset, "amount": invoice["amount"],
+            "invoiceId": invoice_id, "paidAt": now, "status": "paid",
+        })
+        user = await get_user(uid) or {}
+        credits = max(0, int(user.get("aiCredits") or 0))
+        await fb.patch(f"/users/{uid}", {"aiCredits": credits + int(ai_pack["credits"])})
+        await fb.patch(payment_path, {"creditsAdded": True})
+        if bot:
+            try:
+                await bot.send_message(int(uid), f"🎉 <b>ИИ-пакет оплачен!</b>\nНачислено запросов: <b>{ai_pack['credits']}</b>.\nБаланс запросов обновлён.", parse_mode="HTML")
+            except Exception:
+                log.exception("AI pack payment notification failed for invoice %s", invoice_id)
+        return {"ok": True, "ai_pack": True}
 
     now = now_ms()
     user = await get_user(uid) or {}

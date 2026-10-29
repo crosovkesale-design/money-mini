@@ -164,6 +164,32 @@ async function confirmBankImport(){
 }
 
 function saveData(){ localStorage.setItem(appStorageKey, JSON.stringify(appData)); }
+
+async function syncChatExpenses(){
+  const tg=window.Telegram?.WebApp;
+  if(!tg?.initData)return;
+  try{
+    const response=await fetch('/api/chat-expenses',{headers:{'X-Init-Data':tg.initData}});
+    if(!response.ok)return;
+    const data=await response.json();
+    const expenses=Array.isArray(data.expenses)?data.expenses:[];
+    const known=new Set((appData.history||[]).map(tx=>String(tx.chatExpenseId||'')).filter(Boolean));
+    let imported=0;
+    for(const expense of expenses){
+      const expenseId=String(expense.id||'');
+      const amount=Number(expense.amount||0);
+      if(!expenseId||known.has(expenseId)||!Number.isFinite(amount)||amount<=0)continue;
+      const date=String(expense.date||new Date().toISOString().slice(0,10));
+      const tx={id:'chat_'+expenseId,chatExpenseId:expenseId,type:'expense',title:String(expense.title||expense.category||'Расход'),category:String(expense.category||'Разное'),icon:String(expense.icon||'📦'),amount,date,currency:String(expense.currency||appData.currency||'UAH'),source:'telegram-chat',ts:Number(expense.ts||Date.now())};
+      appData.history.unshift(tx);
+      appData.balance=Number(appData.balance||0)-amount;
+      if(date.slice(0,7)===String(appData.currentMonth||''))appData.monthExpense=Number(appData.monthExpense||0)+amount;
+      known.add(expenseId);imported++;
+    }
+    if(imported){saveData();renderAll();}
+  }catch(error){console.warn('Could not sync expenses from bot chat:',error);}
+}
+
 function t(k){ return (TRANSLATIONS[appData.lang] && TRANSLATIONS[appData.lang][k]) || TRANSLATIONS['ru'][k] || k; }
 
 function fmtMoney(v){
@@ -665,6 +691,7 @@ async function loadPlanStatus(){
     renderReferralStats();
   }
 
+  await syncChatExpenses();
   updateProFeatureControls();
   applyWallpaper();
   renderProInsights();

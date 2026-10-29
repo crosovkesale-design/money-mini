@@ -1,4 +1,5 @@
 import asyncio
+import gzip
 import json
 import logging
 import math
@@ -277,6 +278,52 @@ async def daily_reminder():
             log.warning(f"daily_reminder error: {e}")
         await asyncio.sleep(3600)
 
+async def send_database_backup(chat_id: str):
+    """Send a compressed Firebase RTDB snapshot to the configured admin only."""
+    if not bot or not chat_id or str(chat_id) != str(ADMIN_CHAT_ID):
+        raise ValueError("Backup recipient is not the configured admin")
+    root = await fb.get("/")
+    raw = json.dumps(root, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    compressed = gzip.compress(raw, compresslevel=6)
+    if len(compressed) > 49 * 1024 * 1024:
+        raise ValueError("Compressed database backup exceeds Telegram's safe upload size")
+    stamp = datetime.now(KYIV).strftime("%Y-%m-%d_%H-%M")
+    filename = f"family-budget-backup-{stamp}.json.gz"
+    await bot.send_document(
+        int(chat_id),
+        BufferedInputFile(compressed, filename=filename),
+        caption=f"🛡 Резервная копия Family Budget\\nДата: {datetime.now(KYIV).strftime('%d.%m.%Y %H:%M')} (Киев)\\nРазмер после сжатия: {len(compressed) // 1024} КБ",
+    )
+    await fb.patch("/system/backups", {
+        "lastSuccessDate": datetime.now(KYIV).strftime("%Y-%m-%d"),
+        "lastSuccessAt": now_ms(),
+        "lastFilename": filename,
+        "compressedBytes": len(compressed),
+    })
+
+
+async def daily_backup():
+    """Send one automatic compressed database backup per Kyiv calendar day."""
+    last_warning_day = ""
+    while True:
+        try:
+            if bot and ADMIN_CHAT_ID:
+                now = datetime.now(KYIV)
+                today = now.strftime("%Y-%m-%d")
+                if now.hour == 3:
+                    last = str(await fb.get("/system/backups/lastSuccessDate") or "")
+                    if last != today:
+                        await send_database_backup(str(ADMIN_CHAT_ID))
+            elif not ADMIN_CHAT_ID:
+                today = datetime.now(KYIV).strftime("%Y-%m-%d")
+                if last_warning_day != today:
+                    log.warning("Automatic database backups are disabled: ADMIN_CHAT_ID is not configured")
+                    last_warning_day = today
+        except Exception as exc:
+            log.exception("Automatic database backup failed: %s", exc)
+        await asyncio.sleep(600)
+
+
 async def payment_reminder():
     """Send monthly Telegram reminders for user-configured recurring payments."""
     while True:
@@ -410,6 +457,20 @@ if bot:
              InlineKeyboardButton(text="🎁 Рефералы", callback_data="ref_link")]
         ])
         await message.answer(text, reply_markup=kb, parse_mode="HTML")
+
+    @dp.message(Command("backup"))
+    async def cmd_backup(message: Message):
+        uid = str(message.from_user.id)
+        if not ADMIN_CHAT_ID or uid != str(ADMIN_CHAT_ID):
+            return
+        await message.answer("Создаю резервную копию базы…")
+        try:
+            await send_database_backup(uid)
+        except Exception as exc:
+            log.exception("Manual database backup failed")
+            await message.answer("Не удалось создать копию. Проверь логи Render и размер базы.")
+            return
+        await message.answer("Готово: резервная копия отправлена документом выше.")
 
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message):
@@ -1000,6 +1061,7 @@ async def lifespan(app: FastAPI):
         tasks.append(asyncio.create_task(daily_check()))
         tasks.append(asyncio.create_task(daily_reminder()))
         tasks.append(asyncio.create_task(payment_reminder()))
+        tasks.append(asyncio.create_task(daily_backup()))
         log.info("bot started")
     yield
     for t in tasks:

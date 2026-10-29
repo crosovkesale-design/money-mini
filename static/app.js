@@ -1689,6 +1689,7 @@ function renderAll(){
       : t('no_rules');
   }
 
+  renderFinancialOverview();
   applyLang();
   renderForecast();
   renderProInsights();
@@ -1697,6 +1698,71 @@ function renderAll(){
 
 
 let appInitialized = false;
+
+function ensureFinancialItems(){
+  if(!Array.isArray(appData.financialItems)) appData.financialItems=[];
+  return appData.financialItems;
+}
+
+function renderFinancialOverview(){
+  const items=ensureFinancialItems();
+  const cash=Number(appData.balance||0);
+  const savings=(Array.isArray(appData.banks)?appData.banks:[]).reduce((sum,bank)=>sum+Math.max(0,Number(bank.balance)||0),0);
+  const assets=items.filter(item=>item.type==='asset').reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
+  const debts=items.filter(item=>item.type==='debt').reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
+  const values={
+    financialNetWorth:cash+savings+assets-debts,
+    financialCashBalance:cash,
+    financialSavings:savings,
+    financialAssets:assets,
+    financialDebts:debts
+  };
+  Object.entries(values).forEach(([id,value])=>{
+    const node=document.getElementById(id);
+    if(node)node.textContent=fmtMoney(value);
+  });
+  const list=document.getElementById('financialItemsList');
+  if(!list)return;
+  if(!items.length){
+    list.innerHTML='<div class="muted financial-empty">Пока нет дополнительных активов или долгов. Нажми «＋ Добавить», чтобы внести их.</div>';
+    return;
+  }
+  list.innerHTML=items.map(item=>{
+    const isDebt=item.type==='debt';
+    return '<div class="financial-item-row '+(isDebt?'is-debt':'is-asset')+'">'+
+      '<span class="financial-item-icon">'+(isDebt?'↘':'↗')+'</span>'+
+      '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?'Долг':'Актив'))+'</b><small>'+(isDebt?'Долг':'Актив')+'</small></span>'+
+      '<strong>'+(isDebt?'−':'＋')+fmtMoney(Number(item.amount)||0)+'</strong>'+
+      '<button class="financial-item-delete" type="button" aria-label="Удалить '+bankEscape(item.name||'запись')+'" onclick="deleteFinancialItem(\''+String(item.id)+'\')">×</button>'+
+      '</div>';
+  }).join('');
+}
+
+function saveFinancialItem(){
+  const type=document.getElementById('financialItemType').value==='debt'?'debt':'asset';
+  const name=document.getElementById('financialItemName').value.trim();
+  const amount=Number(document.getElementById('financialItemAmount').value);
+  if(!name){alert('Укажи название.');return;}
+  if(!Number.isFinite(amount)||amount<=0){alert('Укажи сумму больше нуля.');return;}
+  const items=ensureFinancialItems();
+  items.push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2,7),type,name,amount});
+  saveData();
+  document.getElementById('financialItemName').value='';
+  document.getElementById('financialItemAmount').value='';
+  document.getElementById('financialItemType').value='asset';
+  closeModal('modalFinancialItem');
+  renderFinancialOverview();
+}
+
+function deleteFinancialItem(id){
+  const items=ensureFinancialItems();
+  const item=items.find(entry=>String(entry.id)===String(id));
+  if(!item)return;
+  if(!confirm('Удалить «'+String(item.name||'запись').replace(/[<>]/g,'')+'»?'))return;
+  appData.financialItems=items.filter(entry=>String(entry.id)!==String(id));
+  saveData();
+  renderFinancialOverview();
+}
 
 function initApp(){
   // Avoid a blank/stale first screen: initialize once, then refresh rendered values.

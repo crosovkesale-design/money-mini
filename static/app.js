@@ -2099,7 +2099,9 @@ async function buyPlan(plan, method){
 
     const endpoint = method === 'stars'
       ? '/api/pay/stars'
-      : '/api/pay/crypto';
+      : method === 'walletpay'
+        ? '/api/pay/walletpay'
+        : '/api/pay/crypto';
 
     const response = await fetch(endpoint, {
       method: 'POST',

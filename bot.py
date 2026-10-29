@@ -1442,8 +1442,7 @@ async def api_parse_transaction(request: Request, uid: str = Depends(current_uid
             {"role":"user","content":text_value}
         ],
         "temperature":0,
-        "max_tokens":250,
-        "response_format":{"type":"json_object"}
+        "max_tokens":250
     }
     try:
         import httpx

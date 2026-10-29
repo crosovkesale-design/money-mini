@@ -1733,23 +1733,46 @@ function renderFinancialOverview(){
       '<span class="financial-item-icon">'+(isDebt?'↘':'↗')+'</span>'+
       '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?'Долг':'Актив'))+'</b><small>'+(isDebt?'Долг':'Актив')+'</small></span>'+
       '<strong>'+(isDebt?'−':'＋')+fmtMoney(Number(item.amount)||0)+'</strong>'+
+      '<button class="financial-item-edit" type="button" aria-label="Изменить '+bankEscape(item.name||'запись')+'" onclick="openEditFinancialItem(\''+String(item.id)+'\')">✎</button>'+
       '<button class="financial-item-delete" type="button" aria-label="Удалить '+bankEscape(item.name||'запись')+'" onclick="deleteFinancialItem(\''+String(item.id)+'\')">×</button>'+
       '</div>';
   }).join('');
+}
+
+function openEditFinancialItem(id){
+  const item=ensureFinancialItems().find(entry=>String(entry.id)===String(id));
+  if(!item)return;
+  document.getElementById('financialItemEditId').value=String(item.id);
+  document.getElementById('financialItemType').value=item.type==='debt'?'debt':'asset';
+  document.getElementById('financialItemName').value=item.name||'';
+  document.getElementById('financialItemAmount').value=Number(item.amount)||'';
+  document.getElementById('financialItemModalTitle').textContent='Изменить актив или долг';
+  document.getElementById('financialItemSaveButton').textContent='Сохранить изменения';
+  openModal('modalFinancialItem');
 }
 
 function saveFinancialItem(){
   const type=document.getElementById('financialItemType').value==='debt'?'debt':'asset';
   const name=document.getElementById('financialItemName').value.trim();
   const amount=Number(document.getElementById('financialItemAmount').value);
+  const editId=document.getElementById('financialItemEditId').value;
   if(!name){alert('Укажи название.');return;}
   if(!Number.isFinite(amount)||amount<=0){alert('Укажи сумму больше нуля.');return;}
   const items=ensureFinancialItems();
-  items.push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2,7),type,name,amount});
+  if(editId){
+    const item=items.find(entry=>String(entry.id)===String(editId));
+    if(!item)return;
+    Object.assign(item,{type,name,amount});
+  }else{
+    items.push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2,7),type,name,amount});
+  }
   saveData();
+  document.getElementById('financialItemEditId').value='';
   document.getElementById('financialItemName').value='';
   document.getElementById('financialItemAmount').value='';
   document.getElementById('financialItemType').value='asset';
+  document.getElementById('financialItemModalTitle').textContent='Добавить актив или долг';
+  document.getElementById('financialItemSaveButton').textContent='Сохранить';
   closeModal('modalFinancialItem');
   renderFinancialOverview();
 }

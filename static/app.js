@@ -709,6 +709,58 @@ function tCat(name){
 }
 
 
+async function parseTransactionWithAI(){
+  if(!canUseProFeatures){
+    requestProFeature('Добавление операций через ИИ');
+    return;
+  }
+  const input=document.getElementById('aiTransactionText');
+  const status=document.getElementById('aiTransactionStatus');
+  const button=document.getElementById('aiTransactionParseBtn');
+  const textValue=String(input?.value||'').trim();
+  const tg=window.Telegram?.WebApp;
+  if(!textValue){if(status)status.textContent='Напиши, например: «потратил 350 грн на продукты».';return;}
+  if(!tg?.initData){if(status)status.textContent='Открой приложение через Telegram.';return;}
+  if(button){button.disabled=true;button.textContent='Разбираю…';}
+  if(status)status.textContent='ИИ разбирает описание…';
+  try{
+    const response=await fetch('/api/assistant/parse-transaction',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},
+      body:JSON.stringify({text:textValue,currency:appData.currency||'UAH'})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||'Не удалось разобрать операцию.');
+    const draft=data.draft||{};
+    if(!Number(draft.amount)||Number(draft.amount)<=0){
+      if(status)status.textContent='Не нашёл сумму. Укажи её в тексте, например «кофе 85 грн».';
+      return;
+    }
+    openTransactionModal(draft.type==='income'?'income':'expense');
+    const amount=document.getElementById('txAmountInput');
+    const title=document.getElementById('txCommentInput');
+    const aiInput=document.getElementById('aiTransactionText');
+    if(amount)amount.value=String(draft.amount);
+    if(title)title.value=String(draft.title||'').slice(0,120);
+    if(aiInput)aiInput.value=textValue;
+    const grid=document.getElementById('categoryGrid');
+    const category=String(draft.category||'').trim().toLocaleLowerCase();
+    if(grid&&category){
+      const choices=[...grid.querySelectorAll('.icon-item')];
+      const match=choices.find(el=>String(el.dataset.name||'').toLocaleLowerCase()===category)
+        ||choices.find(el=>String(tCat(el.dataset.name||'')).toLocaleLowerCase()===category)
+        ||choices.find(el=>category.includes(String(el.dataset.name||'').toLocaleLowerCase())||String(el.dataset.name||'').toLocaleLowerCase().includes(category));
+      if(match)match.click();
+    }
+    const statusNow=document.getElementById('aiTransactionStatus');
+    if(statusNow)statusNow.textContent=(Number(draft.confidence||0)<0.6?'Проверь особенно внимательно: описание неоднозначно. ':'Черновик заполнен. ')+(draft.type==='income'?'Доход':'Расход')+', '+draft.amount+' '+(draft.currency||appData.currency)+'. Нажми «Сохранить» только после проверки.';
+  }catch(error){
+    if(status)status.textContent=error.message||'Не удалось разобрать операцию.';
+  }finally{
+    if(button){button.disabled=false;button.textContent='Разобрать';}
+  }
+}
+
 function openTransactionModal(type) {
   pendingReceiptDraft = null;
   const receiptStatus = document.getElementById('receiptDraftStatus');

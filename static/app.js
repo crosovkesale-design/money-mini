@@ -2301,14 +2301,13 @@ async function buyCryptoCoupon(percent){
     if(!response.ok||!data.invoice_url)throw new Error(data.detail||'Не удалось создать счёт Crypto Pay.');
     if(status)status.textContent='Счёт создан на '+price+' USDT. После оплаты дождись подтверждения бота — купон появится в балансе.';
     const invoiceUrl=String(data.invoice_url);
-    // Crypto Pay's bot_invoice_url is a Telegram deep link; use openTelegramLink
-    // so Telegram opens the bot/payment flow instead of sending it to a browser.
-    if(/^https:\/\/t\.me\//i.test(invoiceUrl)&&typeof tg.openTelegramLink==='function'){
-      tg.openTelegramLink(invoiceUrl);
-    }else if(typeof tg.openLink==='function'){
+    // Use the same Telegram WebApp link opener as successful tariff payments.
+    if(typeof tg.openLink==='function'){
       tg.openLink(invoiceUrl);
+    }else if(typeof tg.openTelegramLink==='function'&&/^https:\/\/t\.me\//i.test(invoiceUrl)){
+      tg.openTelegramLink(invoiceUrl);
     }else{
-      const opened=window.open(invoiceUrl,'_blank','noopener');
+      const opened=window.open(invoiceUrl,'_blank');
       if(!opened)window.location.href=invoiceUrl;
     }
   }catch(error){

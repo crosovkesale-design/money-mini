@@ -1127,6 +1127,96 @@ async def api_ai_status(uid: str = Depends(current_uid)):
 
 
 
+@app.get("/api/rewards/status")
+async def api_rewards_status(uid: str = Depends(current_uid)):
+    user = await get_user(uid) or {}
+    today = datetime.now(KYIV).strftime("%Y-%m-%d")
+    last = str(user.get("lastDailyRewardDate") or "")
+    return {
+        "ok": True,
+        "points": max(0, int(user.get("rewardPoints") or 0)),
+        "streak": max(0, int(user.get("loginStreak") or 0)),
+        "claimed_today": last == today,
+        "coupon10": available_coupons(user, "10"),
+        "coupon20": available_coupons(user, "20"),
+        "shop": {"10": 800, "20": 4000},
+    }
+
+
+@app.post("/api/rewards/claim")
+async def api_rewards_claim(uid: str = Depends(current_uid)):
+    today_date = datetime.now(KYIV).date()
+    today = today_date.strftime("%Y-%m-%d")
+    yesterday = (today_date - timedelta(days=1)).strftime("%Y-%m-%d")
+    result = {}
+
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        result.clear()
+        last = str(user.get("lastDailyRewardDate") or "")
+        points = max(0, int(user.get("rewardPoints") or 0))
+        streak = max(0, int(user.get("loginStreak") or 0))
+        if last == today:
+            result.update({"ok": True, "claimed_today": True, "points": points, "streak": streak, "earned": 0, "bonus": 0})
+            return user
+        streak = streak + 1 if last == yesterday else 1
+        earned = 10
+        bonus = 0
+        milestones = user.get("rewardMilestones") if isinstance(user.get("rewardMilestones"), dict) else {}
+        milestones = dict(milestones)
+        milestone_bonus = {3: 25, 7: 70, 30: 300}
+        key = str(streak)
+        if streak in milestone_bonus and not milestones.get(key):
+            bonus = milestone_bonus[streak]
+            milestones[key] = True
+        earned += bonus
+        points += earned
+        user["lastDailyRewardDate"] = today
+        user["loginStreak"] = streak
+        user["rewardPoints"] = points
+        user["rewardMilestones"] = milestones
+        result.update({"ok": True, "claimed_today": False, "points": points, "streak": streak, "earned": earned, "bonus": bonus})
+        return user
+
+    await fb.transaction(f"/users/{uid}", update)
+    return result
+
+
+@app.post("/api/rewards/shop/buy")
+async def api_rewards_shop_buy(request: Request, uid: str = Depends(current_uid)):
+    payload = await request.json()
+    percent = str(payload.get("percent") or "") if isinstance(payload, dict) else ""
+    shop = {"10": 800, "20": 4000}
+    if percent not in shop:
+        raise HTTPException(status_code=400, detail="Выбери купон 10% или 20%.")
+    cost = shop[percent]
+    result = {}
+
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        result.clear()
+        points = max(0, int(user.get("rewardPoints") or 0))
+        if points < cost:
+            result.update({"ok": False, "points": points, "required": cost, "missing": cost - points})
+            return user
+        field = "couponsEarned" if percent == "10" else "coupons20Earned"
+        user["rewardPoints"] = points - cost
+        user[field] = max(0, int(user.get(field) or 0)) + 1
+        result.update({
+            "ok": True,
+            "points": user["rewardPoints"],
+            "coupon10": max(0, int(user.get("couponsEarned") or 0) - int(user.get("couponsUsed10") or 0)),
+            "coupon20": max(0, int(user.get("coupons20Earned") or 0) - int(user.get("couponsUsed20") or 0)),
+            "percent": int(percent),
+        })
+        return user
+
+    await fb.transaction(f"/users/{uid}", update)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=f"Не хватает монет: нужно {cost}, у тебя {result.get('points', 0)}.")
+    return result
+
+
 @app.put("/api/payment-reminders")
 async def api_sync_payment_reminders(request: Request, uid: str = Depends(current_uid)):
     payload = await request.json()

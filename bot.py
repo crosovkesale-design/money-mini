@@ -106,6 +106,25 @@ cp = CryptoPay(CRYPTOPAY_TOKEN)
 def now_ms() -> int:
     return int(datetime.now(timezone.utc).timestamp() * 1000)
 
+def season_info(now_local=None) -> dict:
+    """Three-month seasons: Sep-Nov, Dec-Feb, Mar-May, Jun-Aug."""
+    now_local = now_local or datetime.now(KYIV)
+    season_index = ((now_local.month - 9) % 12) // 3
+    start_month = ((9 + season_index * 3 - 1) % 12) + 1
+    start_year = now_local.year if start_month <= now_local.month else now_local.year - 1
+    start_date = datetime(start_year, start_month, 1, tzinfo=KYIV).date()
+    next_month = start_month + 3
+    next_year = start_year
+    if next_month > 12:
+        next_month -= 12
+        next_year += 1
+    end_date = datetime(next_year, next_month, 1, tzinfo=KYIV).date() - timedelta(days=1)
+    season_names = {9: "Осень", 12: "Зима", 3: "Весна", 6: "Лето"}
+    label_year = start_year if start_month != 12 else start_year + 1
+    return {"key": start_date.strftime("%Y-%m"), "label": f"{season_names[start_month]} {label_year}",
+            "start": start_date.isoformat(), "end": end_date.isoformat(),
+            "days_left": max(0, (end_date - now_local.date()).days)}
+
 def gen_family_code() -> str:
     return "FAM-" + "".join(secrets.choice(FAMILY_CODE_ALPHABET) for _ in range(6))
 
@@ -269,7 +288,8 @@ async def award_referral_coupon(paid_uid: str, payment_path: str):
         current["couponsEarned"] = max(0, int(current.get("couponsEarned") or 0)) + 1
         rewarded[invoice_key] = now_ms()
         current["referralCouponPayments"] = rewarded
-        month_key = datetime.now(KYIV).strftime("%Y-%m")
+        season = season_info()
+        month_key = season["key"]
         bp = dict(current.get("battlePassSeason") or {})
         if str(bp.get("monthKey") or "") != month_key:
             bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
@@ -1441,24 +1461,24 @@ async def api_init(uid: str = Depends(current_uid)):
     if not isinstance(refs, dict):
         refs = {}
     now_local = datetime.now(KYIV)
-    month_key = now_local.strftime("%Y-%m")
+    season = season_info(now_local)
+    season_key = season["key"]
     season_count = 0
     for referred_at in refs.values():
         try:
             stamp = int(referred_at or 0)
             if 0 < stamp < 10**11:
                 stamp *= 1000
-            if stamp and datetime.fromtimestamp(stamp / 1000, KYIV).strftime("%Y-%m") == month_key:
+            if stamp and season["start"] <= datetime.fromtimestamp(stamp / 1000, KYIV).date().isoformat() <= season["end"]:
                 season_count += 1
         except (TypeError, ValueError, OSError):
             continue
     bp = dict(u.get("battlePassSeason") or {})
-    if str(bp.get("monthKey") or "") != month_key:
-        bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+    if str(bp.get("monthKey") or "") != season_key:
+        bp = {"monthKey": season_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
     claims = dict(u.get("battlePassClaims") or {})
-    month_claims = claims.get(month_key) if isinstance(claims.get(month_key), dict) else {}
-    last_day = calendar.monthrange(now_local.year, now_local.month)[1]
-    days_left = max(0, last_day - now_local.day)
+    season_claims = claims.get(season_key) if isinstance(claims.get(season_key), dict) else {}
+    days_left = season["days_left"]
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
         "features": {"pro": has_pro_access(u)},
@@ -1474,10 +1494,12 @@ async def api_init(uid: str = Depends(current_uid)):
         "battlepass": {
             "paidCount": len(bp.get("paidUsers") or {}),
             "volumeUsd": round(float(bp.get("volumeUsd") or 0), 2),
-            "monthKey": month_key,
-            "monthLabel": now_local.strftime("%B %Y"),
+            "monthKey": season_key,
+            "monthLabel": season["label"],
+            "startDate": season["start"],
+            "endDate": season["end"],
             "daysLeft": days_left,
-            "claimed": {"free": list(month_claims.get("free") or []), "pro": list(month_claims.get("pro") or [])},
+            "claimed": {"free": list(season_claims.get("free") or []), "pro": list(season_claims.get("pro") or [])},
         },
     }
 
@@ -1495,7 +1517,8 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
     if track == "pro" and not has_pro_access(user):
         raise HTTPException(status_code=403, detail="Платная дорожка доступна с активным PRO.")
     now_local = datetime.now(KYIV)
-    month_key = now_local.strftime("%Y-%m")
+    season = season_info(now_local)
+    month_key = season["key"]
     refs = (await fb.get(f"/users/{uid}/referrals")) or {}
     season_count = 0
     if isinstance(refs, dict):
@@ -1504,7 +1527,7 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
                 stamp = int(referred_at or 0)
                 if 0 < stamp < 10**11:
                     stamp *= 1000
-                if stamp and datetime.fromtimestamp(stamp / 1000, KYIV).strftime("%Y-%m") == month_key:
+                if stamp and season["start"] <= datetime.fromtimestamp(stamp / 1000, KYIV).date().isoformat() <= season["end"]:
                     season_count += 1
             except (TypeError, ValueError, OSError):
                 pass

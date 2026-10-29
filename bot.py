@@ -1001,6 +1001,7 @@ async def api_sync_payment_reminders(request: Request, uid: str = Depends(curren
         previous = old.get(reminder_id) if isinstance(old.get(reminder_id), dict) else {}
         clean[reminder_id] = {
             "id": reminder_id, "name": name, "amount": amount, "day": day,
+            "currency": str(item.get("currency") or "")[:10],
             "lastNotifiedMonth": previous.get("lastNotifiedMonth", "")
         }
 

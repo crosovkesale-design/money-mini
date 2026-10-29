@@ -180,10 +180,11 @@ async function syncChatExpenses(){
       const amount=Number(expense.amount||0);
       if(!expenseId||known.has(expenseId)||!Number.isFinite(amount)||amount<=0)continue;
       const date=String(expense.date||new Date().toISOString().slice(0,10));
-      const tx={id:'chat_'+expenseId,chatExpenseId:expenseId,type:'expense',title:String(expense.title||expense.category||'Расход'),category:String(expense.category||'Разное'),icon:String(expense.icon||'📦'),amount,date,currency:String(expense.currency||appData.currency||'UAH'),source:'telegram-chat',ts:Number(expense.ts||Date.now())};
+      const type=expense.type==='income'?'income':'expense';
+      const tx={id:'chat_'+expenseId,chatExpenseId:expenseId,type,title:String(expense.title||expense.category||(type==='income'?'Доход':'Расход')),category:String(expense.category||'Разное'),icon:String(expense.icon||'📦'),amount,date,currency:String(expense.currency||appData.currency||'UAH'),source:'telegram-chat',ts:Number(expense.ts||Date.now())};
       appData.history.unshift(tx);
-      appData.balance=Number(appData.balance||0)-amount;
-      if(date.slice(0,7)===String(appData.currentMonth||''))appData.monthExpense=Number(appData.monthExpense||0)+amount;
+      appData.balance=Number(appData.balance||0)+(type==='income'?amount:-amount);
+      if(date.slice(0,7)===String(appData.currentMonth||'')){if(type==='income')appData.monthIncome=Number(appData.monthIncome||0)+amount;else appData.monthExpense=Number(appData.monthExpense||0)+amount;}
       known.add(expenseId);imported++;
     }
     if(imported){saveData();renderAll();}
@@ -2738,10 +2739,11 @@ async function syncChatExpenses(){
       const amount=Number(expense.amount||0);
       if(!expenseId||known.has(expenseId)||!Number.isFinite(amount)||amount<=0)continue;
       const date=String(expense.date||new Date().toISOString().slice(0,10));
-      const tx={id:'chat_'+expenseId,chatExpenseId:expenseId,type:'expense',title:String(expense.title||expense.category||'Расход'),category:String(expense.category||'Разное'),icon:String(expense.icon||'📦'),amount,date,currency:String(expense.currency||appData.currency||'UAH'),source:'telegram-chat',ts:Number(expense.ts||Date.now())};
+      const type=expense.type==='income'?'income':'expense';
+      const tx={id:'chat_'+expenseId,chatExpenseId:expenseId,type,title:String(expense.title||expense.category||(type==='income'?'Доход':'Расход')),category:String(expense.category||'Разное'),icon:String(expense.icon||'📦'),amount,date,currency:String(expense.currency||appData.currency||'UAH'),source:'telegram-chat',ts:Number(expense.ts||Date.now())};
       appData.history.unshift(tx);
-      appData.balance=Number(appData.balance||0)-amount;
-      if(date.slice(0,7)===String(appData.currentMonth||''))appData.monthExpense=Number(appData.monthExpense||0)+amount;
+      appData.balance=Number(appData.balance||0)+(type==='income'?amount:-amount);
+      if(date.slice(0,7)===String(appData.currentMonth||'')){if(type==='income')appData.monthIncome=Number(appData.monthIncome||0)+amount;else appData.monthExpense=Number(appData.monthExpense||0)+amount;}
       known.add(expenseId);imported++;
     }
     if(imported){saveData();renderAll();}

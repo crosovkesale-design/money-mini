@@ -1191,7 +1191,9 @@ if bot:
         await _show_support_inbox(message)
 
     @dp.callback_query(F.data == "support_list")
-    async def cb_support_list(cb: CallbackQuery):
+    async def cb_support_list(cb: CallbackQuery, state: FSMContext):
+        if str(cb.from_user.id) == str(ADMIN_CHAT_ID):
+            await state.clear()
         await _show_support_inbox(cb)
 
     @dp.callback_query(F.data.startswith("support_ticket:"))

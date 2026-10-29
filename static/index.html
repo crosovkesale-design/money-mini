@@ -72,15 +72,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="pricing-page">
       <div class="pricing-hero">
         <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> СЕМЕЙНЫЙ БЮДЖЕТ · ТАРИФЫ</div>
-        <h2>Выбери свой тариф <button type="button" class="info-dot" aria-label="О тарифах" onclick="openHelp('plans')">?</button></h2>
-        <p>Удобный срок подписки и оплата привычным способом.</p>
+        <h2><span data-i18n="pricing_title">Выбери свой тариф</span> <button type="button" class="info-dot" aria-label="О тарифах" onclick="openHelp('plans')">?</button></h2>
+        <p data-i18n="pricing_subtitle">Удобный срок подписки и оплата привычным способом.</p>
       </div>
 
       <div class="trial-banner">
         <div class="trial-icon">🎁</div>
         <div class="trial-copy">
-          <b>30 дней бесплатно для новых пользователей</b>
-          <span>Пробный доступ активируется автоматически при первом запуске бота.</span>
+          <b data-i18n="trial_title">30 дней бесплатно для новых пользователей</b>
+          <span data-i18n="trial_desc">Пробный доступ активируется автоматически при первом запуске бота.</span>
         </div>
         <div class="trial-tag">FREE</div>
       </div>
@@ -90,28 +90,28 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="coupon-heading-icon"><i class="fa-solid fa-ticket"></i></div>
           <div class="coupon-heading-copy">
             <span class="coupon-eyebrow">ТВОИ БОНУСЫ</span>
-            <h3>Купоны и скидки</h3>
-            <p>Экономь на подписке за активность</p><button type="button" class="info-dot" aria-label="Как работают купоны" onclick="openHelp('coupons')">?</button>
+            <h3 data-i18n="coupon_title">Купоны и скидки</h3>
+            <p data-i18n="coupon_desc">Экономь на подписке за активность</p><button type="button" class="info-dot" aria-label="Как работают купоны" onclick="openHelp('coupons')">?</button>
           </div>
           <div class="coupon-spark">✦</div>
         </div>
         <select id="couponTypeSelect" class="coupon-hidden-select" aria-label="Выбор купона" onchange="updateCouponSelector()">
-          <option value="">Без купона</option><option value="10">Скидка 10%</option><option value="20">Скидка 20%</option>
+          <option value="" data-i18n="coupon_none">Без купона</option><option value="10">Скидка 10%</option><option value="20">Скидка 20%</option>
         </select>
         <div class="coupon-choice-list">
           <button type="button" class="coupon-choice coupon-choice-10" id="couponChoice10" onclick="selectCoupon('10')">
             <span class="coupon-choice-icon"><i class="fa-solid fa-user-plus"></i></span>
-            <span class="coupon-choice-copy"><strong>Пригласи друга</strong><small>Скидка за нового пользователя</small><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
+            <span class="coupon-choice-copy"><strong data-i18n="coupon_friend">Пригласи друга</strong><small>Скидка за нового пользователя</small><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
             <span class="coupon-discount">−10%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
           <button type="button" class="coupon-choice coupon-choice-20" id="couponChoice20" onclick="selectCoupon('20')">
             <span class="coupon-choice-icon"><i class="fa-solid fa-star"></i></span>
-            <span class="coupon-choice-copy"><strong>Поделись отзывом</strong><small>Бонус за опубликованный отзыв</small><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
+            <span class="coupon-choice-copy"><strong data-i18n="coupon_review">Поделись отзывом</strong><small>Бонус за опубликованный отзыв</small><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
             <span class="coupon-discount">−20%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
         </div>
         <button type="button" class="coupon-none" id="couponChoiceNone" onclick="selectCoupon('')">
-          <span><i class="fa-solid fa-ban"></i> Продолжить без купона</span><i class="fa-solid fa-chevron-right"></i>
+          <span><i class="fa-solid fa-ban"></i> <span data-i18n="coupon_continue">Продолжить без купона</span><i class="fa-solid fa-chevron-right"></i>
         </button>
         <div class="coupon-footer" id="couponAvailabilityText"><i class="fa-solid fa-shield-halved"></i><span>Купон применяется к одной покупке и списывается после оплаты.</span></div>
       </section>
@@ -121,16 +121,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="pricing-plan-icon basic-icon">◈</div>
           <div>
             <h3>Basic <button type="button" class="info-dot" aria-label="Что входит в Basic" onclick="openHelp('basic')">?</button></h3>
-            <p>Всё необходимое для ежедневного бюджета</p>
+            <p data-i18n="basic_desc">Всё необходимое для ежедневного бюджета</p>
           </div>
         </div>
 
         <div class="pricing-benefits" aria-label="Преимущества Basic">
-          <div class="pricing-benefit"><span>✓</span><p>Доходы и расходы в одном месте</p></div>
-          <div class="pricing-benefit"><span>✓</span><p>История операций и категории</p></div>
-          <div class="pricing-benefit"><span>✓</span><p>Конверты, банки и финансовые цели</p></div>
-          <div class="pricing-benefit"><span>✓</span><p>Аналитика и прогноз расходов</p></div>
-          <div class="pricing-benefit"><span>✓</span><p>Планирование регулярных платежей</p></div>
+          <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b1">Доходы и расходы в одном месте</p></div>
+          <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b2">История операций и категории</p></div>
+          <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b3">Конверты, банки и финансовые цели</p></div>
+          <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b4">Аналитика и прогноз расходов</p></div>
+          <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b5">Планирование регулярных платежей</p></div>
           <div class="pricing-benefit"><span><i class="fa-solid fa-receipt"></i></span><p>Чеки вручную: магазин, товары и суммы</p></div>
         </div>
 
@@ -190,19 +190,19 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="pricing-plan-icon pro-icon">♛</div>
           <div class="pro-title-copy">
             <h3>PRO <button type="button" class="info-dot info-dot-pro" aria-label="Что входит в PRO" onclick="openHelp('pro')">?</button></h3>
-            <p>Больше удобства для системного контроля бюджета</p>
+            <p data-i18n="pro_desc">Больше удобства для системного контроля бюджета</p>
           </div>
           <span class="pro-label">PREMIUM</span>
         </div>
 
         <div class="pricing-benefits pricing-benefits-pro" aria-label="Дополнительные возможности PRO">
           <div class="pricing-benefit pro-benefit"><span>✦</span><div><b>Всё из Basic</b><p>Доходы, расходы, история, аналитика и цели</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>✧</span><div><b>Свои категории</b><p>Создавай категории доходов и расходов под себя</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>◈</span><div><b>Персональные обои</b><p>Настраивай фон интерфейса на свой вкус</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b>Экспорт Excel</b><p>Отправляй финансовый отчёт в Telegram</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>⌁</span><div><b>Расширенная аналитика</b><p>Прогноз расходов, сравнение месяцев и топ категорий</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>👨‍👩‍👧‍👦</span><div><b>Семейный бюджет</b><p>Общий учёт для семьи до 6 участников</p></div></div>
-          <div class="pricing-benefit pro-benefit"><span>◷</span><div><b>Ежедневные напоминания</b><p>Бот поможет не забыть записать траты</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>✧</span><div><b data-i18n="pro_categories">Свои категории</b><p>Создавай категории доходов и расходов под себя</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>◈</span><div><b data-i18n="pro_wallpaper">Персональные обои</b><p>Настраивай фон интерфейса на свой вкус</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>⇧</span><div><b data-i18n="pro_excel">Экспорт Excel</b><p>Отправляй финансовый отчёт в Telegram</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>⌁</span><div><b data-i18n="pro_analytics">Расширенная аналитика</b><p>Прогноз расходов, сравнение месяцев и топ категорий</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>👨‍👩‍👧‍👦</span><div><b data-i18n="pro_family">Семейный бюджет</b><p>Общий учёт для семьи до 6 участников</p></div></div>
+          <div class="pricing-benefit pro-benefit"><span>◷</span><div><b data-i18n="pro_reminders">Ежедневные напоминания</b><p>Бот поможет не забыть записать траты</p></div></div>
         </div>
 
         <div class="pricing-options pricing-options-pro">
@@ -232,8 +232,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </section>
 
-<div class="pricing-secure-note"><span>🔒</span> Оплата через Wallet Pay, Telegram Stars или Crypto Pay (USDT)</div>
-      <button class="btn btn-outline pricing-back" onclick="switchTab('budget')">← Назад в бюджет</button>
+<div class="pricing-secure-note"><span>🔒</span> <span data-i18n="secure_pay">Оплата через Wallet Pay, Telegram Stars или Crypto Pay (USDT)</span></div>
+      <button class="btn btn-outline pricing-back" onclick="switchTab('budget')"><span data-i18n="back_budget">← Назад в бюджет</span></button>
     </section>
   </div>
 
@@ -241,8 +241,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="pricing-page advantages-page">
       <div class="pricing-hero">
         <div class="pricing-kicker"><span class="pricing-kicker-dot"></span> СЕМЕЙНЫЙ БЮДЖЕТ • ПОЧЕМУ МЫ</div>
-        <h2>Бюджет под контролем — без лишней сложности</h2>
-        <p>«Семейный бюджет» помогает видеть свои деньги целиком и принимать решения увереннее — прямо в Telegram.</p>
+        <h2 data-i18n="why_title">Бюджет под контролем — без лишней сложности</h2>
+        <p data-i18n="why_desc">«Семейный бюджет» помогает видеть свои деньги целиком и принимать решения увереннее — прямо в Telegram.</p>
       </div>
       <div class="pricing-difference advantages-feature-grid">
         <div class="pricing-difference-title">Что делает «Семейный бюджет» удобным?</div>

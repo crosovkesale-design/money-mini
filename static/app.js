@@ -519,7 +519,7 @@ function battlePassTierRequirement(tier){
 function renderBattlePass(){
   const tasksEl=document.getElementById('battlePassTasks'),rewardsEl=document.getElementById('battlePassRewards');
   if(!tasksEl||!rewardsEl)return;
-  const stats={count:Number(referralStats.count||0),paidCount:Number(battlePassStats.paidCount||0),volumeUsd:Number(battlePassStats.volumeUsd||0)};
+  const stats={count:Number(referralStats.seasonCount||0),paidCount:Number(battlePassStats.paidCount||0),volumeUsd:Number(battlePassStats.volumeUsd||0)};
   const completed=BATTLE_PASS_TASKS.filter(t=>stats[t.metric]>=t.target).length;
   const season=document.getElementById('battlePassSeason');if(season)season.textContent=battlePassStats.monthLabel||'Текущий сезон';
   const progressText=document.getElementById('battlePassProgressText');if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' заданий';

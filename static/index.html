@@ -393,6 +393,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div class="battlepass-track-note" id="battlePassTrackNote">Бесплатные награды — меньше купонов, но доступны всем.</div>
       <div class="battlepass-grid" id="battlePassRewards"></div>
     </section>
+    <section class="card reward-shop crypto-coupon-shop" style="margin-top:14px">
+      <div class="eyebrow">CRYPTOPAY · USDT</div>
+      <h3>Магазин купонов за крипту</h3>
+      <p class="muted">Купи купон за USDT. Он появится на балансе только после подтверждения оплаты Crypto Pay и останется у тебя после смены сезона.</p>
+      <div class="reward-shop-row"><span>🎟️ Купон −10% <small>1 USDT</small></span><button class="btn btn-accent btn-sm" type="button" onclick="buyCryptoCoupon(10)">Купить</button></div>
+      <div class="reward-shop-row"><span>🎟️ Купон −20% <small>2 USDT</small></span><button class="btn btn-accent btn-sm" type="button" onclick="buyCryptoCoupon(20)">Купить</button></div>
+      <p id="cryptoCouponShopStatus" class="muted reward-status" aria-live="polite">Оплата в USDT через Crypto Pay.</p>
+    </section>
   </div>
 
   <div id="tab-settings" class="tab-content" style="display:none">

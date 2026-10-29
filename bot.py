@@ -949,7 +949,8 @@ if bot:
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="💳 Открыть тарифы", web_app=WebAppInfo(url=MINI_APP_URL + "?screen=pay"))],
             [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await cb.message.edit_text(
             "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",

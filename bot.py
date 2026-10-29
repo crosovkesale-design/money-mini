@@ -290,8 +290,8 @@ async def payment_reminder():
                                 title, amount_label, due_text = messages.get(lang, messages["en"])
                                 await bot.send_message(
                                     int(uid),
-                                    f"{title}\\n\\n"
-                                    f"<b>{name}</b>\\n{amount_label}: <b>{amount:,.2f} {currency}</b>\\n"
+                                    f"{title}\n\n"
+                                    f"<b>{name}</b>\n{amount_label}: <b>{amount:,.2f} {currency}</b>\n"
                                     f"{due_text}",
                                     parse_mode="HTML",
                                 )

@@ -634,6 +634,9 @@ async function loadPlanStatus(){
   const tg = window.Telegram?.WebApp;
   if(!tg?.initData){
     canUseProFeatures = false;
+    // Still render the season countdown and a fallback referral link when Telegram
+    // provides the user ID, instead of leaving the UI stuck on "loading".
+    renderReferralStats();
     updateProFeatureControls();
     applyWallpaper();
     return;
@@ -658,6 +661,8 @@ async function loadPlanStatus(){
   } catch(error){
     console.error('Could not load subscription access:', error);
     canUseProFeatures = false;
+    // Keep referral link + local season countdown visible even if /api/init fails.
+    renderReferralStats();
   }
 
   updateProFeatureControls();

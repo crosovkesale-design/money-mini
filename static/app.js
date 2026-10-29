@@ -502,8 +502,17 @@ function renderReferralStats(){
   if(c20)c20.textContent=String(Number(referralStats.coupons20||0));
   if(paid)paid.textContent=String(Number(battlePassStats.paidCount||0));
   if(volume)volume.textContent='$'+Number(battlePassStats.volumeUsd||0).toLocaleString('en-US',{maximumFractionDigits:2});
-  if(days)days.textContent=String(Number(battlePassStats.daysLeft||0));
-  if(link)link.value=referralStats.link||'';
+  const now=new Date();
+  const localDaysLeft=Math.max(0,new Date(now.getFullYear(),now.getMonth()+1,1).getDate()-now.getDate()-1);
+  const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft||0):localDaysLeft;
+  if(days)days.textContent=String(daysLeft);
+  const tgUserId=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  const fallbackLink=tgUserId?('https://t.me/moneyfamilybudget_bot?start=ref_'+tgUserId):'';
+  const referralLink=referralStats.link||fallbackLink;
+  if(link){
+    link.value=referralLink;
+    link.placeholder=referralLink?'':'Открой приложение через Telegram, чтобы получить ссылку';
+  }
   renderBattlePass();
 }
 function setBattlePassTrack(track){

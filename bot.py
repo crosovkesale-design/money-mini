@@ -145,6 +145,63 @@ def has_pro_access(user: dict) -> bool:
         sub_end *= 1000
     return sub_end > now_ms() and tariff in {"trial", "pro", "pro1", "pro12"}
 
+
+def has_active_pro_subscription(user: dict) -> bool:
+    """Chat expense entry is available only to a paid, currently active PRO subscription."""
+    tariff = str(user.get("tariff") or "").lower()
+    sub_end = int(user.get("subEnd") or 0)
+    if 0 < sub_end < 10**11:
+        sub_end *= 1000
+    return sub_end > now_ms() and tariff in {"pro", "pro1", "pro12"}
+
+
+def parse_chat_expense(text_value: str) -> dict | None:
+    """Parse simple messages such as 'кофе 120' without using paid AI calls."""
+    raw = re.sub(r"\s+", " ", str(text_value or "")).strip()[:300]
+    if not raw:
+        return None
+    amount_match = re.search(r"(?<!\w)(\d{1,3}(?:[ \u00a0]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?!\w)", raw)
+    if not amount_match:
+        return None
+    amount_text = re.sub(r"[ \u00a0]", "", amount_match.group(1)).replace(",", ".")
+    try:
+        amount = float(amount_text)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(amount) or amount <= 0 or amount > 100000000:
+        return None
+    description = (raw[:amount_match.start()] + " " + raw[amount_match.end():]).strip()
+    family_mode = bool(re.match(r"^(?:семья|семейный|семейная)\b", description, re.I))
+    personal_mode = bool(re.match(r"^(?:личное|личный|личная)\b", description, re.I))
+    description = re.sub(r"^(?:семья|семейный|семейная|личное|личный|личная)\b[,:; ]*", "", description, flags=re.I)
+    description = re.sub(r"^(?:я\s+)?(?:потратил(?:а)?|купил(?:а)?|оплатил(?:а)?|заплатил(?:а)?|расход|трата|покупка)\b[,:; ]*", "", description, flags=re.I)
+    description = re.sub(r"^(?:на|за|в)\s+", "", description, flags=re.I).strip(" ,.;:-")
+    description = re.sub(r"[<>]", "", description)[:120].strip()
+    if not description:
+        return None
+    lower = description.lower()
+    category, icon = "Разное", "📦"
+    category_rules = [
+        (r"еда|продукт|магазин|супермаркет|хлеб|молоко", "Продукты", "🛒"),
+        (r"кофе|кафе|ресторан|обед|ужин|пицц|бургер|фастфуд", "Кафе", "☕"),
+        (r"такси|uber|bolt", "Такси", "🚕"),
+        (r"автобус|метро|транспорт|билет|поезд|трамвай", "Транспорт", "🚌"),
+        (r"бензин|заправ|топливо", "Бензин", "⛽"),
+        (r"аптек|лекар|таблет|врач|стоматолог|лечение", "Здоровье", "💊"),
+        (r"коммунал|электр|свет|вода|газ", "Коммуналка", "💡"),
+        (r"интернет|телефон|связь|мобильн", "Связь", "📱"),
+        (r"подписк|netflix|spotify|youtube", "Подписки", "📺"),
+        (r"одежд|обув|куртк|футболк", "Одежда", "👕"),
+        (r"дом|аренд|квартир|ремонт", "Дом", "🏠"),
+        (r"игр|steam|playstation", "Игры", "🎮"),
+    ]
+    for pattern, cat, emoji in category_rules:
+        if re.search(pattern, lower):
+            category, icon = cat, emoji
+            break
+    return {"amount": round(amount, 2), "title": description, "category": category, "icon": icon,
+            "family_mode": family_mode, "personal_mode": personal_mode}
+
 async def reserve_ai_call(uid: str) -> dict:
     """Atomically reserve one PRO monthly call or one purchased credit."""
     month_key = datetime.now(KYIV).strftime("%Y-%m")
@@ -1406,6 +1463,57 @@ if bot:
             ])
         )
 
+
+
+    @dp.message(F.text & ~F.text.startswith("/"))
+    async def handle_chat_expense(message: Message):
+        parsed = parse_chat_expense(message.text or "")
+        if not parsed:
+            return
+        uid = str(message.from_user.id)
+        user = await get_user(uid)
+        if not has_active_pro_subscription(user):
+            await message.answer(
+                "💎 <b>Добавление расходов через чат — функция PRO.</b>\n\n"
+                "Оформи активный PRO в Family Budget, затем отправляй расходы сообщением, например: <code>кофе 120</code>.",
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="💎 Выбрать PRO", callback_data="show_pay")]
+                ]),
+            )
+            return
+
+        now = now_ms()
+        tx = {
+            "uid": uid, "type": "expense", "amount": parsed["amount"],
+            "title": parsed["title"], "category": parsed["category"], "icon": parsed["icon"],
+            "date": datetime.now(KYIV).date().isoformat(), "currency": "UAH", "ts": now,
+            "source": "telegram-chat",
+        }
+        if parsed["family_mode"]:
+            fid = str(user.get("familyId") or "")
+            family = (await fb.get(f"/families/{fid}")) if fid else None
+            members = (family or {}).get("members") or {}
+            if not family or family.get("archived") or uid not in members:
+                await message.answer("Не нашёл активную семейную группу. Для личного расхода напиши, например: <code>кофе 120</code>.", parse_mode="HTML")
+                return
+            tx["envelopeId"] = None
+            await fb.push(f"/families/{fid}/transactions", tx)
+            destination = "семейный бюджет"
+        else:
+            await fb.push(f"/users/{uid}/chatExpenses", tx)
+            destination = "личную историю расходов"
+
+        await message.answer(
+            "✅ <b>Расход добавлен!</b>\n\n"
+            f"{parsed['icon']} {escape(parsed['title'])}\n"
+            f"Сумма: <b>{parsed['amount']:,.2f} UAH</b>\n"
+            f"Категория: {escape(parsed['category'])}\n"
+            f"Сохранено: {destination}."
+            + ("\nОткрой Family Budget, чтобы синхронизировать расход с приложением." if not parsed["family_mode"] else ""),
+            parse_mode="HTML",
+        )
+
     @dp.message(F.successful_payment)
     async def successful_payment(message: Message):
         payment = message.successful_payment
@@ -1662,6 +1770,31 @@ async def current_user(x_init_data: str = Header(default="", alias="X-Init-Data"
 
 async def current_uid(user: dict = Depends(current_user)) -> str:
     return str(user["id"])
+
+
+
+@app.get("/api/chat-expenses")
+async def api_chat_expenses(uid: str = Depends(current_uid)):
+    """Return expenses captured in bot chat so the user's local personal history can import them once."""
+    records = (await fb.get(f"/users/{uid}/chatExpenses")) or {}
+    result = []
+    if isinstance(records, dict):
+        for expense_id, item in records.items():
+            if not isinstance(item, dict):
+                continue
+            result.append({
+                "id": str(expense_id), "type": "expense",
+                "amount": float(item.get("amount") or 0),
+                "title": str(item.get("title") or item.get("category") or "Расход")[:120],
+                "category": str(item.get("category") or "Разное")[:64],
+                "icon": str(item.get("icon") or "📦")[:12],
+                "date": str(item.get("date") or ""),
+                "currency": str(item.get("currency") or "UAH")[:8],
+                "ts": int(item.get("ts") or 0),
+            })
+    result.sort(key=lambda item: item["ts"], reverse=True)
+    return {"ok": True, "expenses": result}
+
 
 @app.get("/api/ai/status")
 async def api_ai_status(uid: str = Depends(current_uid)):

@@ -347,18 +347,29 @@ async function handleReceiptPhotoSelected(event){
   const tg = window.Telegram?.WebApp;
   if(!tg?.initData){ alert('Открой приложение через Telegram, чтобы распознать чек.'); picker.value=''; return; }
   const status = document.getElementById('receiptDraftStatus');
-  if(status){ status.style.display='block'; status.textContent='📷 Распознаю чек…'; }
+  const setStatus = message => { if(status){ status.style.display='block'; status.textContent=message; } };
+  setStatus('📷 Распознаю чек… Обычно это занимает несколько секунд.');
+  let timeoutId;
+  const controller = new AbortController();
   try{
     const form = new FormData();
     form.append('file', file, file.name || 'receipt.jpg');
-    const response = await fetch('/api/receipt/recognize', {
-      method:'POST',
-      headers:{'X-Init-Data':tg.initData},
-      body:form
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        reject(new Error('Сервер слишком долго обрабатывает фото. Попробуй более чёткое фото или повтори попытку позже.'));
+      }, 45000);
     });
+    const request = fetch('/api/receipt/recognize', {
+      method:'POST', headers:{'X-Init-Data':tg.initData}, body:form, signal:controller.signal
+    });
+    const response = await Promise.race([request, timeout]);
+    clearTimeout(timeoutId);
     const data = await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
-    const lines = (data.lines || []).map(line=>String(line).trim()).filter(Boolean);
+    const lines = (Array.isArray(data.lines) ? data.lines : String(data.text||'').split(/\r?\n/))
+      .map(line=>String(line).trim()).filter(Boolean);
+    if(!lines.length) throw new Error('Фото получено, но текст не удалось прочитать. Сделай снимок ровно, без бликов, чтобы весь чек был в кадре.');
     const store = (lines.find(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{3}/.test(line)) || '').slice(0,80);
     const itemLines = lines.filter(line=>/[A-Za-zА-Яа-яІіЇїЄєҐґ]{2}/.test(line)).slice(0,30);
     document.getElementById('receiptStoreInput').value = store;
@@ -366,15 +377,17 @@ async function handleReceiptPhotoSelected(event){
     document.getElementById('receiptItemsInput').value = itemLines.join('\n');
     document.getElementById('receiptTotalInput').value = Number(data.amount_guess || 0) > 0 ? String(data.amount_guess) : '';
     const error = document.getElementById('receiptEntryError');
-    if(error) error.textContent = 'Проверь магазин, товары и итоговую сумму: распознавание может ошибаться.';
+    if(error) error.textContent = 'Проверь распознанные данные — OCR может ошибаться.';
     const saveButton = document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
     if(saveButton) saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Проверить и сохранить чек';
-    if(status){ status.style.display='block'; status.textContent='🧾 Текст распознан. Проверь данные и нажми «Сохранить».'; }
+    setStatus('🧾 Распознавание завершено. Проверь данные в открывшемся окне.');
     openModal('modalReceiptEntry');
   }catch(error){
-    if(status){ status.style.display='block'; status.textContent='Не удалось распознать фото: '+(error.message || 'ошибка сервера'); }
-    else alert(error.message || 'Не удалось распознать фото.');
+    clearTimeout(timeoutId);
+    setStatus('⚠️ ' + (error.message || 'Не удалось распознать фото.'));
+    console.error('Receipt recognition failed:', error);
   }finally{
+    clearTimeout(timeoutId);
     picker.value = '';
   }
 }

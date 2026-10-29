@@ -2265,6 +2265,19 @@ async function claimDailyReward(){
   }catch(error){if(status)status.textContent=error.message||'Ошибка получения награды.';if(button)button.disabled=false;}
 }
 
+async function refreshCryptoCouponBalance(){
+  const status=document.getElementById('cryptoCouponShopStatus');
+  if(status)status.textContent='Обновляю баланс купонов…';
+  try{
+    await loadPlanStatus();
+    const c10=Number(referralStats.coupons10||0);
+    const c20=Number(referralStats.coupons20||0);
+    if(status)status.textContent='Доступно купонов: 10% — '+c10+', 20% — '+c20+'.';
+  }catch(error){
+    if(status)status.textContent='Не удалось обновить баланс. Попробуй ещё раз.';
+  }
+}
+
 async function buyCryptoCoupon(percent){
   const tg=window.Telegram?.WebApp;
   const status=document.getElementById('cryptoCouponShopStatus');

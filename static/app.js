@@ -160,6 +160,7 @@ function fmtMoney(v){
 
 function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   document.getElementById('langLabel').innerText = (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).flag + ' ' + (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).label;
   document.getElementById('currLabel').innerText = (CURRENCIES.find(c=>c.id===appData.currency)||CURRENCIES[0]).sym + ' ' + (CURRENCIES.find(c=>c.id===appData.currency)||CURRENCIES[0]).label;
 }
@@ -995,9 +996,9 @@ function saveRecurring(){
   const name=document.getElementById('recName').value.trim();
   const amount=Number(document.getElementById('recAmount').value);
   const day=Number.parseInt(document.getElementById('recDay').value,10);
-  if(!name){alert('Укажи название платежа.');return;}
-  if(!Number.isFinite(amount)||amount<=0){alert('Укажи сумму больше нуля.');return;}
-  if(!Number.isInteger(day)||day<1||day>31){alert('Укажи день оплаты от 1 до 31.');return;}
+  if(!name){alert(t('invalid_payment_name'));return;}
+  if(!Number.isFinite(amount)||amount<=0){alert(t('enter_positive_amount'));return;}
+  if(!Number.isInteger(day)||day<1||day>31){alert(t('invalid_payment_day'));return;}
   ensureRecurringIds().push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2,9),name,amount,day,lastRun:''});
   saveData();closeModal('modalAddRecurring');
   document.getElementById('recName').value='';
@@ -1010,7 +1011,7 @@ function saveRecurring(){
 function deleteRecurring(id){
   const items=ensureRecurringIds();
   const item=items.find(entry=>String(entry.id)===String(id));
-  if(!item||!confirm('Удалить автоплатёж «'+String(item.name||'').replace(/[<>]/g,'')+'»?'))return;
+  if(!item||!confirm(t('delete_payment_confirm').replace('{name}',String(item.name||'').replace(/[<>]/g,''))))return;
   appData.recurring=items.filter(entry=>String(entry.id)!==String(id));
   saveData();renderAll();syncPaymentReminders();
 }
@@ -1728,7 +1729,7 @@ function renderAll(){
     ensureRecurringIds();
     recurring.innerHTML = appData.recurring.length
       ? appData.recurring.map(r =>
-          `<div class="recurring-item"><span><b>${bankEscape(r.name)}</b><small>${fmtMoney(r.amount)} · День оплаты: ${r.day}</small><small class="recurring-reminder-note">🔔 Напоминание в Telegram в день оплаты</small></span><button type="button" class="financial-item-delete" aria-label="Удалить автоплатёж" onclick="deleteRecurring('${String(r.id)}')">×</button></div>`
+          `<div class="recurring-item"><span><b>${bankEscape(r.name)}</b><small>${fmtMoney(r.amount)} · ${t('due_day').replace('{day}',r.day)}</small><small class="recurring-reminder-note">${t('payment_reminder_label')}</small></span><button type="button" class="financial-item-delete" aria-label="${t('delete_entry')}" onclick="deleteRecurring('${String(r.id)}')">×</button></div>`
         ).join('')
       : t('no_rules');
   }
@@ -1768,17 +1769,17 @@ function renderFinancialOverview(){
   const list=document.getElementById('financialItemsList');
   if(!list)return;
   if(!items.length){
-    list.innerHTML='<div class="muted financial-empty">Пока нет дополнительных активов или долгов. Нажми «＋ Добавить», чтобы внести их.</div>';
+    list.innerHTML='<div class="muted financial-empty">'+t('fin_empty')+'</div>';
     return;
   }
   list.innerHTML=items.map(item=>{
     const isDebt=item.type==='debt';
     return '<div class="financial-item-row '+(isDebt?'is-debt':'is-asset')+'">'+
       '<span class="financial-item-icon">'+(isDebt?'↘':'↗')+'</span>'+
-      '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?'Долг':'Актив'))+'</b><small>'+(isDebt?'Долг':'Актив')+'</small></span>'+
+      '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?t('debt'):t('asset')))+'</b><small>'+(isDebt?'Долг':'Актив')+'</small></span>'+
       '<strong>'+(isDebt?'−':'＋')+fmtMoney(Number(item.amount)||0)+'</strong>'+
-      '<button class="financial-item-edit" type="button" aria-label="Изменить '+bankEscape(item.name||'запись')+'" onclick="openEditFinancialItem(\''+String(item.id)+'\')">✎</button>'+
-      '<button class="financial-item-delete" type="button" aria-label="Удалить '+bankEscape(item.name||'запись')+'" onclick="deleteFinancialItem(\''+String(item.id)+'\')">×</button>'+
+      '<button class="financial-item-edit" type="button" aria-label="'+t('edit_entry')+' '+bankEscape(item.name||'')+'" onclick="openEditFinancialItem(\''+String(item.id)+'\')">✎</button>'+
+      '<button class="financial-item-delete" type="button" aria-label="'+t('delete_entry')+' '+bankEscape(item.name||'')+'" onclick="deleteFinancialItem(\''+String(item.id)+'\')">×</button>'+
       '</div>';
   }).join('');
 }
@@ -1790,8 +1791,8 @@ function openEditFinancialItem(id){
   document.getElementById('financialItemType').value=item.type==='debt'?'debt':'asset';
   document.getElementById('financialItemName').value=item.name||'';
   document.getElementById('financialItemAmount').value=Number(item.amount)||'';
-  document.getElementById('financialItemModalTitle').textContent='Изменить актив или долг';
-  document.getElementById('financialItemSaveButton').textContent='Сохранить изменения';
+  document.getElementById('financialItemModalTitle').textContent=t('edit_entry')+' — '+t('add_financial_item');
+  document.getElementById('financialItemSaveButton').textContent=t('save_changes');
   openModal('modalFinancialItem');
 }
 
@@ -1800,8 +1801,8 @@ function saveFinancialItem(){
   const name=document.getElementById('financialItemName').value.trim();
   const amount=Number(document.getElementById('financialItemAmount').value);
   const editId=document.getElementById('financialItemEditId').value;
-  if(!name){alert('Укажи название.');return;}
-  if(!Number.isFinite(amount)||amount<=0){alert('Укажи сумму больше нуля.');return;}
+  if(!name){alert(t('enter_name'));return;}
+  if(!Number.isFinite(amount)||amount<=0){alert(t('invalid_payment_amount'));return;}
   const items=ensureFinancialItems();
   if(editId){
     const item=items.find(entry=>String(entry.id)===String(editId));
@@ -1815,7 +1816,7 @@ function saveFinancialItem(){
   document.getElementById('financialItemName').value='';
   document.getElementById('financialItemAmount').value='';
   document.getElementById('financialItemType').value='asset';
-  document.getElementById('financialItemModalTitle').textContent='Добавить актив или долг';
+  document.getElementById('financialItemModalTitle').textContent=t('add_financial_item');
   document.getElementById('financialItemSaveButton').textContent='Сохранить';
   closeModal('modalFinancialItem');
   renderFinancialOverview();
@@ -1825,7 +1826,7 @@ function deleteFinancialItem(id){
   const items=ensureFinancialItems();
   const item=items.find(entry=>String(entry.id)===String(id));
   if(!item)return;
-  if(!confirm('Удалить «'+String(item.name||'запись').replace(/[<>]/g,'')+'»?'))return;
+  if(!confirm(t('delete_financial_confirm').replace('{name}',String(item.name||'').replace(/[<>]/g,''))))return;
   appData.financialItems=items.filter(entry=>String(entry.id)!==String(id));
   saveData();
   renderFinancialOverview();

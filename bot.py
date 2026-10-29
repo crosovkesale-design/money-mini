@@ -274,11 +274,25 @@ async def payment_reminder():
                                 currency = escape(str(item.get("currency") or "")[:10])
                                 if amount <= 0 or not math.isfinite(amount):
                                     continue
+                                lang = str(item.get("lang") or "en").lower()
+                                messages = {
+                                    "ru": ("🔔 <b>Напоминание об автоплатеже</b>", "Сумма", "Сегодня запланирован этот платёж."),
+                                    "uk": ("🔔 <b>Нагадування про автоплатіж</b>", "Сума", "Сьогодні заплановано цей платіж."),
+                                    "en": ("🔔 <b>Recurring payment reminder</b>", "Amount", "This payment is scheduled for today."),
+                                    "de": ("🔔 <b>Erinnerung an eine regelmäßige Zahlung</b>", "Betrag", "Diese Zahlung ist für heute geplant."),
+                                    "es": ("🔔 <b>Recordatorio de pago recurrente</b>", "Importe", "Este pago está previsto para hoy."),
+                                    "fr": ("🔔 <b>Rappel de paiement récurrent</b>", "Montant", "Ce paiement est prévu aujourd’hui."),
+                                    "it": ("🔔 <b>Promemoria di pagamento ricorrente</b>", "Importo", "Questo pagamento è previsto per oggi."),
+                                    "pl": ("🔔 <b>Przypomnienie o płatności cyklicznej</b>", "Kwota", "Ta płatność jest zaplanowana na dziś."),
+                                    "tr": ("🔔 <b>Düzenli ödeme hatırlatması</b>", "Tutar", "Bu ödeme bugün için planlandı."),
+                                    "zh": ("🔔 <b>定期付款提醒</b>", "金额", "此付款计划于今天进行。"),
+                                }
+                                title, amount_label, due_text = messages.get(lang, messages["en"])
                                 await bot.send_message(
                                     int(uid),
-                                    f"🔔 <b>Напоминание об автоплатеже</b>\n\n"
-                                    f"<b>{name}</b>\nСумма: <b>{amount:,.2f} {currency}</b>\n"
-                                    f"Сегодня запланирован этот платёж.",
+                                    f"{title}\\n\\n"
+                                    f"<b>{name}</b>\\n{amount_label}: <b>{amount:,.2f} {currency}</b>\\n"
+                                    f"{due_text}",
                                     parse_mode="HTML",
                                 )
                                 await fb.patch(f"/users/{uid}/paymentReminders/{reminder_id}", {"lastNotifiedMonth": month_key})
@@ -999,9 +1013,13 @@ async def api_sync_payment_reminders(request: Request, uid: str = Depends(curren
         if not name or not math.isfinite(amount) or amount <= 0 or not 1 <= day <= 31:
             continue
         previous = old.get(reminder_id) if isinstance(old.get(reminder_id), dict) else {}
+        lang = str(item.get("lang") or "en").lower()
+        if lang not in {"ru", "uk", "en", "de", "es", "fr", "it", "pl", "tr", "zh"}:
+            lang = "en"
         clean[reminder_id] = {
             "id": reminder_id, "name": name, "amount": amount, "day": day,
             "currency": str(item.get("currency") or "")[:10],
+            "lang": lang,
             "lastNotifiedMonth": previous.get("lastNotifiedMonth", "")
         }
 

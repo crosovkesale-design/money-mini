@@ -240,6 +240,53 @@ async def daily_reminder():
             log.warning(f"daily_reminder error: {e}")
         await asyncio.sleep(3600)
 
+async def payment_reminder():
+    """Send monthly Telegram reminders for user-configured recurring payments."""
+    while True:
+        try:
+            if bot:
+                now = datetime.now(KYIV)
+                # Check within a two-hour window; each reminder is marked per month.
+                if 9 <= now.hour <= 10:
+                    month_key = now.strftime("%Y-%m")
+                    today_day = now.day
+                    users = (await fb.get("/users")) or {}
+                    for uid, user in users.items():
+                        if not isinstance(user, dict):
+                            continue
+                        reminders = user.get("paymentReminders") or {}
+                        if isinstance(reminders, list):
+                            reminders = {str(i): item for i, item in enumerate(reminders)}
+                        if not isinstance(reminders, dict):
+                            continue
+                        for reminder_id, item in reminders.items():
+                            if not isinstance(item, dict) or item.get("lastNotifiedMonth") == month_key:
+                                continue
+                            try:
+                                due_day = max(1, min(31, int(item.get("day") or 1)))
+                                # A day 29/30/31 falls on the last day in shorter months.
+                                import calendar
+                                due_day = min(due_day, calendar.monthrange(now.year, now.month)[1])
+                                if due_day != today_day:
+                                    continue
+                                name = escape(str(item.get("name") or "Автоплатёж")[:100])
+                                amount = float(item.get("amount") or 0)
+                                if amount <= 0 or not math.isfinite(amount):
+                                    continue
+                                await bot.send_message(
+                                    int(uid),
+                                    f"🔔 <b>Напоминание об автоплатеже</b>\\n\\n"
+                                    f"<b>{name}</b>\\nСумма: <b>{amount:,.2f}</b>\\n"
+                                    f"Сегодня запланирован этот платёж.",
+                                    parse_mode="HTML",
+                                )
+                                await fb.patch(f"/users/{uid}/paymentReminders/{reminder_id}", {"lastNotifiedMonth": month_key})
+                            except Exception as e:
+                                log.warning("Payment reminder failed for user %s: %s", uid, e)
+        except Exception as e:
+            log.warning("payment_reminder loop error: %s", e)
+        await asyncio.sleep(3600)
+
 # ---------- ХЕНДЛЕРЫ БОТА ----------
 if bot:
     @dp.message(Command("start"))
@@ -900,6 +947,7 @@ async def lifespan(app: FastAPI):
         tasks.append(asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())))
         tasks.append(asyncio.create_task(daily_check()))
         tasks.append(asyncio.create_task(daily_reminder()))
+        tasks.append(asyncio.create_task(payment_reminder()))
         log.info("bot started")
     yield
     for t in tasks:
@@ -920,6 +968,43 @@ async def current_user(x_init_data: str = Header(default="", alias="X-Init-Data"
 
 async def current_uid(user: dict = Depends(current_user)) -> str:
     return str(user["id"])
+
+@app.put("/api/payment-reminders")
+async def api_sync_payment_reminders(request: Request, uid: str = Depends(current_uid)):
+    payload = await request.json()
+    raw_items = payload.get("items", []) if isinstance(payload, dict) else []
+    if not isinstance(raw_items, list) or len(raw_items) > 100:
+        raise HTTPException(status_code=400, detail="Invalid reminder list")
+
+    old = (await fb.get(f"/users/{uid}/paymentReminders")) or {}
+    if isinstance(old, list):
+        old = {str(i): item for i, item in enumerate(old)}
+    if not isinstance(old, dict):
+        old = {}
+
+    clean = {}
+    for item in raw_items:
+        if not isinstance(item, dict):
+            continue
+        reminder_id = str(item.get("id") or "")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", reminder_id):
+            continue
+        name = str(item.get("name") or "").strip()[:100]
+        try:
+            amount = float(item.get("amount") or 0)
+            day = int(item.get("day") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not name or not math.isfinite(amount) or amount <= 0 or not 1 <= day <= 31:
+            continue
+        previous = old.get(reminder_id) if isinstance(old.get(reminder_id), dict) else {}
+        clean[reminder_id] = {
+            "id": reminder_id, "name": name, "amount": amount, "day": day,
+            "lastNotifiedMonth": previous.get("lastNotifiedMonth", "")
+        }
+
+    await fb.put(f"/users/{uid}/paymentReminders", clean)
+    return {"ok": True, "count": len(clean)}
 
 @app.post("/api/init")
 async def api_init(uid: str = Depends(current_uid)):

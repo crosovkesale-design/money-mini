@@ -314,7 +314,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="card finance-assistant-card" id="financeAssistantCard">
       <div class="finance-assistant-heading">
         <div><h4>✨ Финансовый ИИ-помощник</h4><p>Ответы на основе твоих записей в Family Budget</p></div>
-        <span class="pro-mini-tag">PRO</span>
+        <span class="pro-mini-tag">30 запросов/мес. в PRO</span>
+      </div>
+      <div class="ai-credit-panel">
+        <p id="aiUsageStatus">Проверяю баланс ИИ-запросов…</p>
+        <div class="ai-credit-packs">
+          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai50')">50 запросов · $2,99 USDT</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai150')">150 запросов · $4,99 USDT</button>
+        </div>
+        <p id="aiPackStatus" class="ai-credit-note">Пакеты доступны и без подписки PRO.</p>
       </div>
       <div class="finance-assistant-suggestions">
         <button type="button" onclick="askFinanceSuggestion('На что я больше всего трачу?')">На что больше трачу?</button>

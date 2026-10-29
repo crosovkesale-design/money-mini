@@ -125,6 +125,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Общий учёт для семьи до 6 участников",
     pro_reminders_desc: "Бот поможет не забыть записать траты",
     why_features: "Что делает «Семейный бюджет» удобным?",
+    currency_UAH: "Гривна",
+    currency_RUB: "Рубль",
+    currency_USD: "Доллар США",
+    currency_EUR: "Евро",
+    currency_PLN: "Польский злотый",
+    currency_GBP: "Фунт стерлингов",
+    currency_TRY: "Турецкая лира",
+    currency_CHF: "Швейцарский франк",
+    currency_CZK: "Чешская крона",
+    currency_JPY: "Японская иена",
+    currency_CNY: "Китайский юань",
+
   },
 
   uk: {
@@ -253,6 +265,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Спільний облік для сім’ї до 6 учасників",
     pro_reminders_desc: "Бот допоможе не забувати записувати витрати",
     why_features: "Що робить «Сімейний бюджет» зручним?",
+    currency_UAH: "Гривня",
+    currency_RUB: "Рубль",
+    currency_USD: "Долар США",
+    currency_EUR: "Євро",
+    currency_PLN: "Польський злотий",
+    currency_GBP: "Фунт стерлінгів",
+    currency_TRY: "Турецька ліра",
+    currency_CHF: "Швейцарський франк",
+    currency_CZK: "Чеська крона",
+    currency_JPY: "Японська єна",
+    currency_CNY: "Китайський юань",
+
   },
 
   en: {
@@ -381,6 +405,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Shared tracking for up to 6 family members",
     pro_reminders_desc: "The bot helps you remember to log expenses",
     why_features: "What makes Family Budget convenient?",
+    currency_UAH: "Ukrainian hryvnia",
+    currency_RUB: "Russian ruble",
+    currency_USD: "US dollar",
+    currency_EUR: "Euro",
+    currency_PLN: "Polish złoty",
+    currency_GBP: "Pound sterling",
+    currency_TRY: "Turkish lira",
+    currency_CHF: "Swiss franc",
+    currency_CZK: "Czech koruna",
+    currency_JPY: "Japanese yen",
+    currency_CNY: "Chinese yuan",
+
   },
 
   de: {
@@ -509,6 +545,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Gemeinsame Verwaltung für bis zu 6 Personen",
     pro_reminders_desc: "Der Bot erinnert dich daran, Ausgaben einzutragen",
     why_features: "Was macht Family Budget praktisch?",
+    currency_UAH: "Ukrainische Hrywnja",
+    currency_RUB: "Russischer Rubel",
+    currency_USD: "US-Dollar",
+    currency_EUR: "Euro",
+    currency_PLN: "Polnischer Złoty",
+    currency_GBP: "Pfund Sterling",
+    currency_TRY: "Türkische Lira",
+    currency_CHF: "Schweizer Franken",
+    currency_CZK: "Tschechische Krone",
+    currency_JPY: "Japanischer Yen",
+    currency_CNY: "Chinesischer Yuan",
+
   },
 
   es: {
@@ -637,6 +685,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Control compartido para hasta 6 familiares",
     pro_reminders_desc: "El bot te ayuda a recordar registrar gastos",
     why_features: "¿Qué hace práctico a Family Budget?",
+    currency_UAH: "Grivna ucraniana",
+    currency_RUB: "Rublo ruso",
+    currency_USD: "Dólar estadounidense",
+    currency_EUR: "Euro",
+    currency_PLN: "Złoty polaco",
+    currency_GBP: "Libra esterlina",
+    currency_TRY: "Lira turca",
+    currency_CHF: "Franco suizo",
+    currency_CZK: "Corona checa",
+    currency_JPY: "Yen japonés",
+    currency_CNY: "Yuan chino",
+
   },
 
   fr: {
@@ -765,6 +825,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Gestion partagée pour jusqu’à 6 membres",
     pro_reminders_desc: "Le bot vous aide à penser à enregistrer vos dépenses",
     why_features: "Pourquoi Family Budget est-il pratique ?",
+    currency_UAH: "Hryvnia ukrainienne",
+    currency_RUB: "Rouble russe",
+    currency_USD: "Dollar américain",
+    currency_EUR: "Euro",
+    currency_PLN: "Złoty polonais",
+    currency_GBP: "Livre sterling",
+    currency_TRY: "Livre turque",
+    currency_CHF: "Franc suisse",
+    currency_CZK: "Couronne tchèque",
+    currency_JPY: "Yen japonais",
+    currency_CNY: "Yuan chinois",
+
   },
 
   it: {
@@ -893,6 +965,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Gestione condivisa per un massimo di 6 persone",
     pro_reminders_desc: "Il bot ti aiuta a ricordare di registrare le spese",
     why_features: "Cosa rende pratico Family Budget?",
+    currency_UAH: "Grivnia ucraina",
+    currency_RUB: "Rublo russo",
+    currency_USD: "Dollaro statunitense",
+    currency_EUR: "Euro",
+    currency_PLN: "Złoty polacco",
+    currency_GBP: "Sterlina britannica",
+    currency_TRY: "Lira turca",
+    currency_CHF: "Franco svizzero",
+    currency_CZK: "Corona ceca",
+    currency_JPY: "Yen giapponese",
+    currency_CNY: "Yuan cinese",
+
   },
 
   pl: {
@@ -1021,6 +1105,18 @@ const TRANSLATIONS = {
     pro_family_desc: "Wspólne zarządzanie dla maksymalnie 6 osób",
     pro_reminders_desc: "Bot pomoże pamiętać o zapisywaniu wydatków",
     why_features: "Co sprawia, że Family Budget jest wygodny?",
+    currency_UAH: "Hrywna ukraińska",
+    currency_RUB: "Rubel rosyjski",
+    currency_USD: "Dolar amerykański",
+    currency_EUR: "Euro",
+    currency_PLN: "Polski złoty",
+    currency_GBP: "Funt szterling",
+    currency_TRY: "Lira turecka",
+    currency_CHF: "Frank szwajcarski",
+    currency_CZK: "Korona czeska",
+    currency_JPY: "Jen japoński",
+    currency_CNY: "Juan chiński",
+
   },
 
   tr: {
@@ -1149,6 +1245,18 @@ const TRANSLATIONS = {
     pro_family_desc: "En fazla 6 aile üyesiyle ortak takip",
     pro_reminders_desc: "Bot, harcamalarını kaydetmeyi unutmamana yardımcı olur",
     why_features: "Family Budget'ı kullanışlı yapan nedir?",
+    currency_UAH: "Ukrayna grivnası",
+    currency_RUB: "Rus rublesi",
+    currency_USD: "ABD doları",
+    currency_EUR: "Euro",
+    currency_PLN: "Polonya zlotisi",
+    currency_GBP: "İngiliz sterlini",
+    currency_TRY: "Türk lirası",
+    currency_CHF: "İsviçre frangı",
+    currency_CZK: "Çek korunası",
+    currency_JPY: "Japon yeni",
+    currency_CNY: "Çin yuanı",
+
   },
 
   zh: {
@@ -1278,4 +1386,16 @@ const TRANSLATIONS = {
     pro_reminders_desc: "机器人会提醒你记录支出",
     why_features: "Family Budget 有哪些便利之处？",
   }
+    currency_UAH: "乌克兰格里夫纳",
+    currency_RUB: "俄罗斯卢布",
+    currency_USD: "美元",
+    currency_EUR: "欧元",
+    currency_PLN: "波兰兹罗提",
+    currency_GBP: "英镑",
+    currency_TRY: "土耳其里拉",
+    currency_CHF: "瑞士法郎",
+    currency_CZK: "捷克克朗",
+    currency_JPY: "日元",
+    currency_CNY: "人民币",
+
 };

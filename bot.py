@@ -277,7 +277,7 @@ async def payment_reminder():
                                 await bot.send_message(
                                     int(uid),
                                     f"🔔 <b>Напоминание об автоплатеже</b>\n\n"
-                                    f"<b>{name}</b>\nСумма: <b>{amount:,.2f}</b>\n"
+                                    f"<b>{name}</b>\nСумма: <b>{amount:,.2f} {currency}</b>\n"
                                     f"Сегодня запланирован этот платёж.",
                                     parse_mode="HTML",
                                 )

@@ -565,14 +565,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
 <div class="modal" id="modalFinancialItem">
   <div class="modal-content">
-    <div class="modal-header"><h3>Добавить актив или долг</h3><span class="modal-close" onclick="closeModal('modalFinancialItem')">×</span></div>
+    <div class="modal-header"><h3 id="financialItemModalTitle">Добавить актив или долг</h3><span class="modal-close" onclick="closeModal('modalFinancialItem')">×</span></div>
+    <input type="hidden" id="financialItemEditId">
     <label class="lbl" for="financialItemType">Что добавляем</label>
     <select id="financialItemType" class="custom-input"><option value="asset">Актив (деньги, счёт, имущество)</option><option value="debt">Долг (кредит, заём)</option></select>
     <label class="lbl" for="financialItemName">Название</label>
     <input id="financialItemName" class="custom-input" type="text" maxlength="80" placeholder="Например, наличные или кредит">
     <label class="lbl" for="financialItemAmount">Сумма</label>
     <input id="financialItemAmount" class="custom-input" type="number" min="0.01" step="0.01" placeholder="0">
-    <button class="btn btn-accent" style="width:100%" onclick="saveFinancialItem()">Сохранить</button>
+    <button id="financialItemSaveButton" class="btn btn-accent" style="width:100%" onclick="saveFinancialItem()">Сохранить</button>
   </div>
 </div>
 

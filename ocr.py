@@ -4,7 +4,7 @@ import re
 
 from PIL import Image, ImageOps, ImageFilter, UnidentifiedImageError
 import pytesseract
-from pytesseract import TesseractNotFoundError, TesseractError
+from pytesseract import TesseractNotFoundError
 
 MONEY_RE = re.compile(r"(\d{1,3}(?:[ \u00a0,]\d{3})*(?:[.,]\d{1,2})?)", re.I)
 MAX_IMAGE_SIDE = 2400
@@ -12,7 +12,7 @@ OCR_TIMEOUT_SECONDS = 20
 
 
 def extract_receipt(image_bytes: bytes) -> dict:
-    """Extract text from a receipt image with bounded image size and OCR time."""
+    """Extract receipt text while bounding image size and OCR execution time."""
     try:
         with Image.open(io.BytesIO(image_bytes)) as source:
             source.load()
@@ -20,7 +20,7 @@ def extract_receipt(image_bytes: bytes) -> dict:
     except (UnidentifiedImageError, OSError, ValueError) as exc:
         raise ValueError("Не удалось открыть изображение. Загрузи JPG, PNG или WebP.") from exc
 
-    # Avoid expensive upscaling of huge phone photos; preserve enough detail for OCR.
+    # Keep high-resolution phone photos from causing excessive CPU usage.
     img.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE), Image.Resampling.LANCZOS)
     if max(img.size) < 1600:
         scale = min(2, 1600 / max(img.size))
@@ -30,10 +30,7 @@ def extract_receipt(image_bytes: bytes) -> dict:
 
     try:
         text = pytesseract.image_to_string(
-            img,
-            lang="rus+ukr+eng",
-            config="--psm 6",
-            timeout=OCR_TIMEOUT_SECONDS,
+            img, lang="rus+ukr+eng", config="--psm 6", timeout=OCR_TIMEOUT_SECONDS
         )
     except TesseractNotFoundError as exc:
         raise RuntimeError("OCR_ENGINE_MISSING") from exc
@@ -46,8 +43,7 @@ def extract_receipt(image_bytes: bytes) -> dict:
     total_label = re.compile(
         r"(?:\btotal\b|\bamount\s+due\b|\bgrand\s+total\b|"
         r"итого|к\s+оплате|сумма\s+к\s+оплате|всього|до\s+сплати|"
-        r"сума\s+до\s+сплати|разом|загальна\s+сума)",
-        re.I,
+        r"сума\s+до\s+сплати|разом|загальна\s+сума)", re.I
     )
 
     def parse_amounts(lines_to_scan):
@@ -78,6 +74,4 @@ def extract_receipt(image_bytes: bytes) -> dict:
     amounts = parse_amounts(total_lines) if total_lines else []
     if not amounts:
         amounts = parse_amounts(lines)
-    amount_guess = max(amounts) if amounts else 0
-
-    return {"text": text[:2000], "amount_guess": amount_guess, "lines": lines[:30]}
+    return {"text": text[:2000], "amount_guess": max(amounts) if amounts else 0, "lines": lines[:30]}

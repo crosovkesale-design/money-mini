@@ -224,6 +224,30 @@ def available_coupons(user: dict, coupon_type) -> int:
 def discounted_amount(amount, percent: int):
     return round(float(amount) * (100 - percent) / 100, 2)
 
+async def add_crypto_coupon(uid: str, percent: int, invoice_id: str):
+    """Credit a purchased coupon once per confirmed Crypto Pay invoice."""
+    if percent not in (10, 20) or not uid or not invoice_id:
+        raise ValueError("Invalid coupon purchase")
+    result = {}
+
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        processed = dict(user.get("cryptoCouponInvoices") or {})
+        result.clear()
+        if invoice_id in processed:
+            result["added"] = False
+            return user
+        field = "couponsEarned" if percent == 10 else "coupons20Earned"
+        user[field] = max(0, int(user.get(field) or 0)) + 1
+        processed[invoice_id] = {"percent": percent, "paidAt": now_ms()}
+        user["cryptoCouponInvoices"] = processed
+        result["added"] = True
+        return user
+
+    await fb.transaction(f"/users/{uid}", update)
+    return result.get("added", False)
+
+
 async def consume_coupon(uid: str, coupon_type, invoice_id: str = ""):
     percent = coupon_percent(coupon_type)
     if percent not in (10, 20):
@@ -3000,6 +3024,38 @@ async def api_buy_ai_pack(request: Request, uid: str = Depends(current_uid)):
     return {"ok": True, "invoice_url": pay_url, "invoice_id": invoice.get("invoice_id")}
 
 
+@app.post("/api/coupons/shop/crypto")
+async def api_buy_coupon_crypto(request: Request, uid: str = Depends(current_uid)):
+    if not CRYPTOPAY_TOKEN:
+        raise HTTPException(503, "Crypto Pay не настроен")
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Некорректный запрос")
+    percent_raw = str((body or {}).get("percent") or "")
+    prices = {"10": 1.0, "20": 2.0}
+    if percent_raw not in prices:
+        raise HTTPException(400, "Выбери купон 10% или 20%")
+    percent = int(percent_raw)
+    result = await cp.call("createInvoice", {
+        "asset": "USDT",
+        "amount": f"{prices[percent_raw]:.2f}",
+        "description": f"Family Budget — купон {percent}%",
+        "payload": json.dumps({"kind": "coupon_purchase", "uid": uid, "couponPercent": percent}),
+        "allow_comments": False,
+        "allow_anonymous": False,
+    })
+    if not result.get("ok"):
+        log.error("Crypto Pay coupon invoice error: %s", result)
+        raise HTTPException(502, "Не удалось создать счёт для купона")
+    invoice = result.get("result") or {}
+    pay_url = invoice.get("bot_invoice_url") or invoice.get("pay_url")
+    if not pay_url:
+        raise HTTPException(502, "Crypto Pay не вернул ссылку")
+    return {"ok": True, "invoice_url": pay_url, "invoice_id": invoice.get("invoice_id"),
+            "percent": percent, "amount": prices[percent_raw], "asset": "USDT"}
+
+
 @app.post("/api/pay/crypto")
 async def api_pay_crypto(
     request: Request,
@@ -3082,12 +3138,17 @@ async def cryptopay_webhook(request: Request):
         ai_pack = AI_PACKS.get(pack_id) if payment_kind == "ai_pack" else None
         coupon_type = str(plan_data.get("couponType") or "")
         percent = coupon_percent(coupon_type)
+        purchased_coupon_percent = int(plan_data.get("couponPercent") or 0) if payment_kind == "coupon_purchase" else 0
 
         if not invoice_id or not uid:
             raise HTTPException(400, "Invalid invoice data")
         if asset != "USDT":
             raise HTTPException(400, "Unexpected currency")
-        if payment_kind == "ai_pack":
+        if payment_kind == "coupon_purchase":
+            if purchased_coupon_percent not in (10, 20):
+                raise HTTPException(400, "Invalid coupon purchase")
+            expected_amount = 1.0 if purchased_coupon_percent == 10 else 2.0
+        elif payment_kind == "ai_pack":
             if not ai_pack:
                 raise HTTPException(400, "Invalid AI pack")
             expected_amount = ai_pack["price_usd"]
@@ -3108,6 +3169,9 @@ async def cryptopay_webhook(request: Request):
     existing = await fb.get(payment_path)
 
     if isinstance(existing, dict) and existing.get("status") == "paid":
+        if existing.get("kind") == "coupon_purchase":
+            await add_crypto_coupon(uid, int(existing.get("couponPercent") or purchased_coupon_percent), invoice_id)
+            return {"ok": True, "already_processed": True, "coupon_purchase": True}
         # Repair a partially completed AI-pack credit if the webhook was interrupted.
         if existing.get("kind") == "ai_pack" and not existing.get("creditsAdded") and ai_pack:
             await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
@@ -3123,6 +3187,26 @@ async def cryptopay_webhook(request: Request):
         except Exception:
             log.exception("Could not retry crypto referral reward for invoice %s", invoice_id)
         return {"ok": True, "already_processed": True}
+
+    if payment_kind == "coupon_purchase":
+        await fb.put(payment_path, {
+            "uid": uid, "kind": "coupon_purchase", "couponPercent": purchased_coupon_percent,
+            "currency": asset, "amount": invoice["amount"], "invoiceId": invoice_id,
+            "paidAt": now_ms(), "status": "processing",
+        })
+        await add_crypto_coupon(uid, purchased_coupon_percent, invoice_id)
+        await fb.patch(payment_path, {"status": "paid", "couponCredited": True})
+        if bot:
+            try:
+                await bot.send_message(
+                    int(uid),
+                    f"🎟️ <b>Купон −{purchased_coupon_percent}% куплен!</b>\n"
+                    "Оплата в USDT подтверждена, купон добавлен в твой баланс.",
+                    parse_mode="HTML",
+                )
+            except Exception:
+                log.exception("Crypto coupon purchase notification failed for invoice %s", invoice_id)
+        return {"ok": True, "coupon_purchase": True, "percent": purchased_coupon_percent}
 
     if payment_kind == "ai_pack":
         # Mark payment before crediting to make repeated webhooks idempotent.

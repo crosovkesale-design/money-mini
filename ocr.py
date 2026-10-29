@@ -1,21 +1,48 @@
 # language: Python, file: ocr.py
-import io, re
-from PIL import Image, ImageOps, ImageFilter
+import io
+import re
+
+from PIL import Image, ImageOps, ImageFilter, UnidentifiedImageError
 import pytesseract
+from pytesseract import TesseractNotFoundError, TesseractError
 
 MONEY_RE = re.compile(r"(\d{1,3}(?:[ \u00a0,]\d{3})*(?:[.,]\d{1,2})?)", re.I)
+MAX_IMAGE_SIDE = 2400
+OCR_TIMEOUT_SECONDS = 20
 
 
 def extract_receipt(image_bytes: bytes) -> dict:
-    img = Image.open(io.BytesIO(image_bytes)).convert("L")
-    img = img.resize((img.width * 2, img.height * 2), Image.LANCZOS)
+    """Extract text from a receipt image with bounded image size and OCR time."""
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as source:
+            source.load()
+            img = ImageOps.exif_transpose(source).convert("L")
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise ValueError("Не удалось открыть изображение. Загрузи JPG, PNG или WebP.") from exc
+
+    # Avoid expensive upscaling of huge phone photos; preserve enough detail for OCR.
+    img.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE), Image.Resampling.LANCZOS)
+    if max(img.size) < 1600:
+        scale = min(2, 1600 / max(img.size))
+        img = img.resize((max(1, int(img.width * scale)), max(1, int(img.height * scale))), Image.Resampling.LANCZOS)
     img = ImageOps.autocontrast(img)
     img = img.filter(ImageFilter.SHARPEN)
 
-    text = pytesseract.image_to_string(img, lang="rus+ukr+eng", config="--psm 6")
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    try:
+        text = pytesseract.image_to_string(
+            img,
+            lang="rus+ukr+eng",
+            config="--psm 6",
+            timeout=OCR_TIMEOUT_SECONDS,
+        )
+    except TesseractNotFoundError as exc:
+        raise RuntimeError("OCR_ENGINE_MISSING") from exc
+    except RuntimeError as exc:
+        if "timeout" in str(exc).lower():
+            raise TimeoutError("OCR_TIMEOUT") from exc
+        raise
 
-    # Prefer amounts printed on the receipt's final-total line over item prices.
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
     total_label = re.compile(
         r"(?:\btotal\b|\bamount\s+due\b|\bgrand\s+total\b|"
         r"итого|к\s+оплате|сумма\s+к\s+оплате|всього|до\s+сплати|"
@@ -28,7 +55,6 @@ def extract_receipt(image_bytes: bytes) -> dict:
         for line in lines_to_scan:
             for match in MONEY_RE.finditer(line):
                 raw = match.group(1).replace("\u00a0", "").replace(" ", "")
-                # Interpret the last separator as decimal only when it has 1–2 digits after it.
                 if "," in raw and "." in raw:
                     decimal_sep = "," if raw.rfind(",") > raw.rfind(".") else "."
                     thousands_sep = "." if decimal_sep == "," else ","

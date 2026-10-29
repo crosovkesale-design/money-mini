@@ -160,10 +160,9 @@ def parse_chat_expense(text_value: str) -> dict | None:
     raw = re.sub(r"\s+", " ", str(text_value or "")).strip()[:300]
     if not raw:
         return None
-    # Ignore ordinary chat and income-like messages; require an expense hint.
-    if re.search(r"\b(?:зарплат|доход|аванс|преми|получил|получила|заработал|дивиденд)\w*\b", raw, re.I):
-        return None
-    if not re.search(r"\b(?:потратил|потратила|купил|купила|оплатил|оплатила|заплатил|заплатила|расход|трата|покупка|еда|продукт|магазин|супермаркет|хлеб|молоко|кофе|кафе|ресторан|обед|ужин|пицц|бургер|такси|uber|bolt|автобус|метро|транспорт|билет|поезд|трамвай|бензин|заправ|топливо|аптек|лекар|таблет|врач|стоматолог|лечение|коммунал|электр|свет|вода|газ|интернет|телефон|связь|мобильн|подписк|netflix|spotify|youtube|одежд|обув|кроссовк|куртк|футболк|дом|аренд|квартир|ремонт|игр|steam|playstation|кроссовк|пицц|доставк|сладост|напиток|подарок|питом|хобби|мебел|техник|штраф|парковк|страховк|семья|семейный|семейная|личное|личный|личная)\w*\b", raw, re.I):
+    income_pattern = r"\b(?:зарплат|доход|аванс|преми|получил|получила|заработал|заработала|дивиденд|кешбек|кэшбек|возврат|продал|продала|продажа|подарили|начислен)\w*\b"
+    is_income = bool(re.search(income_pattern, raw, re.I))
+    if not is_income and not re.search(r"\b(?:потратил|потратила|купил|купила|оплатил|оплатила|заплатил|заплатила|расход|трата|покупка|еда|продукт|магазин|супермаркет|хлеб|молоко|кофе|кафе|ресторан|обед|ужин|пицц|бургер|такси|uber|bolt|автобус|метро|транспорт|билет|поезд|трамвай|бензин|заправ|топливо|аптек|лекар|таблет|врач|стоматолог|лечение|коммунал|электр|свет|вода|газ|интернет|телефон|связь|мобильн|подписк|netflix|spotify|youtube|одежд|обув|кроссовк|куртк|футболк|дом|аренд|квартир|ремонт|игр|steam|playstation|кроссовк|пицц|доставк|сладост|напиток|подарок|питом|хобби|мебел|техник|штраф|парковк|страховк|семья|семейный|семейная|личное|личный|личная)\w*\b", raw, re.I):
         return None
     amount_match = re.search(r"(?<!\w)(\d{1,3}(?:[ \u00a0]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?!\w)", raw)
     if not amount_match:
@@ -204,7 +203,14 @@ def parse_chat_expense(text_value: str) -> dict | None:
         if re.search(pattern, lower):
             category, icon = cat, emoji
             break
-    return {"amount": round(amount, 2), "title": description, "category": category, "icon": icon,
+    if is_income:
+        category, icon = "Доход", "💰"
+        income_rules = [(r"зарплат|аванс|преми", "Зарплата", "💼"), (r"дивиденд|инвестиц", "Инвестиции", "📈"), (r"кешбек|кэшбек|возврат", "Возврат и кешбэк", "↩️"), (r"продаж|продал", "Продажи", "🛍️"), (r"подар", "Подарки", "🎁"), (r"фриланс|заказ|работ", "Работа", "💻")]
+        for pattern, cat, emoji in income_rules:
+            if re.search(pattern, description, re.I):
+                category, icon = cat, emoji
+                break
+    return {"type": "income" if is_income else "expense", "amount": round(amount, 2), "title": description, "category": category, "icon": icon,
             "family_mode": family_mode, "personal_mode": personal_mode}
 
 async def reserve_ai_call(uid: str) -> dict:
@@ -1479,43 +1485,38 @@ if bot:
         user = await get_user(uid)
         if not has_active_pro_subscription(user):
             await message.answer(
-                "💎 <b>Добавление расходов через чат — функция PRO.</b>\n\n"
-                "Оформи активный PRO в Family Budget, затем отправляй расходы сообщением, например: <code>кофе 120</code>.",
+                "💎 <b>Добавление доходов и расходов через чат — функция PRO.</b>\n\n"
+                "Оформи активный PRO в Family Budget. Примеры: <code>кофе 120</code> или <code>зарплата 25000</code>.",
                 parse_mode="HTML",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="💎 Выбрать PRO", callback_data="show_pay")]
                 ]),
             )
             return
-
-        now = now_ms()
-        tx = {
-            "uid": uid, "type": "expense", "amount": parsed["amount"],
-            "title": parsed["title"], "category": parsed["category"], "icon": parsed["icon"],
-            "date": datetime.now(KYIV).date().isoformat(), "currency": "UAH", "ts": now,
-            "source": "telegram-chat",
-        }
+        tx_type = parsed.get("type") or "expense"
+        tx = {"uid": uid, "type": tx_type, "amount": parsed["amount"], "title": parsed["title"], "category": parsed["category"], "icon": parsed["icon"], "date": datetime.now(KYIV).date().isoformat(), "currency": "UAH", "ts": now_ms(), "source": "telegram-chat"}
         if parsed["family_mode"]:
             fid = str(user.get("familyId") or "")
             family = (await fb.get(f"/families/{fid}")) if fid else None
             members = (family or {}).get("members") or {}
             if not family or family.get("archived") or uid not in members:
-                await message.answer("Не нашёл активную семейную группу. Для личного расхода напиши, например: <code>кофе 120</code>.", parse_mode="HTML")
+                await message.answer("Не нашёл активную семейную группу. Для личной операции напиши, например: <code>кофе 120</code> или <code>зарплата 25000</code>.", parse_mode="HTML")
                 return
             tx["envelopeId"] = None
             await fb.push(f"/families/{fid}/transactions", tx)
             destination = "семейный бюджет"
         else:
             await fb.push(f"/users/{uid}/chatExpenses", tx)
-            destination = "личную историю расходов"
-
+            destination = "личную историю операций"
+        operation_label = "Доход" if tx_type == "income" else "Расход"
+        amount_prefix = "+" if tx_type == "income" else "−"
         await message.answer(
-            "✅ <b>Расход добавлен!</b>\n\n"
-            f"{parsed['icon']} {escape(parsed['title'])}\n"
-            f"Сумма: <b>{parsed['amount']:,.2f} UAH</b>\n"
-            f"Категория: {escape(parsed['category'])}\n"
-            f"Сохранено: {destination}."
-            + ("\nОткрой Family Budget, чтобы синхронизировать расход с приложением." if not parsed["family_mode"] else ""),
+            "✅ <b>" + operation_label + " добавлен!</b>\n\n"
+            + f"{parsed['icon']} {escape(parsed['title'])}\n"
+            + f"Сумма: <b>{amount_prefix}{parsed['amount']:,.2f} UAH</b>\n"
+            + f"Категория: {escape(parsed['category'])}\n"
+            + f"Сохранено: {destination}."
+            + ("\nОткрой Family Budget, чтобы синхронизировать операцию с приложением." if not parsed["family_mode"] else ""),
             parse_mode="HTML",
         )
 
@@ -1788,7 +1789,7 @@ async def api_chat_expenses(uid: str = Depends(current_uid)):
             if not isinstance(item, dict):
                 continue
             result.append({
-                "id": str(expense_id), "type": "expense",
+                "id": str(expense_id), "type": "income" if str(item.get("type") or "expense").lower() == "income" else "expense",
                 "amount": float(item.get("amount") or 0),
                 "title": str(item.get("title") or item.get("category") or "Расход")[:120],
                 "category": str(item.get("category") or "Разное")[:64],

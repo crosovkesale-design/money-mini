@@ -1776,7 +1776,7 @@ function renderFinancialOverview(){
     const isDebt=item.type==='debt';
     return '<div class="financial-item-row '+(isDebt?'is-debt':'is-asset')+'">'+
       '<span class="financial-item-icon">'+(isDebt?'↘':'↗')+'</span>'+
-      '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?t('debt'):t('asset')))+'</b><small>'+(isDebt?'Долг':'Актив')+'</small></span>'+
+      '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?t('debt'):t('asset')))+'</b><small>'+(isDebt?t('debt'):t('asset'))+'</small></span>'+
       '<strong>'+(isDebt?'−':'＋')+fmtMoney(Number(item.amount)||0)+'</strong>'+
       '<button class="financial-item-edit" type="button" aria-label="'+t('edit_entry')+' '+bankEscape(item.name||'')+'" onclick="openEditFinancialItem(\''+String(item.id)+'\')">✎</button>'+
       '<button class="financial-item-delete" type="button" aria-label="'+t('delete_entry')+' '+bankEscape(item.name||'')+'" onclick="deleteFinancialItem(\''+String(item.id)+'\')">×</button>'+
@@ -1791,7 +1791,7 @@ function openEditFinancialItem(id){
   document.getElementById('financialItemType').value=item.type==='debt'?'debt':'asset';
   document.getElementById('financialItemName').value=item.name||'';
   document.getElementById('financialItemAmount').value=Number(item.amount)||'';
-  document.getElementById('financialItemModalTitle').textContent=t('edit_entry')+' — '+t('add_financial_item');
+  document.getElementById('financialItemModalTitle').textContent=t('edit_entry')+' '+t('asset')+' / '+t('debt');
   document.getElementById('financialItemSaveButton').textContent=t('save_changes');
   openModal('modalFinancialItem');
 }

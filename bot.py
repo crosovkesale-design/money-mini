@@ -2652,8 +2652,18 @@ async def cryptopay_webhook(request: Request):
     existing = await fb.get(payment_path)
 
     if isinstance(existing, dict) and existing.get("status") == "paid":
-        # Не активируем подписку повторно, но повторяем начисление бонуса,
-        # если первая попытка начисления завершилась ошибкой.
+        # Repair a partially completed AI-pack credit if the webhook was interrupted.
+        if existing.get("kind") == "ai_pack" and not existing.get("creditsAdded") and ai_pack:
+            user = await get_user(uid) or {}
+            credits = max(0, int(user.get("aiCredits") or 0))
+            await fb.patch(f"/users/{uid}", {"aiCredits": credits + int(ai_pack["credits"])})
+            await fb.patch(payment_path, {"creditsAdded": True})
+            if bot:
+                try:
+                    await bot.send_message(int(uid), f"🎉 ИИ-пакет начислен: {ai_pack['credits']} запросов.", parse_mode="HTML")
+                except Exception:
+                    log.exception("AI pack repair notification failed for invoice %s", invoice_id)
+        # Do not reactivate subscriptions or re-award a referral coupon.
         try:
             await award_referral_coupon(uid, payment_path)
         except Exception:

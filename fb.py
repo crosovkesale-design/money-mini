@@ -46,6 +46,23 @@ class Firebase:
         r = await c.delete(self._u(path))
         r.raise_for_status()
 
+    async def transaction(self, path: str, updater, retries: int = 8) -> Any:
+        """Optimistic atomic update using Firebase RTDB ETags and If-Match."""
+        c = await self._c()
+        url = self._u(path)
+        for _ in range(max(1, retries)):
+            read = await c.get(url, headers={"X-Firebase-ETag": "true"})
+            read.raise_for_status()
+            etag = read.headers.get("ETag")
+            current = read.json()
+            updated = updater(current)
+            write = await c.put(url, json=updated, headers={"if-match": etag} if etag else {})
+            if write.status_code == 412:
+                continue
+            write.raise_for_status()
+            return updated
+        raise RuntimeError(f"Firebase transaction conflict limit exceeded at {path}")
+
     async def push(self, path: str, data: dict) -> str:
         """Возвращает сгенерированный ключ (аналог POST в RTDB)."""
         c = await self._c()

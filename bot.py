@@ -1228,9 +1228,79 @@ async def api_family_leave(uid: str = Depends(current_uid)):
     }
 
 
+async def recognize_receipt_with_ai(image_bytes: bytes, content_type: str) -> dict:
+    """Parse a receipt image using OpenRouter vision; image bytes stay in memory."""
+    api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is not configured")
+    import base64
+    import httpx
+    mime = content_type if content_type.startswith("image/") else "image/jpeg"
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    prompt = (
+        "Read this shopping receipt. Return ONLY JSON with shape {store:string,date:YYYY-MM-DD or empty,items:[{name:string,price:number,quantity:number}],total:number}. "
+        "Use decimal numbers. Do not invent unreadable values. Quantity defaults to 1 if not visible. Ignore fiscal IDs, card numbers, tax IDs and payment details. "
+        "Receipt may be Ukrainian, Russian, or English. Return no markdown or explanation."
+    )
+    payload = {
+        "model": os.getenv("OPENROUTER_MODEL", "openrouter/free").strip() or "openrouter/free",
+        "messages": [{"role": "user", "content": [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": "data:" + mime + ";base64," + encoded}},
+        ]}],
+        "temperature": 0.1,
+        "max_tokens": 1800,
+    }
+    async with httpx.AsyncClient(timeout=httpx.Timeout(35.0, connect=8.0)) as client:
+        response = await client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json", "HTTP-Referer": os.getenv("MINI_APP_URL", "https://money-mini.onrender.com"), "X-Title": "Family Budget receipt recognition"},
+            json=payload,
+        )
+        response.raise_for_status()
+        body = response.json()
+    choices = body.get("choices") or []
+    if not choices:
+        raise ValueError("AI returned no result")
+    content = (choices[0].get("message") or {}).get("content", "")
+    if isinstance(content, list):
+        content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
+    raw = str(content).strip()
+    raw = re.sub(r"^\s*```(?:json)?\s*", "", raw, flags=re.I)
+    raw = re.sub(r"\s*```\s*$", "", raw)
+    first, last = raw.find("{"), raw.rfind("}")
+    if first < 0 or last <= first:
+        raise ValueError("AI returned invalid JSON")
+    parsed = json.loads(raw[first:last + 1])
+    items = []
+    for item in (parsed.get("items") or [])[:40] if isinstance(parsed, dict) and isinstance(parsed.get("items"), list) else []:
+        if not isinstance(item, dict):
+            continue
+        name = re.sub(r"\s+", " ", str(item.get("name") or "")).strip()[:100]
+        try:
+            price, quantity = float(item.get("price") or 0), float(item.get("quantity") or 1)
+        except (TypeError, ValueError):
+            continue
+        if name and math.isfinite(price) and math.isfinite(quantity) and 0 < price < 1000000 and 0 < quantity <= 10000:
+            items.append({"name": name, "price": round(price, 2), "quantity": quantity})
+    store = re.sub(r"\s+", " ", str(parsed.get("store") or "")).strip()[:100]
+    date_value = str(parsed.get("date") or "").strip()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_value):
+        date_value = ""
+    try:
+        total = float(parsed.get("total") or 0)
+    except (TypeError, ValueError):
+        total = 0
+    if not math.isfinite(total) or total <= 0 or total >= 1000000:
+        total = round(sum(item["price"] * item["quantity"] for item in items), 2)
+    if not items and total <= 0 and not store:
+        raise ValueError("AI could not identify receipt details")
+    return {"store": store, "date": date_value, "items": items, "total": round(total, 2) if total > 0 else 0}
+
+
 @app.post("/api/receipt/recognize")
 async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends(current_uid)):
-    """Recognize a receipt photo in memory; the original image is never persisted."""
+    """Recognize a receipt in memory; the original image is never persisted."""
     user = await get_user(uid)
     if not has_pro_access(user):
         raise HTTPException(403, "Распознавание чека по фото доступно в PRO.")
@@ -1244,9 +1314,16 @@ async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends
         raise HTTPException(400, "Файл пустой.")
     if len(data) > 8 * 1024 * 1024:
         raise HTTPException(413, "Фото должно быть меньше 8 МБ.")
-
+    ai_error = None
+    if os.getenv("OPENROUTER_API_KEY", "").strip():
+        try:
+            receipt = await recognize_receipt_with_ai(data, content_type)
+            lines = [item["name"] + "; " + str(item["price"]) + "; " + str(item["quantity"]) for item in receipt.get("items", [])]
+            return {"ok": True, "source": "ai", "receipt": receipt, "text": "\n".join(lines)[:2000], "lines": [str(line)[:160] for line in lines[:30]], "amount_guess": float(receipt.get("total") or 0)}
+        except Exception as exc:
+            ai_error = exc
+            log.warning("AI receipt recognition unavailable; falling back to OCR: %s", exc)
     try:
-        # OCR is CPU-bound; run it in a worker thread instead of blocking FastAPI.
         from starlette.concurrency import run_in_threadpool
         result = await run_in_threadpool(extract_receipt, data)
     except Exception as exc:
@@ -1258,18 +1335,13 @@ async def api_receipt_recognize(file: UploadFile = File(...), uid: str = Depends
         if isinstance(exc, ValueError):
             raise HTTPException(400, str(exc))
         raise HTTPException(400, "Не удалось распознать это фото. Проверь формат и попробуй снимок без бликов.")
-
     lines = result.get("lines") or []
     text_result = str(result.get("text") or "")
     if not lines and not text_result.strip():
+        if ai_error:
+            raise HTTPException(422, "Не удалось распознать чек ни через ИИ, ни через резервный OCR. Проверь ключ OpenRouter и попробуй более чёткое фото.")
         raise HTTPException(422, "На фото не удалось прочитать текст. Попробуй сделать снимок ровно и при хорошем освещении.")
-    return {
-        "ok": True,
-        "text": text_result[:2000],
-        "lines": [str(line)[:160] for line in lines[:30]],
-        "amount_guess": float(result.get("amount_guess") or 0),
-    }
-
+    return {"ok": True, "source": "ocr", "text": text_result[:2000], "lines": [str(line)[:160] for line in lines[:30]], "amount_guess": float(result.get("amount_guess") or 0)}
 @app.post("/api/import/preview")
 async def api_import_preview(file: UploadFile = File(...), uid: str = Depends(current_uid)):
     # Parse in memory only: the original statement is never written to disk.

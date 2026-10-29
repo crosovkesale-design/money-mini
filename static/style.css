@@ -1747,3 +1747,25 @@ select:focus-visible {
 .recurring-item>span small{font-size:11px;color:var(--muted)}
 .recurring-item>span .recurring-reminder-note{color:var(--accent,#22c55e)}
 .financial-item-edit{width:28px;height:28px;flex:0 0 28px;border:0;border-radius:8px;background:rgba(128,128,128,.12);color:var(--text);font-size:15px;cursor:pointer}
+
+
+/* PRO financial AI assistant */
+.finance-assistant-card{margin-top:14px;padding:14px;overflow:hidden}
+.finance-assistant-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.finance-assistant-heading h4{font-size:15px;margin:0 0 5px}
+.finance-assistant-heading p{font-size:11px;line-height:1.45;color:var(--muted);margin:0}
+.finance-assistant-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.finance-assistant-suggestions button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:7px 10px;font-size:11px;cursor:pointer}
+.finance-assistant-messages{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:2px 0 10px}
+.finance-assistant-welcome{font-size:12px;line-height:1.55;color:var(--muted);background:var(--surface);padding:12px;border-radius:12px}
+.finance-assistant-message{max-width:94%;padding:10px 12px;border-radius:13px;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.finance-assistant-message.is-user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.finance-assistant-message.is-assistant{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px}
+.finance-assistant-message.is-loading{opacity:.7;font-style:italic}
+.finance-assistant-form{display:flex;align-items:flex-end;gap:8px;margin-top:4px}
+.finance-assistant-form textarea{flex:1;min-width:0;resize:vertical;min-height:48px;max-height:130px;padding:11px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;outline:none}
+.finance-assistant-form textarea:focus{border-color:var(--accent)}
+.finance-assistant-form .btn{min-height:42px;white-space:nowrap;padding:9px 12px}
+.finance-assistant-form .btn:disabled{opacity:.55;cursor:wait}
+.finance-assistant-privacy{font-size:10px;line-height:1.45;color:var(--muted);margin:9px 0 0}
+@media(max-width:360px){.finance-assistant-card{padding:11px}.finance-assistant-form{align-items:stretch;flex-direction:column}.finance-assistant-form .btn{width:100%}}

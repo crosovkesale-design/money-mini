@@ -418,6 +418,23 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       </div>
     </div>
 
+    <div class="card reward-card">
+      <h5>🔥 Ежедневные награды</h5>
+      <div class="reward-summary">
+        <div><strong id="rewardPointsValue">0</strong><span>монет</span></div>
+        <div><strong id="rewardStreakValue">0</strong><span>дней подряд</span></div>
+      </div>
+      <p id="rewardStatusText" class="muted reward-status" aria-live="polite">Загружаем награды…</p>
+      <button id="dailyRewardClaimBtn" class="btn btn-accent btn-sm" type="button" onclick="claimDailyReward()">Забрать ежедневную награду · +10 🪙</button>
+      <div class="reward-milestones"><span>3 дня: +25</span><span>7 дней: +70</span><span>30 дней: +300</span></div>
+      <div class="reward-shop">
+        <h6>🛍️ Магазин купонов</h6>
+        <p>Купоны действуют на одну оплату подписки, скидки не суммируются.</p>
+        <div class="reward-shop-row"><span>Купон −10% <small>800 монет</small></span><button class="btn btn-outline btn-sm" type="button" onclick="buyRewardCoupon(10)">Купить</button></div>
+        <div class="reward-shop-row"><span>Купон −20% <small>4 000 монет</small></span><button class="btn btn-outline btn-sm" type="button" onclick="buyRewardCoupon(20)">Купить</button></div>
+      </div>
+    </div>
+
     <div class="card">
       <h5 data-i18n="recurring">Автоплатежи</h5>
       <div id="recurringList" class="muted" style="margin-bottom:8px" data-i18n="no_rules">Правил нет</div>

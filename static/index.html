@@ -504,6 +504,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <select id="txEnvelopeSelect" class="custom-input" style="margin:0"><option value="">Без конверта</option></select>
     </div>
     <div id="categoryGrid" class="icon-grid"></div>
+    <div class="ai-transaction-draft">
+      <label class="lbl" for="aiTransactionText">✨ Описать операцию текстом <span class="pro-mini-tag">PRO</span></label>
+      <div class="ai-transaction-draft-row">
+        <input type="text" id="aiTransactionText" class="custom-input" maxlength="800" placeholder="Например: потратил 350 грн на продукты" style="margin:0;min-width:0;flex:1">
+        <button type="button" id="aiTransactionParseBtn" class="btn btn-outline btn-sm" onclick="parseTransactionWithAI()">Разобрать</button>
+      </div>
+      <p id="aiTransactionStatus" class="ai-transaction-status">ИИ заполнит поля как черновик — проверь их перед сохранением.</p>
+    </div>
     <input type="number" id="txAmountInput" class="custom-input" data-i18n="amount_lbl" placeholder="Сумма">
     <input type="text" id="txCommentInput" class="custom-input" data-i18n="comment_lbl" placeholder="Комментарий">
     <div class="receipt-action-row">

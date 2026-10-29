@@ -198,12 +198,25 @@ async def consume_coupon(uid: str, coupon_type):
     percent = coupon_percent(coupon_type)
     if percent not in (10, 20):
         return
-    user = await get_user(uid) or {}
-    if available_coupons(user, str(percent)) <= 0:
+    field_earned = "couponsEarned" if percent == 10 else "coupons20Earned"
+    field_used = "couponsUsed10" if percent == 10 else "couponsUsed20"
+    result = {}
+
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        result.clear()
+        earned = max(0, int(user.get(field_earned) or 0))
+        used = max(0, int(user.get(field_used) or 0))
+        if earned - used <= 0:
+            result["ok"] = False
+            return user
+        user[field_used] = used + 1
+        result["ok"] = True
+        return user
+
+    await fb.transaction(f"/users/{uid}", update)
+    if not result.get("ok"):
         raise ValueError(f"Купон {percent}% уже недоступен")
-    field = "couponsUsed10" if percent == 10 else "couponsUsed20"
-    used = int(user.get(field) or 0)
-    await fb.patch(f"/users/{uid}", {field: used + 1})
 
 
 async def award_referral_coupon(paid_uid: str, payment_path: str):
@@ -1068,6 +1081,84 @@ if bot:
 # ---------- FASTAPI ----------
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 
+async def _update_bot_polling_lease(owner: str, acquire: bool = False) -> bool:
+    """Use Firebase ETags to ensure only one overlapping Render instance polls Telegram."""
+    now = now_ms()
+    result = {"owned": False}
+
+    def update(raw):
+        lease = dict(raw) if isinstance(raw, dict) else {}
+        result["owned"] = False
+        current_owner = str(lease.get("owner") or "")
+        expires_at = int(lease.get("expiresAt") or 0)
+        if current_owner == owner:
+            lease["expiresAt"] = now + 90_000
+            lease["updatedAt"] = now
+            result["owned"] = True
+        elif acquire and (not current_owner or expires_at <= now):
+            lease.update({"owner": owner, "expiresAt": now + 90_000, "updatedAt": now})
+            result["owned"] = True
+        return lease
+
+    await fb.transaction("/system/botPollingLease", update)
+    return bool(result["owned"])
+
+
+async def _release_bot_polling_lease(owner: str):
+    def update(raw):
+        lease = dict(raw) if isinstance(raw, dict) else {}
+        if str(lease.get("owner") or "") == owner:
+            return {"owner": "", "expiresAt": 0, "updatedAt": now_ms()}
+        return lease
+    await fb.transaction("/system/botPollingLease", update)
+
+
+async def telegram_polling_guard():
+    """Only the Render instance holding the Firebase lease may call getUpdates."""
+    owner = secrets.token_hex(16)
+    polling_task = None
+    while True:
+        try:
+            if polling_task is None:
+                if not await _update_bot_polling_lease(owner, acquire=True):
+                    await asyncio.sleep(8)
+                    continue
+                log.info("Telegram polling lease acquired by this instance")
+                polling_task = asyncio.create_task(
+                    dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+                )
+
+            await asyncio.sleep(20)
+            if not await _update_bot_polling_lease(owner):
+                log.error("Telegram polling lease lost; stopping polling on this instance")
+                polling_task.cancel()
+                await asyncio.gather(polling_task, return_exceptions=True)
+                polling_task = None
+                continue
+            if polling_task.done():
+                await polling_task
+                polling_task = None
+                await _release_bot_polling_lease(owner)
+        except asyncio.CancelledError:
+            if polling_task and not polling_task.done():
+                polling_task.cancel()
+                await asyncio.gather(polling_task, return_exceptions=True)
+            try:
+                await _release_bot_polling_lease(owner)
+            except Exception:
+                log.exception("Could not release Telegram polling lease during shutdown")
+            raise
+        except Exception:
+            log.exception("Telegram polling guard failed")
+            if polling_task and polling_task.done():
+                polling_task = None
+            try:
+                await _release_bot_polling_lease(owner)
+            except Exception:
+                log.exception("Could not release Telegram polling lease")
+            await asyncio.sleep(8)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     tasks = []
@@ -1083,7 +1174,7 @@ async def lifespan(app: FastAPI):
             BotCommand(command="help", description="ℹ️ Справка по командам"),
         ])
         await bot.delete_webhook(drop_pending_updates=True)
-        tasks.append(asyncio.create_task(dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())))
+        tasks.append(asyncio.create_task(telegram_polling_guard()))
         tasks.append(asyncio.create_task(daily_check()))
         tasks.append(asyncio.create_task(daily_reminder()))
         tasks.append(asyncio.create_task(payment_reminder()))

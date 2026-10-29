@@ -997,7 +997,7 @@ function saveRecurring(){
   const amount=Number(document.getElementById('recAmount').value);
   const day=Number.parseInt(document.getElementById('recDay').value,10);
   if(!name){alert(t('invalid_payment_name'));return;}
-  if(!Number.isFinite(amount)||amount<=0){alert(t('enter_positive_amount'));return;}
+  if(!Number.isFinite(amount)||amount<=0){alert(t('invalid_payment_amount'));return;}
   if(!Number.isInteger(day)||day<1||day>31){alert(t('invalid_payment_day'));return;}
   ensureRecurringIds().push({id:String(Date.now())+'_'+Math.random().toString(36).slice(2,9),name,amount,day,lastRun:''});
   saveData();closeModal('modalAddRecurring');

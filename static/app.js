@@ -1132,7 +1132,24 @@ function updateBudgetModeControls(){
  if(p)p.classList.toggle('active',budgetMode==='personal');if(f)f.classList.toggle('active',budgetMode==='family');
  if(!currentFamily&&budgetMode==='family'){budgetMode='personal';localStorage.setItem('budgetMode_'+telegramUserId,'personal');}
 }
-function setBudgetMode(mode){if(!['personal','family'].includes(mode)||(mode==='family'&&!currentFamily))return;budgetMode=mode;localStorage.setItem('budgetMode_'+telegramUserId,mode);updateBudgetModeControls();if(mode==='family')loadFamilyTransactions();renderAll();}
+async function setBudgetMode(mode){
+  if(!['personal','family'].includes(mode))return;
+  if(mode==='family'&&!currentFamily){
+    await loadFamilyStatus();
+    if(!currentFamily){
+      familyFeedback('Сначала создай семейную группу или присоединись к ней.',true);
+      return;
+    }
+  }
+  budgetMode=mode;
+  localStorage.setItem('budgetMode_'+telegramUserId,mode);
+  updateBudgetModeControls();
+  renderAll();
+  if(mode==='family'){
+    await Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes(),loadFamilyBanks()]);
+  }
+  renderAll();
+}
 function refreshFamilyData(){
  if(!currentFamily)return;
  return Promise.all([loadFamilyTransactions(),loadFamilyEnvelopes(),loadFamilyBanks()]);

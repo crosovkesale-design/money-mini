@@ -7,8 +7,8 @@ import pytesseract
 from pytesseract import TesseractNotFoundError
 
 MONEY_RE = re.compile(r"(\d{1,3}(?:[ \u00a0,]\d{3})*(?:[.,]\d{1,2})?)", re.I)
-# Smaller images and fewer OCR language models keep processing practical on Render's free instance.
-MAX_IMAGE_SIDE = 1600
+# Conservative limits for CPU-constrained free hosting.
+MAX_IMAGE_SIDE = 1000
 OCR_TIMEOUT_SECONDS = 20
 
 
@@ -21,14 +21,14 @@ def extract_receipt(image_bytes: bytes) -> dict:
     except (UnidentifiedImageError, OSError, ValueError) as exc:
         raise ValueError("Не удалось открыть изображение. Загрузи JPG, PNG или WebP.") from exc
 
-    # Downscale large phone photos; avoid upscaling small images, which wastes CPU.
+    # Tesseract is CPU-bound on free hosting; keep phone images small and simple.
     img.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE), Image.Resampling.LANCZOS)
     img = ImageOps.autocontrast(img)
 
     try:
-        # Ukrainian + English covers Ukrainian receipts and Latin store names/numbers.
+        # A single Cyrillic model is much lighter; it still recognizes digits and Latin text.
         text = pytesseract.image_to_string(
-            img, lang="ukr+eng", config="--oem 1 --psm 6", timeout=OCR_TIMEOUT_SECONDS
+            img, lang="ukr", config="--oem 1 --psm 6", timeout=OCR_TIMEOUT_SECONDS
         )
     except TesseractNotFoundError as exc:
         raise RuntimeError("OCR_ENGINE_MISSING") from exc

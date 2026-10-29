@@ -1711,3 +1711,29 @@ select:focus-visible {
 
 .bank-goal-remaining{margin:10px 0;padding:9px 12px;border-radius:10px;background:rgba(128,128,128,.07);font-size:12px;line-height:1.4;color:var(--muted)}
 .bank-goal-remaining b{color:var(--text-color,inherit);font-weight:700}
+
+
+/* Personal financial overview */
+.financial-overview-card{margin-bottom:16px;overflow:hidden}
+.financial-overview-heading{align-items:flex-start;gap:12px}
+.financial-overview-heading h4{margin:0 0 4px;font-size:17px}
+.financial-overview-heading p{margin:0;font-size:12px;line-height:1.4}
+.financial-net-worth{margin:16px 0 12px;padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(59,130,246,.10));border:1px solid rgba(34,197,94,.22)}
+.financial-net-worth span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.financial-net-worth strong{display:block;font-size:27px;line-height:1.2;overflow-wrap:anywhere}
+.financial-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.financial-metric{padding:11px;border:1px solid var(--border-color,rgba(128,128,128,.16));border-radius:12px;min-width:0}
+.financial-metric span{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}
+.financial-metric strong{display:block;font-size:14px;overflow-wrap:anywhere}
+.financial-note{font-size:11px;line-height:1.5;color:var(--muted);margin:12px 0}
+.financial-items-list{display:flex;flex-direction:column;gap:7px}
+.financial-empty{font-size:12px;padding:8px 0}
+.financial-item-row{display:flex;align-items:center;gap:9px;padding:10px;border-radius:12px;background:rgba(128,128,128,.06);min-width:0}
+.financial-item-icon{display:flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:rgba(34,197,94,.12);color:#22a06b;font-weight:800}
+.financial-item-row.is-debt .financial-item-icon{background:rgba(239,68,68,.11);color:#ef4444}
+.financial-item-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.financial-item-name b{display:block;font-size:12px;font-weight:650}
+.financial-item-name small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+.financial-item-row>strong{font-size:12px;white-space:nowrap}
+.financial-item-delete{width:28px;height:28px;flex:0 0 28px;border:0;border-radius:8px;background:rgba(239,68,68,.09);color:#ef4444;font-size:18px;cursor:pointer}
+@media(max-width:360px){.financial-overview-heading{flex-direction:column}.financial-net-worth strong{font-size:23px}.financial-metric{padding:9px}.financial-metric strong{font-size:12px}}

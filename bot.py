@@ -1197,30 +1197,46 @@ async def telegram_polling_guard():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     tasks = []
+
+    async def initialize_bot():
+        try:
+            await bot.set_my_commands([
+                BotCommand(command="start", description="🏠 Главное меню"),
+                BotCommand(command="stats", description="📊 Статистика сообщества"),
+                BotCommand(command="pay", description="💎 Тарифы и оплата"),
+                BotCommand(command="status", description="🛡 Моя подписка"),
+                BotCommand(command="referrals", description="🎁 Пригласить друзей"),
+                BotCommand(command="review", description="✍️ Оставить отзыв"),
+                BotCommand(command="support", description="🆘 Поддержка"),
+                BotCommand(command="help", description="ℹ️ Справка по командам"),
+            ])
+            await bot.delete_webhook(drop_pending_updates=True)
+            tasks.append(asyncio.create_task(telegram_polling_guard()))
+            tasks.append(asyncio.create_task(daily_check()))
+            tasks.append(asyncio.create_task(daily_reminder()))
+            tasks.append(asyncio.create_task(payment_reminder()))
+            tasks.append(asyncio.create_task(daily_backup()))
+            log.info("bot started")
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("Bot background initialization failed")
+
     if bot:
-        await bot.set_my_commands([
-            BotCommand(command="start", description="🏠 Главное меню"),
-            BotCommand(command="stats", description="📊 Статистика сообщества"),
-            BotCommand(command="pay", description="💎 Тарифы и оплата"),
-            BotCommand(command="status", description="🛡 Моя подписка"),
-            BotCommand(command="referrals", description="🎁 Пригласить друзей"),
-            BotCommand(command="review", description="✍️ Оставить отзыв"),
-            BotCommand(command="support", description="🆘 Поддержка"),
-            BotCommand(command="help", description="ℹ️ Справка по командам"),
-        ])
-        await bot.delete_webhook(drop_pending_updates=True)
-        tasks.append(asyncio.create_task(telegram_polling_guard()))
-        tasks.append(asyncio.create_task(daily_check()))
-        tasks.append(asyncio.create_task(daily_reminder()))
-        tasks.append(asyncio.create_task(payment_reminder()))
-        tasks.append(asyncio.create_task(daily_backup()))
-        log.info("bot started")
+        # Do not block Uvicorn's startup/port binding on Telegram API latency.
+        tasks.append(asyncio.create_task(initialize_bot()))
     yield
     for t in tasks:
         t.cancel()
-        try: await t
-        except: pass
-    if bot: await bot.session.close()
+    for t in tasks:
+        try:
+            await t
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            log.exception("Background task shutdown failed")
+    if bot:
+        await bot.session.close()
     await fb.close()
 
 app = FastAPI(lifespan=lifespan)

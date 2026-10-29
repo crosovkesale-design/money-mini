@@ -169,6 +169,15 @@ async def refund_ai_call(uid: str, reservation: dict | None) -> None:
 
     await fb.transaction(f"/users/{uid}", update)
 
+async def add_ai_credits(uid: str, amount: int) -> None:
+    """Atomically add purchased AI credits without overwriting concurrent user updates."""
+    amount = max(0, int(amount))
+    def update(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        user["aiCredits"] = max(0, int(user.get("aiCredits") or 0)) + amount
+        return user
+    await fb.transaction(f"/users/{uid}", update)
+
 
 def coupon_percent(coupon_type) -> int:
     value = str(coupon_type or "").strip()
@@ -2734,9 +2743,7 @@ async def cryptopay_webhook(request: Request):
     if isinstance(existing, dict) and existing.get("status") == "paid":
         # Repair a partially completed AI-pack credit if the webhook was interrupted.
         if existing.get("kind") == "ai_pack" and not existing.get("creditsAdded") and ai_pack:
-            user = await get_user(uid) or {}
-            credits = max(0, int(user.get("aiCredits") or 0))
-            await fb.patch(f"/users/{uid}", {"aiCredits": credits + int(ai_pack["credits"])})
+            await add_ai_credits(uid, int(ai_pack["credits"]))
             await fb.patch(payment_path, {"creditsAdded": True})
             if bot:
                 try:
@@ -2758,9 +2765,7 @@ async def cryptopay_webhook(request: Request):
             "currency": asset, "amount": invoice["amount"],
             "invoiceId": invoice_id, "paidAt": now, "status": "paid",
         })
-        user = await get_user(uid) or {}
-        credits = max(0, int(user.get("aiCredits") or 0))
-        await fb.patch(f"/users/{uid}", {"aiCredits": credits + int(ai_pack["credits"])})
+        await add_ai_credits(uid, int(ai_pack["credits"]))
         await fb.patch(payment_path, {"creditsAdded": True})
         if bot:
             try:

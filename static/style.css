@@ -1790,3 +1790,23 @@ select:focus-visible {
 .ai-credit-packs .btn:disabled{opacity:.6;cursor:wait}
 .ai-credit-panel .ai-credit-note{margin:9px 0 0;font-size:10px}
 @media(max-width:360px){.ai-credit-packs{grid-template-columns:1fr}.ai-credit-packs .btn{width:100%}}
+
+
+/* Daily rewards and coupon shop */
+.reward-card{border:1px solid var(--border);background:linear-gradient(145deg,var(--card),var(--surface))}
+.reward-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.reward-summary>div{padding:14px 10px;border-radius:13px;background:var(--surface);text-align:center;display:flex;flex-direction:column;gap:3px}
+.reward-summary strong{font-size:24px;line-height:1.2;font-weight:850}
+.reward-summary span{font-size:11px;color:var(--muted)}
+.reward-status{font-size:12px;line-height:1.45;margin:8px 0 12px}
+#dailyRewardClaimBtn{width:100%}
+#dailyRewardClaimBtn:disabled{opacity:.6}
+.reward-milestones{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}
+.reward-milestones span{font-size:10px;padding:6px 8px;border-radius:999px;background:var(--surface);color:var(--muted)}
+.reward-shop{border-top:1px solid var(--border);padding-top:12px}
+.reward-shop h6{font-size:13px;margin:0 0 5px}
+.reward-shop>p{font-size:11px;color:var(--muted);margin:0 0 10px}
+.reward-shop-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px solid var(--border)}
+.reward-shop-row>span{font-size:12px;font-weight:650}
+.reward-shop-row small{display:block;color:var(--muted);font-size:10px;font-weight:400;margin-top:3px}
+.reward-shop-row .btn{flex-shrink:0}

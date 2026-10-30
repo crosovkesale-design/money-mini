@@ -2210,10 +2210,19 @@ function ensureFinancialItems(){
 
 function renderFinancialOverview(){
   const items=ensureFinancialItems();
-  const cash=Number(appData.balance||0);
-  const savings=(Array.isArray(appData.banks)?appData.banks:[]).reduce((sum,bank)=>sum+Math.max(0,Number(bank.balance)||0),0);
-  const assets=items.filter(item=>item.type==='asset').reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
-  const debts=items.filter(item=>item.type==='debt').reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
+  const familyMode=budgetMode==='family'&&!!currentFamily;
+  const visibleBudget=getVisibleBudget();
+  const bankItems=familyMode?(Array.isArray(familyBanks)?familyBanks:[]):(Array.isArray(appData.banks)?appData.banks:[]);
+  const cash=Number(visibleBudget.balance||0);
+  const savings=bankItems.reduce((sum,bank)=>sum+Math.max(0,Number(bank.balance)||0),0);
+  // Additional assets and debts are private profile data; never mix them into a family total.
+  const personalItems=familyMode?[]:items;
+  const assets=personalItems.filter(item=>item.type==='asset').reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
+  const debts=personalItems.filter(item=>item.type==='debt').reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
+  const addButton=document.getElementById('financialAddItemButton');
+  if(addButton)addButton.style.display=familyMode?'none':'';
+  const note=document.getElementById('financialOverviewNote');
+  if(note)note.textContent=t(familyMode?'fin_family_note':'fin_note');
   const values={
     financialNetWorth:cash+savings+assets-debts,
     financialCashBalance:cash,
@@ -2227,6 +2236,10 @@ function renderFinancialOverview(){
   });
   const list=document.getElementById('financialItemsList');
   if(!list)return;
+  if(familyMode){
+    list.innerHTML='<div class="muted financial-empty">'+t('fin_family_note')+'</div>';
+    return;
+  }
   if(!items.length){
     list.innerHTML='<div class="muted financial-empty">'+t('fin_empty')+'</div>';
     return;

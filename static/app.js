@@ -585,11 +585,12 @@ function openHelp(topic='general'){
 }
 
 function requestProFeature(feature){
-  const message = feature + ' доступно в PRO. Открой тарифы, чтобы получить доступ.';
+  const localizedFeature = _localizeDialogMessage(feature);
+  const message = t('pro_feature_message').replace('{feature}',localizedFeature);
   const tg = window.Telegram?.WebApp;
   const goToPay = () => { window.location.href = '?screen=pay'; };
   if(tg?.initData && tg.showAlert){
-    tg.showAlert(message, goToPay);
+    tg.showAlert(_localizeDialogMessage(message), goToPay);
   } else {
     alert(message);
     goToPay();
@@ -978,7 +979,7 @@ function renderBattlePass(){
   if(note)note.textContent=isPro?(hasPro?t('PRO: купон 10% на каждом из 30 уровней.'):t('Платная дорожка доступна с активной подпиской PRO.')):t('Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.');
 }
 async function claimBattlePassReward(track,tier){
-  try{const tg=window.Telegram?.WebApp,response=await fetch('/api/battlepass/claim',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg?.initData||''},body:JSON.stringify({track,tier})}),data=await response.json();if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду');battlePassStats.claimed=data.claimed||battlePassStats.claimed;referralStats.coupons10=Number(referralStats.coupons10||0)+Number(data.couponsAdded||0);renderReferralStats();updateCouponSelector();tg?.showAlert?.('Награда получена!');}catch(e){const tg=window.Telegram?.WebApp;if(tg?.showAlert)tg.showAlert(e.message||'Ошибка получения награды');else alert(e.message||'Ошибка получения награды');}
+  try{const tg=window.Telegram?.WebApp,response=await fetch('/api/battlepass/claim',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg?.initData||''},body:JSON.stringify({track,tier})}),data=await response.json();if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду');battlePassStats.claimed=data.claimed||battlePassStats.claimed;referralStats.coupons10=Number(referralStats.coupons10||0)+Number(data.couponsAdded||0);renderReferralStats();updateCouponSelector();tg?.showAlert?.(_localizeDialogMessage(t('reward_claimed')));}catch(e){const tg=window.Telegram?.WebApp;if(tg?.showAlert)tg.showAlert(_localizeDialogMessage(e.message||t('reward_claim_error')));else alert(e.message||'Ошибка получения награды');}
 }
 
 function selectCoupon(value){
@@ -1336,13 +1337,13 @@ function notifyEnvelopeThresholds(envelopeId, spentBefore, addedAmount, envelope
   if(!thresholds.length)return;
   const name=String(envelope.name||'Конверт');
   const lines=thresholds.map(percent=>{
-    if(percent===100)return '🛑 Лимит исчерпан (100%). Дальнейшие траты превысят бюджет.';
-    if(percent===90)return '🔴 Использовано 90% лимита — осталось '+fmtMoney(Math.max(0,target-after))+'.';
-    return '🟡 Использовано 60% лимита — следи за оставшимся бюджетом.';
+    if(percent===100)return t('envelope_limit_100');
+    if(percent===90)return t('envelope_limit_90').replace('{amount}',fmtMoney(Math.max(0,target-after)));
+    return t('envelope_limit_60');
   });
-  const message='⚠️ Конверт «'+name+'»\n\n'+lines.join('\n')+'\n\nПотрачено: '+fmtMoney(after)+' из '+fmtMoney(target)+'.';
+  const message=t('envelope_warning_title').replace('{name}',name)+'\n\n'+lines.join('\n')+'\n\n'+t('envelope_spent_summary').replace('{spent}',fmtMoney(after)).replace('{target}',fmtMoney(target));
   const tg=window.Telegram?.WebApp;
-  if(tg?.showAlert)tg.showAlert(message);
+  if(tg?.showAlert)tg.showAlert(_localizeDialogMessage(message));
   else alert(message);
 }
 
@@ -1629,7 +1630,7 @@ async function saveBankContribution(){
     }
     selectedBankIdForContribution=null;closeModal('modalBankContribution');renderAll();
     if(target>0&&oldBalance<target&&newBalance>=target){
-      alert('🎉 Цель достигнута!\n\nКопилка «'+bank.name+'» собрала '+fmtMoney(newBalance)+' из '+fmtMoney(target)+'.');
+      alert(t('goal_achieved_message').replace('{name}',String(bank.name||'')).replace('{saved}',fmtMoney(newBalance)).replace('{target}',fmtMoney(target)));
     }
   }catch(e){alert(e.message||'Не удалось пополнить копилку.');}
 }
@@ -2019,13 +2020,13 @@ async function copyReferralLink(){
   try{
     await navigator.clipboard.writeText(link);
     const tg = window.Telegram?.WebApp;
-    if(tg?.showAlert) tg.showAlert('Реферальная ссылка скопирована!');
+    if(tg?.showAlert) tg.showAlert(_localizeDialogMessage('Реферальная ссылка скопирована!'));
     else alert('Реферальная ссылка скопирована!');
   } catch(error){
     const input = document.getElementById('referralLinkInput');
     if(input){ input.focus(); input.select(); }
     const tg = window.Telegram?.WebApp;
-    if(tg?.showAlert) tg.showAlert('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.');
+    if(tg?.showAlert) tg.showAlert(_localizeDialogMessage('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.'));
     else alert('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.');
   }
 }
@@ -2043,12 +2044,8 @@ async function copyFamilyCode(){
 
 async function leaveFamily(){
   if(familyBusy || !currentFamily) return;
-  const name = currentFamily.name || 'семья';
-  const confirmed = confirm(
-    'Выйти из группы «' + name + '»?\\n\\n' +
-    'Твои личные записи бюджета, баланс, история, конверты и счета останутся на устройстве. ' +
-    'Если ты организатор, роль перейдёт другому участнику. Семейные данные не будут удалены.'
-  );
+  const name = currentFamily.name || t('family');
+  const confirmed = confirm(t('dialog_leave_family').replace('{name}',name));
   if(!confirmed) return;
 
   setFamilyBusy(true);

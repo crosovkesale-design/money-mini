@@ -968,7 +968,7 @@ function updatePricingDisplay(){
     const suffix = el.dataset.baseStars === '7500' ? ' ' + t('annual_stars_suffix') : ' ⭐';
     el.innerHTML = percent
       ? '<span class="price-stars-old">' + t('or_label') + ' ' + formattedBase + suffix + '</span><span class="price-stars-current">' + t('or_label') + ' ' + formattedDiscount + suffix + '</span>'
-      : 'или ' + formattedBase + suffix;
+      : t('or_label') + ' ' + formattedBase + suffix;
   });
 }
 

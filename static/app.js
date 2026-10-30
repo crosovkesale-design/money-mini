@@ -235,7 +235,9 @@ function fmtMoney(v){
 
 // Translate hard-coded interface text as well as elements explicitly marked with data-i18n.
 const _autoTextOriginals = new WeakMap();
+const _autoAttributeOriginals = new WeakMap();
 let _autoTextObserver = null;
+const AUTO_TRANSLATABLE_ATTRIBUTES = ['placeholder','title','aria-label','alt','value'];
 
 const STATIC_UI_TRANSLATIONS = {
   ru: {"Для личного бюджета: учёт доходов и расходов, история, конверты, цели и регулярные платежи":"Для личного бюджета: учёт доходов и расходов, история, конверты, цели и регулярные платежи","Все возможности Basic плюс текстовый ввод операций, семейный бюджет и расширенная аналитика":"Все возможности Basic плюс текстовый ввод операций, семейный бюджет и расширенная аналитика","Весь набор Basic для ежедневного учёта денег":"Весь набор Basic для ежедневного учёта денег","⚡ Всегда под рукой":"⚡ Всегда под рукой","Работает внутри Telegram — не нужно устанавливать отдельное приложение.":"Работает внутри Telegram — не нужно устанавливать отдельное приложение.","📊 Финансы в одном месте":"📊 Финансы в одном месте","Доходы, расходы, история операций и аналитика собраны вместе.":"Доходы, расходы, история операций и аналитика собраны вместе.","🎯 Под твой стиль":"🎯 Под твой стиль","Несколько валют, категории, конверты и финансовые цели помогают организовать бюджет.":"Несколько валют, категории, конверты и финансовые цели помогают организовать бюджет.","🔎 Больше ясности":"🔎 Больше ясности","Отслеживай траты и замечай, куда уходят деньги.":"Отслеживай траты и замечай, куда уходят деньги.","💎 Больше возможностей с PRO":"💎 Больше возможностей с PRO","Свои категории, персональный фон, Excel-отчёты и ежедневные напоминания.":"Свои категории, персональный фон, Excel-отчёты и ежедневные напоминания.","🎁 Выгодный старт":"🎁 Выгодный старт","30 дней пробного доступа для новых пользователей, а также купоны и скидки.":"30 дней пробного доступа для новых пользователей, а также купоны и скидки.","Попробуй «Семейный бюджет» в деле":"Попробуй «Семейный бюджет» в деле","Выбери подходящий тариф или начни с пробного периода.":"Выбери подходящий тариф или начни с пробного периода.","💎 Посмотреть тарифы":"💎 Посмотреть тарифы","Личный":"Личный","Семейный":"Семейный","Личный баланс":"Личный баланс","Прогноз":"Прогноз","Доход":"Доход","Расход":"Расход","История":"История","Все участники":"Все участники","Проверяю баланс ИИ-запросов…":"Проверяю баланс ИИ-запросов…","Пакеты доступны и без подписки PRO.":"Пакеты доступны и без подписки PRO.","Купоны 10%":"Купоны 10%","Купоны 20%":"Купоны 20%","Новый сезон начинается каждый месяц. Заработанные купоны сохраняются и после завершения сезона.":"Новый сезон начинается каждый месяц. Заработанные купоны сохраняются и после завершения сезона.","Загружаем награды…":"Загружаем награды…","Правил нет":"Правил нет","Добавить":"Добавить","Проверяем семейную группу…":"Проверяем семейную группу…","Моя семья":"Моя семья","＋ Создать семью":"＋ Создать семью","Вступить по коду":"Вступить по коду","Экспорт":"Экспорт","Своя":"Своя","Семейный бюджет — справка":"Семейный бюджет — справка"},
@@ -344,6 +346,23 @@ function _translateHardcodedNode(node){
     const start=source.indexOf(trimmed), end=start+trimmed.length;
     const next=source.slice(0,start)+translated+source.slice(end);
     if(node.nodeValue!==next) node.nodeValue=next;
+  } else if(node.nodeValue!==source && String(appData?.lang||'ru').toLowerCase().split('-')[0]==='ru') {
+    node.nodeValue=source;
+  }
+}
+function _translateHardcodedAttributes(el){
+  if(!el || el.nodeType!==1) return;
+  const map=_autoTextMap();
+  for(const attr of AUTO_TRANSLATABLE_ATTRIBUTES){
+    if(!el.hasAttribute(attr)) continue;
+    if(attr==='placeholder' && el.hasAttribute('data-i18n-placeholder')) continue;
+    if(attr==='value' && el.hasAttribute('data-i18n')) continue;
+    let originals=_autoAttributeOriginals.get(el);
+    if(!originals){ originals=Object.create(null); _autoAttributeOriginals.set(el,originals); }
+    if(!Object.prototype.hasOwnProperty.call(originals,attr)) originals[attr]=el.getAttribute(attr);
+    const source=originals[attr], translated=map[String(source||'').trim()];
+    if(translated && el.getAttribute(attr)!==translated) el.setAttribute(attr,translated);
+    else if(!translated && String(appData?.lang||'ru').toLowerCase().split('-')[0]==='ru' && el.getAttribute(attr)!==source) el.setAttribute(attr,source);
   }
 }
 function translateHardcodedText(root=document.body){
@@ -351,6 +370,8 @@ function translateHardcodedText(root=document.body){
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   let node;
   while((node=walker.nextNode())) _translateHardcodedNode(node);
+  if(root.nodeType===1) _translateHardcodedAttributes(root);
+  root.querySelectorAll?.('*').forEach(_translateHardcodedAttributes);
 }
 function startHardcodedTextTranslation(){
   translateHardcodedText();
@@ -358,13 +379,14 @@ function startHardcodedTextTranslation(){
   _autoTextObserver=new MutationObserver(records=>{
     for(const record of records){
       if(record.type==='characterData') _translateHardcodedNode(record.target);
+      if(record.type==='attributes') _translateHardcodedAttributes(record.target);
       for(const added of record.addedNodes||[]){
         if(added.nodeType===3) _translateHardcodedNode(added);
         else if(added.nodeType===1) translateHardcodedText(added);
       }
     }
   });
-  _autoTextObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+  _autoTextObserver.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:AUTO_TRANSLATABLE_ATTRIBUTES});
 }
 function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });

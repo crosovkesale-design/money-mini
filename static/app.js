@@ -2371,7 +2371,7 @@ function renderAll(){
     const bankItems=budgetMode==='family'&&currentFamily?familyBanks:appData.banks;
     banks.innerHTML = bankItems.map(b => {
       const saved=Number(b.balance||0),target=Number(b.target||0),pct=target>0?Math.min(100,saved/target*100):0;
-      const goalStatusHtml=target>0?(saved>=target?'<div class="bank-goal-achieved">🎉 Цель достигнута! Можно отметить победу.</div>':'<div class="bank-goal-remaining">Осталось собрать: <b>'+fmtMoney(Math.max(0,target-saved))+'</b></div>'):'';
+      const goalStatusHtml=target>0?(saved>=target?'<div class="bank-goal-achieved">'+t('goal_reached_caption')+'</div>':'<div class="bank-goal-remaining">'+t('goal_remaining_caption').replace('{amount}','<b>'+fmtMoney(Math.max(0,target-saved))+'</b>')+'</div>'):'';
       const contributionHistory=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributions)?b.contributions:[];
       const contributorTotals=budgetMode==='family'&&currentFamily&&Array.isArray(b.contributors)?b.contributors:[];
       const contributorTotalsHtml=contributorTotals.length
@@ -2398,7 +2398,7 @@ function renderAll(){
         <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
         ${goalStatusHtml}
-        <div class="muted" style="font-size:12px;margin:6px 0 10px">${target>0&&saved>=target?'🎉 Цель достигнута':target>0?'Осталось собрать: '+fmtMoney(target-saved):''}</div>
+        <div class="muted" style="font-size:12px;margin:6px 0 10px">${target>0&&saved>=target?t('goal_reached_caption'):target>0?t('goal_remaining_caption').replace('{amount}',fmtMoney(Math.max(0,target-saved))):''}</div>
         ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">' + t('Дедлайн:') + ' ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString(appData.lang || 'ru-RU') + ' · ' + deadlineText + '</div>' : ''}
         ${contributorTotalsHtml}
         ${contributionHistoryHtml}

@@ -533,6 +533,8 @@ function applyLang(){
   applyReceiptFormTranslations();
   translateHardcodedText();
   startHardcodedTextTranslation();
+  // Re-render dynamically generated Money Pass cards immediately after language changes.
+  if (typeof renderBattlePass === 'function') renderBattlePass();
 }
 
 function switchTab(name){

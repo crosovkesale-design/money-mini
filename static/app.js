@@ -752,9 +752,9 @@ function updatePricingDisplay(){
   document.querySelectorAll('.price-stars[data-base-stars]').forEach(el => {
     const base = Number(el.dataset.baseStars || 0);
     const discounted = Math.round(base * (100 - percent) / 100);
-    const formattedBase = base.toLocaleString('ru-RU');
-    const formattedDiscount = discounted.toLocaleString('ru-RU');
-    const suffix = el.dataset.baseStars === '7500' ? ' ⭐ за год' : ' ⭐';
+    const formattedBase = base.toLocaleString(appData.lang || 'ru');
+    const formattedDiscount = discounted.toLocaleString(appData.lang || 'ru');
+    const suffix = el.dataset.baseStars === '7500' ? ' ' + t('annual_stars_suffix') : ' ⭐';
     el.innerHTML = percent
       ? '<span class="price-stars-old">или ' + formattedBase + suffix + '</span><span class="price-stars-current">или ' + formattedDiscount + suffix + '</span>'
       : 'или ' + formattedBase + suffix;

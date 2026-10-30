@@ -2258,16 +2258,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Пока нет конвертов. Создай конверт, чтобы распределять расходы.",
     no_savings_banks:"Пока нет копилок. Создай цель накопления.",
     name_placeholder:"Название", limit_placeholder:"Лимит", goal_placeholder:"Цель",
-    family_name:"Название семьи", family_name_placeholder:"Например, Семья Ивановых",
+
     referrals_intro:"Приглашай друзей, получай купоны и открывай награды сезона.",
     referral_link:"Твоя реферальная ссылка", invited:"Приглашено", total_users:"всего пользователей",
     paid_referrals:"Платные рефералы", with_subscription:"с оплатой подписки", season_turnover:"Оборот за сезон",
     confirmed_subscriptions:"подтверждённые подписки", available:"доступно", season_ends:"До конца сезона",
-    coins:"монет", days_in_row:"дней подряд", claim_daily:"+10 монет сегодня",
-    collected_coins:"Всего собрано монет за вход", coupon_shop:"🛍️ Магазин купонов",
+
     coupon_shop_note:"Купоны действуют на одну оплату подписки, скидки не суммируются.",
     coupon_10:"Купон −10%", coupon_20:"Купон −20%", buy:"Купить", create_family_hint:"Создай новую группу или вступи в семью по коду приглашения.",
-    import_statement:"Импорт банковской выписки", why_title_nav:"Почему Mini"
+
   },
   uk: {
     pricing_nav:"Тарифи", referrals_title:"Реферали", daily_rewards_title:"🔥 Щоденні нагороди",
@@ -2275,16 +2274,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Поки немає конвертів. Створи конверт, щоб розподіляти витрати.",
     no_savings_banks:"Поки немає скарбничок. Створи ціль накопичення.",
     name_placeholder:"Назва", limit_placeholder:"Ліміт", goal_placeholder:"Ціль",
-    family_name:"Назва сім’ї", family_name_placeholder:"Наприклад, Сім’я Іваненків",
+
     referrals_intro:"Запрошуй друзів, отримуй купони та відкривай сезонні нагороди.",
     referral_link:"Твоє реферальне посилання", invited:"Запрошено", total_users:"усього користувачів",
     paid_referrals:"Платні реферали", with_subscription:"з оплатою підписки", season_turnover:"Оборот за сезон",
     confirmed_subscriptions:"підтверджені підписки", available:"доступно", season_ends:"До кінця сезону",
-    coins:"монет", days_in_row:"днів поспіль", claim_daily:"+10 монет сьогодні",
-    collected_coins:"Усього зібрано монет за вхід", coupon_shop:"🛍️ Магазин купонів",
+
     coupon_shop_note:"Купони діють на одну оплату підписки, знижки не сумуються.",
     coupon_10:"Купон −10%", coupon_20:"Купон −20%", buy:"Купити", create_family_hint:"Створи нову групу або приєднайся до сім’ї за кодом запрошення.",
-    import_statement:"Імпорт банківської виписки", why_title_nav:"Чому Mini"
+
   },
   en: {
     pricing_nav:"Plans", referrals_title:"Referrals", daily_rewards_title:"🔥 Daily rewards",
@@ -2292,16 +2290,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"No envelopes yet. Create an envelope to organize your expenses.",
     no_savings_banks:"No savings goals yet. Create a savings goal.",
     name_placeholder:"Name", limit_placeholder:"Limit", goal_placeholder:"Goal",
-    family_name:"Family name", family_name_placeholder:"For example, The Smith Family",
+
     referrals_intro:"Invite friends, earn coupons, and unlock seasonal rewards.",
     referral_link:"Your referral link", invited:"Invited", total_users:"users in total",
     paid_referrals:"Paid referrals", with_subscription:"with an active subscription payment", season_turnover:"Season turnover",
     confirmed_subscriptions:"confirmed subscriptions", available:"available", season_ends:"Time until season ends",
-    coins:"coins", days_in_row:"days in a row", claim_daily:"Claim today's +10 coins",
-    collected_coins:"Total coins collected from daily check-ins", coupon_shop:"🛍️ Coupon shop",
+
     coupon_shop_note:"Coupons apply to one subscription payment and discounts cannot be combined.",
     coupon_10:"10% coupon", coupon_20:"20% coupon", buy:"Buy", create_family_hint:"Create a new group or join a family with an invitation code.",
-    import_statement:"Import bank statement", why_title_nav:"Why Mini"
+
   },
   de: {
     pricing_nav:"Tarife", referrals_title:"Empfehlungen", daily_rewards_title:"🔥 Tägliche Belohnungen",
@@ -2309,16 +2306,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Noch keine Umschläge. Erstelle einen Umschlag, um Ausgaben zu planen.",
     no_savings_banks:"Noch keine Sparziele. Erstelle ein Sparziel.",
     name_placeholder:"Name", limit_placeholder:"Limit", goal_placeholder:"Ziel",
-    family_name:"Familienname", family_name_placeholder:"Zum Beispiel: Familie Müller",
+
     referrals_intro:"Lade Freunde ein, erhalte Gutscheine und schalte Saisonbelohnungen frei.",
     referral_link:"Dein Empfehlungslink", invited:"Eingeladen", total_users:"Nutzer insgesamt",
     paid_referrals:"Bezahlte Empfehlungen", with_subscription:"mit bezahltem Abonnement", season_turnover:"Saisonumsatz",
     confirmed_subscriptions:"bestätigte Abonnements", available:"verfügbar", season_ends:"Bis zum Saisonende",
-    coins:"Münzen", days_in_row:"Tage in Folge", claim_daily:"Heutige +10 Münzen abholen",
-    collected_coins:"Insgesamt durch tägliche Anmeldung gesammelte Münzen", coupon_shop:"🛍️ Gutsche Shop",
+
     coupon_shop_note:"Gutscheine gelten für eine Abonnementzahlung; Rabatte sind nicht kombinierbar.",
     coupon_10:"10-%-Gutschein", coupon_20:"20-%-Gutschein", buy:"Kaufen", create_family_hint:"Erstelle eine Gruppe oder tritt einer Familie mit Einladungscode bei.",
-    import_statement:"Kontoauszug importieren", why_title_nav:"Warum Mini"
+
   },
   es: {
     pricing_nav:"Planes", referrals_title:"Referidos", daily_rewards_title:"🔥 Recompensas diarias",
@@ -2326,16 +2322,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Todavía no hay sobres. Crea uno para organizar tus gastos.",
     no_savings_banks:"Todavía no hay metas de ahorro. Crea una meta.",
     name_placeholder:"Nombre", limit_placeholder:"Límite", goal_placeholder:"Meta",
-    family_name:"Nombre de la familia", family_name_placeholder:"Por ejemplo, Familia García",
+
     referrals_intro:"Invita a amigos, consigue cupones y desbloquea recompensas de temporada.",
     referral_link:"Tu enlace de referido", invited:"Invitados", total_users:"usuarios en total",
     paid_referrals:"Referidos de pago", with_subscription:"con una suscripción pagada", season_turnover:"Volumen de la temporada",
     confirmed_subscriptions:"suscripciones confirmadas", available:"disponibles", season_ends:"Tiempo hasta el final de la temporada",
-    coins:"monedas", days_in_row:"días seguidos", claim_daily:"Reclama +10 monedas hoy",
-    collected_coins:"Total de monedas obtenidas por iniciar sesión", coupon_shop:"🛍️ Tienda de cupones",
+
     coupon_shop_note:"Los cupones se aplican a un pago de suscripción y los descuentos no se acumulan.",
     coupon_10:"Cupón del 10%", coupon_20:"Cupón del 20%", buy:"Comprar", create_family_hint:"Crea un grupo o únete a una familia con un código de invitación.",
-    import_statement:"Importar extracto bancario", why_title_nav:"Por qué Mini"
+
   },
   fr: {
     pricing_nav:"Offres", referrals_title:"Parrainages", daily_rewards_title:"🔥 Récompenses quotidiennes",
@@ -2343,16 +2338,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Aucune enveloppe pour le moment. Créez-en une pour organiser vos dépenses.",
     no_savings_banks:"Aucun objectif d’épargne. Créez un objectif.",
     name_placeholder:"Nom", limit_placeholder:"Limite", goal_placeholder:"Objectif",
-    family_name:"Nom de la famille", family_name_placeholder:"Par exemple, Famille Martin",
+
     referrals_intro:"Invitez des amis, gagnez des coupons et débloquez des récompenses saisonnières.",
     referral_link:"Votre lien de parrainage", invited:"Invités", total_users:"utilisateurs au total",
     paid_referrals:"Parrainages payants", with_subscription:"avec abonnement payé", season_turnover:"Volume de la saison",
     confirmed_subscriptions:"abonnements confirmés", available:"disponibles", season_ends:"Temps restant dans la saison",
-    coins:"pièces", days_in_row:"jours consécutifs", claim_daily:"Récupérer +10 pièces aujourd’hui",
-    collected_coins:"Total des pièces gagnées grâce aux connexions quotidiennes", coupon_shop:"🛍️ Boutique de coupons",
+
     coupon_shop_note:"Les coupons s’appliquent à un seul paiement d’abonnement et les réductions ne se cumulent pas.",
     coupon_10:"Coupon de 10 %", coupon_20:"Coupon de 20 %", buy:"Acheter", create_family_hint:"Créez un groupe ou rejoignez une famille avec un code d’invitation.",
-    import_statement:"Importer un relevé bancaire", why_title_nav:"Pourquoi Mini"
+
   },
   it: {
     pricing_nav:"Piani", referrals_title:"Inviti", daily_rewards_title:"🔥 Ricompense giornaliere",
@@ -2360,16 +2354,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Non ci sono ancora buste. Creane una per organizzare le spese.",
     no_savings_banks:"Non ci sono ancora obiettivi di risparmio. Creane uno.",
     name_placeholder:"Nome", limit_placeholder:"Limite", goal_placeholder:"Obiettivo",
-    family_name:"Nome della famiglia", family_name_placeholder:"Ad esempio, Famiglia Rossi",
+
     referrals_intro:"Invita amici, ottieni coupon e sblocca premi stagionali.",
     referral_link:"Il tuo link di invito", invited:"Invitati", total_users:"utenti in totale",
     paid_referrals:"Inviti paganti", with_subscription:"con abbonamento pagato", season_turnover:"Volume della stagione",
     confirmed_subscriptions:"abbonamenti confermati", available:"disponibili", season_ends:"Tempo alla fine della stagione",
-    coins:"monete", days_in_row:"giorni consecutivi", claim_daily:"Riscatta +10 monete oggi",
-    collected_coins:"Totale monete raccolte con gli accessi giornalieri", coupon_shop:"🛍️ Negozio di coupon",
+
     coupon_shop_note:"I coupon valgono per un pagamento dell’abbonamento e gli sconti non sono cumulabili.",
     coupon_10:"Coupon 10%", coupon_20:"Coupon 20%", buy:"Acquista", create_family_hint:"Crea un gruppo o unisciti a una famiglia con un codice invito.",
-    import_statement:"Importa estratto conto", why_title_nav:"Perché Mini"
+
   },
   pl: {
     pricing_nav:"Plany", referrals_title:"Polecenia", daily_rewards_title:"🔥 Codzienne nagrody",
@@ -2377,16 +2370,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Nie ma jeszcze kopert. Utwórz kopertę, aby planować wydatki.",
     no_savings_banks:"Nie ma jeszcze celów oszczędnościowych. Utwórz cel.",
     name_placeholder:"Nazwa", limit_placeholder:"Limit", goal_placeholder:"Cel",
-    family_name:"Nazwa rodziny", family_name_placeholder:"Na przykład: Rodzina Kowalskich",
+
     referrals_intro:"Zapraszaj znajomych, zdobywaj kupony i odblokowuj nagrody sezonowe.",
     referral_link:"Twój link polecający", invited:"Zaproszono", total_users:"użytkowników łącznie",
     paid_referrals:"Płatne polecenia", with_subscription:"z opłaconą subskrypcją", season_turnover:"Obrót w sezonie",
     confirmed_subscriptions:"potwierdzone subskrypcje", available:"dostępne", season_ends:"Do końca sezonu",
-    coins:"monet", days_in_row:"dni z rzędu", claim_daily:"Odbierz dziś +10 monet",
-    collected_coins:"Łącznie zebrane monety za codzienne logowanie", coupon_shop:"🛍️ Sklep z kuponami",
+
     coupon_shop_note:"Kupony dotyczą jednej płatności za subskrypcję i nie łączą się ze zniżkami.",
     coupon_10:"Kupon 10%", coupon_20:"Kupon 20%", buy:"Kup", create_family_hint:"Utwórz grupę lub dołącz do rodziny za pomocą kodu zaproszenia.",
-    import_statement:"Importuj wyciąg bankowy", why_title_nav:"Dlaczego Mini"
+
   },
   tr: {
     pricing_nav:"Planlar", referrals_title:"Davetler", daily_rewards_title:"🔥 Günlük ödüller",
@@ -2394,16 +2386,14 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"Henüz zarf yok. Harcamalarını düzenlemek için bir zarf oluştur.",
     no_savings_banks:"Henüz birikim hedefi yok. Bir hedef oluştur.",
     name_placeholder:"Ad", limit_placeholder:"Limit", goal_placeholder:"Hedef",
-    family_name:"Aile adı", family_name_placeholder:"Örneğin, Yılmaz Ailesi",
+
     referrals_intro:"Arkadaşlarını davet et, kupon kazan ve sezon ödüllerini aç.",
     referral_link:"Davet bağlantın", invited:"Davet edildi", total_users:"toplam kullanıcı",
     paid_referrals:"Ödeme yapan davetliler", with_subscription:"abonelik ödemesi yapan", season_turnover:"Sezon hacmi",
     confirmed_subscriptions:"onaylanmış abonelikler", available:"kullanılabilir", season_ends:"Sezonun bitmesine kalan",
-    coins:"jeton", days_in_row:"gün üst üste", claim_daily:"Bugün +10 jeton al",
-    collected_coins:"Günlük girişlerden kazanılan toplam jeton", coupon_shop:"🛍️ Kupon mağazası",
+
     coupon_shop_note:"Kuponlar tek bir abonelik ödemesinde geçerlidir; indirimler birleştirilemez.",
     coupon_10:"%10 kupon", coupon_20:"%20 kupon", buy:"Satın al", create_family_hint:"Yeni bir grup oluştur veya davet koduyla bir aileye katıl.",
-    import_statement:"Banka ekstresini içe aktar", why_title_nav:"Neden Mini"
 
   },
   zh: {
@@ -2412,16 +2402,15 @@ const EXTRA_UI_TRANSLATIONS = {
     no_envelopes:"还没有信封。创建一个信封来规划支出。",
     no_savings_banks:"还没有储蓄目标。创建一个目标。",
     name_placeholder:"名称", limit_placeholder:"限额", goal_placeholder:"目标",
-    family_name:"家庭名称", family_name_placeholder:"例如：王氏家庭",
+
     referrals_intro:"邀请好友、获得优惠券并解锁赛季奖励。",
     referral_link:"你的邀请链接", invited:"已邀请", total_users:"用户总数",
     paid_referrals:"付费邀请用户", with_subscription:"已支付订阅", season_turnover:"赛季交易额",
     confirmed_subscriptions:"已确认的订阅", available:"可用", season_ends:"距离赛季结束",
-    coins:"金币", days_in_row:"连续天数", claim_daily:"领取今日 +10 金币",
-    collected_coins:"每日签到累计获得的金币", coupon_shop:"🛍️ 优惠券商店",
+
     coupon_shop_note:"优惠券仅适用于一次订阅付款，折扣不可叠加。",
     coupon_10:"10% 优惠券", coupon_20:"20% 优惠券", buy:"购买", create_family_hint:"创建新群组，或使用邀请码加入家庭。",
-    import_statement:"导入银行对账单", why_title_nav:"为什么选择 Mini"
+
     "annual_monthly_note": "按年付费，平均每月约 $7.08",
     "yearly_savings": "全年可节省",
     "yearly_savings_amount": "$59 或 4,500 ⭐",

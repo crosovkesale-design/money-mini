@@ -57,7 +57,7 @@
 <title>Семейный Бюджет</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="./translations.js?v=20261030-i18n-core-v6" defer></script>
+<script src="./translations.js?v=20261030-i18n-core-v7" defer></script>
 <script src="./app.js?v=20261030-i18n-core-v6" defer></script>
 
 <link rel="stylesheet"
@@ -221,8 +221,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="price-option-top"><span data-i18n="month12">12 месяцев</span><span class="option-tag option-tag-featured">BEST VALUE</span></div>
             <div class="price-main" data-base-usd="85">$85<span class="pro-period"> / год</span></div>
             <div class="price-stars" data-base-stars="7500">или 7 500 ⭐ за год</div>
-            <div class="price-note pro-price-note">≈ $7.08 в месяц при годовой оплате</div>
-            <div class="pro-saving-badge"><span>Твоя экономия за год</span><b>$59 или 4 500 ⭐</b></div>
+            <div class="price-note pro-price-note" data-i18n="annual_monthly_note">≈ $7.08 в месяц при годовой оплате</div>
+            <div class="pro-saving-badge"><span data-i18n="yearly_savings">Твоя экономия за год</span><b data-i18n="yearly_savings_amount">$59 или 4 500 ⭐</b></div>
             <div class="price-actions">
 
               <button class="pay-button pay-stars" onclick="buyPlan('pro12','stars')" data-i18n="pay_stars">Оплатить ⭐</button>
@@ -266,7 +266,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-weight:800;font-size:15px">Family Budget</div>
       <div style="display:flex;align-items:center;gap:8px">
-        <button class="btn btn-accent btn-sm" onclick="window.location.href='?screen=pay'" style="padding:8px 11px;border-radius:11px;white-space:nowrap">💎 Тарифы</button>
+        <button class="btn btn-accent btn-sm" onclick="window.location.href='?screen=pay'" style="padding:8px 11px;border-radius:11px;white-space:nowrap">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
         <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>
       </div>
     </div>
@@ -320,13 +320,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="card finance-assistant-card" id="financeAssistantCard">
       <div class="finance-assistant-heading">
         <div><h4 data-i18n="ai_assistant_title">✨ Финансовый ИИ-помощник</h4><p data-i18n="ai_assistant_desc">Ответы на основе твоих записей в Family Budget</p></div>
-        <span class="pro-mini-tag">30 запросов/мес. в PRO</span>
+        <span class="pro-mini-tag" data-i18n="ai_pro_tag">30 запросов/мес. в PRO</span>
       </div>
       <div class="ai-credit-panel">
         <p id="aiUsageStatus">Проверяю баланс ИИ-запросов…</p>
         <div class="ai-credit-packs">
-          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai50')">50 запросов · $2,99 USDT</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai150')">150 запросов · $4,99 USDT</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai50')" data-i18n="ai_pack_50">50 запросов · $2,99 USDT</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai150')" data-i18n="ai_pack_150">150 запросов · $4,99 USDT</button>
         </div>
         <p id="aiPackStatus" class="ai-credit-note">Пакеты доступны и без подписки PRO.</p>
       </div>
@@ -392,7 +392,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       </div>
     </section>
     <section class="battlepass-card card">
-      <div class="battlepass-head"><div><div class="eyebrow">SEASONAL REWARDS</div><h3>Мани пропуск</h3><p class="muted">Новый сезон каждые 3 месяца. Заработанные купоны сохраняются и после завершения сезона.</p></div><div class="battlepass-season" id="battlePassSeason">Сезон</div></div>
+      <div class="battlepass-head"><div><div class="eyebrow" data-i18n="SEASONAL REWARDS">SEASONAL REWARDS</div><h3 data-i18n="pass_name">Мани пропуск</h3><p class="muted">Новый сезон каждые 3 месяца. Заработанные купоны сохраняются и после завершения сезона.</p></div><div class="battlepass-season" id="battlePassSeason">Сезон</div></div>
       <div class="battlepass-progress"><div class="battlepass-progress-label"><span>Выполнение заданий</span><b id="battlePassProgressText">0 / 10 заданий</b></div><div class="battlepass-progress-track"><span id="battlePassProgressBar" style="width:0%"></span></div></div>
       <div class="battlepass-tasks" id="battlePassTasks"></div>
       <div class="battlepass-pass-switch"><button type="button" class="battlepass-switch active" id="battlePassFreeBtn" onclick="setBattlePassTrack('free')">Бесплатный</button><button type="button" class="battlepass-switch" id="battlePassProBtn" onclick="setBattlePassTrack('pro')">PRO · платный</button></div>
@@ -625,7 +625,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="modal-header"><h3 data-i18n="new_bank">Новая банка</h3><span class="modal-close" onclick="closeModal('modalAddBank')">×</span></div>
     <input type="text" id="bankNameInput" class="custom-input" data-i18n-placeholder="name_placeholder" placeholder="Название">
     <input type="number" id="bankTargetInput" class="custom-input" data-i18n-placeholder="goal_placeholder" placeholder="Цель">
-    <label class="lbl" for="bankDeadlineInput">Дедлайн накопления (необязательно)</label>
+    <label class="lbl" for="bankDeadlineInput" data-i18n="deadline_label">Дедлайн накопления</label><small class="muted" data-i18n="date_format_hint">Формат даты: ДД.ММ.ГГГГ</small>
     <input type="date" id="bankDeadlineInput" class="custom-input">
     <button class="btn btn-accent" style="width:100%" onclick="saveBank()" data-i18n="save">Создать</button>
   </div>

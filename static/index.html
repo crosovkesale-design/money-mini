@@ -57,8 +57,8 @@
 <title>Семейный Бюджет</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="./translations.js?v=20261030-receipt-form-i18n-v1" defer></script>
-<script src="./app.js?v=20261030-receipt-form-i18n-v1" defer></script>
+<script src="./translations.js?v=20261030-family-financial-overview-v1" defer></script>
+<script src="./app.js?v=20261030-family-financial-overview-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -358,7 +358,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="card financial-overview-card">
       <div class="row-between financial-overview-heading">
         <div><h4 data-i18n="fin_overview">💰 Финансовая картина</h4><p class="muted" data-i18n="fin_overview_desc">Личные деньги, активы и долги</p></div>
-        <button class="btn btn-accent btn-sm" onclick="openModal('modalFinancialItem')" data-i18n="add_item">＋ Добавить</button>
+        <button class="btn btn-accent btn-sm" id="financialAddItemButton" onclick="openModal('modalFinancialItem')" data-i18n="add_item">＋ Добавить</button>
       </div>
       <div class="financial-net-worth"><span data-i18n="net_worth">Чистый капитал</span><strong id="financialNetWorth">0 ₴</strong></div>
       <div class="financial-metrics">
@@ -367,7 +367,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="financial-metric"><span data-i18n="other_assets">Доп. активы</span><strong id="financialAssets">0 ₴</strong></div>
         <div class="financial-metric"><span data-i18n="debts">Долги</span><strong id="financialDebts">0 ₴</strong></div>
       </div>
-      <p class="financial-note" data-i18n="fin_note">Баланс и копилки берутся из личного бюджета автоматически. Добавляй сюда другие счета, наличные вне приложения, имущество и долги — не дублируй деньги, уже учтённые в балансе или копилках.</p>
+      <p id="financialOverviewNote" class="financial-note" data-i18n="fin_note">Баланс и копилки берутся из личного бюджета автоматически. Добавляй сюда другие счета, наличные вне приложения, имущество и долги — не дублируй деньги, уже учтённые в балансе или копилках.</p>
       <div id="financialItemsList" class="financial-items-list"></div>
     </section>
     <div class="row-between">

@@ -653,7 +653,7 @@ function renderBattlePass(){
   const bar=document.getElementById('battlePassProgressBar');if(bar)bar.style.width=(completed/BATTLE_PASS_TASKS.length*100)+'%';
   tasksEl.innerHTML=BATTLE_PASS_TASKS.map(t=>{const val=stats[t.metric],done=val>=t.target,shown=t.metric==='volumeUsd'?'$'+Number(val).toLocaleString('en-US',{maximumFractionDigits:2}):String(val),target=t.metric==='volumeUsd'?'$'+t.target:String(t.target);return '<div class="battlepass-task '+(done?'is-done':'')+'"><span class="battlepass-task-icon">'+(done?'✓':'🎯')+'</span><div><b>'+t.title+'</b><small>'+t.desc+'</small><div class="battlepass-task-meter">'+shown+' / '+target+'</div></div></div>';}).join('');
   const isPro=battlePassTrack==='pro',claimed=new Set((battlePassStats.claimed?.[battlePassTrack]||[]).map(Number)),hasPro=Boolean(canUseProFeatures);
-  rewardsEl.innerHTML=Array.from({length:30},(_,i)=>{const tier=i+1,task=battlePassTierRequirement(tier),unlocked=stats[task.metric]>=task.target,coupon=isPro||tier%5===0?10:0,earned=claimed.has(tier),proLocked=isPro&&!hasPro,label=coupon?'Купон −'+coupon+'%':(isPro?'PRO бонус':'Монеты'),status=earned?'Получено':proLocked?'Нужен PRO':unlocked?'Забрать':'Уровень '+tier,disabled=earned||proLocked||!unlocked;return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">УРОВЕНЬ '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':isPro?'💎':'🪙')+'</div><b>'+label+'</b><small>'+(coupon?'Награда сезона':isPro?'Бонус PRO':'Опыт сезона')+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';}).join('');
+  rewardsEl.innerHTML=Array.from({length:30},(_,i)=>{const tier=i+1,task=battlePassTierRequirement(tier),unlocked=stats[task.metric]>=task.target,coupon=isPro||tier%5===0?10:0,earned=claimed.has(tier),proLocked=isPro&&!hasPro,label=coupon?t('Купон −')+coupon+'%':(isPro?t('PRO бонус'):t('Монеты')),status=earned?t('Получено'):proLocked?t('Нужен PRO'):unlocked?t('Забрать'):t('Уровень ')+tier,disabled=earned||proLocked||!unlocked;return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">УРОВЕНЬ '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':isPro?'💎':'🪙')+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):isPro?t('PRO бонус'):t('Опыт сезона'))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';}).join('');
   const note=document.getElementById('battlePassTrackNote');if(note)note.textContent=isPro?(hasPro?'PRO: купон 10% на каждом из 30 уровней.':'Платная дорожка доступна с активной подпиской PRO.'):'Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.';
 }
 async function claimBattlePassReward(track,tier){
@@ -699,12 +699,12 @@ function updateCouponSelector(){
     choiceNone.classList.toggle('selected', !select.value);
     choiceNone.setAttribute('aria-pressed', String(!select.value));
   }
-  if(stock10) stock10.textContent = count10 > 0 ? 'Доступно купонов: ' + count10 : 'Пока нет купонов';
-  if(stock20) stock20.textContent = count20 > 0 ? 'Доступно купонов: ' + count20 : 'Пока нет купонов';
+  if(stock10) stock10.textContent = count10 > 0 ? t('Доступно купонов: ') + count10 : t('Пока нет купонов');
+  if(stock20) stock20.textContent = count20 > 0 ? t('Доступно купонов: ') + count20 : t('Пока нет купонов');
   if(info){
     if(select.value === '10') info.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Скидка 10% выбрана. Купон спишется после подтверждения оплаты.</span>';
     else if(select.value === '20') info.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Скидка 20% выбрана. Купон спишется после подтверждения оплаты.</span>';
-    else info.innerHTML = '<i class="fa-solid fa-shield-halved"></i><span>Выбери доступный купон или продолжай без скидки. Купон списывается только после оплаты.</span>';
+    else info.innerHTML = '<i class="fa-solid fa-shield-halved"></i><span>'+t('Выбери доступный купон или продолжай без скидки. Купон списывается только после оплаты.')+'</span>';
   }
   updatePricingDisplay();
 }
@@ -1617,7 +1617,7 @@ function renderFamilyStatus(family){
 
   const members = family.members && typeof family.members === 'object'
     ? family.members : {};
-  if(status) status.textContent = 'Семейная группа активна';
+  if(status) status.textContent = t('Семейная группа активна');
   if(currentInfo) currentInfo.style.display = 'block';
   if(emptyInfo) emptyInfo.style.display = 'none';
   if(actions) actions.style.display = 'none';
@@ -1629,7 +1629,7 @@ function renderFamilyStatus(family){
   if(codeNode) codeNode.textContent = family.id || '';
   if(countNode){
     const count = Object.keys(members).length;
-    countNode.textContent = 'Участников: ' + count + (family.currentRole === 'owner' ? ' · Ты организатор' : '');
+    countNode.textContent = t('Участников: ') + count + (family.currentRole === 'owner' ? t(' · Ты организатор') : '');
   }
   hideFamilyForms();
 }

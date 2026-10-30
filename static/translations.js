@@ -188,7 +188,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Несколько валют и языков, категории и финансовые цели.",
     help_adv_pro_desc: "Подробный экспорт в Excel, собственные категории, персональный фон и напоминания.",
     help_adv_trial_desc: "Новым пользователям доступен пробный период на 30 дней.",
-    help_adv_bonus_desc: "Купон 10% за приглашение и за каждую подтверждённую оплату реферала; купон 20% за принятый отзыв.",
+    help_adv_bonus_desc: "Купон 10% за приглашение и за каждую подтверждённую оплату реферала; купон 20% за принятый отзыв."
+    help_adv_payment_desc: "Выбирай оплату звёздами Telegram или USDT через Crypto Pay.",
   },
 
   uk: {
@@ -380,7 +381,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Кілька валют і мов, категорії та фінансові цілі.",
     help_adv_pro_desc: "Детальний експорт в Excel, власні категорії, персональний фон і нагадування.",
     help_adv_trial_desc: "Новим користувачам доступний пробний період на 30 днів.",
-    help_adv_bonus_desc: "Купон 10% за запрошення та за кожну підтверджену оплату реферала; купон 20% за схвалений відгук.",
+    help_adv_bonus_desc: "Купон 10% за запрошення та за кожну підтверджену оплату реферала; купон 20% за схвалений відгук."
+    help_adv_payment_desc: "Обирай оплату зірками Telegram або USDT через Crypto Pay.",
   },
 
   en: {
@@ -572,7 +574,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Multiple currencies and languages, categories and financial goals.",
     help_adv_pro_desc: "Detailed Excel reports, custom categories, personal backgrounds and reminders.",
     help_adv_trial_desc: "New users get a 30-day trial.",
-    help_adv_bonus_desc: "Get a 10% coupon for inviting someone and for each confirmed referral payment, plus a 20% coupon for an approved review.",
+    help_adv_bonus_desc: "Get a 10% coupon for inviting someone and for each confirmed referral payment, plus a 20% coupon for an approved review."
+    help_adv_payment_desc: "Choose Telegram Stars or USDT via Crypto Pay.",
   },
 
   de: {
@@ -764,7 +767,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Mehrere Währungen und Sprachen, Kategorien und Sparziele.",
     help_adv_pro_desc: "Detaillierte Excel-Berichte, eigene Kategorien, persönliche Hintergründe und Erinnerungen.",
     help_adv_trial_desc: "Neue Nutzer erhalten 30 Tage kostenlos zum Testen.",
-    help_adv_bonus_desc: "10-%-Gutschein für Einladungen und jede bestätigte Zahlung eines geworbenen Nutzers sowie 20-%-Gutschein für eine angenommene Bewertung.",
+    help_adv_bonus_desc: "10-%-Gutschein für Einladungen und jede bestätigte Zahlung eines geworbenen Nutzers sowie 20-%-Gutschein für eine angenommene Bewertung."
+    help_adv_payment_desc: "Wähle Telegram Stars oder USDT über Crypto Pay.",
   },
 
   es: {
@@ -956,7 +960,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Varias monedas e idiomas, categorías y objetivos financieros.",
     help_adv_pro_desc: "Informes detallados de Excel, categorías propias, fondos personalizados y recordatorios.",
     help_adv_trial_desc: "Los nuevos usuarios tienen 30 días de prueba.",
-    help_adv_bonus_desc: "Cupón del 10 % por invitar y por cada pago confirmado de un referido, más un cupón del 20 % por una reseña aceptada.",
+    help_adv_bonus_desc: "Cupón del 10 % por invitar y por cada pago confirmado de un referido, más un cupón del 20 % por una reseña aceptada."
+    help_adv_payment_desc: "Elige Telegram Stars o USDT mediante Crypto Pay.",
   },
 
   fr: {
@@ -1148,7 +1153,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Plusieurs devises et langues, catégories et objectifs financiers.",
     help_adv_pro_desc: "Rapports Excel détaillés, catégories personnalisées, fonds personnels et rappels.",
     help_adv_trial_desc: "Les nouveaux utilisateurs bénéficient de 30 jours d’essai.",
-    help_adv_bonus_desc: "Coupon de 10 % pour une invitation et chaque paiement confirmé d’un filleul, plus un coupon de 20 % pour un avis accepté.",
+    help_adv_bonus_desc: "Coupon de 10 % pour une invitation et chaque paiement confirmé d’un filleul, plus un coupon de 20 % pour un avis accepté."
+    help_adv_payment_desc: "Choisissez Telegram Stars ou USDT via Crypto Pay.",
   },
 
   it: {
@@ -1340,7 +1346,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Più valute e lingue, categorie e obiettivi finanziari.",
     help_adv_pro_desc: "Report Excel dettagliati, categorie personalizzate, sfondi personali e promemoria.",
     help_adv_trial_desc: "I nuovi utenti hanno 30 giorni di prova.",
-    help_adv_bonus_desc: "Coupon del 10% per ogni invito e per ogni pagamento confermato di un invitato, più un coupon del 20% per una recensione approvata.",
+    help_adv_bonus_desc: "Coupon del 10% per ogni invito e per ogni pagamento confermato di un invitato, più un coupon del 20% per una recensione approvata."
+    help_adv_payment_desc: "Scegli Telegram Stars oppure USDT tramite Crypto Pay.",
   },
 
   pl: {
@@ -1532,7 +1539,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Wiele walut i języków, kategorie oraz cele finansowe.",
     help_adv_pro_desc: "Szczegółowe raporty Excel, własne kategorie, personalne tła i przypomnienia.",
     help_adv_trial_desc: "Nowi użytkownicy otrzymują 30 dni okresu próbnego.",
-    help_adv_bonus_desc: "Kupon 10% za zaproszenie i każdą potwierdzoną płatność poleconej osoby oraz kupon 20% za zaakceptowaną opinię.",
+    help_adv_bonus_desc: "Kupon 10% za zaproszenie i każdą potwierdzoną płatność poleconej osoby oraz kupon 20% za zaakceptowaną opinię."
+    help_adv_payment_desc: "Wybierz Telegram Stars lub USDT przez Crypto Pay.",
   },
 
   tr: {
@@ -1724,7 +1732,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "Birden fazla para birimi ve dil, kategoriler ve finansal hedefler.",
     help_adv_pro_desc: "Ayrıntılı Excel raporları, özel kategoriler, kişisel arka planlar ve hatırlatmalar.",
     help_adv_trial_desc: "Yeni kullanıcılar 30 günlük deneme süresinden yararlanır.",
-    help_adv_bonus_desc: "Davet için ve yönlendirdiğin kişinin onaylanan her ödemesi için %10 kupon; kabul edilen yorum için %20 kupon.",
+    help_adv_bonus_desc: "Davet için ve yönlendirdiğin kişinin onaylanan her ödemesi için %10 kupon; kabul edilen yorum için %20 kupon."
+    help_adv_payment_desc: "Telegram Stars veya Crypto Pay üzerinden USDT ile ödeme yap.",
   },
 
   zh: {
@@ -1915,7 +1924,8 @@ const TRANSLATIONS = {
     help_adv_flex_desc: "支持多种货币和语言、分类及财务目标。",
     help_adv_pro_desc: "详细 Excel 报告、自定义类别、个性化背景和提醒。",
     help_adv_trial_desc: "新用户可享受 30 天试用期。",
-    help_adv_bonus_desc: "每邀请一位用户及其每笔确认付款可获得 10% 优惠券；评价通过后可获得 20% 优惠券。",
+    help_adv_bonus_desc: "每邀请一位用户及其每笔确认付款可获得 10% 优惠券；评价通过后可获得 20% 优惠券。"
+    help_adv_payment_desc: "可选择使用 Telegram Stars 或通过 Crypto Pay 使用 USDT 付款。",
   }
 };
 

@@ -629,9 +629,16 @@ function renderReferralStats(){
   const localDaysLeft=Math.max(0,Math.ceil((endDate-today)/86400000));
   const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft??localDaysLeft):localDaysLeft;
   if(days)days.textContent=String(daysLeft);
-  const tgUserId=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  const tg=window.Telegram?.WebApp;
+  let tgUserId=tg?.initDataUnsafe?.user?.id||'';
+  if(!tgUserId&&tg?.initData){
+    try{
+      const rawUser=new URLSearchParams(tg.initData).get('user');
+      if(rawUser)tgUserId=JSON.parse(rawUser).id||'';
+    }catch(error){console.warn('Could not read Telegram user for referral fallback:',error);}
+  }
   const fallbackLink=tgUserId?('https://t.me/moneyfamilybudget_bot?start=ref_'+tgUserId):'';
-  const referralLink=referralStats.link||fallbackLink;
+  const referralLink=String(referralStats.link||fallbackLink||'');
   if(link){
     link.value=referralLink;
     link.placeholder=referralLink?'':'Открой приложение через Telegram, чтобы получить ссылку';

@@ -340,7 +340,7 @@ function _addAutoTextEntry(map, patterns, source, target, aliases=[]){
     let cursor=0, expression='^';
     const escapeRegex=value=>value.replace(/[|\\{}()[\]^$+*?.]/g,'\\$&');
     for(const token of tokens){
-      expression+=escapeRegex(template.slice(cursor,token.index))+'([\s\S]*?)';
+      expression+=escapeRegex(template.slice(cursor,token.index))+'(.*?)';
       cursor=token.index+token[0].length;
     }
     expression+=escapeRegex(template.slice(cursor))+'$';

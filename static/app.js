@@ -122,7 +122,7 @@ async function previewBankStatement(file){
     });
     const summary=document.getElementById('bankImportSummary');
     summary.style.display='block';
-    summary.textContent='Найдено операций: '+bankImportRows.length+(data.skipped?' · Пропущено строк без даты/суммы: '+data.skipped:'')+(data.truncated?' · Показаны первые 2000 операций.':'');
+    summary.textContent=t('bank_import_count').replace('{count}',String(bankImportRows.length))+(data.skipped?t('bank_import_skipped').replace('{count}',String(data.skipped)):'')+(data.truncated?t('bank_import_truncated'):'');
     renderBankImportRows();
     status.textContent=bankImportRows.length?bankUi('Проверь суммы, типы и категории. Операции с возможными переводами отключены.'):bankUi('В выписке не найдено операций.');
     confirm.disabled=!bankImportRows.some(r=>r.include);
@@ -163,11 +163,11 @@ async function confirmBankImport(){
   const unique=[],seen=new Set();
   selected.forEach(row=>{row.amount=Number(row.amount);row.currency=String(row.currency||appData.currency||'UAH').toUpperCase();row.icon=bankCategoryIcon(row.category,row.type);row.importFingerprint=bankFingerprint(row);if(!seen.has(row.importFingerprint)){seen.add(row.importFingerprint);unique.push(row);}});
   if(!unique.length)return;
-  if(unique.length>500){alert('За один раз можно импортировать не больше 500 операций. Сними галочки с лишних строк и повтори.');return;}
+  if(unique.length>500){alert(t('bank_import_limit'));return;}
   const currencies=[...new Set(unique.map(r=>String(r.currency||appData.currency||'UAH').toUpperCase()))];
-  if(currencies.length>1){alert('В этой выписке несколько валют. Чтобы не исказить баланс, импортируй каждую валюту отдельным файлом.');return;}
-  if(currencies[0]!==String(appData.currency||'UAH').toUpperCase()){alert('Валюта выписки — '+currencies[0]+', а валюта приложения — '+String(appData.currency||'UAH')+'. Сначала измени валюту приложения в Настройках на '+currencies[0]+', затем загрузи выписку снова.');return;}
-  bankImportBusy=true;const button=document.getElementById('bankImportConfirm');button.disabled=true;button.textContent='Импорт…';
+  if(currencies.length>1){alert(t('bank_multi_currency'));return;}
+  if(currencies[0]!==String(appData.currency||'UAH').toUpperCase()){alert(t('bank_currency_mismatch').replaceAll('{currency}',currencies[0]).replace('{appCurrency}',String(appData.currency||'UAH')));return;}
+  bankImportBusy=true;const button=document.getElementById('bankImportConfirm');button.disabled=true;button.textContent=t('bank_importing');
   try{
     let imported=0,duplicates=0;
     if(budgetMode==='family'&&currentFamily){
@@ -1499,7 +1499,7 @@ function openEnvelopeEditor(id){
 async function deleteEnvelope(id){
   const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;
   const item=list.find(x=>String(x.id)===String(id));if(!item)return;
-  if(!window.confirm('Удалить конверт «'+item.name+'»?'))return;
+  if(!window.confirm(t('dialog_delete_envelope').replace('{name}',String(item.name||''))))return;
   try{
     if(budgetMode==='family'&&currentFamily){
       await familyRequest('/api/family/envelopes/'+encodeURIComponent(String(id)),'DELETE');
@@ -1548,7 +1548,7 @@ async function deleteBank(id){
   const familyMode=budgetMode==='family'&&currentFamily;
   const bankItems=familyMode?familyBanks:appData.banks;
   const item=bankItems.find(x=>String(x.id)===String(id));if(!item)return;
-  if(!window.confirm('Удалить копилку «'+item.name+'»?'))return;
+  if(!window.confirm(t('dialog_delete_bank').replace('{name}',String(item.name||''))))return;
   try{
     if(familyMode){
       await familyRequest('/api/family/banks/'+encodeURIComponent(String(id)),'DELETE');
@@ -2035,7 +2035,7 @@ async function copyFamilyCode(){
   if(!code) return;
   try{
     await navigator.clipboard.writeText(code);
-    familyFeedback('Код ' + code + ' скопирован. Отправь его участнику семьи.');
+    familyFeedback(t('family_code_copied').replace('{code}',String(code)));
   } catch(error){
     familyFeedback('Не удалось скопировать автоматически. Код: ' + code, true);
   }
@@ -2627,7 +2627,7 @@ async function buyPlan(plan, method){
       window.open(data.invoice_url, '_blank');
     }
   } catch(error){
-    alert('Ошибка оплаты: ' + error.message);
+    alert(t('payment_error').replace('{error}',String(error.message||'')));
   }
 }
 
@@ -2782,7 +2782,7 @@ async function buyCryptoCoupon(percent){
     return;
   }
   const price=Number(percent)===10?1:2;
-  if(status)status.textContent='Создаю счёт Crypto Pay на '+price+' USDT…';
+  if(status)status.textContent=t('crypto_invoice_creating').replace('{price}',String(price));
   try{
     const response=await fetch('/api/coupons/shop/crypto',{
       method:'POST',
@@ -2790,8 +2790,8 @@ async function buyCryptoCoupon(percent){
       body:JSON.stringify({percent:String(percent)})
     });
     const data=await response.json().catch(()=>({}));
-    if(!response.ok||!data.invoice_url)throw new Error(data.detail||'Не удалось создать счёт Crypto Pay.');
-    if(status)status.textContent='Счёт создан на '+price+' USDT. После оплаты дождись подтверждения бота — купон появится в балансе.';
+    if(!response.ok||!data.invoice_url)throw new Error(data.detail||t('crypto_invoice_failed'));
+    if(status)status.textContent=t('crypto_invoice_created').replace('{price}',String(price));
     const invoiceUrl=String(data.invoice_url);
     // Use the same Telegram WebApp link opener as successful tariff payments.
     if(typeof tg.openLink==='function'){
@@ -2815,7 +2815,7 @@ async function buyRewardCoupon(percent){
     const response=await fetch('/api/rewards/shop/buy',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({percent:String(percent)})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.detail||'Не удалось купить купон.');
-    if(status)status.textContent='Купон −'+percent+'% куплен! Остаток: '+Number(data.points||0)+' монет.';
+    if(status)status.textContent=t('crypto_coupon_bought').replace('{percent}',String(percent)).replace('{points}',String(Number(data.points||0)));
     await refreshRewardStatus();
     await loadPlanStatus();
   }catch(error){if(status)status.textContent=error.message||'Не удалось купить купон.';}
@@ -2825,11 +2825,11 @@ async function refreshAIStatus(){
   const node=document.getElementById('aiUsageStatus');
   if(!node)return;
   const tg=window.Telegram?.WebApp;
-  if(!tg?.initData){node.textContent='Открой приложение через Telegram, чтобы увидеть баланс ИИ-запросов.';return;}
+  if(!tg?.initData){node.textContent=t('ai_status_telegram');return;}
   try{
     const response=await fetch('/api/ai/status',{headers:{'X-Init-Data':tg.initData}});
     const data=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(data.detail||'Не удалось проверить баланс.');
+    if(!response.ok)throw new Error(data.detail||t('ai_status_failed'));
     const parts=[];
     if(data.is_pro)parts.push(t('PRO: осталось {remaining} из {limit} запросов в этом месяце').replace('{remaining}',String(Number(data.monthly_remaining||0))).replace('{limit}',String(Number(data.monthly_limit||30))));
     if(Number(data.credits||0)>0)parts.push(t('Купленные запросы: {credits}').replace('{credits}',String(Number(data.credits))));
@@ -2889,11 +2889,11 @@ async function sendFinanceQuestion(){
       })
     });
     const data = await response.json().catch(()=>({}));
-    if(!response.ok) throw new Error(data.detail || 'Не удалось получить ответ от ИИ.');
-    financeAssistantMessages.push({role:'assistant',content:String(data.answer || 'Не удалось сформировать ответ.')});
+    if(!response.ok) throw new Error(data.detail || t('ai_response_failed'));
+    financeAssistantMessages.push({role:'assistant',content:String(data.answer || t('ai_response_empty'))});
     refreshAIStatus();
   }catch(error){
-    financeAssistantMessages.push({role:'assistant',content:'Не получилось получить ответ: '+(error.message || 'попробуй ещё раз чуть позже.')});
+    financeAssistantMessages.push({role:'assistant',content:t('ai_response_error').replace('{error}',String(error.message || t('ai_response_retry')))});
   }finally{
     financeAssistantBusy = false;
     if(send) send.disabled = false;

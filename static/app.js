@@ -2316,7 +2316,7 @@ function renderAll(){
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
         ${goalStatusHtml}
         <div class="muted" style="font-size:12px;margin:6px 0 10px">${target>0&&saved>=target?'🎉 Цель достигнута':target>0?'Осталось собрать: '+fmtMoney(target-saved):''}</div>
-        ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">Дедлайн: ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString('ru-RU') + ' · ' + deadlineText + '</div>' : ''}
+        ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">' + t('Дедлайн:') + ' ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString(appData.lang || 'ru-RU') + ' · ' + deadlineText + '</div>' : ''}
         ${contributorTotalsHtml}
         ${contributionHistoryHtml}
         <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openBankEditor('${b.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteBank('${b.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>

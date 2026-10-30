@@ -4,11 +4,37 @@ const CURRENCIES = [{id:'UAH',sym:'₴',label:'Hryvnia'},{id:'RUB',sym:'₽',lab
 // Keep each Telegram account's financial data in its own browser storage namespace.
 const telegramUserId = String(window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest');
 const appStorageKey = 'budgetApp_v18_user_' + telegramUserId;
-let appData = JSON.parse(localStorage.getItem(appStorageKey)) || {
+const defaultAppData = {
   balance: 0, monthIncome: 0, monthExpense: 0, history: [], envelopes: [], banks: [], recurring: [], customCategories: [],
   selectedCategory: 'Еда', currentIcon: '🍔', lang: 'ru', currency: 'UAH', theme: 'dark', wallpaper: null,
   currentMonth: new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0')
 };
+
+// Never let a damaged or unavailable browser-storage record stop the Mini App.
+// Keep the original value under a recovery key before falling back to defaults.
+let appData = defaultAppData;
+try {
+  const storedAppData = localStorage.getItem(appStorageKey);
+  if (storedAppData) {
+    try {
+      const parsedAppData = JSON.parse(storedAppData);
+      if (parsedAppData && typeof parsedAppData === 'object' && !Array.isArray(parsedAppData)) {
+        appData = parsedAppData;
+      } else {
+        throw new Error('Saved app data is not a valid object');
+      }
+    } catch (parseError) {
+      try {
+        localStorage.setItem(appStorageKey + '_recovery_' + Date.now(), storedAppData);
+      } catch (backupError) {
+        console.error('Could not back up damaged Family Budget data:', backupError);
+      }
+      console.error('Saved Family Budget data could not be read; original data was preserved for recovery:', parseError);
+    }
+  }
+} catch (storageError) {
+  console.warn('Browser storage is unavailable; Family Budget is running with temporary default data:', storageError);
+}
 
 let canUseProFeatures = false;
 let referralStats = { count: 0, coupons10: 0, coupons20: 0 };

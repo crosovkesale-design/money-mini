@@ -1983,7 +1983,7 @@ function renderForecast(){
 function renderAll(){
   const visibleBudget=getVisibleBudget(),balance=document.getElementById('totalBalance'),income=document.getElementById('monthIncome'),expense=document.getElementById('monthExpense');
   if(balance)balance.innerText=fmtMoney(visibleBudget.balance);if(income)income.innerText='+'+fmtMoney(visibleBudget.monthIncome);if(expense)expense.innerText='-'+fmtMoney(visibleBudget.monthExpense);
-  const title=document.getElementById('budgetBalanceTitle');if(title)title.textContent=visibleBudget.isFamily?'Общий баланс семьи':'Личный баланс';
+  const title=document.getElementById('budgetBalanceTitle');if(title)title.textContent=visibleBudget.isFamily?t('family_balance_title') : t('personal_balance_title');
   const search=document.getElementById('histSearch'),q=search?search.value.toLowerCase():'';
   const memberFilter=document.getElementById('histMemberFilter');
   if(memberFilter){
@@ -2045,7 +2045,7 @@ function renderAll(){
         <div class="progress-track"><div class="progress-fill ${pct>=100?'over-limit':''}" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>${remaining>=0?'Осталось':'Превышение'}: ${fmtMoney(Math.abs(remaining))}</span><span>${Math.round(pct)}%</span></div>
       </div>`;
-    }).join('') || '<div class="muted">Пока нет конвертов. Создай конверт, чтобы распределять расходы.</div>';
+    }).join('') || '<div class="muted">'+t('no_envelopes')+'</div>';
   }
 
   const banks = document.getElementById('banksList');
@@ -2087,7 +2087,7 @@ function renderAll(){
         <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openBankEditor('${b.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteBank('${b.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>
         <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank('${b.id}')">＋ Пополнить</button>
       </div>`;
-    }).join('') || '<div class="muted">Пока нет копилок. Создай цель накопления.</div>';
+    }).join('') || '<div class="muted">'+t('no_savings_banks')+'</div>';
   }
 
   const recurring = document.getElementById('recurringList');
@@ -2551,6 +2551,7 @@ async function sendFinanceQuestion(){
       headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},
       body:JSON.stringify({
         question:question.slice(0,1200),
+        language:appData.lang || 'ru',
         messages:financeAssistantMessages.slice(0,-1).slice(-8),
         context:financeAssistantContext()
       })

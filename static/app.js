@@ -1630,7 +1630,7 @@ function renderFamilyStatus(family){
   const leaveBtn = document.getElementById('familyLeaveBtn');
 
   if(!family){
-    if(status) status.textContent = 'Ты пока не состоишь в семейной группе.';
+    if(status) status.textContent = t('src_family_empty');
     if(currentInfo) currentInfo.style.display = 'none';
     if(emptyInfo) emptyInfo.style.display = 'block';
     if(actions) actions.style.display = 'grid';
@@ -1641,7 +1641,7 @@ function renderFamilyStatus(family){
 
   const members = family.members && typeof family.members === 'object'
     ? family.members : {};
-  if(status) status.textContent = t('Семейная группа активна');
+  if(status) status.textContent = t('src_family_active');
   if(currentInfo) currentInfo.style.display = 'block';
   if(emptyInfo) emptyInfo.style.display = 'none';
   if(actions) actions.style.display = 'none';
@@ -1653,7 +1653,7 @@ function renderFamilyStatus(family){
   if(codeNode) codeNode.textContent = family.id || '';
   if(countNode){
     const count = Object.keys(members).length;
-    countNode.textContent = t('Участников: {count}{role}').replace('{count}',String(count)).replace('{role}',family.currentRole === 'owner' ? t(' · Ты организатор') : '');
+    countNode.textContent = t('src_family_members').replace('{count}',String(count)).replace('{role}',family.currentRole === 'owner' ? t('src_family_owner') : '');
   }
   hideFamilyForms();
 }
@@ -2427,7 +2427,7 @@ async function refreshRewardStatus(){
     if(points)points.textContent=String(Number(data.points||0));
     if(streak)streak.textContent=String(Number(data.streak||0));
     if(claim)claim.disabled=Boolean(data.claimed_today);
-    status.textContent=t(data.claimed_today ? 'Сегодня награда уже получена. Возвращайся завтра, чтобы продолжить серию.' : 'Забери +10 монет сегодня. Серия растёт за каждый день подряд.');
+    status.textContent=t(data.claimed_today ? 'src_daily_claimed' : 'src_daily_available');
   }catch(error){status.textContent=error.message||'Не удалось загрузить награды.';}
 }
 

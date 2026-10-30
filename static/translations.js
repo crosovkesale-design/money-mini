@@ -2601,6 +2601,23 @@ const TRANSLATIONS = {
   }
 }
 
+const APP_TITLE_I18N = {
+  ru:'Семейный бюджет',
+  uk:'Сімейний бюджет',
+  en:'Family Budget',
+  de:'Familienbudget',
+  es:'Presupuesto familiar',
+  fr:'Budget familial',
+  it:'Bilancio familiare',
+  pl:'Budżet rodzinny',
+  tr:'Aile Bütçesi',
+  zh:'家庭预算'
+};
+for (const [lang, value] of Object.entries(APP_TITLE_I18N)) {
+  if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['app_title'] = value;
+}
+
+
 const AI_BANK_STATUS_I18N = {
   ru:{
     bank_import_failed:'Не удалось импортировать операции.',

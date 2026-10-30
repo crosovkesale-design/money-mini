@@ -531,12 +531,13 @@ async def daily_backup():
 
 
 async def payment_reminder():
-    """Send monthly Telegram reminders for user-configured recurring payments."""
+    """Send one monthly Telegram reminder per recurring payment, with an atomic delivery claim."""
     while True:
         try:
             if bot:
                 now = datetime.now(KYIV)
-                # Check within a two-hour window; each reminder is marked per month.
+                # The worker may wake at either 09:00 or 10:00 Kyiv time.
+                # A Firebase transaction prevents two app instances from sending the same reminder.
                 if 9 <= now.hour <= 10:
                     month_key = now.strftime("%Y-%m")
                     today_day = now.day
@@ -554,7 +555,6 @@ async def payment_reminder():
                                 continue
                             try:
                                 due_day = max(1, min(31, int(item.get("day") or 1)))
-                                # A day 29/30/31 falls on the last day in shorter months.
                                 import calendar
                                 due_day = min(due_day, calendar.monthrange(now.year, now.month)[1])
                                 if due_day != today_day:
@@ -578,19 +578,61 @@ async def payment_reminder():
                                     "zh": ("🔔 <b>定期付款提醒</b>", "金额", "此付款计划于今天进行。"),
                                 }
                                 title, amount_label, due_text = messages.get(lang, messages["en"])
-                                await bot.send_message(
-                                    int(uid),
-                                    f"{title}\n\n"
-                                    f"<b>{name}</b>\n{amount_label}: <b>{amount:,.2f} {currency}</b>\n"
-                                    f"{due_text}",
-                                    parse_mode="HTML",
-                                )
-                                await fb.patch(f"/users/{uid}/paymentReminders/{reminder_id}", {"lastNotifiedMonth": month_key})
+                                reminder_path = f"/users/{uid}/paymentReminders/{reminder_id}"
+                                claim_time = int(now.timestamp() * 1000)
+                                claim = {"won": False}
+
+                                def claim_delivery(current):
+                                    current = current if isinstance(current, dict) else {}
+                                    if current.get("lastNotifiedMonth") == month_key:
+                                        return current
+                                    claimed_month = current.get("notificationClaimMonth")
+                                    claimed_at = int(current.get("notificationClaimAt") or 0)
+                                    # Allow recovery if a process died while holding an old claim.
+                                    if claimed_month == month_key and claim_time - claimed_at < 15 * 60 * 1000:
+                                        return current
+                                    claim["won"] = True
+                                    current.update({
+                                        "notificationClaimMonth": month_key,
+                                        "notificationClaimAt": claim_time,
+                                    })
+                                    return current
+
+                                await fb.transaction(reminder_path, claim_delivery)
+                                if not claim["won"]:
+                                    continue
+
+                                try:
+                                    await bot.send_message(
+                                        int(uid),
+                                        f"{title}\n\n"
+                                        f"<b>{name}</b>\n{amount_label}: <b>{amount:,.2f} {currency}</b>\n"
+                                        f"{due_text}",
+                                        parse_mode="HTML",
+                                    )
+                                    def mark_delivered(current):
+                                        current = current if isinstance(current, dict) else {}
+                                        if current.get("notificationClaimMonth") == month_key and int(current.get("notificationClaimAt") or 0) == claim_time:
+                                            current["lastNotifiedMonth"] = month_key
+                                            current.pop("notificationClaimMonth", None)
+                                            current.pop("notificationClaimAt", None)
+                                        return current
+                                    await fb.transaction(reminder_path, mark_delivered)
+                                    log.info("Payment reminder sent to user %s for %s", uid, reminder_id)
+                                except Exception:
+                                    def release_claim(current):
+                                        current = current if isinstance(current, dict) else {}
+                                        if current.get("notificationClaimMonth") == month_key and int(current.get("notificationClaimAt") or 0) == claim_time:
+                                            current.pop("notificationClaimMonth", None)
+                                            current.pop("notificationClaimAt", None)
+                                        return current
+                                    await fb.transaction(reminder_path, release_claim)
+                                    raise
                             except Exception as e:
                                 log.warning("Payment reminder failed for user %s: %s", uid, e)
         except Exception as e:
             log.warning("payment_reminder loop error: %s", e)
-        await asyncio.sleep(3600)
+        await asyncio.sleep(300)
 
 # ---------- ХЕНДЛЕРЫ БОТА ----------
 if bot:

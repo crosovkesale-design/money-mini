@@ -372,12 +372,31 @@ let receiptEditingTxId = null;
 let editingEnvelopeId = null;
 let editingBankId = null;
 
+const RECEIPT_I18N = {
+  ru:{expenseOnly:receiptUi('expenseOnly'),storeRequired:receiptUi('storeRequired'),itemsRequired:receiptUi('itemsRequired'),totalRequired:receiptUi('totalRequired'),notFound:receiptUi('notFound'),editFailed:receiptUi('editFailed'),removeConfirm:receiptUi('removeConfirm'),deleteFailed:receiptUi('deleteFailed'),imageOnly:receiptUi('imageOnly'),tooLarge:receiptUi('tooLarge'),telegramOnly:receiptUi('telegramOnly'),processing:receiptUi('processing'),timeout:receiptUi('timeout'),recognizeFailed:receiptUi('recognizeFailed'),itemsFound:'ИИ распознал товаров: {n}. Проверь названия, количество и цены перед сохранением.',itemsUnclear:'ИИ не смог уверенно прочитать товары. Проверь список и сумму перед сохранением.',aiDone:'✨ Чек обработан ИИ. Проверь распознанные данные перед сохранением.',ocrDone:'🧾 Использован резервный OCR. Проверь данные перед сохранением.',noText:receiptUi('noText'),rowsFound:'Распознано товаров: {n}. Проверь названия и цены перед сохранением.',pricesUnclear:receiptUi('pricesUnclear'),receiptDone:receiptUi('receiptDone'),partial:receiptUi('partial'),photoFailed:receiptUi('photoFailed'),added:'🧾 Чек добавлен: {store} · {n} поз. · {total}',addButton:receiptUi('addButton'),saveButton:receiptUi('saveButton'),reviewButton:receiptUi('reviewButton')},
+  uk:{expenseOnly:'Чек можна прикріпити лише до витрати.',storeRequired:'Вкажи назву магазину.',itemsRequired:'Додай хоча б один товар. Формат: Назва; ціна; кількість.',totalRequired:'Вкажи суму чека або ціни товарів.',notFound:'Операцію не знайдено.',editFailed:'Не вдалося змінити чек.',removeConfirm:'Прибрати чек? Сама витрата залишиться в історії.',deleteFailed:'Не вдалося видалити чек.',imageOnly:'Вибери зображення чека.',tooLarge:'Фото має бути меншим за 8 МБ.',telegramOnly:'Відкрий застосунок через Telegram, щоб розпізнати чек.',processing:'📷 Розпізнаю чек… Зазвичай це триває кілька секунд.',timeout:'Сервер надто довго обробляє фото. Спробуй чіткіше фото або повтори пізніше.',recognizeFailed:'Не вдалося розпізнати чек.',itemsFound:'ШІ розпізнав товарів: {n}. Перевір назви, кількість і ціни перед збереженням.',itemsUnclear:'ШІ не зміг упевнено прочитати товари. Перевір список і суму перед збереженням.',aiDone:'✨ Чек оброблено ШІ. Перевір розпізнані дані перед збереженням.',ocrDone:'🧾 Використано резервний OCR. Перевір дані перед збереженням.',noText:'Фото отримано, але текст не вдалося прочитати. Зроби рівний знімок без відблисків, щоб увесь чек був у кадрі.',rowsFound:'Розпізнано товарів: {n}. Перевір назви й ціни перед збереженням.',pricesUnclear:'Не вдалося впевнено розпізнати ціни. Технічний текст прибрано — перевір або виправ товари вручну.',receiptDone:'🧾 Чек розпізнано. Перевір очищений список товарів і суму.',partial:'🧾 Текст розпізнано частково. Зайві технічні рядки приховано; перевір товари й суму.',photoFailed:'Не вдалося розпізнати фото.',added:'🧾 Чек додано: {store} · {n} поз. · {total}',addButton:'Додати чек до операції',saveButton:'Зберегти зміни',reviewButton:'Перевірити й зберегти чек'},
+  en:{expenseOnly:'A receipt can only be attached to an expense.',storeRequired:'Enter the store name.',itemsRequired:'Add at least one item. Format: Name; price; quantity.',totalRequired:'Enter the receipt total or item prices.',notFound:'Transaction not found.',editFailed:'Could not update the receipt.',removeConfirm:'Remove the receipt? The expense will remain in your history.',deleteFailed:'Could not delete the receipt.',imageOnly:'Choose a receipt image.',tooLarge:'The photo must be smaller than 8 MB.',telegramOnly:'Open the app in Telegram to scan a receipt.',processing:'📷 Scanning receipt… This usually takes a few seconds.',timeout:'The server is taking too long to process the photo. Try a clearer photo or try again later.',recognizeFailed:'Could not scan the receipt.',itemsFound:'AI recognized {n} items. Check names, quantities and prices before saving.',itemsUnclear:'AI could not confidently read the items. Check the list and total before saving.',aiDone:'✨ Receipt processed by AI. Review the recognized details before saving.',ocrDone:'🧾 Backup OCR was used. Review the details before saving.',noText:'The photo was received, but its text could not be read. Take a straight, glare-free photo with the whole receipt in frame.',rowsFound:'Recognized {n} items. Check names and prices before saving.',pricesUnclear:'Prices could not be recognized confidently. Technical text was removed — check or edit the items manually.',receiptDone:'🧾 Receipt scanned. Review the cleaned item list and total.',partial:'🧾 Text was only partly recognized. Extra technical lines were hidden; check the items and total.',photoFailed:'Could not process the photo.',added:'🧾 Receipt added: {store} · {n} items · {total}',addButton:'Add receipt to transaction',saveButton:'Save changes',reviewButton:'Review and save receipt'},
+  de:{expenseOnly:'Ein Beleg kann nur an eine Ausgabe angehängt werden.',storeRequired:'Gib den Geschäftsnamen ein.',itemsRequired:'Füge mindestens einen Artikel hinzu. Format: Name; Preis; Menge.',totalRequired:'Gib den Gesamtbetrag oder Artikelpreise ein.',notFound:'Transaktion nicht gefunden.',editFailed:'Beleg konnte nicht geändert werden.',removeConfirm:'Beleg entfernen? Die Ausgabe bleibt im Verlauf.',deleteFailed:'Beleg konnte nicht gelöscht werden.',imageOnly:'Wähle ein Belegfoto aus.',tooLarge:'Das Foto muss kleiner als 8 MB sein.',telegramOnly:'Öffne die App in Telegram, um einen Beleg zu scannen.',processing:'📷 Beleg wird erkannt… Das dauert normalerweise nur wenige Sekunden.',timeout:'Der Server verarbeitet das Foto zu lange. Versuche ein schärferes Foto oder später erneut.',recognizeFailed:'Beleg konnte nicht erkannt werden.',itemsFound:'Die KI hat {n} Artikel erkannt. Prüfe Namen, Mengen und Preise vor dem Speichern.',itemsUnclear:'Die KI konnte die Artikel nicht sicher lesen. Prüfe Liste und Gesamtbetrag.',aiDone:'✨ Beleg mit KI verarbeitet. Prüfe die erkannten Daten vor dem Speichern.',ocrDone:'🧾 Ersatz-OCR wurde verwendet. Prüfe die Daten vor dem Speichern.',noText:'Das Foto wurde empfangen, aber der Text konnte nicht gelesen werden. Fotografiere den ganzen Beleg gerade und ohne Spiegelungen.',rowsFound:'{n} Artikel erkannt. Prüfe Namen und Preise vor dem Speichern.',pricesUnclear:'Preise konnten nicht sicher erkannt werden. Technischer Text wurde entfernt — prüfe die Artikel manuell.',receiptDone:'🧾 Beleg erkannt. Prüfe Artikelliste und Gesamtbetrag.',partial:'🧾 Text teilweise erkannt. Technische Zeilen wurden ausgeblendet; prüfe Artikel und Betrag.',photoFailed:'Foto konnte nicht verarbeitet werden.',added:'🧾 Beleg hinzugefügt: {store} · {n} Pos. · {total}',addButton:'Beleg zur Ausgabe hinzufügen',saveButton:'Änderungen speichern',reviewButton:'Beleg prüfen und speichern'},
+  es:{expenseOnly:'Solo se puede adjuntar un recibo a un gasto.',storeRequired:'Indica el nombre de la tienda.',itemsRequired:'Añade al menos un artículo. Formato: Nombre; precio; cantidad.',totalRequired:'Indica el total del recibo o los precios.',notFound:'Transacción no encontrada.',editFailed:'No se pudo actualizar el recibo.',removeConfirm:'¿Quitar el recibo? El gasto seguirá en el historial.',deleteFailed:'No se pudo eliminar el recibo.',imageOnly:'Elige una imagen del recibo.',tooLarge:'La foto debe pesar menos de 8 MB.',telegramOnly:'Abre la aplicación en Telegram para escanear el recibo.',processing:'📷 Escaneando recibo… Normalmente tarda unos segundos.',timeout:'El servidor tarda demasiado. Prueba con una foto más nítida o inténtalo más tarde.',recognizeFailed:'No se pudo escanear el recibo.',itemsFound:'La IA reconoció {n} artículos. Revisa nombres, cantidades y precios antes de guardar.',itemsUnclear:'La IA no pudo leer los artículos con seguridad. Revisa la lista y el total.',aiDone:'✨ Recibo procesado por IA. Revisa los datos antes de guardar.',ocrDone:'🧾 Se utilizó el OCR alternativo. Revisa los datos antes de guardar.',noText:'Se recibió la foto, pero no se pudo leer el texto. Fotografía todo el recibo de frente y sin reflejos.',rowsFound:'Se reconocieron {n} artículos. Revisa nombres y precios antes de guardar.',pricesUnclear:'No se pudieron reconocer los precios con seguridad. Se eliminó el texto técnico; revisa los artículos manualmente.',receiptDone:'🧾 Recibo reconocido. Revisa la lista y el total.',partial:'🧾 Texto reconocido parcialmente. Se ocultaron líneas técnicas; revisa los artículos y el total.',photoFailed:'No se pudo procesar la foto.',added:'🧾 Recibo añadido: {store} · {n} art. · {total}',addButton:'Añadir recibo al gasto',saveButton:'Guardar cambios',reviewButton:'Revisar y guardar recibo'},
+  fr:{expenseOnly:'Un reçu ne peut être joint qu’à une dépense.',storeRequired:'Indique le nom du magasin.',itemsRequired:'Ajoute au moins un article. Format : Nom ; prix ; quantité.',totalRequired:'Indique le total du reçu ou les prix des articles.',notFound:'Transaction introuvable.',editFailed:'Impossible de modifier le reçu.',removeConfirm:'Supprimer le reçu ? La dépense restera dans l’historique.',deleteFailed:'Impossible de supprimer le reçu.',imageOnly:'Choisis une image du reçu.',tooLarge:'La photo doit faire moins de 8 Mo.',telegramOnly:'Ouvre l’application dans Telegram pour scanner le reçu.',processing:'📷 Lecture du reçu… Cela prend généralement quelques secondes.',timeout:'Le serveur met trop de temps à traiter la photo. Essaie une photo plus nette ou réessaie plus tard.',recognizeFailed:'Impossible de lire le reçu.',itemsFound:'L’IA a reconnu {n} articles. Vérifie les noms, quantités et prix avant l’enregistrement.',itemsUnclear:'L’IA n’a pas pu lire les articles avec certitude. Vérifie la liste et le total.',aiDone:'✨ Reçu traité par IA. Vérifie les données avant l’enregistrement.',ocrDone:'🧾 OCR de secours utilisé. Vérifie les données avant l’enregistrement.',noText:'La photo a été reçue, mais le texte est illisible. Prends le reçu entier de face, sans reflets.',rowsFound:'{n} articles reconnus. Vérifie les noms et les prix avant l’enregistrement.',pricesUnclear:'Les prix n’ont pas pu être reconnus avec certitude. Le texte technique a été retiré ; vérifie les articles manuellement.',receiptDone:'🧾 Reçu reconnu. Vérifie la liste et le total.',partial:'🧾 Texte partiellement reconnu. Les lignes techniques ont été masquées ; vérifie les articles et le total.',photoFailed:'Impossible de traiter la photo.',added:'🧾 Reçu ajouté : {store} · {n} art. · {total}',addButton:'Ajouter le reçu à la dépense',saveButton:'Enregistrer les modifications',reviewButton:'Vérifier et enregistrer le reçu'},
+  it:{expenseOnly:'La ricevuta può essere allegata solo a una spesa.',storeRequired:'Inserisci il nome del negozio.',itemsRequired:'Aggiungi almeno un articolo. Formato: Nome; prezzo; quantità.',totalRequired:'Inserisci il totale o i prezzi degli articoli.',notFound:'Transazione non trovata.',editFailed:'Impossibile modificare la ricevuta.',removeConfirm:'Rimuovere la ricevuta? La spesa resterà nella cronologia.',deleteFailed:'Impossibile eliminare la ricevuta.',imageOnly:'Scegli un’immagine della ricevuta.',tooLarge:'La foto deve essere inferiore a 8 MB.',telegramOnly:'Apri l’app in Telegram per scansionare la ricevuta.',processing:'📷 Scansione della ricevuta… Di solito bastano pochi secondi.',timeout:'Il server impiega troppo tempo. Prova una foto più nitida o riprova più tardi.',recognizeFailed:'Impossibile leggere la ricevuta.',itemsFound:'L’IA ha riconosciuto {n} articoli. Controlla nomi, quantità e prezzi prima di salvare.',itemsUnclear:'L’IA non è riuscita a leggere gli articoli con sicurezza. Controlla elenco e totale.',aiDone:'✨ Ricevuta elaborata con IA. Controlla i dati prima di salvare.',ocrDone:'🧾 È stato usato l’OCR di riserva. Controlla i dati prima di salvare.',noText:'Foto ricevuta, ma il testo non è leggibile. Fotografa tutta la ricevuta frontalmente e senza riflessi.',rowsFound:'Riconosciuti {n} articoli. Controlla nomi e prezzi prima di salvare.',pricesUnclear:'Impossibile riconoscere i prezzi con sicurezza. Il testo tecnico è stato rimosso: controlla gli articoli manualmente.',receiptDone:'🧾 Ricevuta riconosciuta. Controlla elenco e totale.',partial:'🧾 Testo riconosciuto parzialmente. Le righe tecniche sono nascoste; controlla articoli e totale.',photoFailed:'Impossibile elaborare la foto.',added:'🧾 Ricevuta aggiunta: {store} · {n} art. · {total}',addButton:'Aggiungi ricevuta alla spesa',saveButton:'Salva modifiche',reviewButton:'Controlla e salva ricevuta'},
+  pl:{expenseOnly:'Paragon można dołączyć tylko do wydatku.',storeRequired:'Wpisz nazwę sklepu.',itemsRequired:'Dodaj co najmniej jeden produkt. Format: Nazwa; cena; ilość.',totalRequired:'Wpisz sumę paragonu lub ceny produktów.',notFound:'Nie znaleziono transakcji.',editFailed:'Nie udało się zmienić paragonu.',removeConfirm:'Usunąć paragon? Wydatek pozostanie w historii.',deleteFailed:'Nie udało się usunąć paragonu.',imageOnly:'Wybierz zdjęcie paragonu.',tooLarge:'Zdjęcie musi mieć mniej niż 8 MB.',telegramOnly:'Otwórz aplikację w Telegramie, aby zeskanować paragon.',processing:'📷 Skanowanie paragonu… Zwykle trwa to kilka sekund.',timeout:'Serwer zbyt długo przetwarza zdjęcie. Spróbuj wyraźniejszego zdjęcia lub ponownie później.',recognizeFailed:'Nie udało się odczytać paragonu.',itemsFound:'AI rozpoznało {n} produktów. Sprawdź nazwy, ilości i ceny przed zapisaniem.',itemsUnclear:'AI nie mogło pewnie odczytać produktów. Sprawdź listę i sumę.',aiDone:'✨ Paragon przetworzony przez AI. Sprawdź dane przed zapisaniem.',ocrDone:'🧾 Użyto zapasowego OCR. Sprawdź dane przed zapisaniem.',noText:'Otrzymano zdjęcie, ale nie udało się odczytać tekstu. Zrób proste zdjęcie całego paragonu bez odblasków.',rowsFound:'Rozpoznano {n} produktów. Sprawdź nazwy i ceny przed zapisaniem.',pricesUnclear:'Nie udało się pewnie rozpoznać cen. Usunięto tekst techniczny — sprawdź produkty ręcznie.',receiptDone:'🧾 Paragon rozpoznany. Sprawdź listę i sumę.',partial:'🧾 Tekst rozpoznano częściowo. Ukryto techniczne wiersze; sprawdź produkty i sumę.',photoFailed:'Nie udało się przetworzyć zdjęcia.',added:'🧾 Dodano paragon: {store} · {n} poz. · {total}',addButton:'Dodaj paragon do wydatku',saveButton:'Zapisz zmiany',reviewButton:'Sprawdź i zapisz paragon'},
+  tr:{expenseOnly:'Fiş yalnızca bir gidere eklenebilir.',storeRequired:'Mağaza adını gir.',itemsRequired:'En az bir ürün ekle. Biçim: Ad; fiyat; miktar.',totalRequired:'Fiş toplamını veya ürün fiyatlarını gir.',notFound:'İşlem bulunamadı.',editFailed:'Fiş güncellenemedi.',removeConfirm:'Fiş kaldırılsın mı? Gider geçmişte kalacak.',deleteFailed:'Fiş silinemedi.',imageOnly:'Bir fiş görseli seç.',tooLarge:'Fotoğraf 8 MB’tan küçük olmalı.',telegramOnly:'Fişi taramak için uygulamayı Telegram içinde aç.',processing:'📷 Fiş taranıyor… Genellikle birkaç saniye sürer.',timeout:'Sunucu fotoğrafı çok uzun süredir işliyor. Daha net bir fotoğraf dene veya sonra tekrar dene.',recognizeFailed:'Fiş okunamadı.',itemsFound:'Yapay zekâ {n} ürün tanıdı. Kaydetmeden önce adları, miktarları ve fiyatları kontrol et.',itemsUnclear:'Yapay zekâ ürünleri güvenilir şekilde okuyamadı. Listeyi ve toplamı kontrol et.',aiDone:'✨ Fiş yapay zekâ ile işlendi. Kaydetmeden önce bilgileri kontrol et.',ocrDone:'🧾 Yedek OCR kullanıldı. Kaydetmeden önce bilgileri kontrol et.',noText:'Fotoğraf alındı ancak metin okunamadı. Fişin tamamını yansıma olmadan düz açıyla çek.',rowsFound:'{n} ürün tanındı. Kaydetmeden önce adları ve fiyatları kontrol et.',pricesUnclear:'Fiyatlar güvenilir şekilde tanınamadı. Teknik metin kaldırıldı — ürünleri elle kontrol et.',receiptDone:'🧾 Fiş tanındı. Ürün listesini ve toplamı kontrol et.',partial:'🧾 Metin kısmen tanındı. Teknik satırlar gizlendi; ürünleri ve toplamı kontrol et.',photoFailed:'Fotoğraf işlenemedi.',added:'🧾 Fiş eklendi: {store} · {n} ürün · {total}',addButton:'Gidere fiş ekle',saveButton:'Değişiklikleri kaydet',reviewButton:'Fişi kontrol et ve kaydet'},
+  zh:{expenseOnly:'收据只能附加到支出。',storeRequired:'请输入商店名称。',itemsRequired:'至少添加一件商品。格式：名称；价格；数量。',totalRequired:'请输入收据总额或商品价格。',notFound:'未找到交易记录。',editFailed:'无法修改收据。',removeConfirm:'移除收据？支出记录仍会保留。',deleteFailed:'无法删除收据。',imageOnly:'请选择收据图片。',tooLarge:'照片必须小于 8 MB。',telegramOnly:'请在 Telegram 中打开应用以识别收据。',processing:'📷 正在识别收据… 通常需要几秒钟。',timeout:'服务器处理照片超时。请尝试更清晰的照片，或稍后重试。',recognizeFailed:'无法识别收据。',itemsFound:'AI 识别出 {n} 件商品。保存前请检查名称、数量和价格。',itemsUnclear:'AI 无法准确读取商品。保存前请检查清单和总额。',aiDone:'✨ AI 已处理收据。保存前请检查识别结果。',ocrDone:'🧾 已使用备用 OCR。保存前请检查数据。',noText:'已收到照片，但无法读取文字。请正对收据拍摄，避免反光并确保完整入镜。',rowsFound:'已识别 {n} 件商品。保存前请检查名称和价格。',pricesUnclear:'无法可靠识别价格。已移除技术文本，请手动检查商品。',receiptDone:'🧾 收据识别完成。请检查商品清单和总额。',partial:'🧾 仅部分识别文字。已隐藏多余技术行，请检查商品和总额。',photoFailed:'无法处理照片。',added:'🧾 已添加收据：{store} · {n} 项 · {total}',addButton:'将收据添加到支出',saveButton:'保存更改',reviewButton:'检查并保存收据'}
+};
+function receiptUi(key, values={}){
+  const lang = String(appData?.lang || 'ru').toLowerCase().split('-')[0];
+  let value = (RECEIPT_I18N[lang] && RECEIPT_I18N[lang][key]) || RECEIPT_I18N.ru[key] || key;
+  Object.keys(values).forEach(name=>{ value=value.replaceAll('{'+name+'}',String(values[name])); });
+  return value;
+}
+
 function openReceiptEntry(){
   receiptEditingTxId = null;
   const receiptSaveButton=document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
   if(receiptSaveButton)receiptSaveButton.innerHTML='<i class="fa-solid fa-check"></i> Добавить чек к операции';
   if(appData.activeTxType !== 'expense'){
-    alert('Чек можно прикрепить только к расходу.');
+    alert(receiptUi('expenseOnly'));
     return;
   }
   const error = document.getElementById('receiptEntryError');
@@ -407,14 +426,14 @@ async function saveReceiptDraft(){
   const enteredTotal = enteredRaw === '' ? NaN : Number(enteredRaw.replace(',', '.'));
   const calculatedTotal = parsedItems.reduce((sum, item) => sum + (item.price === null ? 0 : item.price * item.quantity), 0);
   const total = Number.isFinite(enteredTotal) && enteredTotal > 0 ? enteredTotal : calculatedTotal;
-  if(!store){ error.textContent = 'Укажи название магазина.'; return; }
-  if(!parsedItems.length){ error.textContent = 'Добавь хотя бы один товар. Формат: Название; цена; количество.'; return; }
-  if(!Number.isFinite(total) || total <= 0){ error.textContent = 'Укажи сумму чека или цены товаров.'; return; }
+  if(!store){ error.textContent = receiptUi('storeRequired'); return; }
+  if(!parsedItems.length){ error.textContent = receiptUi('itemsRequired'); return; }
+  if(!Number.isFinite(total) || total <= 0){ error.textContent = receiptUi('totalRequired'); return; }
   const draft = {store, date, items:parsedItems, total:Math.round(total*100)/100, source:'manual'};
   if(receiptEditingTxId !== null){
     try{
       const tx = budgetMode==='family' ? familyTransactions.find(item=>String(item.id)===String(receiptEditingTxId)) : appData.history.find(item=>String(item.id)===String(receiptEditingTxId));
-      if(!tx) throw new Error('Операция не найдена.');
+      if(!tx) throw new Error(receiptUi('notFound'));
       if(budgetMode==='family' && currentFamily){
         await familyRequest('/api/family/transactions/'+encodeURIComponent(String(receiptEditingTxId)),'PATCH',{receipt:draft,amount:draft.total,title:tx.title || draft.store});
         await loadFamilyTransactions();
@@ -427,7 +446,7 @@ async function saveReceiptDraft(){
         saveData(); renderAll();
       }
       receiptEditingTxId=null; closeModal('modalReceiptEntry'); return;
-    }catch(e){ if(error)error.textContent=e.message||'Не удалось изменить чек.'; return; }
+    }catch(e){ if(error)error.textContent=e.message||receiptUi('editFailed'); return; }
   }
   pendingReceiptDraft = draft;
   const amountInput = document.getElementById('txAmountInput');
@@ -435,7 +454,7 @@ async function saveReceiptDraft(){
   if(amountInput) amountInput.value = String(pendingReceiptDraft.total);
   if(commentInput && !commentInput.value.trim()) commentInput.value = store;
   const status = document.getElementById('receiptDraftStatus');
-  if(status){ status.style.display = 'block'; status.textContent = '🧾 Чек добавлен: ' + store + ' · ' + pendingReceiptDraft.items.length + ' поз. · ' + fmtMoney(pendingReceiptDraft.total); }
+  if(status){ status.style.display = 'block'; status.textContent = receiptUi('added',{store,n:pendingReceiptDraft.items.length,total:fmtMoney(pendingReceiptDraft.total)}); }
   closeModal('modalReceiptEntry');
 }
 
@@ -457,7 +476,7 @@ function editReceipt(id){
 async function deleteReceipt(id){
   const tx = budgetMode==='family' ? familyTransactions.find(item=>String(item.id)===String(id)) : appData.history.find(item=>String(item.id)===String(id));
   if(!tx || !tx.receipt) return;
-  if(!window.confirm('Убрать чек? Сам расход останется в истории.')) return;
+  if(!window.confirm(receiptUi('removeConfirm'))) return;
   try{
     if(budgetMode==='family' && currentFamily){
       await familyRequest('/api/family/transactions/'+encodeURIComponent(String(id)),'PATCH',{receipt:null});
@@ -466,7 +485,7 @@ async function deleteReceipt(id){
       tx.receipt=null;
       saveData(); renderAll();
     }
-  }catch(e){alert(e.message||'Не удалось удалить чек.');}
+  }catch(e){alert(e.message||receiptUi('deleteFailed'));}
 }
 
 function openReceiptPhoto(){
@@ -478,13 +497,13 @@ async function handleReceiptPhotoSelected(event){
   const file = event.target.files && event.target.files[0];
   if(!file) return;
   const picker = event.target;
-  if(!file.type.startsWith('image/')){ alert('Выбери изображение чека.'); picker.value=''; return; }
-  if(file.size > 8 * 1024 * 1024){ alert('Фото должно быть меньше 8 МБ.'); picker.value=''; return; }
+  if(!file.type.startsWith('image/')){ alert(receiptUi('imageOnly')); picker.value=''; return; }
+  if(file.size > 8 * 1024 * 1024){ alert(receiptUi('tooLarge')); picker.value=''; return; }
   const tg = window.Telegram?.WebApp;
-  if(!tg?.initData){ alert('Открой приложение через Telegram, чтобы распознать чек.'); picker.value=''; return; }
+  if(!tg?.initData){ alert(receiptUi('telegramOnly')); picker.value=''; return; }
   const status = document.getElementById('receiptDraftStatus');
   const setStatus = message => { if(status){ status.style.display='block'; status.textContent=message; } };
-  setStatus('📷 Распознаю чек… Обычно это занимает несколько секунд.');
+  setStatus(receiptUi('processing'));
   let timeoutId;
   const controller = new AbortController();
   try{
@@ -493,7 +512,7 @@ async function handleReceiptPhotoSelected(event){
     const timeout = new Promise((_, reject) => {
       timeoutId = setTimeout(() => {
         controller.abort();
-        reject(new Error('Сервер слишком долго обрабатывает фото. Попробуй более чёткое фото или повтори попытку позже.'));
+        reject(new Error(receiptUi('timeout')));
       }, 45000);
     });
     const request = fetch('/api/receipt/recognize', {
@@ -502,7 +521,7 @@ async function handleReceiptPhotoSelected(event){
     const response = await Promise.race([request, timeout]);
     clearTimeout(timeoutId);
     const data = await response.json().catch(()=>({}));
-    if(!response.ok) throw new Error(data.detail || 'Не удалось распознать чек.');
+    if(!response.ok) throw new Error(data.detail || receiptUi('recognizeFailed'));
     refreshAIStatus();
     // Prefer structured fields from the vision model over OCR line heuristics.
     if(data.receipt && typeof data.receipt === "object"){
@@ -524,18 +543,18 @@ async function handleReceiptPhotoSelected(event){
       if(totalInput) totalInput.value = Number.isFinite(total) && total > 0 ? String(total) : "";
       const error = document.getElementById("receiptEntryError");
       if(error) error.textContent = items.length
-        ? "ИИ распознал товаров: "+items.length+". Проверь названия, количество и цены перед сохранением."
-        : "ИИ не смог уверенно прочитать товары. Проверь список и сумму перед сохранением.";
+        ? receiptUi('itemsFound',{n:items.length})
+        : receiptUi('itemsUnclear');
       const saveButton = document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
       if(saveButton) saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Проверить и сохранить чек';
-      setStatus(data.source === "ai" ? "✨ Чек обработан ИИ. Проверь распознанные данные перед сохранением." : "🧾 Использован резервный OCR. Проверь данные перед сохранением.");
+      setStatus(data.source === "ai" ? receiptUi('aiDone') : receiptUi('ocrDone'));
       openModal("modalReceiptEntry");
       return;
     }
     const lines = (Array.isArray(data.lines) ? data.lines : String(data.text||'').split(/\r?\n/))
       .map(line=>String(line).replace(/\s+/g,' ').trim())
       .filter(Boolean);
-    if(!lines.length) throw new Error('Фото получено, но текст не удалось прочитать. Сделай снимок ровно, без бликов, чтобы весь чек был в кадре.');
+    if(!lines.length) throw new Error(receiptUi('noText'));
 
     // Don't dump the whole OCR output into the form: it contains fiscal codes,
     // payment details and recognition noise. Keep likely product rows only.
@@ -586,7 +605,7 @@ async function handleReceiptPhotoSelected(event){
     document.getElementById('receiptTotalInput').value = Number(data.amount_guess || 0) > 0 ? String(data.amount_guess) : '';
     const error = document.getElementById('receiptEntryError');
     if(error) error.textContent = uniqueRows.length
-      ? 'Распознано товаров: '+uniqueRows.length+'. Проверь названия и цены перед сохранением.'
+      ? receiptUi('rowsFound',{n:uniqueRows.length})
       : 'Не удалось уверенно распознать цены. Я убрал технический текст — проверь или поправь товары вручную.';
     const saveButton = document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
     if(saveButton) saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Проверить и сохранить чек';
@@ -596,7 +615,7 @@ async function handleReceiptPhotoSelected(event){
     openModal('modalReceiptEntry');
   }catch(error){
     clearTimeout(timeoutId);
-    setStatus('⚠️ ' + (error.message || 'Не удалось распознать фото.'));
+    setStatus('⚠️ ' + (error.message || receiptUi('photoFailed')));
     console.error('Receipt recognition failed:', error);
   }finally{
     clearTimeout(timeoutId);
@@ -1152,7 +1171,7 @@ async function saveTxEdits(){
   const familyMode=budgetMode==='family'&&currentFamily;
   const list=familyMode?familyTransactions:appData.history;
   const tx=list.find(item=>String(item.id)===String(editingTxId));
-  if(!tx){if(error)error.textContent='Операция не найдена.';return;}
+  if(!tx){if(error)error.textContent=receiptUi('notFound');return;}
   const old={type:tx.type,amount:Number(tx.amount||0)};
   const icon=bankCategoryIcon(category,type);
   try{

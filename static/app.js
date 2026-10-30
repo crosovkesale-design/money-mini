@@ -650,7 +650,7 @@ function renderBattlePass(){
   const stats={count:Number(referralStats.seasonCount||0),paidCount:Number(battlePassStats.paidCount||0),volumeUsd:Number(battlePassStats.volumeUsd||0)};
   const completed=BATTLE_PASS_TASKS.filter(t=>stats[t.metric]>=t.target).length;
   const season=document.getElementById('battlePassSeason');if(season)season.textContent=battlePassStats.monthLabel||'Текущий сезон';
-  const progressText=document.getElementById('battlePassProgressText');if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' заданий';
+  const progressText=document.getElementById('battlePassProgressText');if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' '+t('заданий');
   const bar=document.getElementById('battlePassProgressBar');if(bar)bar.style.width=(completed/BATTLE_PASS_TASKS.length*100)+'%';
   tasksEl.innerHTML=BATTLE_PASS_TASKS.map(t=>{const val=stats[t.metric],done=val>=t.target,shown=t.metric==='volumeUsd'?'$'+Number(val).toLocaleString('en-US',{maximumFractionDigits:2}):String(val),target=t.metric==='volumeUsd'?'$'+t.target:String(t.target);return '<div class="battlepass-task '+(done?'is-done':'')+'"><span class="battlepass-task-icon">'+(done?'✓':'🎯')+'</span><div><b>'+t(t.title)+'</b><small>'+t(t.desc)+'</small><div class="battlepass-task-meter">'+shown+' / '+target+'</div></div></div>';}).join('');
   const isPro=battlePassTrack==='pro',claimed=new Set((battlePassStats.claimed?.[battlePassTrack]||[]).map(Number)),hasPro=Boolean(canUseProFeatures);

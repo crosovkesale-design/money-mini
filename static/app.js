@@ -519,6 +519,7 @@ function startHardcodedTextTranslation(){
   _autoTextObserver.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:AUTO_TRANSLATABLE_ATTRIBUTES});
 }
 function applyLang(){
+  document.documentElement.lang = String(appData?.lang || 'ru').toLowerCase().split('-')[0];
   _autoTextMapCache = null;
   _autoTextPatternCache = null;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });

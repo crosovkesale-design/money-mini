@@ -331,18 +331,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <p id="aiPackStatus" class="ai-credit-note">Пакеты доступны и без подписки PRO.</p>
       </div>
       <div class="finance-assistant-suggestions">
-        <button type="button" onclick="askFinanceSuggestion('На что я больше всего трачу?')">На что больше трачу?</button>
-        <button type="button" onclick="askFinanceSuggestion('Как можно сократить расходы?')">Где сэкономить?</button>
-        <button type="button" onclick="askFinanceSuggestion('Сравни мои доходы и расходы за этот месяц.')">Доходы и расходы</button>
+        <button type="button" onclick="askFinanceSuggestion('На что я больше всего трачу?')" data-i18n="ai_suggest_spending">На что больше трачу?</button>
+        <button type="button" onclick="askFinanceSuggestion('Как можно сократить расходы?')" data-i18n="ai_suggest_saving">Где сэкономить?</button>
+        <button type="button" onclick="askFinanceSuggestion('Сравни мои доходы и расходы за этот месяц.')" data-i18n="ai_suggest_compare">Доходы и расходы</button>
       </div>
       <div id="financeAssistantMessages" class="finance-assistant-messages" aria-live="polite">
-        <div class="finance-assistant-welcome">Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.</div>
+        <div class="finance-assistant-welcome" data-i18n="ai_welcome">Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.</div>
       </div>
       <form class="finance-assistant-form" onsubmit="event.preventDefault();sendFinanceQuestion();">
-        <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" aria-label="Вопрос финансовому помощнику"></textarea>
-        <button id="financeAssistantSend" class="btn btn-accent" type="submit">Отправить</button>
+        <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" data-i18n-placeholder="ai_question_placeholder" aria-label="Вопрос финансовому помощнику"></textarea>
+        <button id="financeAssistantSend" class="btn btn-accent" type="submit" data-i18n="ai_send">Отправить</button>
       </form>
-      <p class="finance-assistant-privacy">Для ответа отправляется только краткая сводка бюджета и последние операции. Переписка не сохраняется на сервере.</p>
+      <p class="finance-assistant-privacy" data-i18n="ai_privacy">Для ответа отправляется только краткая сводка бюджета и последние операции. Переписка не сохраняется на сервере.</p>
     </section>
   </div>
 

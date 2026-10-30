@@ -386,7 +386,6 @@ function _autoTextMap(){
       _addAutoTextEntry(map,patterns,source,target,aliases);
     }
   };
-  addDictionaries(TRANSLATIONS.ru,TRANSLATIONS,false);
   addDictionaries(EXTRA_UI_TRANSLATIONS.ru,EXTRA_UI_TRANSLATIONS,false);
   addDictionaries(EXTRA_TRANSLATIONS.ru,EXTRA_TRANSLATIONS,true);
   addDictionaries(AUDIT_TRANSLATIONS.ru,AUDIT_TRANSLATIONS,true);
@@ -422,6 +421,7 @@ function _autoTextMap(){
     'Личный баланс':'Личный баланс','Общий баланс семьи':'Общий баланс семьи'
   };
   Object.assign(map,aliases);
+  addDictionaries(TRANSLATIONS.ru,TRANSLATIONS,false);
   patterns.sort((a,b)=>b.length-a.length);
   _autoTextPatternCache={lang:activeLang,patterns};
   _autoTextMapCache={lang:activeLang,map};

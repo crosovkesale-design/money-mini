@@ -334,24 +334,27 @@ function _normalizeAutoText(value){
   return String(value ?? '').replace(/[\\u00a0\\u202f\\u2007]/g,' ').replace(/\\s+/g,' ').trim();
 }
 function _addAutoTextEntry(map, patterns, source, target, aliases=[]){
-  const normalizedSource=_normalizeAutoText(source);
-  if(!normalizedSource || !target) return;
-  if(normalizedSource.includes('{') && normalizedSource.includes('}')){
-    const tokens=[...normalizedSource.matchAll(/\\{[^{}]+\\}/g)];
+  const addPattern=(template)=>{
+    const tokens=[...template.matchAll(/\{[^{}]+\}/g)];
+    if(!tokens.length)return false;
     let cursor=0, expression='^';
+    const escapeRegex=value=>value.replace(/[|\\{}()[\]^$+*?.]/g,'\\$&');
     for(const token of tokens){
-      const literal=normalizedSource.slice(cursor,token.index);
-      expression+=literal.replace(/[.*+?^\\\\${}()|[\\]\\\\]/g,'\\\\$&')+'([\\s\\S]*?)';
+      expression+=escapeRegex(template.slice(cursor,token.index))+'([\s\S]*?)';
       cursor=token.index+token[0].length;
     }
-    expression+=normalizedSource.slice(cursor).replace(/[.*+?^\\\\${}()|[\\]\\\\]/g,'\\\\$&')+'$';
-    try{patterns.push({regex:new RegExp(expression),target,tokenCount:tokens.length,length:normalizedSource.length});}catch(_){}
-  }else{
-    map[normalizedSource]=String(target);
-  }
+    expression+=escapeRegex(template.slice(cursor))+'$';
+    try{patterns.push({regex:new RegExp(expression),target:String(target),tokenCount:tokens.length,length:template.length});return true;}catch(_){return false;}
+  };
+  const normalizedSource=_normalizeAutoText(source);
+  if(!normalizedSource || !target) return;
+  if(normalizedSource.includes('{') && normalizedSource.includes('}')) addPattern(normalizedSource);
+  else map[normalizedSource]=String(target);
   for(const alias of aliases){
     const normalizedAlias=_normalizeAutoText(alias);
-    if(normalizedAlias) map[normalizedAlias]=String(target);
+    if(!normalizedAlias)continue;
+    if(normalizedAlias.includes('{') && normalizedAlias.includes('}')) addPattern(normalizedAlias);
+    else map[normalizedAlias]=String(target);
   }
 }
 function _autoTextMap(){
@@ -368,7 +371,7 @@ function _autoTextMap(){
     }
   };
   addDictionaries(TRANSLATIONS.ru,TRANSLATIONS,false);
-  addDictionaries(EXTRA_UI_TRANSLATIONS.ru,EXTRA_UI_TRANSLATIONS,true);
+  addDictionaries(EXTRA_UI_TRANSLATIONS.ru,EXTRA_UI_TRANSLATIONS,false);
   addDictionaries(EXTRA_TRANSLATIONS.ru,EXTRA_TRANSLATIONS,true);
   addDictionaries(AUDIT_TRANSLATIONS.ru,AUDIT_TRANSLATIONS,true);
   const staticAll=STATIC_UI_TRANSLATIONS||{};

@@ -342,8 +342,9 @@ function openHelp(topic='general'){
     }
   };
   const selected = content[topic] || content.general;
-  title.textContent = selected.title;
+  title.textContent = t(selected.title);
   body.innerHTML = selected.html;
+  translateHardcodedText(body);
   openModal('modalHelp');
 }
 
@@ -651,10 +652,10 @@ function renderBattlePass(){
   const season=document.getElementById('battlePassSeason');if(season)season.textContent=battlePassStats.monthLabel||'Текущий сезон';
   const progressText=document.getElementById('battlePassProgressText');if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' заданий';
   const bar=document.getElementById('battlePassProgressBar');if(bar)bar.style.width=(completed/BATTLE_PASS_TASKS.length*100)+'%';
-  tasksEl.innerHTML=BATTLE_PASS_TASKS.map(t=>{const val=stats[t.metric],done=val>=t.target,shown=t.metric==='volumeUsd'?'$'+Number(val).toLocaleString('en-US',{maximumFractionDigits:2}):String(val),target=t.metric==='volumeUsd'?'$'+t.target:String(t.target);return '<div class="battlepass-task '+(done?'is-done':'')+'"><span class="battlepass-task-icon">'+(done?'✓':'🎯')+'</span><div><b>'+t.title+'</b><small>'+t.desc+'</small><div class="battlepass-task-meter">'+shown+' / '+target+'</div></div></div>';}).join('');
+  tasksEl.innerHTML=BATTLE_PASS_TASKS.map(t=>{const val=stats[t.metric],done=val>=t.target,shown=t.metric==='volumeUsd'?'$'+Number(val).toLocaleString('en-US',{maximumFractionDigits:2}):String(val),target=t.metric==='volumeUsd'?'$'+t.target:String(t.target);return '<div class="battlepass-task '+(done?'is-done':'')+'"><span class="battlepass-task-icon">'+(done?'✓':'🎯')+'</span><div><b>'+t(t.title)+'</b><small>'+t(t.desc)+'</small><div class="battlepass-task-meter">'+shown+' / '+target+'</div></div></div>';}).join('');
   const isPro=battlePassTrack==='pro',claimed=new Set((battlePassStats.claimed?.[battlePassTrack]||[]).map(Number)),hasPro=Boolean(canUseProFeatures);
   rewardsEl.innerHTML=Array.from({length:30},(_,i)=>{const tier=i+1,task=battlePassTierRequirement(tier),unlocked=stats[task.metric]>=task.target,coupon=isPro||tier%5===0?10:0,earned=claimed.has(tier),proLocked=isPro&&!hasPro,label=coupon?t('Купон −')+coupon+'%':(isPro?t('PRO бонус'):t('Монеты')),status=earned?t('Получено'):proLocked?t('Нужен PRO'):unlocked?t('Забрать'):t('Уровень ')+tier,disabled=earned||proLocked||!unlocked;return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">УРОВЕНЬ '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':isPro?'💎':'🪙')+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):isPro?t('PRO бонус'):t('Опыт сезона'))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';}).join('');
-  const note=document.getElementById('battlePassTrackNote');if(note)note.textContent=isPro?(hasPro?'PRO: купон 10% на каждом из 30 уровней.':'Платная дорожка доступна с активной подпиской PRO.'):'Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.';
+  const note=document.getElementById('battlePassTrackNote');if(note)note.textContent=isPro?(hasPro?t('PRO: купон 10% на каждом из 30 уровней.'):t('Платная дорожка доступна с активной подпиской PRO.')):t('Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.');
 }
 async function claimBattlePassReward(track,tier){
   try{const tg=window.Telegram?.WebApp,response=await fetch('/api/battlepass/claim',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg?.initData||''},body:JSON.stringify({track,tier})}),data=await response.json();if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду');battlePassStats.claimed=data.claimed||battlePassStats.claimed;referralStats.coupons10=Number(referralStats.coupons10||0)+Number(data.couponsAdded||0);renderReferralStats();updateCouponSelector();tg?.showAlert?.('Награда получена!');}catch(e){const tg=window.Telegram?.WebApp;if(tg?.showAlert)tg.showAlert(e.message||'Ошибка получения награды');else alert(e.message||'Ошибка получения награды');}
@@ -1950,11 +1951,11 @@ function renderProInsights(){
   envelopeWarnings.slice(0,3).forEach(env=>alerts.push({level:'warning',text:'Конверт «'+env.name+'»: превышение лимита на '+fmtMoney(env.over)+'.'}));
   if(currentExpense===0&&envelopeWarnings.length===0)alerts.push({level:'ok',text:'Пока нет признаков перерасхода. Добавляй операции, чтобы отслеживать бюджет.'});
   const alertsHtml='<div class="pro-insights-alerts"><div class="pro-insights-section-title">Контроль бюджета</div>'+alerts.map(a=>'<div class="pro-insight-alert '+a.level+'"><span>'+(a.level==='warning'?'⚠️':'✓')+'</span><p>'+bankEscape(a.text)+'</p></div>').join('')+'</div>';
-  node.innerHTML='<div class="pro-insights-head"><div><span class="pro-insights-eyebrow">PRO ANALYTICS</span><h4>Финансовая картина</h4><p>На основе операций текущего и прошлого месяца</p></div><span class="pro-insights-crown">♛</span></div>'+
+  node.innerHTML='<div class="pro-insights-head"><div><span class="pro-insights-eyebrow">PRO ANALYTICS</span><h4>'+t('Финансовая картина')+'</h4><p>'+t('На основе операций текущего и прошлого месяца')+'</p></div><span class="pro-insights-crown">♛</span></div>'+
     '<div class="pro-insights-metrics">'+
-      '<div class="pro-insight-metric"><span>Прогноз расходов</span><b>'+fmtMoney(projected)+'</b><small>к концу месяца</small></div>'+
-      '<div class="pro-insight-metric"><span>В среднем в день</span><b>'+fmtMoney(currentExpense/day)+'</b><small>за '+day+' дн. текущего месяца</small></div>'+
-      '<div class="pro-insight-metric"><span>Доходы за месяц</span><b>'+fmtMoney(currentIncome)+'</b><small>по записанным операциям</small></div>'+
+      '<div class="pro-insight-metric"><span>'+t('Прогноз расходов')+'</span><b>'+fmtMoney(projected)+'</b><small>'+t('к концу месяца')+'</small></div>'+
+      '<div class="pro-insight-metric"><span>'+t('В среднем в день')+'</span><b>'+fmtMoney(currentExpense/day)+'</b><small>за '+day+' дн. текущего месяца</small></div>'+
+      '<div class="pro-insight-metric"><span>'+t('Доходы за месяц')+'</span><b>'+fmtMoney(currentIncome)+'</b><small>по записанным операциям</small></div>'+
       '<div class="pro-insight-metric"><span>Траты за месяц</span><b>'+fmtMoney(currentExpense)+'</b><small>из '+daysInMonth+' дней</small></div>'+
     '</div>'+
     '<div class="pro-insight-comparison '+compareClass+'"><span>Сравнение с прошлым месяцем</span><b>'+bankEscape(compareText)+'</b>'+(previousExpense>0?'<small>Прошлый месяц: '+fmtMoney(previousExpense)+'</small>':'')+'</div>'+

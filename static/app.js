@@ -2105,7 +2105,7 @@ function renderCharts(){
         },
         title: {
           display: true,
-          text: `${t('income')} / ${t('expense')} — 6 месяцев`,
+          text: `${t('income')} / ${t('expense')} — ${t('за 6 месяцев')}`,
           color: textColor
         }
       },

@@ -2193,8 +2193,8 @@ function renderAll(){
       : t('no_rules');
   }
 
-  renderFinancialOverview();
   applyLang();
+  renderFinancialOverview();
   renderForecast();
   renderProInsights();
   updateProFeatureControls();

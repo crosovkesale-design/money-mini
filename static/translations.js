@@ -2853,3 +2853,21 @@ for (const [phrase, langs] of Object.entries(EXTRA_STATIC_PRICE_LABELS)) {
     if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['static_price_' + phrase] = value;
   }
 }
+
+
+// Localized receipt-entry example shown inside the multiline item field.
+const RECEIPT_EXAMPLE_TRANSLATIONS = {
+  ru: 'Молоко; 42.50; 1\nХлеб; 28; 2\nЯблоки; 35; 1.5',
+  uk: 'Молоко; 42.50; 1\nХліб; 28; 2\nЯблука; 35; 1.5',
+  en: 'Milk; 42.50; 1\nBread; 28; 2\nApples; 35; 1.5',
+  de: 'Milch; 42,50; 1\nBrot; 28; 2\nÄpfel; 35; 1,5',
+  es: 'Leche; 42,50; 1\nPan; 28; 2\nManzanas; 35; 1,5',
+  fr: 'Lait; 42,50; 1\nPain; 28; 2\nPommes; 35; 1,5',
+  it: 'Latte; 42,50; 1\nPane; 28; 2\nMele; 35; 1,5',
+  pl: 'Mleko; 42,50; 1\nChleb; 28; 2\nJabłka; 35; 1,5',
+  tr: 'Süt; 42,50; 1\nEkmek; 28; 2\nElma; 35; 1,5',
+  zh: '牛奶; 42.50; 1\n面包; 28; 2\n苹果; 35; 1.5'
+};
+for (const [lang, value] of Object.entries(RECEIPT_EXAMPLE_TRANSLATIONS)) {
+  if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['receipt_items_example'] = value;
+}

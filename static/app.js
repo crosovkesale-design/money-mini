@@ -377,7 +377,7 @@ function _translateHardcodedNode(node){
   else if(record.last!==null && node.nodeValue!==record.last){ record.source=node.nodeValue; record.last=null; }
   const source=record.source;
   const trimmed=source.trim();
-  if(!trimmed || trimmed.length>220) return;
+  if(!trimmed || trimmed.length>1200) return;
   const translated=_autoTextMap()[trimmed];
   if(translated){
     const start=source.indexOf(trimmed), end=start+trimmed.length;
@@ -967,7 +967,7 @@ function updatePricingDisplay(){
     const formattedDiscount = discounted.toLocaleString(appData.lang || 'ru');
     const suffix = el.dataset.baseStars === '7500' ? ' ' + t('annual_stars_suffix') : ' ⭐';
     el.innerHTML = percent
-      ? '<span class="price-stars-old">или ' + formattedBase + suffix + '</span><span class="price-stars-current">или ' + formattedDiscount + suffix + '</span>'
+      ? '<span class="price-stars-old">' + t('or_label') + ' ' + formattedBase + suffix + '</span><span class="price-stars-current">' + t('or_label') + ' ' + formattedDiscount + suffix + '</span>'
       : 'или ' + formattedBase + suffix;
   });
 }

@@ -422,7 +422,7 @@ function _translateAutoText(value){
     const match=normalized.match(item.regex);
     if(!match)continue;
     let index=1;
-    return item.target.replace(/\\{[^{}]+\\}/g,()=>match[index++] ?? '');
+    return item.target.replace(/\{[^{}]+\}/g,()=>match[index++] ?? '');
   }
   return null;
 }

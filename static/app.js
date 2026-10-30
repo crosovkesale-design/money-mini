@@ -442,6 +442,15 @@ function _translateAutoText(value){
   }
   return null;
 }
+function _localizeDialogMessage(message){
+  const source=String(message ?? '');
+  return _translateAutoText(source) || source;
+}
+const _familyBudgetNativeAlert = window.alert.bind(window);
+const _familyBudgetNativeConfirm = window.confirm.bind(window);
+window.alert = function(message){ return _familyBudgetNativeAlert(_localizeDialogMessage(message)); };
+window.confirm = function(message){ return _familyBudgetNativeConfirm(_localizeDialogMessage(message)); };
+
 function _translateHardcodedNode(node){
   if(!node || node.nodeType !== 3) return;
   const parent=node.parentElement;

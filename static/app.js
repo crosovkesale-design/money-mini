@@ -520,6 +520,7 @@ function startHardcodedTextTranslation(){
 }
 function applyLang(){
   document.documentElement.lang = String(appData?.lang || 'ru').toLowerCase().split('-')[0];
+  document.title = t('app_title');
   _autoTextMapCache = null;
   _autoTextPatternCache = null;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });

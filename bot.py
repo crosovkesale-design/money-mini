@@ -112,21 +112,15 @@ def now_ms() -> int:
     return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 def season_info(now_local=None) -> dict:
-    """Three-month seasons: Sep-Nov, Dec-Feb, Mar-May, Jun-Aug."""
+    """Monthly season: starts on the first day and ends on the last day of each Kyiv month."""
     now_local = now_local or datetime.now(KYIV)
-    season_index = ((now_local.month - 9) % 12) // 3
-    start_month = ((9 + season_index * 3 - 1) % 12) + 1
-    start_year = now_local.year if start_month <= now_local.month else now_local.year - 1
-    start_date = datetime(start_year, start_month, 1, tzinfo=KYIV).date()
-    next_month = start_month + 3
-    next_year = start_year
-    if next_month > 12:
-        next_month -= 12
-        next_year += 1
-    end_date = datetime(next_year, next_month, 1, tzinfo=KYIV).date() - timedelta(days=1)
-    season_names = {9: "Осень", 12: "Зима", 3: "Весна", 6: "Лето"}
-    label_year = start_year if start_month != 12 else start_year + 1
-    return {"key": start_date.strftime("%Y-%m"), "label": f"{season_names[start_month]} {label_year}",
+    start_date = now_local.date().replace(day=1)
+    if now_local.month == 12:
+        next_month = datetime(now_local.year + 1, 1, 1, tzinfo=KYIV).date()
+    else:
+        next_month = datetime(now_local.year, now_local.month + 1, 1, tzinfo=KYIV).date()
+    end_date = next_month - timedelta(days=1)
+    return {"key": start_date.strftime("%Y-%m"), "label": now_local.strftime("%B %Y"),
             "start": start_date.isoformat(), "end": end_date.isoformat(),
             "days_left": max(0, (end_date - now_local.date()).days)}
 

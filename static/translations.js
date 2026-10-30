@@ -2838,3 +2838,18 @@ for (const [key, langs] of Object.entries(EXTRA_SHARED_LABEL_TRANSLATIONS)) {
     if (TRANSLATIONS[lang]) TRANSLATIONS[lang][key] = value;
   }
 }
+
+
+// Exact localized strings for plan prices rendered as static HTML text.
+const EXTRA_STATIC_PRICE_LABELS = {
+  'или 1 300 ⭐': {ru:'или 1 300 ⭐',uk:'або 1 300 ⭐',en:'or 1,300 ⭐',de:'oder 1.300 ⭐',es:'o 1.300 ⭐',fr:'ou 1 300 ⭐',it:'oppure 1.300 ⭐',pl:'lub 1 300 ⭐',tr:'veya 1.300 ⭐',zh:'或 1,300 ⭐'},
+  'или 2 300 ⭐': {ru:'или 2 300 ⭐',uk:'або 2 300 ⭐',en:'or 2,300 ⭐',de:'oder 2.300 ⭐',es:'o 2.300 ⭐',fr:'ou 2 300 ⭐',it:'oppure 2.300 ⭐',pl:'lub 2 300 ⭐',tr:'veya 2.300 ⭐',zh:'或 2,300 ⭐'},
+  'или 3 900 ⭐': {ru:'или 3 900 ⭐',uk:'або 3 900 ⭐',en:'or 3,900 ⭐',de:'oder 3.900 ⭐',es:'o 3.900 ⭐',fr:'ou 3 900 ⭐',it:'oppure 3.900 ⭐',pl:'lub 3 900 ⭐',tr:'veya 3.900 ⭐',zh:'或 3,900 ⭐'},
+  'или 1 000 ⭐': {ru:'или 1 000 ⭐',uk:'або 1 000 ⭐',en:'or 1,000 ⭐',de:'oder 1.000 ⭐',es:'o 1.000 ⭐',fr:'ou 1 000 ⭐',it:'oppure 1.000 ⭐',pl:'lub 1 000 ⭐',tr:'veya 1.000 ⭐',zh:'或 1,000 ⭐'},
+  'или 7 500 ⭐ за год': {ru:'или 7 500 ⭐ за год',uk:'або 7 500 ⭐ на рік',en:'or 7,500 ⭐ per year',de:'oder 7.500 ⭐ pro Jahr',es:'o 7.500 ⭐ al año',fr:'ou 7 500 ⭐ par an',it:'oppure 7.500 ⭐ all’anno',pl:'lub 7 500 ⭐ rocznie',tr:'veya yılda 7.500 ⭐',zh:'或每年 7,500 ⭐'}
+};
+for (const [phrase, langs] of Object.entries(EXTRA_STATIC_PRICE_LABELS)) {
+  for (const [lang, value] of Object.entries(langs)) {
+    if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['static_price_' + phrase] = value;
+  }
+}

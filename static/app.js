@@ -624,7 +624,9 @@ function renderReferralStats(){
   if(paid)paid.textContent=String(Number(battlePassStats.paidCount||0));
   if(volume)volume.textContent='$'+Number(battlePassStats.volumeUsd||0).toLocaleString('en-US',{maximumFractionDigits:2});
   const now=new Date();
-  const seasonIndex=Math.floor(((now.getMonth()+1-9+12)%12)/3);const startMonth=((9+seasonIndex*3-1)%12)+1;const startYear=startMonth<=(now.getMonth()+1)?now.getFullYear():now.getFullYear()-1;const endDate=new Date(startYear,startMonth-1+3,0);const localDaysLeft=Math.max(0,Math.ceil((new Date(endDate.getFullYear(),endDate.getMonth(),endDate.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000));
+  const endDate=new Date(now.getFullYear(),now.getMonth()+1,0);
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const localDaysLeft=Math.max(0,Math.ceil((endDate-today)/86400000));
   const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft??localDaysLeft):localDaysLeft;
   if(days)days.textContent=String(daysLeft);
   const tgUserId=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -653,7 +655,11 @@ function renderBattlePass(){
   const stats={count:Number(referralStats.seasonCount||0),paidCount:Number(battlePassStats.paidCount||0),volumeUsd:Number(battlePassStats.volumeUsd||0)};
   const completed=BATTLE_PASS_TASKS.filter(taskItem=>stats[taskItem.metric]>=taskItem.target).length;
   const season=document.getElementById('battlePassSeason');
-  if(season){const label=String(battlePassStats.monthLabel||'Текущий сезон');season.textContent=label.replace(/^(Осень|Зима|Весна|Лето)/,name=>t(name));}
+  if(season){
+    const startDate=battlePassStats.startDate;
+    const date=startDate?new Date(startDate+'T00:00:00'):new Date();
+    season.textContent=date.toLocaleDateString(appData.lang||'ru',{month:'long',year:'numeric'});
+  }
   const progressText=document.getElementById('battlePassProgressText');
   if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' '+t('заданий');
   const bar=document.getElementById('battlePassProgressBar');

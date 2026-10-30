@@ -2601,6 +2601,113 @@ const TRANSLATIONS = {
   }
 }
 
+const AI_BANK_STATUS_I18N = {
+  ru:{
+    bank_import_failed:'Не удалось импортировать операции.',
+    ai_pack_telegram:'Открой Family Budget через Telegram для покупки.',
+    ai_pack_creating:'Создаю счёт в USDT…',
+    ai_pack_created:'Счёт создан. После оплаты запросы автоматически появятся на балансе.',
+    ai_pack_failed:'Не удалось создать счёт.',
+    ai_balance_load_failed:'Не удалось загрузить баланс ИИ-запросов.',
+    ai_no_requests:'Пока нет доступных ИИ-запросов. Купи пакет ниже.',
+    ai_assistant_telegram:'Открой Family Budget через Telegram, чтобы пользоваться ИИ-помощником.'
+  },
+  uk:{
+    bank_import_failed:'Не вдалося імпортувати операції.',
+    ai_pack_telegram:'Відкрий Family Budget через Telegram, щоб придбати пакет.',
+    ai_pack_creating:'Створюю рахунок у USDT…',
+    ai_pack_created:'Рахунок створено. Після оплати запити автоматично з’являться на балансі.',
+    ai_pack_failed:'Не вдалося створити рахунок.',
+    ai_balance_load_failed:'Не вдалося завантажити баланс ШІ-запитів.',
+    ai_no_requests:'Немає доступних ШІ-запитів. Придбай пакет нижче.',
+    ai_assistant_telegram:'Відкрий Family Budget через Telegram, щоб користуватися ШІ-помічником.'
+  },
+  en:{
+    bank_import_failed:'Could not import transactions.',
+    ai_pack_telegram:'Open Family Budget through Telegram to make a purchase.',
+    ai_pack_creating:'Creating a USDT invoice…',
+    ai_pack_created:'Invoice created. After payment, requests will appear in your balance automatically.',
+    ai_pack_failed:'Could not create the invoice.',
+    ai_balance_load_failed:'Could not load the AI request balance.',
+    ai_no_requests:'No AI requests available. Buy a pack below.',
+    ai_assistant_telegram:'Open Family Budget through Telegram to use the AI assistant.'
+  },
+  de:{
+    bank_import_failed:'Buchungen konnten nicht importiert werden.',
+    ai_pack_telegram:'Öffne Family Budget über Telegram, um ein Paket zu kaufen.',
+    ai_pack_creating:'USDT-Rechnung wird erstellt…',
+    ai_pack_created:'Rechnung erstellt. Nach der Zahlung erscheinen die Anfragen automatisch in deinem Guthaben.',
+    ai_pack_failed:'Rechnung konnte nicht erstellt werden.',
+    ai_balance_load_failed:'KI-Anfrageguthaben konnte nicht geladen werden.',
+    ai_no_requests:'Keine KI-Anfragen verfügbar. Kaufe unten ein Paket.',
+    ai_assistant_telegram:'Öffne Family Budget über Telegram, um den KI-Assistenten zu nutzen.'
+  },
+  es:{
+    bank_import_failed:'No se pudieron importar las operaciones.',
+    ai_pack_telegram:'Abre Family Budget desde Telegram para realizar una compra.',
+    ai_pack_creating:'Creando una factura en USDT…',
+    ai_pack_created:'Factura creada. Tras el pago, las consultas aparecerán automáticamente en tu saldo.',
+    ai_pack_failed:'No se pudo crear la factura.',
+    ai_balance_load_failed:'No se pudo cargar el saldo de consultas de IA.',
+    ai_no_requests:'No hay consultas de IA disponibles. Compra un paquete abajo.',
+    ai_assistant_telegram:'Abre Family Budget desde Telegram para usar el asistente de IA.'
+  },
+  fr:{
+    bank_import_failed:'Impossible d’importer les opérations.',
+    ai_pack_telegram:'Ouvre Family Budget via Telegram pour effectuer un achat.',
+    ai_pack_creating:'Création d’une facture en USDT…',
+    ai_pack_created:'Facture créée. Après le paiement, les requêtes apparaîtront automatiquement dans ton solde.',
+    ai_pack_failed:'Impossible de créer la facture.',
+    ai_balance_load_failed:'Impossible de charger le solde des requêtes IA.',
+    ai_no_requests:'Aucune requête IA disponible. Achète un pack ci-dessous.',
+    ai_assistant_telegram:'Ouvre Family Budget via Telegram pour utiliser l’assistant IA.'
+  },
+  it:{
+    bank_import_failed:'Impossibile importare le operazioni.',
+    ai_pack_telegram:'Apri Family Budget tramite Telegram per effettuare un acquisto.',
+    ai_pack_creating:'Creazione di una fattura in USDT…',
+    ai_pack_created:'Fattura creata. Dopo il pagamento, le richieste appariranno automaticamente nel saldo.',
+    ai_pack_failed:'Impossibile creare la fattura.',
+    ai_balance_load_failed:'Impossibile caricare il saldo delle richieste IA.',
+    ai_no_requests:'Nessuna richiesta IA disponibile. Acquista un pacchetto qui sotto.',
+    ai_assistant_telegram:'Apri Family Budget tramite Telegram per usare l’assistente IA.'
+  },
+  pl:{
+    bank_import_failed:'Nie udało się zaimportować operacji.',
+    ai_pack_telegram:'Otwórz Family Budget przez Telegram, aby dokonać zakupu.',
+    ai_pack_creating:'Tworzenie rachunku w USDT…',
+    ai_pack_created:'Rachunek utworzony. Po płatności zapytania automatycznie pojawią się na saldzie.',
+    ai_pack_failed:'Nie udało się utworzyć rachunku.',
+    ai_balance_load_failed:'Nie udało się wczytać salda zapytań AI.',
+    ai_no_requests:'Brak dostępnych zapytań AI. Kup pakiet poniżej.',
+    ai_assistant_telegram:'Otwórz Family Budget przez Telegram, aby korzystać z asystenta AI.'
+  },
+  tr:{
+    bank_import_failed:'İşlemler içe aktarılamadı.',
+    ai_pack_telegram:'Satın alma yapmak için Family Budget uygulamasını Telegram üzerinden aç.',
+    ai_pack_creating:'USDT faturası oluşturuluyor…',
+    ai_pack_created:'Fatura oluşturuldu. Ödemeden sonra istekler otomatik olarak bakiyene eklenecek.',
+    ai_pack_failed:'Fatura oluşturulamadı.',
+    ai_balance_load_failed:'AI istek bakiyesi yüklenemedi.',
+    ai_no_requests:'Kullanılabilir AI isteği yok. Aşağıdan bir paket satın al.',
+    ai_assistant_telegram:'AI asistanını kullanmak için Family Budget uygulamasını Telegram üzerinden aç.'
+  },
+  zh:{
+    bank_import_failed:'无法导入交易。',
+    ai_pack_telegram:'请通过 Telegram 打开 Family Budget 以购买套餐。',
+    ai_pack_creating:'正在创建 USDT 账单…',
+    ai_pack_created:'账单已创建。付款后，请求将自动显示在你的余额中。',
+    ai_pack_failed:'无法创建账单。',
+    ai_balance_load_failed:'无法加载 AI 请求余额。',
+    ai_no_requests:'暂无可用的 AI 请求。请在下方购买套餐。',
+    ai_assistant_telegram:'请通过 Telegram 打开 Family Budget 以使用 AI 助手。'
+  }
+};
+for (const [lang, entries] of Object.entries(AI_BANK_STATUS_I18N)) {
+  if (TRANSLATIONS[lang]) Object.assign(TRANSLATIONS[lang], entries);
+}
+
+
 const PRO_FEATURE_MESSAGE_I18N = {
   ru:'{feature} доступно в PRO. Открой тарифы, чтобы получить доступ.',
   uk:'{feature} доступно в PRO. Відкрий тарифи, щоб отримати доступ.',

@@ -2601,6 +2601,23 @@ const TRANSLATIONS = {
   }
 }
 
+const PRO_FEATURE_MESSAGE_I18N = {
+  ru:'{feature} доступно в PRO. Открой тарифы, чтобы получить доступ.',
+  uk:'{feature} доступно в PRO. Відкрий тарифи, щоб отримати доступ.',
+  en:'{feature} is available with PRO. Open the plans to get access.',
+  de:'{feature} ist mit PRO verfügbar. Öffne die Tarife, um Zugriff zu erhalten.',
+  es:'{feature} está disponible con PRO. Abre los planes para obtener acceso.',
+  fr:'{feature} est disponible avec PRO. Consulte les offres pour y accéder.',
+  it:'{feature} è disponibile con PRO. Apri i piani per accedere.',
+  pl:'{feature} jest dostępne w PRO. Otwórz plany, aby uzyskać dostęp.',
+  tr:'{feature} PRO ile kullanılabilir. Erişim için planları aç.',
+  zh:'{feature} 仅限 PRO 使用。打开订阅方案即可获取访问权限。'
+};
+for (const [lang, value] of Object.entries(PRO_FEATURE_MESSAGE_I18N)) {
+  if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['pro_feature_message'] = value;
+}
+
+
 const RUNTIME_DIALOG_I18N = {
   ru: {
     dialog_delete_envelope:'Удалить конверт «{name}»?',

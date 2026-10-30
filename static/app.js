@@ -2521,10 +2521,10 @@ async function refreshAIStatus(){
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.detail||'Не удалось проверить баланс.');
     const parts=[];
-    if(data.is_pro)parts.push('PRO: осталось '+Number(data.monthly_remaining||0)+' из '+Number(data.monthly_limit||30)+' запросов в этом месяце');
-    if(Number(data.credits||0)>0)parts.push('Купленные запросы: '+Number(data.credits));
-    node.textContent=parts.join(' · ')||'Пока нет доступных ИИ-запросов. Купи пакет ниже.';
-  }catch(error){node.textContent='Не удалось загрузить баланс ИИ-запросов.';}
+    if(data.is_pro)parts.push(t('PRO: осталось {remaining} из {limit} запросов в этом месяце').replace('{remaining}',String(Number(data.monthly_remaining||0))).replace('{limit}',String(Number(data.monthly_limit||30))));
+    if(Number(data.credits||0)>0)parts.push(t('Купленные запросы: {credits}').replace('{credits}',String(Number(data.credits))));
+    node.textContent=parts.join(' · ')||t('Пока нет доступных ИИ-запросов. Купи пакет ниже.');
+  }catch(error){node.textContent=t('Не удалось загрузить баланс ИИ-запросов.');}
 }
 
 async function buyAIPack(packId){

@@ -3080,3 +3080,20 @@ for (const [lang, label] of Object.entries(DEADLINE_LABEL_I18N)) {
   if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['Дедлайн:'] = label;
 }
 
+const THEME_LABEL_I18N = {
+  ru: 'Тема',
+  uk: 'Тема',
+  en: 'Theme',
+  de: 'Thema',
+  es: 'Tema',
+  fr: 'Thème',
+  it: 'Tema',
+  pl: 'Motyw',
+  tr: 'Tema',
+  zh: '主题'
+};
+for (const [lang, label] of Object.entries(THEME_LABEL_I18N)) {
+  if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['Тема'] = label;
+}
+
+

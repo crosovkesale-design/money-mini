@@ -188,7 +188,7 @@ async function confirmBankImport(){
     }
     closeModal('modalBankImport');
     alert(bankUi('Импорт завершён. Добавлено: ')+imported+(duplicates?bankUi(' · Дубликаты пропущены: ')+duplicates:'')+'.');
-  }catch(error){alert(error.message||'Не удалось импортировать операции.');}
+  }catch(error){alert(error.message||t('bank_import_failed'));}
   finally{bankImportBusy=false;button.disabled=false;button.textContent=bankUi('Импортировать');}
 }
 
@@ -2830,17 +2830,17 @@ async function refreshAIStatus(){
     const parts=[];
     if(data.is_pro)parts.push(t('PRO: осталось {remaining} из {limit} запросов в этом месяце').replace('{remaining}',String(Number(data.monthly_remaining||0))).replace('{limit}',String(Number(data.monthly_limit||30))));
     if(Number(data.credits||0)>0)parts.push(t('Купленные запросы: {credits}').replace('{credits}',String(Number(data.credits))));
-    node.textContent=parts.join(' · ')||t('Пока нет доступных ИИ-запросов. Купи пакет ниже.');
-  }catch(error){node.textContent=t('Не удалось загрузить баланс ИИ-запросов.');}
+    node.textContent=parts.join(' · ')||t('ai_no_requests');
+  }catch(error){node.textContent=t('ai_balance_load_failed');}
 }
 
 async function buyAIPack(packId){
   const tg=window.Telegram?.WebApp;
   const status=document.getElementById('aiPackStatus');
-  if(!tg?.initData){if(status)status.textContent='Открой Family Budget через Telegram для покупки.';return;}
+  if(!tg?.initData){if(status)status.textContent=t('ai_pack_telegram');return;}
   const buttons=[...document.querySelectorAll('.ai-credit-packs button')];
   buttons.forEach(button=>button.disabled=true);
-  if(status)status.textContent='Создаю счёт в USDT…';
+  if(status)status.textContent=t('ai_pack_creating');
   try{
     const response=await fetch('/api/ai/pack/crypto',{
       method:'POST',
@@ -2848,13 +2848,13 @@ async function buyAIPack(packId){
       body:JSON.stringify({pack:packId})
     });
     const data=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(data.detail||'Не удалось создать счёт.');
-    if(status)status.textContent='Счёт создан. После оплаты запросы автоматически появятся на балансе.';
+    if(!response.ok)throw new Error(data.detail||t('ai_pack_failed'));
+    if(status)status.textContent=t('ai_pack_created');
     if(data.invoice_url){
       if(typeof tg.openLink==='function')tg.openLink(data.invoice_url);
       else window.open(data.invoice_url,'_blank','noopener');
     }
-  }catch(error){if(status)status.textContent=error.message||'Ошибка создания счёта.';}
+  }catch(error){if(status)status.textContent=error.message||t('ai_pack_failed');}
   finally{buttons.forEach(button=>button.disabled=false);}
 }
 

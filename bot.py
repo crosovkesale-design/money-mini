@@ -583,6 +583,7 @@ async def payment_reminder():
                                 claim = {"won": False}
 
                                 def claim_delivery(current):
+                                    claim["won"] = False
                                     current = current if isinstance(current, dict) else {}
                                     if current.get("lastNotifiedMonth") == month_key:
                                         return current
@@ -1982,7 +1983,9 @@ async def api_sync_payment_reminders(request: Request, uid: str = Depends(curren
             "id": reminder_id, "name": name, "amount": amount, "day": day,
             "currency": str(item.get("currency") or "")[:10],
             "lang": lang,
-            "lastNotifiedMonth": previous.get("lastNotifiedMonth", "")
+            "lastNotifiedMonth": previous.get("lastNotifiedMonth", ""),
+            "notificationClaimMonth": previous.get("notificationClaimMonth", ""),
+            "notificationClaimAt": previous.get("notificationClaimAt", 0)
         }
 
     await fb.put(f"/users/{uid}/paymentReminders", clean)

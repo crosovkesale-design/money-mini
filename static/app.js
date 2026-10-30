@@ -245,6 +245,7 @@ function _autoTextMap(){
       map[source] = t(key);
     }
   }
+  for(const [source,value] of Object.entries(EXTRA_UI_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
   for(const [source,value] of Object.entries(EXTRA_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
   if(typeof CAT_I18N !== 'undefined'){
     for(const [source,langs] of Object.entries(CAT_I18N)) map[source] = langs[appData.lang] || source;

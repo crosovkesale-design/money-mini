@@ -886,7 +886,7 @@ function renderBattlePass(){
     const label=coupon?t('Купон −')+coupon+'%':(isPro?t('PRO бонус'):t('Монеты'));
     const status=earned?t('Получено'):(proLocked?t('Нужен PRO'):(unlocked?t('Забрать'):t('Уровень ')+tier));
     const disabled=earned||proLocked||!unlocked;
-    return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">УРОВЕНЬ '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':(isPro?'💎':'🪙'))+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):(isPro?t('PRO бонус'):t('Опыт сезона')))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';
+    return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">'+t('УРОВЕНЬ')+' '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':(isPro?'💎':'🪙'))+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):(isPro?t('PRO бонус'):t('Опыт сезона')))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';
   }).join('');
   const note=document.getElementById('battlePassTrackNote');
   if(note)note.textContent=isPro?(hasPro?t('PRO: купон 10% на каждом из 30 уровней.'):t('Платная дорожка доступна с активной подпиской PRO.')):t('Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.');
@@ -2141,7 +2141,7 @@ function renderProInsights(){
   const node=document.getElementById('proInsightsCard');
   if(!node)return;
   if(!canUseProFeatures){
-    node.innerHTML='<div class="pro-insights-lock"><div class="pro-insights-lock-icon">✦</div><div><b>Расширенная аналитика PRO</b><p>Сравнение с прошлым месяцем, топ категорий, средние дневные траты и прогноз до конца месяца.</p><button class="btn btn-accent btn-sm" onclick="switchTab(\'pay\')">Открыть PRO</button></div></div>';
+    node.innerHTML='<div class="pro-insights-lock"><div class="pro-insights-lock-icon">✦</div><div><b>'+t('Расширенная аналитика PRO')+'</b><p>'+t('Сравнение с прошлым месяцем, топ категорий, средние дневные траты и прогноз до конца месяца.')+'</p><button class="btn btn-accent btn-sm" onclick="switchTab(\'pay\')">'+t('Открыть PRO')+'</button></div></div>';
     return;
   }
   const budget=getVisibleBudget();
@@ -2169,9 +2169,9 @@ function renderProInsights(){
   const top=Object.entries(categories).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const categoryHtml=top.length?top.map(([name,amount],i)=>{
     const pct=currentExpense>0?Math.round(amount/currentExpense*100):0;
-    return '<div class="pro-insight-category"><div class="pro-insight-category-top"><span><i>'+String(i+1)+'</i>'+bankEscape(tCat(name))+'</span><b>'+fmtMoney(amount)+'</b></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><small>'+pct+'% расходов за месяц</small></div>';
-  }).join(''):'<p class="muted">Пока нет расходов за текущий месяц — добавь операции, и здесь появится анализ.</p>';
-  const compareText=difference===null?'Нет данных за прошлый месяц':(difference>0?'Расходы выросли на ':'Расходы снизились на ')+Math.abs(Math.round(difference))+'% к прошлому месяцу';
+    return '<div class="pro-insight-category"><div class="pro-insight-category-top"><span><i>'+String(i+1)+'</i>'+bankEscape(tCat(name))+'</span><b>'+fmtMoney(amount)+'</b></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><small>'+pct+'% '+t('расходов за месяц')+'</small></div>';
+  }).join(''):'<p class="muted">'+t('Пока нет расходов за текущий месяц — добавь операции, и здесь появится анализ.')+'</p>';
+  const compareText=difference===null?t('Нет данных за прошлый месяц'):(difference>0?t('Расходы выросли на '):t('Расходы снизились на '))+Math.abs(Math.round(difference))+t('% к прошлому месяцу');
   const compareClass=difference===null?'neutral':difference>0?'negative':'positive';
   const envelopeItems=budgetMode==='family'&&currentFamily?familyEnvelopes:(appData.envelopes||[]);
   const historyForAlerts=budget.history||[];
@@ -2181,21 +2181,21 @@ function renderProInsights(){
     return {name:String(env.name||'Конверт'),spent,target,over:spent-target};
   }).filter(env=>env.target>0&&env.over>0);
   const alerts=[];
-  if(currentExpense>currentIncome&&currentExpense>0)alerts.push({level:'warning',text:'Расходы за месяц превышают доходы на '+fmtMoney(currentExpense-currentIncome)+'.'});
-  envelopeWarnings.slice(0,3).forEach(env=>alerts.push({level:'warning',text:'Конверт «'+env.name+'»: превышение лимита на '+fmtMoney(env.over)+'.'}));
-  if(currentExpense===0&&envelopeWarnings.length===0)alerts.push({level:'ok',text:'Пока нет признаков перерасхода. Добавляй операции, чтобы отслеживать бюджет.'});
+  if(currentExpense>currentIncome&&currentExpense>0)alerts.push({level:'warning',text:t('Расходы за месяц превышают доходы на {amount}.').replace('{amount}',fmtMoney(currentExpense-currentIncome))});
+  envelopeWarnings.slice(0,3).forEach(env=>alerts.push({level:'warning',text:t('Конверт «{name}»: превышение лимита на {amount}.').replace('{name}',env.name).replace('{amount}',fmtMoney(env.over))}));
+  if(currentExpense===0&&envelopeWarnings.length===0)alerts.push({level:'ok',text:t('Пока нет признаков перерасхода. Добавляй операции, чтобы отслеживать бюджет.')});
   const alertsHtml='<div class="pro-insights-alerts"><div class="pro-insights-section-title">'+t('Контроль бюджета')+'</div>'+alerts.map(a=>'<div class="pro-insight-alert '+a.level+'"><span>'+(a.level==='warning'?'⚠️':'✓')+'</span><p>'+bankEscape(a.text)+'</p></div>').join('')+'</div>';
-  node.innerHTML='<div class="pro-insights-head"><div><span class="pro-insights-eyebrow">PRO ANALYTICS</span><h4>'+t('Финансовая картина')+'</h4><p>'+t('На основе операций текущего и прошлого месяца')+'</p></div><span class="pro-insights-crown">♛</span></div>'+
+  node.innerHTML='<div class="pro-insights-head"><div><span class="pro-insights-eyebrow">'+t('Аналитика PRO')+'</span><h4>'+t('Финансовая картина')+'</h4><p>'+t('На основе операций текущего и прошлого месяца')+'</p></div><span class="pro-insights-crown">♛</span></div>'+
     '<div class="pro-insights-metrics">'+
       '<div class="pro-insight-metric"><span>'+t('Прогноз расходов')+'</span><b>'+fmtMoney(projected)+'</b><small>'+t('к концу месяца')+'</small></div>'+
-      '<div class="pro-insight-metric"><span>'+t('В среднем в день')+'</span><b>'+fmtMoney(currentExpense/day)+'</b><small>за '+day+' дн. текущего месяца</small></div>'+
-      '<div class="pro-insight-metric"><span>'+t('Доходы за месяц')+'</span><b>'+fmtMoney(currentIncome)+'</b><small>по записанным операциям</small></div>'+
-      '<div class="pro-insight-metric"><span>'+t('Траты за месяц')+'</span><b>'+fmtMoney(currentExpense)+'</b><small>из '+daysInMonth+' дней</small></div>'+
+      '<div class="pro-insight-metric"><span>'+t('В среднем в день')+'</span><b>'+fmtMoney(currentExpense/day)+'</b><small>'+t('за {day} дн. текущего месяца').replace('{day}',day)+'</small></div>'+
+      '<div class="pro-insight-metric"><span>'+t('Доходы за месяц')+'</span><b>'+fmtMoney(currentIncome)+'</b><small>'+t('по записанным операциям')+'</small></div>'+
+      '<div class="pro-insight-metric"><span>'+t('Траты за месяц')+'</span><b>'+fmtMoney(currentExpense)+'</b><small>'+t('из {days} дней').replace('{days}',daysInMonth)+'</small></div>'+
     '</div>'+
-    '<div class="pro-insight-comparison '+compareClass+'"><span>'+t('Сравнение с прошлым месяцем')+'</span><b>'+bankEscape(compareText)+'</b>'+(previousExpense>0?'<small>Прошлый месяц: '+fmtMoney(previousExpense)+'</small>':'')+'</div>'+
+    '<div class="pro-insight-comparison '+compareClass+'"><span>'+t('Сравнение с прошлым месяцем')+'</span><b>'+bankEscape(compareText)+'</b>'+(previousExpense>0?'<small>'+t('Прошлый месяц: {amount}').replace('{amount}',fmtMoney(previousExpense))+'</small>':'')+'</div>'+
     alertsHtml+
     '<div class="pro-insights-categories"><div class="pro-insights-section-title">'+t('Куда уходят деньги')+'</div>'+categoryHtml+'</div>'+
-    '<p class="pro-insights-note">Прогноз — ориентир по средним расходам с начала месяца, а не гарантия будущих трат.</p>';
+    '<p class="pro-insights-note">'+t('Прогноз — ориентир по средним расходам с начала месяца, а не гарантия будущих трат.')+'</p>';
 }
 
 function renderForecast(){

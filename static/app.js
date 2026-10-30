@@ -321,8 +321,8 @@ function openHelp(topic='general'){
       html: '<p>«Семейный бюджет» помогает вести личный бюджет прямо внутри Telegram — без необходимости переключаться между отдельными приложениями.</p><ul><li><b>Доходы и расходы:</b> записывай операции и смотри историю.</li><li><b>Планирование:</b> используй конверты, счета и финансовые цели.</li><li><b>Аналитика:</b> отслеживай структуру трат и сравнивай результаты.</li><li><b>Настройки:</b> выбирай валюту, язык и оформление.</li><li><b>PRO:</b> открывает собственные категории, персональные обои, Excel-отчёты и ежедневные напоминания.</li></ul><p class="help-note">Совет: записывай расходы сразу после покупки — так статистика будет точнее.</p>'
     },
     advantages: {
-      title: 'Чем удобен «Семейный бюджет»',
-      html: '<ul><li><b>В Telegram:</b> бюджет под рукой в привычном мессенджере.</li><li><b>Всё в одном месте:</b> доходы, расходы, история, аналитика и планирование.</li><li><b>Гибкость:</b> несколько валют и языков, категории и финансовые цели.</li><li><b>PRO-инструменты:</b> экспорт подробного отчёта в Excel, собственные категории, персональный фон и напоминания.</li><li><b>Без переплаты сразу:</b> новым пользователям доступен пробный период на 30 дней.</li><li><b>Бонусная система:</b> купон 10% за приглашение и за каждую подтверждённую оплату реферала, а также купон 20% за принятый отзыв.</li><li><b>Удобная оплата:</b> Telegram Stars или USDT через Crypto Pay.</li></ul><p class="help-note">Главная идея — сделать учёт денег быстрым и понятным, чтобы им было проще пользоваться регулярно.</p>'
+      title: 'help_adv_title',
+      html: '<ul><li><b>' + t('help_adv_telegram') + ':</b> ' + t('help_adv_telegram_desc') + '</li><li><b>' + t('help_adv_all') + ':</b> ' + t('help_adv_all_desc') + '</li><li><b>' + t('help_adv_flex') + ':</b> ' + t('help_adv_flex_desc') + '</li><li><b>' + t('help_adv_pro') + ':</b> ' + t('help_adv_pro_desc') + '</li><li><b>' + t('help_adv_trial') + ':</b> ' + t('help_adv_trial_desc') + '</li><li><b>' + t('help_adv_bonus') + ':</b> ' + t('help_adv_bonus_desc') + '</li><li><b>' + t('help_adv_payment') + ':</b> ' + t('help_adv_payment_desc') + '</li></ul><p class="help-note">' + t('help_adv_note') + '</p>'
     },
     plans: {
       title: 'Как выбрать тариф',
@@ -342,7 +342,7 @@ function openHelp(topic='general'){
     }
   };
   const selected = content[topic] || content.general;
-  title.textContent = t(selected.title);
+  title.textContent = selected.title === 'help_adv_title' ? t(selected.title) : t(selected.title);
   body.innerHTML = selected.html;
   translateHardcodedText(body);
   openModal('modalHelp');

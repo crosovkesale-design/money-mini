@@ -303,7 +303,9 @@ function _autoTextMap(){
     }
   }
   for(const [source,value] of Object.entries(EXTRA_UI_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
-  for(const [source,langs] of Object.entries(STATIC_UI_TRANSLATIONS)) map[source] = langs[appData.lang] || source;
+  const activeLang = String(appData?.lang || 'ru').toLowerCase().split('-')[0];
+  const localizedStatic = STATIC_UI_TRANSLATIONS[activeLang] || STATIC_UI_TRANSLATIONS.ru || {};
+  for(const [source,value] of Object.entries(localizedStatic)) map[source] = value;
   for(const [source,value] of Object.entries(AUDIT_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
   for(const [source,value] of Object.entries(EXTRA_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
   if(typeof CAT_I18N !== 'undefined'){

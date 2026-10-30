@@ -3063,3 +3063,20 @@ tr:{'Новый сезон начинается каждый месяц. Зар�
 zh:{'Новый сезон начинается каждый месяц. Заработанные купоны сохраняются и после завершения сезона.':'每个月都会开启新赛季。赛季结束后，已获得的优惠券仍会保留。','Сезон':'赛季','Выполнение заданий':'任务进度','0 / 10 заданий':'0 / 10 个任务','Бесплатный':'免费','PRO · платный':'PRO · 付费','Бесплатные награды — меньше купонов, но доступны всем.':'免费奖励中的优惠券较少，但所有用户均可领取。','за 6 месяцев':'过去 6 个月'}
 };
 for (const [lang, phrases] of Object.entries(PASS_STATIC_LABELS_I18N)) if (TRANSLATIONS[lang]) Object.assign(TRANSLATIONS[lang], phrases);
+
+const DEADLINE_LABEL_I18N = {
+  ru: 'Дедлайн:',
+  uk: 'Кінцевий термін:',
+  en: 'Deadline:',
+  de: 'Frist:',
+  es: 'Fecha límite:',
+  fr: 'Date limite :',
+  it: 'Scadenza:',
+  pl: 'Termin:',
+  tr: 'Son tarih:',
+  zh: '截止日期：'
+};
+for (const [lang, label] of Object.entries(DEADLINE_LABEL_I18N)) {
+  if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['Дедлайн:'] = label;
+}
+

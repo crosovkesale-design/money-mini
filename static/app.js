@@ -328,44 +328,100 @@ const RUNTIME_TEXT_TRANSLATIONS_SEVENTH = {"en":["Envelope","Transaction","Could
 const RUNTIME_TEXT_SOURCES_EIGHTH = ["Как работают купоны","Выбор купона","Что входит в Basic","Преимущества Basic","Что входит в PRO","Дополнительные возможности PRO","Режим бюджета","Вопрос финансовому помощнику","Загружаем ссылку…","Например: потратил 350 грн на продукты","Например, АТБ","Молоко; 42.50; 1\nХлеб; 28; 2\nЯблоки; 35; 1.5","Сумма чека","Эмодзи","Лимит","Сумма пополнения","Например, аренда или интернет"];
 const RUNTIME_TEXT_TRANSLATIONS_EIGHTH = {"en":["How coupons work","Choose a coupon","What's included in Basic","Basic benefits","What's included in PRO","Additional PRO features","Budget mode","Question for the financial assistant","Loading link…","For example: spent 350 UAH on groceries","For example, ATB","Milk; 42.50; 1\nBread; 28; 2\nApples; 35; 1.5","Receipt total","Emoji","Limit","Top-up amount","For example, rent or internet"],"uk":["Як працюють купони","Вибір купона","Що входить до Basic","Переваги Basic","Що входить до PRO","Додаткові можливості PRO","Режим бюджету","Запитання фінансовому помічнику","Завантажуємо посилання…","Наприклад: витратив 350 грн на продукти","Наприклад, АТБ","Молоко; 42.50; 1\nХліб; 28; 2\nЯблука; 35; 1.5","Сума чека","Емодзі","Ліміт","Сума поповнення","Наприклад, оренда або інтернет"],"de":["So funktionieren Gutscheine","Gutschein auswählen","Was Basic beinhaltet","Vorteile von Basic","Was PRO beinhaltet","Zusätzliche PRO-Funktionen","Budgetmodus","Frage an den Finanzassistenten","Link wird geladen…","Zum Beispiel: 350 UAH für Lebensmittel ausgegeben","Zum Beispiel ATB","Milch; 42.50; 1\nBrot; 28; 2\nÄpfel; 35; 1.5","Kassenbonbetrag","Emoji","Limit","Aufladebetrag","Zum Beispiel Miete oder Internet"],"es":["Cómo funcionan los cupones","Elegir un cupón","Qué incluye Basic","Ventajas de Basic","Qué incluye PRO","Funciones adicionales de PRO","Modo de presupuesto","Pregunta al asistente financiero","Cargando enlace…","Por ejemplo: gasté 350 UAH en comida","Por ejemplo, ATB","Leche; 42.50; 1\nPan; 28; 2\nManzanas; 35; 1.5","Total del recibo","Emoji","Límite","Importe de recarga","Por ejemplo, alquiler o internet"],"fr":["Comment fonctionnent les coupons","Choisir un coupon","Contenu de Basic","Avantages de Basic","Contenu de PRO","Fonctionnalités PRO supplémentaires","Mode budget","Question à l’assistant financier","Chargement du lien…","Par exemple : 350 UAH dépensés en courses","Par exemple, ATB","Lait ; 42.50 ; 1\nPain ; 28 ; 2\nPommes ; 35 ; 1.5","Montant du ticket","Emoji","Limite","Montant du versement","Par exemple, loyer ou Internet"],"it":["Come funzionano i coupon","Scegli un coupon","Cosa include Basic","Vantaggi di Basic","Cosa include PRO","Funzioni PRO aggiuntive","Modalità budget","Domanda all’assistente finanziario","Caricamento link…","Ad esempio: ho speso 350 UAH per la spesa","Ad esempio, ATB","Latte; 42.50; 1\nPane; 28; 2\nMele; 35; 1.5","Totale dello scontrino","Emoji","Limite","Importo della ricarica","Ad esempio, affitto o internet"],"pl":["Jak działają kupony","Wybierz kupon","Co zawiera Basic","Zalety Basic","Co zawiera PRO","Dodatkowe funkcje PRO","Tryb budżetu","Pytanie do asystenta finansowego","Ładowanie linku…","Na przykład: wydano 350 UAH na zakupy","Na przykład ATB","Mleko; 42.50; 1\nChleb; 28; 2\nJabłka; 35; 1.5","Kwota paragonu","Emoji","Limit","Kwota doładowania","Na przykład czynsz lub internet"],"tr":["Kuponlar nasıl çalışır","Kupon seç","Basic neleri içerir","Basic avantajları","PRO neleri içerir","Ek PRO özellikleri","Bütçe modu","Finans asistanına soru","Bağlantı yükleniyor…","Örneğin: market için 350 UAH harcadım","Örneğin, ATB","Süt; 42.50; 1\nEkmek; 28; 2\nElma; 35; 1.5","Fiş tutarı","Emoji","Limit","Yükleme tutarı","Örneğin kira veya internet"],"zh":["优惠券使用说明","选择优惠券","Basic 包含的内容","Basic 优势","PRO 包含的内容","PRO 额外功能","预算模式","向财务助手提问","正在加载链接…","例如：买菜花了 350 UAH","例如：ATB","牛奶；42.50；1\n面包；28；2\n苹果；35；1.5","收据金额","表情符号","限额","充值金额","例如：房租或网络费"]};
 
+let _autoTextMapCache = null;
+let _autoTextPatternCache = null;
+function _normalizeAutoText(value){
+  return String(value ?? '').replace(/[\\u00a0\\u202f\\u2007]/g,' ').replace(/\\s+/g,' ').trim();
+}
+function _addAutoTextEntry(map, patterns, source, target, aliases=[]){
+  const normalizedSource=_normalizeAutoText(source);
+  if(!normalizedSource || !target) return;
+  if(normalizedSource.includes('{') && normalizedSource.includes('}')){
+    const tokens=[...normalizedSource.matchAll(/\\{[^{}]+\\}/g)];
+    let cursor=0, expression='^';
+    for(const token of tokens){
+      const literal=normalizedSource.slice(cursor,token.index);
+      expression+=literal.replace(/[.*+?^\\\\${}()|[\\]\\\\]/g,'\\\\$&')+'([\\s\\S]*?)';
+      cursor=token.index+token[0].length;
+    }
+    expression+=normalizedSource.slice(cursor).replace(/[.*+?^\\\\${}()|[\\]\\\\]/g,'\\\\$&')+'$';
+    try{patterns.push({regex:new RegExp(expression),target,tokenCount:tokens.length,length:normalizedSource.length});}catch(_){}
+  }else{
+    map[normalizedSource]=String(target);
+  }
+  for(const alias of aliases){
+    const normalizedAlias=_normalizeAutoText(alias);
+    if(normalizedAlias) map[normalizedAlias]=String(target);
+  }
+}
 function _autoTextMap(){
-  const map = Object.create(null);
-  const ru = TRANSLATIONS.ru || {};
-  for(const key of Object.keys(ru)){
-    const source = String(ru[key]);
-    if(source && !source.includes('{') && !source.includes('}') && !Object.prototype.hasOwnProperty.call(map,source)){
-      map[source] = t(key);
+  const activeLang=String(appData?.lang||'ru').toLowerCase().split('-')[0];
+  if(_autoTextMapCache && _autoTextMapCache.lang===activeLang) return _autoTextMapCache.map;
+  const map=Object.create(null), patterns=[];
+  const addDictionaries=(ru, all, keyIsSource=false)=>{
+    if(!ru || !all) return;
+    for(const [key,sourceValue] of Object.entries(ru)){
+      const source=String(keyIsSource?key:sourceValue);
+      const target=String((all[activeLang] && all[activeLang][key]) ?? (keyIsSource?key:sourceValue));
+      const aliases=Object.values(all).map(dict=>dict && dict[key]).filter(value=>typeof value==='string');
+      _addAutoTextEntry(map,patterns,source,target,aliases);
+    }
+  };
+  addDictionaries(TRANSLATIONS.ru,TRANSLATIONS,false);
+  addDictionaries(EXTRA_UI_TRANSLATIONS.ru,EXTRA_UI_TRANSLATIONS,true);
+  addDictionaries(EXTRA_TRANSLATIONS.ru,EXTRA_TRANSLATIONS,true);
+  addDictionaries(AUDIT_TRANSLATIONS.ru,AUDIT_TRANSLATIONS,true);
+  const staticAll=STATIC_UI_TRANSLATIONS||{};
+  for(const [source,target] of Object.entries(staticAll[activeLang]||staticAll.ru||{})){
+    const aliases=Object.values(staticAll).map(dict=>dict && dict[source]).filter(value=>typeof value==='string');
+    _addAutoTextEntry(map,patterns,source,target,aliases);
+  }
+  const runtimeGroups=[
+    [RUNTIME_TEXT_SOURCES,RUNTIME_TEXT_TRANSLATIONS],
+    [RUNTIME_TEXT_SOURCES_EXTRA,RUNTIME_TEXT_TRANSLATIONS_EXTRA],
+    [RUNTIME_TEXT_SOURCES_FOURTH,RUNTIME_TEXT_TRANSLATIONS_FOURTH],
+    [RUNTIME_TEXT_SOURCES_FIFTH,RUNTIME_TEXT_TRANSLATIONS_FIFTH],
+    [RUNTIME_TEXT_SOURCES_SIXTH,RUNTIME_TEXT_TRANSLATIONS_SIXTH],
+    [RUNTIME_TEXT_SOURCES_SEVENTH,RUNTIME_TEXT_TRANSLATIONS_SEVENTH],
+    [RUNTIME_TEXT_SOURCES_EIGHTH,RUNTIME_TEXT_TRANSLATIONS_EIGHTH]
+  ];
+  for(const [sources,translations] of runtimeGroups){
+    for(let i=0;i<sources.length;i++){
+      const target=(translations[activeLang]||[])[i]||sources[i];
+      const aliases=Object.values(translations).map(values=>values && values[i]).filter(value=>typeof value==='string');
+      _addAutoTextEntry(map,patterns,sources[i],target,aliases);
     }
   }
-  for(const [source,value] of Object.entries(EXTRA_UI_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
-  const activeLang = String(appData?.lang || 'ru').toLowerCase().split('-')[0];
-  const runtimeValues = RUNTIME_TEXT_TRANSLATIONS[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES.length;i++) if(runtimeValues[i]) map[RUNTIME_TEXT_SOURCES[i]] = runtimeValues[i];
-  const runtimeValuesExtra = RUNTIME_TEXT_TRANSLATIONS_EXTRA[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES_EXTRA.length;i++) if(runtimeValuesExtra[i]) map[RUNTIME_TEXT_SOURCES_EXTRA[i]] = runtimeValuesExtra[i];
-  const runtimeValuesFourth = RUNTIME_TEXT_TRANSLATIONS_FOURTH[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES_FOURTH.length;i++) if(runtimeValuesFourth[i]) map[RUNTIME_TEXT_SOURCES_FOURTH[i]] = runtimeValuesFourth[i];
-  const runtimeValuesFifth = RUNTIME_TEXT_TRANSLATIONS_FIFTH[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES_FIFTH.length;i++) if(runtimeValuesFifth[i]) map[RUNTIME_TEXT_SOURCES_FIFTH[i]] = runtimeValuesFifth[i];
-  const runtimeValuesSixth = RUNTIME_TEXT_TRANSLATIONS_SIXTH[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES_SIXTH.length;i++) if(runtimeValuesSixth[i]) map[RUNTIME_TEXT_SOURCES_SIXTH[i]] = runtimeValuesSixth[i];
-  const runtimeValuesSeventh = RUNTIME_TEXT_TRANSLATIONS_SEVENTH[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES_SEVENTH.length;i++) if(runtimeValuesSeventh[i]) map[RUNTIME_TEXT_SOURCES_SEVENTH[i]] = runtimeValuesSeventh[i];
-  const runtimeValuesEighth = RUNTIME_TEXT_TRANSLATIONS_EIGHTH[activeLang] || [];
-  for(let i=0;i<RUNTIME_TEXT_SOURCES_EIGHTH.length;i++) if(runtimeValuesEighth[i]) map[RUNTIME_TEXT_SOURCES_EIGHTH[i]] = runtimeValuesEighth[i];
-  const localizedStatic = STATIC_UI_TRANSLATIONS[activeLang] || STATIC_UI_TRANSLATIONS.ru || {};
-  for(const [source,value] of Object.entries(localizedStatic)) map[source] = value;
-  for(const [source,value] of Object.entries(AUDIT_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
-  for(const [source,value] of Object.entries(EXTRA_TRANSLATIONS.ru || {})) if(!source.includes('{') && !source.includes('}')) map[source] = t(source);
-  if(typeof CAT_I18N !== 'undefined'){
-    for(const [source,langs] of Object.entries(CAT_I18N)) map[source] = langs[appData.lang] || source;
+  if(typeof CAT_I18N!=='undefined'){
+    for(const [source,langs] of Object.entries(CAT_I18N)){
+      const target=langs[activeLang]||source;
+      _addAutoTextEntry(map,patterns,source,target,Object.values(langs));
+    }
   }
-  const aliases = {
+  const aliases={
     'Русский':'Русский','Українська':'Українська','English':'English','Deutsch':'Deutsch','Español':'Español','Français':'Français','Italiano':'Italiano','Polski':'Polski','Türkçe':'Türkçe','中文':'中文',
     'Личный баланс':'Личный баланс','Общий баланс семьи':'Общий баланс семьи'
   };
   Object.assign(map,aliases);
+  patterns.sort((a,b)=>b.length-a.length);
+  _autoTextPatternCache={lang:activeLang,patterns};
+  _autoTextMapCache={lang:activeLang,map};
   return map;
+}
+function _translateAutoText(value){
+  const normalized=_normalizeAutoText(value);
+  if(!normalized)return null;
+  const map=_autoTextMap();
+  if(Object.prototype.hasOwnProperty.call(map,normalized))return map[normalized];
+  const activeLang=String(appData?.lang||'ru').toLowerCase().split('-')[0];
+  if(!_autoTextPatternCache || _autoTextPatternCache.lang!==activeLang) _autoTextMap();
+  for(const item of (_autoTextPatternCache?.patterns||[])){
+    const match=normalized.match(item.regex);
+    if(!match)continue;
+    let index=1;
+    return item.target.replace(/\\{[^{}]+\\}/g,()=>match[index++] ?? '');
+  }
+  return null;
 }
 function _translateHardcodedNode(node){
   if(!node || node.nodeType !== 3) return;
@@ -378,7 +434,7 @@ function _translateHardcodedNode(node){
   const source=record.source;
   const trimmed=source.trim();
   if(!trimmed || trimmed.length>1200) return;
-  const translated=_autoTextMap()[trimmed];
+  const translated=_translateAutoText(trimmed);
   if(translated){
     const start=source.indexOf(trimmed), end=start+trimmed.length;
     const next=source.slice(0,start)+translated+source.slice(end);
@@ -401,7 +457,7 @@ function _translateHardcodedAttributes(el){
     let record=originals[attr];
     if(!record){ record={source:el.getAttribute(attr),last:null}; originals[attr]=record; }
     else if(record.last!==null && el.getAttribute(attr)!==record.last){ record.source=el.getAttribute(attr); record.last=null; }
-    const source=record.source, translated=map[String(source||'').trim()];
+    const source=record.source, translated=_translateAutoText(source);
     if(translated){
       if(el.getAttribute(attr)!==translated) el.setAttribute(attr,translated);
       record.last=translated;
@@ -435,6 +491,8 @@ function startHardcodedTextTranslation(){
   _autoTextObserver.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:AUTO_TRANSLATABLE_ATTRIBUTES});
 }
 function applyLang(){
+  _autoTextMapCache = null;
+  _autoTextPatternCache = null;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   const languageLabel=document.getElementById('langLabel');

@@ -2094,10 +2094,10 @@ function renderAll(){
         deadlineText = saved >= target
           ? '✅ Цель достигнута'
           : daysLeft < 0
-            ? '⚠️ Дедлайн прошёл на ' + Math.abs(daysLeft) + ' дн.'
+            ? t('deadline_reached').replace('{days}',String(Math.abs(daysLeft)))
             : daysLeft === 0
-              ? '⏰ Дедлайн сегодня'
-              : '📅 Осталось дней: ' + daysLeft;
+              ? t('deadline_today')
+              : t('deadline_days_left').replace('{days}',String(daysLeft));
       }
       return `<div class="card bank-card">
         <div class="bank-card-top"><b>🏦 ${b.name}</b><span class="bank-saved">${fmtMoney(saved)}</span></div>

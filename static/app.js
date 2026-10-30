@@ -342,8 +342,10 @@ function _translateHardcodedNode(node){
   const parent=node.parentElement;
   if(!parent || parent.closest('[data-i18n]')) return;
   if(['SCRIPT','STYLE','TEXTAREA','CODE','PRE'].includes(parent.tagName)) return;
-  let source=_autoTextOriginals.get(node);
-  if(source===undefined){ source=node.nodeValue; _autoTextOriginals.set(node,source); }
+  let record=_autoTextOriginals.get(node);
+  if(!record){ record={source:node.nodeValue,last:null}; _autoTextOriginals.set(node,record); }
+  else if(record.last!==null && node.nodeValue!==record.last){ record.source=node.nodeValue; record.last=null; }
+  const source=record.source;
   const trimmed=source.trim();
   if(!trimmed || trimmed.length>220) return;
   const translated=_autoTextMap()[trimmed];
@@ -351,8 +353,10 @@ function _translateHardcodedNode(node){
     const start=source.indexOf(trimmed), end=start+trimmed.length;
     const next=source.slice(0,start)+translated+source.slice(end);
     if(node.nodeValue!==next) node.nodeValue=next;
-  } else if(node.nodeValue!==source && String(appData?.lang||'ru').toLowerCase().split('-')[0]==='ru') {
-    node.nodeValue=source;
+    record.last=next;
+  } else {
+    if(String(appData?.lang||'ru').toLowerCase().split('-')[0]==='ru' && node.nodeValue!==source) node.nodeValue=source;
+    record.last=null;
   }
 }
 function _translateHardcodedAttributes(el){
@@ -364,10 +368,17 @@ function _translateHardcodedAttributes(el){
     if(attr==='value' && el.hasAttribute('data-i18n')) continue;
     let originals=_autoAttributeOriginals.get(el);
     if(!originals){ originals=Object.create(null); _autoAttributeOriginals.set(el,originals); }
-    if(!Object.prototype.hasOwnProperty.call(originals,attr)) originals[attr]=el.getAttribute(attr);
-    const source=originals[attr], translated=map[String(source||'').trim()];
-    if(translated && el.getAttribute(attr)!==translated) el.setAttribute(attr,translated);
-    else if(!translated && String(appData?.lang||'ru').toLowerCase().split('-')[0]==='ru' && el.getAttribute(attr)!==source) el.setAttribute(attr,source);
+    let record=originals[attr];
+    if(!record){ record={source:el.getAttribute(attr),last:null}; originals[attr]=record; }
+    else if(record.last!==null && el.getAttribute(attr)!==record.last){ record.source=el.getAttribute(attr); record.last=null; }
+    const source=record.source, translated=map[String(source||'').trim()];
+    if(translated){
+      if(el.getAttribute(attr)!==translated) el.setAttribute(attr,translated);
+      record.last=translated;
+    } else {
+      if(String(appData?.lang||'ru').toLowerCase().split('-')[0]==='ru' && el.getAttribute(attr)!==source) el.setAttribute(attr,source);
+      record.last=null;
+    }
   }
 }
 function translateHardcodedText(root=document.body){

@@ -172,7 +172,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Дедлайн накопления (необязательно)",
     "Пополнить копилку": "Пополнить копилку",
     "Пополнить": "Пополнить",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.",
     help_adv_title: "Чем удобен «Семейный бюджет»",
     help_adv_telegram: "В Telegram",
     help_adv_all: "Всё в одном месте",
@@ -182,13 +182,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Бонусная система",
     help_adv_payment: "Удобная оплата",
     help_adv_note: "Главная идея — сделать учёт денег быстрым и понятным, чтобы им было проще пользоваться регулярно.",
-    secure_pay: "Оплата через Telegram Stars или Crypto Pay (USDT)"
+    secure_pay: "Оплата через Telegram Stars или Crypto Pay (USDT)",
     help_adv_telegram_desc: "Бюджет всегда под рукой в привычном мессенджере.",
     help_adv_all_desc: "Доходы, расходы, история, аналитика и планирование собраны вместе.",
     help_adv_flex_desc: "Несколько валют и языков, категории и финансовые цели.",
     help_adv_pro_desc: "Подробный экспорт в Excel, собственные категории, персональный фон и напоминания.",
     help_adv_trial_desc: "Новым пользователям доступен пробный период на 30 дней.",
-    help_adv_bonus_desc: "Купон 10% за приглашение и за каждую подтверждённую оплату реферала; купон 20% за принятый отзыв."
+    help_adv_bonus_desc: "Купон 10% за приглашение и за каждую подтверждённую оплату реферала; купон 20% за принятый отзыв.",
     help_adv_payment_desc: "Выбирай оплату звёздами Telegram или USDT через Crypto Pay.",
   },
 
@@ -365,7 +365,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Дедлайн накопичення (необов’язково)",
     "Пополнить копилку": "Поповнити скарбничку",
     "Пополнить": "Поповнити",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Вітаю! Я допоможу розібратися з витратами, знайти можливості для заощадження й оцінити бюджет. Постав запитання нижче."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Вітаю! Я допоможу розібратися з витратами, знайти можливості для заощадження й оцінити бюджет. Постав запитання нижче.",
     help_adv_title: "Чим зручний «Сімейний бюджет»",
     help_adv_telegram: "У Telegram",
     help_adv_all: "Усе в одному місці",
@@ -375,13 +375,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Бонусна система",
     help_adv_payment: "Зручна оплата",
     help_adv_note: "Головна ідея — зробити облік грошей швидким і зрозумілим, щоб ним було легко користуватися щодня.",
-    secure_pay: "Оплата через Telegram Stars або Crypto Pay (USDT)"
+    secure_pay: "Оплата через Telegram Stars або Crypto Pay (USDT)",
     help_adv_telegram_desc: "Бюджет завжди під рукою у звичному месенджері.",
     help_adv_all_desc: "Доходи, витрати, історія, аналітика та планування зібрані разом.",
     help_adv_flex_desc: "Кілька валют і мов, категорії та фінансові цілі.",
     help_adv_pro_desc: "Детальний експорт в Excel, власні категорії, персональний фон і нагадування.",
     help_adv_trial_desc: "Новим користувачам доступний пробний період на 30 днів.",
-    help_adv_bonus_desc: "Купон 10% за запрошення та за кожну підтверджену оплату реферала; купон 20% за схвалений відгук."
+    help_adv_bonus_desc: "Купон 10% за запрошення та за кожну підтверджену оплату реферала; купон 20% за схвалений відгук.",
     help_adv_payment_desc: "Обирай оплату зірками Telegram або USDT через Crypto Pay.",
   },
 
@@ -558,7 +558,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Savings deadline (optional)",
     "Пополнить копилку": "Add to savings",
     "Пополнить": "Add funds",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Hi! I can help you understand your spending, find ways to save, and review your budget. Ask your question below."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Hi! I can help you understand your spending, find ways to save, and review your budget. Ask your question below.",
     help_adv_title: "Why choose Family Budget?",
     help_adv_telegram: "In Telegram",
     help_adv_all: "Everything in one place",
@@ -568,13 +568,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Reward system",
     help_adv_payment: "Convenient payments",
     help_adv_note: "The goal is to make money tracking quick and clear, so it is easy to keep up with every day.",
-    secure_pay: "Pay with Telegram Stars or Crypto Pay (USDT)"
+    secure_pay: "Pay with Telegram Stars or Crypto Pay (USDT)",
     help_adv_telegram_desc: "Your budget is always at hand in the messenger you already use.",
     help_adv_all_desc: "Income, expenses, history, analytics and planning in one place.",
     help_adv_flex_desc: "Multiple currencies and languages, categories and financial goals.",
     help_adv_pro_desc: "Detailed Excel reports, custom categories, personal backgrounds and reminders.",
     help_adv_trial_desc: "New users get a 30-day trial.",
-    help_adv_bonus_desc: "Get a 10% coupon for inviting someone and for each confirmed referral payment, plus a 20% coupon for an approved review."
+    help_adv_bonus_desc: "Get a 10% coupon for inviting someone and for each confirmed referral payment, plus a 20% coupon for an approved review.",
     help_adv_payment_desc: "Choose Telegram Stars or USDT via Crypto Pay.",
   },
 
@@ -751,7 +751,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Sparfrist (optional)",
     "Пополнить копилку": "Sparziel aufladen",
     "Пополнить": "Aufladen",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Hallo! Ich helfe dir, Ausgaben zu verstehen, Sparmöglichkeiten zu finden und dein Budget einzuschätzen. Stell unten eine Frage."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Hallo! Ich helfe dir, Ausgaben zu verstehen, Sparmöglichkeiten zu finden und dein Budget einzuschätzen. Stell unten eine Frage.",
     help_adv_title: "Warum Family Budget?",
     help_adv_telegram: "In Telegram",
     help_adv_all: "Alles an einem Ort",
@@ -761,13 +761,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Bonussystem",
     help_adv_payment: "Einfache Zahlung",
     help_adv_note: "Unser Ziel ist eine schnelle und verständliche Finanzübersicht, die sich leicht täglich nutzen lässt.",
-    secure_pay: "Zahlung mit Telegram Stars oder Crypto Pay (USDT)"
+    secure_pay: "Zahlung mit Telegram Stars oder Crypto Pay (USDT)",
     help_adv_telegram_desc: "Dein Budget ist im vertrauten Messenger immer griffbereit.",
     help_adv_all_desc: "Einnahmen, Ausgaben, Verlauf, Analysen und Planung an einem Ort.",
     help_adv_flex_desc: "Mehrere Währungen und Sprachen, Kategorien und Sparziele.",
     help_adv_pro_desc: "Detaillierte Excel-Berichte, eigene Kategorien, persönliche Hintergründe und Erinnerungen.",
     help_adv_trial_desc: "Neue Nutzer erhalten 30 Tage kostenlos zum Testen.",
-    help_adv_bonus_desc: "10-%-Gutschein für Einladungen und jede bestätigte Zahlung eines geworbenen Nutzers sowie 20-%-Gutschein für eine angenommene Bewertung."
+    help_adv_bonus_desc: "10-%-Gutschein für Einladungen und jede bestätigte Zahlung eines geworbenen Nutzers sowie 20-%-Gutschein für eine angenommene Bewertung.",
     help_adv_payment_desc: "Wähle Telegram Stars oder USDT über Crypto Pay.",
   },
 
@@ -944,7 +944,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Fecha límite de ahorro (opcional)",
     "Пополнить копилку": "Añadir a la hucha",
     "Пополнить": "Añadir fondos",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "¡Hola! Te ayudaré a entender tus gastos, encontrar formas de ahorrar y revisar tu presupuesto. Haz tu pregunta abajo."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "¡Hola! Te ayudaré a entender tus gastos, encontrar formas de ahorrar y revisar tu presupuesto. Haz tu pregunta abajo.",
     help_adv_title: "¿Por qué elegir Family Budget?",
     help_adv_telegram: "En Telegram",
     help_adv_all: "Todo en un solo lugar",
@@ -954,13 +954,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Sistema de recompensas",
     help_adv_payment: "Pago sencillo",
     help_adv_note: "La idea es que controlar el dinero sea rápido y sencillo para poder hacerlo cada día.",
-    secure_pay: "Paga con Telegram Stars o Crypto Pay (USDT)"
+    secure_pay: "Paga con Telegram Stars o Crypto Pay (USDT)",
     help_adv_telegram_desc: "Tu presupuesto siempre está a mano en tu mensajero habitual.",
     help_adv_all_desc: "Ingresos, gastos, historial, análisis y planificación en un solo lugar.",
     help_adv_flex_desc: "Varias monedas e idiomas, categorías y objetivos financieros.",
     help_adv_pro_desc: "Informes detallados de Excel, categorías propias, fondos personalizados y recordatorios.",
     help_adv_trial_desc: "Los nuevos usuarios tienen 30 días de prueba.",
-    help_adv_bonus_desc: "Cupón del 10 % por invitar y por cada pago confirmado de un referido, más un cupón del 20 % por una reseña aceptada."
+    help_adv_bonus_desc: "Cupón del 10 % por invitar y por cada pago confirmado de un referido, más un cupón del 20 % por una reseña aceptada.",
     help_adv_payment_desc: "Elige Telegram Stars o USDT mediante Crypto Pay.",
   },
 
@@ -1137,7 +1137,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Date limite d’épargne (facultative)",
     "Пополнить копилку": "Ajouter à la tirelire",
     "Пополнить": "Ajouter des fonds",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Bonjour ! Je peux t’aider à comprendre tes dépenses, trouver des économies et évaluer ton budget. Pose ta question ci-dessous."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Bonjour ! Je peux t’aider à comprendre tes dépenses, trouver des économies et évaluer ton budget. Pose ta question ci-dessous.",
     help_adv_title: "Pourquoi choisir Family Budget ?",
     help_adv_telegram: "Dans Telegram",
     help_adv_all: "Tout au même endroit",
@@ -1147,13 +1147,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Système de récompenses",
     help_adv_payment: "Paiement pratique",
     help_adv_note: "L’objectif est de suivre son argent simplement et rapidement, pour pouvoir le faire régulièrement.",
-    secure_pay: "Payez avec Telegram Stars ou Crypto Pay (USDT)"
+    secure_pay: "Payez avec Telegram Stars ou Crypto Pay (USDT)",
     help_adv_telegram_desc: "Votre budget est toujours à portée de main dans votre messagerie habituelle.",
     help_adv_all_desc: "Revenus, dépenses, historique, analyses et planification réunis.",
     help_adv_flex_desc: "Plusieurs devises et langues, catégories et objectifs financiers.",
     help_adv_pro_desc: "Rapports Excel détaillés, catégories personnalisées, fonds personnels et rappels.",
     help_adv_trial_desc: "Les nouveaux utilisateurs bénéficient de 30 jours d’essai.",
-    help_adv_bonus_desc: "Coupon de 10 % pour une invitation et chaque paiement confirmé d’un filleul, plus un coupon de 20 % pour un avis accepté."
+    help_adv_bonus_desc: "Coupon de 10 % pour une invitation et chaque paiement confirmé d’un filleul, plus un coupon de 20 % pour un avis accepté.",
     help_adv_payment_desc: "Choisissez Telegram Stars ou USDT via Crypto Pay.",
   },
 
@@ -1330,7 +1330,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Scadenza risparmio (facoltativa)",
     "Пополнить копилку": "Aggiungi al salvadanaio",
     "Пополнить": "Aggiungi fondi",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Ciao! Ti aiuterò a capire le spese, trovare modi per risparmiare e valutare il budget. Fai una domanda qui sotto."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Ciao! Ti aiuterò a capire le spese, trovare modi per risparmiare e valutare il budget. Fai una domanda qui sotto.",
     help_adv_title: "Perché scegliere Family Budget?",
     help_adv_telegram: "Su Telegram",
     help_adv_all: "Tutto in un unico posto",
@@ -1340,13 +1340,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Sistema di premi",
     help_adv_payment: "Pagamento semplice",
     help_adv_note: "L’obiettivo è rendere il controllo del denaro rapido e chiaro, così da usarlo facilmente ogni giorno.",
-    secure_pay: "Paga con Telegram Stars o Crypto Pay (USDT)"
+    secure_pay: "Paga con Telegram Stars o Crypto Pay (USDT)",
     help_adv_telegram_desc: "Il tuo budget è sempre a portata di mano nel messenger che usi ogni giorno.",
     help_adv_all_desc: "Entrate, uscite, cronologia, analisi e pianificazione in un unico posto.",
     help_adv_flex_desc: "Più valute e lingue, categorie e obiettivi finanziari.",
     help_adv_pro_desc: "Report Excel dettagliati, categorie personalizzate, sfondi personali e promemoria.",
     help_adv_trial_desc: "I nuovi utenti hanno 30 giorni di prova.",
-    help_adv_bonus_desc: "Coupon del 10% per ogni invito e per ogni pagamento confermato di un invitato, più un coupon del 20% per una recensione approvata."
+    help_adv_bonus_desc: "Coupon del 10% per ogni invito e per ogni pagamento confermato di un invitato, più un coupon del 20% per una recensione approvata.",
     help_adv_payment_desc: "Scegli Telegram Stars oppure USDT tramite Crypto Pay.",
   },
 
@@ -1523,7 +1523,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Termin oszczędzania (opcjonalnie)",
     "Пополнить копилку": "Dodaj do skarbonki",
     "Пополнить": "Dodaj środki",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Cześć! Pomogę zrozumieć wydatki, znaleźć oszczędności i ocenić budżet. Zadaj pytanie poniżej."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Cześć! Pomogę zrozumieć wydatki, znaleźć oszczędności i ocenić budżet. Zadaj pytanie poniżej.",
     help_adv_title: "Dlaczego warto wybrać Family Budget?",
     help_adv_telegram: "W Telegramie",
     help_adv_all: "Wszystko w jednym miejscu",
@@ -1533,13 +1533,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "System nagród",
     help_adv_payment: "Wygodna płatność",
     help_adv_note: "Chodzi o to, aby kontrolowanie pieniędzy było szybkie i proste, dzięki czemu łatwo robić to regularnie.",
-    secure_pay: "Płać przez Telegram Stars lub Crypto Pay (USDT)"
+    secure_pay: "Płać przez Telegram Stars lub Crypto Pay (USDT)",
     help_adv_telegram_desc: "Budżet masz zawsze pod ręką w znanym komunikatorze.",
     help_adv_all_desc: "Przychody, wydatki, historia, analityka i planowanie w jednym miejscu.",
     help_adv_flex_desc: "Wiele walut i języków, kategorie oraz cele finansowe.",
     help_adv_pro_desc: "Szczegółowe raporty Excel, własne kategorie, personalne tła i przypomnienia.",
     help_adv_trial_desc: "Nowi użytkownicy otrzymują 30 dni okresu próbnego.",
-    help_adv_bonus_desc: "Kupon 10% za zaproszenie i każdą potwierdzoną płatność poleconej osoby oraz kupon 20% za zaakceptowaną opinię."
+    help_adv_bonus_desc: "Kupon 10% za zaproszenie i każdą potwierdzoną płatność poleconej osoby oraz kupon 20% za zaakceptowaną opinię.",
     help_adv_payment_desc: "Wybierz Telegram Stars lub USDT przez Crypto Pay.",
   },
 
@@ -1716,7 +1716,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "Birikim son tarihi (isteğe bağlı)",
     "Пополнить копилку": "Kumbaraya ekle",
     "Пополнить": "Para ekle",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Merhaba! Harcamalarını anlamana, tasarruf fırsatları bulmana ve bütçeni değerlendirmene yardımcı olabilirim. Sorunu aşağıya yaz."
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Merhaba! Harcamalarını anlamana, tasarruf fırsatları bulmana ve bütçeni değerlendirmene yardımcı olabilirim. Sorunu aşağıya yaz.",
     help_adv_title: "Family Budget neden kullanışlı?",
     help_adv_telegram: "Telegram'da",
     help_adv_all: "Her şey tek yerde",
@@ -1726,13 +1726,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "Ödül sistemi",
     help_adv_payment: "Kolay ödeme",
     help_adv_note: "Amaç, para takibini hızlı ve anlaşılır hâle getirerek her gün kolayca kullanılmasını sağlamaktır.",
-    secure_pay: "Telegram Stars veya Crypto Pay (USDT) ile öde"
+    secure_pay: "Telegram Stars veya Crypto Pay (USDT) ile öde",
     help_adv_telegram_desc: "Bütçen, alışık olduğun mesajlaşma uygulamasında her zaman yanında.",
     help_adv_all_desc: "Gelirler, giderler, geçmiş, analizler ve planlama tek yerde.",
     help_adv_flex_desc: "Birden fazla para birimi ve dil, kategoriler ve finansal hedefler.",
     help_adv_pro_desc: "Ayrıntılı Excel raporları, özel kategoriler, kişisel arka planlar ve hatırlatmalar.",
     help_adv_trial_desc: "Yeni kullanıcılar 30 günlük deneme süresinden yararlanır.",
-    help_adv_bonus_desc: "Davet için ve yönlendirdiğin kişinin onaylanan her ödemesi için %10 kupon; kabul edilen yorum için %20 kupon."
+    help_adv_bonus_desc: "Davet için ve yönlendirdiğin kişinin onaylanan her ödemesi için %10 kupon; kabul edilen yorum için %20 kupon.",
     help_adv_payment_desc: "Telegram Stars veya Crypto Pay üzerinden USDT ile ödeme yap.",
   },
 
@@ -1908,7 +1908,7 @@ const TRANSLATIONS = {
     "Дедлайн накопления (необязательно)": "储蓄截止日期（可选）",
     "Пополнить копилку": "存入储蓄罐",
     "Пополнить": "添加资金",
-    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "你好！我可以帮你了解支出、寻找省钱机会并评估预算。请在下方提问。"
+    "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "你好！我可以帮你了解支出、寻找省钱机会并评估预算。请在下方提问。",
     help_adv_title: "Family Budget 有哪些优势？",
     help_adv_telegram: "在 Telegram 中",
     help_adv_all: "所有功能集中一处",
@@ -1918,13 +1918,13 @@ const TRANSLATIONS = {
     help_adv_bonus: "奖励系统",
     help_adv_payment: "便捷支付",
     help_adv_note: "我们的目标是让记账快速、清晰，方便你每天坚持使用。",
-    secure_pay: "通过 Telegram Stars 或 Crypto Pay (USDT) 付款"
+    secure_pay: "通过 Telegram Stars 或 Crypto Pay (USDT) 付款",
     help_adv_telegram_desc: "在你熟悉的即时通讯应用中，随时查看预算。",
     help_adv_all_desc: "收入、支出、记录、分析和规划集中管理。",
     help_adv_flex_desc: "支持多种货币和语言、分类及财务目标。",
     help_adv_pro_desc: "详细 Excel 报告、自定义类别、个性化背景和提醒。",
     help_adv_trial_desc: "新用户可享受 30 天试用期。",
-    help_adv_bonus_desc: "每邀请一位用户及其每笔确认付款可获得 10% 优惠券；评价通过后可获得 20% 优惠券。"
+    help_adv_bonus_desc: "每邀请一位用户及其每笔确认付款可获得 10% 优惠券；评价通过后可获得 20% 优惠券。",
     help_adv_payment_desc: "可选择使用 Telegram Stars 或通过 Crypto Pay 使用 USDT 付款。",
   }
 };

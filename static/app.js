@@ -331,7 +331,7 @@ const RUNTIME_TEXT_TRANSLATIONS_EIGHTH = {"en":["How coupons work","Choose a cou
 let _autoTextMapCache = null;
 let _autoTextPatternCache = null;
 function _normalizeAutoText(value){
-  return String(value ?? '').replace(/[\\u00a0\\u202f\\u2007]/g,' ').replace(/\\s+/g,' ').trim();
+  return String(value ?? '').replace(/[\u00a0\u202f\u2007]/g,' ').replace(/\s+/g,' ').trim();
 }
 function _addAutoTextEntry(map, patterns, source, target, aliases=[]){
   const addPattern=(template)=>{

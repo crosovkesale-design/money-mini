@@ -3044,3 +3044,7 @@ for (const [lang, phrases] of Object.entries(PASS_ANALYTICS_TRANSLATIONS)) {
   if (!TRANSLATIONS[lang]) TRANSLATIONS[lang] = {};
   Object.assign(TRANSLATIONS[lang], phrases);
 }
+
+
+const PRO_ANALYTICS_BADGE_I18N = {ru:'Аналитика PRO',uk:'Аналітика PRO',en:'PRO analytics',de:'PRO-Analyse',es:'Analítica PRO',fr:'Analyses PRO',it:'Analisi PRO',pl:'Analityka PRO',tr:'PRO analitiği',zh:'PRO 分析'};
+for (const [lang, value] of Object.entries(PRO_ANALYTICS_BADGE_I18N)) if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['Аналитика PRO'] = value;

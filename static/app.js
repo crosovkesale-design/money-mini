@@ -194,6 +194,14 @@ async function confirmBankImport(){
 
 function saveData(){ localStorage.setItem(appStorageKey, JSON.stringify(appData)); }
 
+async function logClientActivity(action, tx){
+  const tg=window.Telegram?.WebApp;
+  if(!tg?.initData)return;
+  try{
+    await fetch('/api/activity/log',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({action,transaction:{type:tx?.type,amount:tx?.amount,title:tx?.title||tx?.note,category:tx?.category,currency:tx?.currency||appData.currency}})});
+  }catch(error){console.warn('Activity log sync failed:',error);}
+}
+
 async function syncChatExpenses(){
   const tg=window.Telegram?.WebApp;
   if(!tg?.initData)return;
@@ -1388,7 +1396,7 @@ async function submitTransaction(){
     ?appData.history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(envelopeId)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0):0;
   const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU'),receipt:txTypeReceiptAllowed(appData.activeTxType)?pendingReceiptDraft:null};appData.history.unshift(tx);pendingReceiptDraft=null;
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
-  saveData();closeModal('modalTransaction');renderAll();
+  saveData();logClientActivity('transaction_added',tx);closeModal('modalTransaction');renderAll();
   if(tx.type==='expense')notifyEnvelopeThresholds(envelopeId,spentBefore,amount,personalEnvelopeItems);
 }
 
@@ -1470,7 +1478,7 @@ async function saveTxEdits(){
       }
       tx.type=type;tx.amount=amount;tx.title=title;tx.note=title;tx.category=category;tx.icon=icon;
       tx.date=date.split('-').reverse().join('.');tx.ts=new Date(date+'T12:00:00').getTime();tx.envelopeId=envelopeId||null;
-      saveData();renderAll();
+      saveData();logClientActivity('transaction_edited',tx);renderAll();
     }
     editingTxId=null;closeModal('modalEditTransaction');
   }catch(e){if(error)error.textContent=e.message||'Не удалось сохранить операцию.';}
@@ -1501,7 +1509,7 @@ async function deleteTx(id){
     else appData.monthIncome -= Number(tx.amount||0);
   }
   appData.history = appData.history.filter(x => String(x.id) !== String(id));
-  saveData(); renderAll();
+  saveData(); logClientActivity('transaction_deleted',tx); renderAll();
 }
 
 function openEnvelopeEditor(id){

@@ -175,6 +175,31 @@ def season_claims_for(raw, season: dict) -> dict:
     return merged
 
 
+
+async def log_user_activity(uid: str, action: str, details: dict | None = None):
+    """Append a compact, private audit event for the admin activity view."""
+    if not uid:
+        return
+    safe = {}
+    for key, value in (details or {}).items():
+        if key in {"amount", "title", "category", "type", "currency", "familyId", "transactionId"}:
+            safe[key] = str(value)[:120] if value is not None else ""
+    try:
+        await fb.push(f"/activityLogs/{uid}", {
+            "uid": str(uid), "action": str(action)[:40], "details": safe, "ts": now_ms()
+        })
+    except Exception:
+        log.exception("Could not write activity log for user %s", uid)
+
+
+def admin_key_ok(value: str) -> bool:
+    return bool(ADMIN_KEY) and secrets.compare_digest(str(value or ""), ADMIN_KEY)
+
+
+def normalize_promo_code(value: str) -> str:
+    return re.sub(r"[^A-Z0-9_-]", "", str(value or "").upper())[:32]
+
+
 def gen_family_code() -> str:
     return "FAM-" + "".join(secrets.choice(FAMILY_CODE_ALPHABET) for _ in range(6))
 
@@ -2044,6 +2069,11 @@ async def api_sync_payment_reminders(request: Request, uid: str = Depends(curren
 @app.post("/api/init")
 async def api_init(uid: str = Depends(current_uid)):
     u = await get_user(uid)
+    now = now_ms()
+    last_activity_log = int(u.get("activityLogAt") or 0)
+    if now - last_activity_log >= 15 * 60 * 1000:
+        await fb.patch(f"/users/{uid}", {"lastSeen": now, "activityLogAt": now})
+        await log_user_activity(uid, "login", {"source": "mini_app"})
     sub_end = int(u.get("subEnd") or 0)
     if sub_end < 10**11: sub_end *= 1000
 
@@ -3185,6 +3215,7 @@ async def api_family_transaction_create(request: Request, uid: str = Depends(cur
     receipt = sanitize_receipt(body.get("receipt"))
     tx={"uid":uid,"type":kind,"amount":amount,"title":str(body.get("title") or body.get("category") or "Операция")[:120],"category":str(body.get("category") or "Разное")[:64],"icon":str(body.get("icon") or "📦")[:12],"date":str(body.get("date") or ""),"currency":str(body.get("currency") or "UAH")[:8],"envelopeId":envelope_id or None,"receipt":receipt,"ts":now_ms()}
     rid=await fb.push(f"/families/{fid}/transactions",tx)
+    await log_user_activity(uid, "transaction_added", {"type": kind, "amount": amount, "title": tx["title"], "category": tx["category"], "currency": tx["currency"], "familyId": fid, "transactionId": rid})
     return {"ok":True,"id":rid}
 
 
@@ -3214,6 +3245,7 @@ async def api_family_transaction_delete(tx_id: str, uid: str = Depends(current_u
         raise HTTPException(403, "Удалить эту операцию может только её автор или владелец семьи.")
 
     await fb.delete(f"/families/{family_id}/transactions/{tx_id}")
+    await log_user_activity(uid, "transaction_deleted", {"type": tx.get("type"), "amount": tx.get("amount"), "title": tx.get("title"), "category": tx.get("category"), "familyId": family_id, "transactionId": tx_id})
     return {"ok": True, "id": tx_id}
 
 
@@ -3278,6 +3310,7 @@ async def api_family_transaction_update(tx_id: str, request: Request, uid: str =
     if not patch:
         raise HTTPException(400, "Нет данных для изменения.")
     await fb.patch(f"/families/{fid}/transactions/{tx_id}", patch)
+    await log_user_activity(uid, "transaction_edited", {"type": patch.get("type", tx.get("type")), "amount": patch.get("amount", tx.get("amount")), "title": patch.get("title", tx.get("title")), "category": patch.get("category", tx.get("category")), "familyId": fid, "transactionId": tx_id})
     return {"ok": True, "id": tx_id}
 
 
@@ -4123,6 +4156,101 @@ async def api_admin_grant_coupon(request: Request, x_admin_key: str = Header(def
         log.exception("Admin coupon grant failed for uid=%s", uid)
         raise HTTPException(status_code=502, detail="Не удалось обновить пользователя в Firebase")
     return {"ok": True, "uid": uid, "kind": kind, "value": result["value"]}
+
+
+@app.get("/api/admin/activity")
+async def api_admin_activity(x_admin_key: str = Header(default="")):
+    if not admin_key_ok(x_admin_key):
+        raise HTTPException(status_code=401, detail="Неверный ключ администратора")
+    raw_users = await fb.get("/users") or {}
+    if not isinstance(raw_users, dict):
+        raw_users = {}
+    ordered = sorted(
+        [(str(uid), u) for uid, u in raw_users.items() if isinstance(u, dict)],
+        key=lambda item: int(item[1].get("lastSeen") or 0), reverse=True
+    )[:300]
+    result = []
+    for uid, user in ordered:
+        events = await fb.get(f"/activityLogs/{uid}") or {}
+        if isinstance(events, dict):
+            events = sorted(
+                [dict(v, id=k) for k, v in events.items() if isinstance(v, dict)],
+                key=lambda item: int(item.get("ts") or 0), reverse=True
+            )[:25]
+        else:
+            events = []
+        result.append({
+            "uid": uid, "name": str(user.get("name") or "—")[:80],
+            "username": str(user.get("username") or "")[:64],
+            "lastSeen": int(user.get("lastSeen") or 0),
+            "firstSeen": int(user.get("firstSeen") or 0),
+            "tariff": str(user.get("tariff") or "trial")[:24],
+            "events": events
+        })
+    return {"ok": True, "users": result}
+
+
+@app.get("/api/admin/promo-codes")
+async def api_admin_promo_codes(x_admin_key: str = Header(default="")):
+    if not admin_key_ok(x_admin_key):
+        raise HTTPException(status_code=401, detail="Неверный ключ администратора")
+    raw = await fb.get("/promoCodes") or {}
+    items = []
+    if isinstance(raw, dict):
+        for code, value in raw.items():
+            if isinstance(value, dict):
+                items.append({"code": code, **value})
+    items.sort(key=lambda item: int(item.get("createdAt") or 0), reverse=True)
+    return {"ok": True, "codes": items}
+
+
+@app.post("/api/admin/promo-codes")
+async def api_admin_create_promo_code(request: Request, x_admin_key: str = Header(default="")):
+    if not admin_key_ok(x_admin_key):
+        raise HTTPException(status_code=401, detail="Неверный ключ администратора")
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Некорректный JSON")
+    code = normalize_promo_code(body.get("code") or "")
+    reward = str(body.get("reward") or "")
+    if len(code) < 4:
+        raise HTTPException(status_code=400, detail="Код должен содержать минимум 4 символа")
+    if reward not in {"c10", "c20"}:
+        raise HTTPException(status_code=400, detail="Пока доступны награды: купон 10% или 20%")
+    try:
+        max_uses = int(body.get("maxUses") or 0)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Некорректный лимит активаций")
+    if max_uses < 0 or max_uses > 1000000:
+        raise HTTPException(status_code=400, detail="Лимит активаций должен быть от 0 до 1 000 000")
+    expires_at = 0
+    if body.get("expiresAt"):
+        try:
+            expires_at = int(datetime.strptime(str(body["expiresAt"])[:10], "%Y-%m-%d").replace(tzinfo=KYIV).timestamp() * 1000) + 86399999
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Некорректная дата окончания")
+    path = f"/promoCodes/{code}"
+    existing = await fb.get(path)
+    if existing:
+        raise HTTPException(status_code=409, detail="Такой промокод уже существует")
+    record = {"reward": reward, "maxUses": max_uses, "uses": 0, "expiresAt": expires_at, "enabled": True, "createdAt": now_ms()}
+    await fb.put(path, record)
+    return {"ok": True, "code": code, **record}
+
+
+@app.post("/api/admin/promo-codes/{code}/toggle")
+async def api_admin_toggle_promo_code(code: str, request: Request, x_admin_key: str = Header(default="")):
+    if not admin_key_ok(x_admin_key):
+        raise HTTPException(status_code=401, detail="Неверный ключ администратора")
+    code = normalize_promo_code(code)
+    if not code:
+        raise HTTPException(status_code=400, detail="Некорректный промокод")
+    current = await fb.get(f"/promoCodes/{code}")
+    if not isinstance(current, dict):
+        raise HTTPException(status_code=404, detail="Промокод не найден")
+    await fb.patch(f"/promoCodes/{code}", {"enabled": not bool(current.get("enabled", True))})
+    return {"ok": True, "enabled": not bool(current.get("enabled", True))}
 
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

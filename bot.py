@@ -4387,6 +4387,7 @@ async def api_budget_alerts_check(request: Request, uid: str = Depends(current_u
     try:
         balance = float(body.get("balance") or 0)
         month_income = max(0.0, float(body.get("monthIncome") or 0))
+        transaction_count = max(0, int(body.get("transactionCount") or 0))
     except (TypeError, ValueError):
         raise HTTPException(400, "Некорректные суммы бюджета.")
     if not math.isfinite(balance) or not math.isfinite(month_income):
@@ -4420,7 +4421,7 @@ async def api_budget_alerts_check(request: Request, uid: str = Depends(current_u
         new_alerts.clear()
         balance_key = "balance_low_" + month_key.replace("-", "_")
         low_threshold = max(1.0, month_income * 0.10) if month_income > 0 else 100.0
-        low_now = balance <= low_threshold
+        low_now = transaction_count > 0 and balance <= low_threshold
         if low_now and not state.get(balance_key):
             state[balance_key] = True
             new_alerts.append({

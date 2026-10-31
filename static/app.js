@@ -601,7 +601,7 @@ function applyAppShellTranslations(){
  const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0],v=APP_SHELL_I18N[lang]||APP_SHELL_I18N.en;
  const set=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
  set('drawerSubtitle',v.subtitle);set('drawerTagline',v.tagline);set('basicFamilyBenefit',v.basicFamily);set('proFamilyBenefit',v.proFamily);set('menuLabelBudget',v.sections.budget);set('menuLabelAnalytics',v.sections.analytics);
- set('menuLabelEnvelopes',v.sections.envelopes);set('menuLabelBanks',v.sections.banks);set('menuLabelReferrals',v.sections.referrals);set('menuLabelSettings',v.sections.settings);
+ set('menuLabelEnvelopes',v.sections.envelopes);set('menuLabelBanks',v.sections.banks);set('banksSectionTitle',v.sections.banks);set('menuLabelReferrals',v.sections.referrals);set('menuLabelSettings',v.sections.settings);
  set('weeklyTitle',v.weekly);set('weeklyPeriod',v.last7);set('weeklyIncomeLabel',v.income);set('weeklyExpenseLabel',v.expense);set('weeklyTopLabel',v.top);
  set('histCategoryAll',v.allCategories);
  const section=document.getElementById('currentSectionLabel');if(section){const active=document.querySelector('[data-menu-tab].active')?.dataset.menuTab||'budget';section.textContent=v.sections[active]||v.sections.budget;}

@@ -227,16 +227,12 @@ function renderTotals(){
   var expired = 0;
   var totalRefs = 0;
   var totalPaidRefs = 0;
-  var totalRevenue = 0;
 
   users.forEach(function(u){
     var s = getStatus(u);
     if(s === "trial") trial++;
     else if(s === "expired") expired++;
     else paid++;
-
-    var amount = parseFloat(u.paidAmount) || 0;
-    totalRevenue += amount;
 
     var refs = Object.keys(u.referrals || {});
     totalRefs += refs.length;
@@ -253,7 +249,6 @@ function renderTotals(){
   h += '<div class="stat"><div class="lbl">❌ Истекло</div><div class="val">' + expired + '</div></div>';
   h += '<div class="stat"><div class="lbl">👥 Рефералов всего</div><div class="val b">' + totalRefs + '</div></div>';
   h += '<div class="stat"><div class="lbl">✅ Купили из реф.</div><div class="val g">' + totalPaidRefs + '</div></div>';
-  h += '<div class="stat"><div class="lbl">💰 Общая выручка</div><div class="val g">' + totalRevenue.toLocaleString() + ' ₴</div></div>';
 
   document.getElementById('totals').innerHTML = h;
 }
@@ -289,7 +284,6 @@ function render(){
   h += '<div class="stat"><div class="lbl">Рефералов</div><div class="val b">' + totalReferrals + '</div></div>';
   h += '<div class="stat"><div class="lbl">Купили из реф.</div><div class="val g">' + totalPaidRefs + '</div></div>';
   document.getElementById('stats').innerHTML = h;
-  renderRevenue(filtered);
 
   if(currentTab === 'users') renderUsersTab(filtered);
   else renderRefsTab(filtered);

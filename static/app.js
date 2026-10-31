@@ -1546,16 +1546,16 @@ function openTxEditor(id){
 }
 
 function isTransactionInCurrentMonth(tx,dateOverride){
-  let d=null;
-  if(dateOverride){d=new Date(dateOverride+'T12:00:00');}
+  const selectedMonth=String(appData.currentMonth||new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'));
+  let dateKey='';
+  if(dateOverride){dateKey=String(dateOverride).slice(0,10);}
   else{
-    const raw=String(tx && tx.date || '');
-    if(/^\d{4}-\d{2}-\d{2}/.test(raw))d=new Date(raw.slice(0,10)+'T12:00:00');
-    else {const m=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(m)d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));}
-    if((!d||Number.isNaN(d.getTime()))&&tx&&tx.ts)d=new Date(Number(tx.ts));
+    const raw=String(tx&&tx.date||'').trim();
+    if(/^\d{4}-\d{2}-\d{2}/.test(raw))dateKey=raw.slice(0,10);
+    else{const m=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(m)dateKey=m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');}
+    if(!dateKey&&tx&&tx.ts){const d=new Date(Number(tx.ts));if(!Number.isNaN(d.getTime()))dateKey=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   }
-  if(!d||Number.isNaN(d.getTime()))return false;
-  const now=new Date();return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateKey)&&dateKey.slice(0,7)===selectedMonth;
 }
 
 async function saveTxEdits(){
@@ -2251,7 +2251,12 @@ async function leaveFamily(){
   familyFeedback('Выполняем выход из семейной группы…');
   try{
     await familyRequest('/api/family/leave', 'POST', {});
+    currentFamily=null;
+    familyTransactions=[];familyEnvelopes=[];familyBanks=[];
+    budgetMode='personal';
+    try{localStorage.setItem('budgetMode_'+telegramUserId,'personal');}catch(storageError){console.warn('Could not save personal budget mode:',storageError);}
     renderFamilyStatus(null);
+    renderAll();
     familyFeedback('Ты вышел из семьи. Личные финансовые записи сохранены.');
   } catch(error){
     familyFeedback(error.message || 'Не удалось выйти из семьи.', true);

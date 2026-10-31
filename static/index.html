@@ -530,7 +530,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </div>
 
-      <button id="familyLeaveBtn" class="btn btn-danger btn-sm family-leave-btn" style="display:none" onclick="leaveFamily()" data-i18n="leave_family">Выйти из семьи</button>
+      <button id="familyLeaveBtn" class="btn btn-danger btn-sm family-leave-btn" style="display:none" onclick="openLeaveFamilyConfirm()" data-i18n="leave_family">Выйти из семьи</button>
       <div id="familyFeedback" class="family-feedback" role="status" aria-live="polite"></div>
     </div>
 
@@ -690,6 +690,17 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <input type="number" id="recDay" class="custom-input" min="1" max="31" step="1" placeholder="От 1 до 31" data-i18n-placeholder="payment_day_hint">
     <p class="muted" style="font-size:12px" data-i18n="payment_reminder_note">🔔 Бот пришлёт напоминание в Telegram в день платежа, примерно в 09:00 по Киеву.</p>
     <button class="btn btn-accent" style="width:100%" onclick="saveRecurring()" data-i18n="save">Сохранить</button>
+  </div>
+</div>
+
+<div class="modal" id="modalLeaveFamily">
+  <div class="modal-content family-exit-modal">
+    <div class="modal-header"><h3>Выйти из семьи?</h3><span class="modal-close" onclick="closeModal('modalLeaveFamily')">×</span></div>
+    <p id="leaveFamilyModalText" class="family-exit-warning">Личные записи останутся у тебя. Общие данные семьи сохранятся для остальных участников.</p>
+    <div class="family-form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal('modalLeaveFamily')">Отмена</button>
+      <button type="button" class="btn btn-danger" onclick="leaveFamily()">Выйти из семьи</button>
+    </div>
   </div>
 </div>
 

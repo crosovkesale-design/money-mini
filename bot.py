@@ -2256,7 +2256,7 @@ async def api_init(uid: str = Depends(current_uid)):
     days_left = season["days_left"]
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
-        "features": {"pro": has_pro_access(u)},
+        "features": {"pro": has_pro_access(u), "familyMembers": family_member_limit(u)},
         "family": family_info,
         "referral": {
             "count": len(refs),

@@ -522,6 +522,131 @@ class AdminSupportState(StatesGroup):
 
 
 # ---------- ФОНОВЫЕ ЗАДАЧИ ----------
+async def weekly_summary_worker():
+    """Send one personal and one family budget summary each Monday in Kyiv time."""
+    while True:
+        try:
+            now = datetime.now(KYIV)
+            if bot and now.weekday() == 0 and now.hour == 9:
+                week_start = now.date() - timedelta(days=7)
+                week_end = now.date() - timedelta(days=1)
+                week_key = week_start.isoformat()
+                snapshots = await fb.get("/budgetSnapshots") or {}
+                users = await fb.get("/users") or {}
+
+                def parse_snapshot_date(item):
+                    raw = str(item.get("date") or "").strip()
+                    stamp = int(item.get("ts") or 0)
+                    if stamp:
+                        try:
+                            return datetime.fromtimestamp(stamp / 1000, timezone.utc).astimezone(KYIV).date()
+                        except (ValueError, OSError, OverflowError):
+                            pass
+                    for fmt in ("%Y-%m-%d", "%d.%m.%Y"):
+                        try:
+                            return datetime.strptime(raw[:10], fmt).date()
+                        except ValueError:
+                            continue
+                    return None
+
+                def make_summary(transactions, balance, currency, label):
+                    income = 0.0
+                    expense = 0.0
+                    categories = {}
+                    for tx in transactions:
+                        if not isinstance(tx, dict):
+                            continue
+                        day = parse_snapshot_date(tx)
+                        if not day or not (week_start <= day <= week_end):
+                            continue
+                        try:
+                            amount = float(tx.get("amount") or 0)
+                        except (TypeError, ValueError):
+                            continue
+                        if not math.isfinite(amount) or amount <= 0:
+                            continue
+                        if tx.get("type") == "income":
+                            income += amount
+                        else:
+                            expense += amount
+                            category = str(tx.get("category") or "Другое")[:48]
+                            categories[category] = categories.get(category, 0.0) + amount
+                    top = sorted(categories.items(), key=lambda item: item[1], reverse=True)[:3]
+                    category_text = "\n".join(f"• {escape(name)} — {value:,.2f} {escape(currency)}" for name, value in top)
+                    if not category_text:
+                        category_text = "• Расходов за неделю нет"
+                    return (
+                        f"📊 <b>Недельная сводка · {escape(label)}</b>\n"
+                        f"🗓 {week_start.strftime('%d.%m')} — {week_end.strftime('%d.%m.%Y')}\n\n"
+                        f"🟢 Доходы: <b>+{income:,.2f} {escape(currency)}</b>\n"
+                        f"🔴 Расходы: <b>−{expense:,.2f} {escape(currency)}</b>\n"
+                        f"💰 Текущий баланс: <b>{float(balance or 0):,.2f} {escape(currency)}</b>\n\n"
+                        f"<b>Крупнейшие категории расходов</b>\n{category_text}"
+                    )
+
+                # Personal reports are based on the latest private snapshot uploaded by the app.
+                if isinstance(snapshots, dict) and isinstance(users, dict):
+                    for uid, snapshot in snapshots.items():
+                        if not isinstance(snapshot, dict) or not isinstance(users.get(uid), dict):
+                            continue
+                        state_path = f"/system/weeklySummaries/personal_{uid}/{week_key}"
+                        if await fb.get(state_path):
+                            continue
+                        transactions = snapshot.get("history") or []
+                        if not isinstance(transactions, list):
+                            transactions = []
+                        message = make_summary(
+                            transactions, snapshot.get("balance", 0),
+                            str(snapshot.get("currency") or "UAH")[:8], "Личный бюджет"
+                        )
+                        try:
+                            await bot.send_message(int(uid), message, parse_mode="HTML")
+                            await fb.put(state_path, now_ms())
+                        except Exception:
+                            log.warning("Could not send personal weekly summary to %s", uid, exc_info=True)
+
+                # Family reports are calculated from shared server-side transactions.
+                processed_families = set()
+                if isinstance(users, dict):
+                    for uid, user in users.items():
+                        if not isinstance(user, dict):
+                            continue
+                        fid = str(user.get("familyId") or "")
+                        if not fid or fid in processed_families:
+                            continue
+                        processed_families.add(fid)
+                        family = await fb.get(f"/families/{fid}") or {}
+                        members = family.get("members") or {}
+                        if family.get("archived") or not isinstance(members, dict) or not members:
+                            continue
+                        state_path = f"/system/weeklySummaries/family_{fid}/{week_key}"
+                        if await fb.get(state_path):
+                            continue
+                        records = family.get("transactions") or {}
+                        transactions = [tx for tx in records.values() if isinstance(tx, dict)] if isinstance(records, dict) else []
+                        balance = sum(
+                            (1 if tx.get("type") == "income" else -1) * float(tx.get("amount") or 0)
+                            for tx in transactions
+                            if math.isfinite(float(tx.get("amount") or 0))
+                        )
+                        currency = next((str(tx.get("currency") or "UAH") for tx in reversed(transactions)), "UAH")[:8]
+                        message = make_summary(transactions, balance, currency, "Семейный бюджет")
+                        delivered = False
+                        for member_uid in members:
+                            try:
+                                await bot.send_message(int(member_uid), message, parse_mode="HTML")
+                                delivered = True
+                            except Exception:
+                                log.warning("Could not send family weekly summary to %s", member_uid, exc_info=True)
+                        if delivered:
+                            await fb.put(state_path, now_ms())
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("Weekly summary worker failed")
+        await asyncio.sleep(600)
+
+
 async def daily_check():
     while True:
         try:
@@ -1866,6 +1991,7 @@ async def lifespan(app: FastAPI):
             await bot.delete_webhook(drop_pending_updates=True)
             tasks.append(asyncio.create_task(telegram_polling_guard()))
             tasks.append(asyncio.create_task(daily_check()))
+            tasks.append(asyncio.create_task(weekly_summary_worker()))
             tasks.append(asyncio.create_task(daily_reminder()))
             tasks.append(asyncio.create_task(payment_reminder()))
             tasks.append(asyncio.create_task(daily_backup()))
@@ -4179,6 +4305,159 @@ async def api_admin_grant_coupon(request: Request, x_admin_key: str = Header(def
     return {"ok": True, "uid": uid, "kind": kind, "value": result["value"]}
 
 
+
+
+
+@app.post("/api/budget/snapshot")
+async def api_budget_snapshot(request: Request, uid: str = Depends(current_uid)):
+    """Store a compact private snapshot so weekly summaries can be sent from Telegram."""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Некорректный запрос")
+    body = body if isinstance(body, dict) else {}
+    raw_history = body.get("history") or []
+    if not isinstance(raw_history, list):
+        raw_history = []
+    history = []
+    for item in raw_history[-500:]:
+        if not isinstance(item, dict):
+            continue
+        try:
+            amount = float(item.get("amount") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(amount) or amount <= 0:
+            continue
+        kind = "income" if item.get("type") == "income" else "expense"
+        history.append({
+            "type": kind, "amount": round(amount, 2),
+            "category": str(item.get("category") or "Другое")[:48],
+            "title": str(item.get("title") or item.get("note") or "")[:80],
+            "date": str(item.get("date") or "")[:20],
+            "ts": int(item.get("ts") or 0),
+            "currency": str(item.get("currency") or body.get("currency") or "UAH")[:8],
+            "envelopeId": str(item.get("envelopeId") or "")[:80],
+        })
+    try:
+        balance = float(body.get("balance") or 0)
+    except (TypeError, ValueError):
+        balance = 0.0
+    try:
+        income = float(body.get("monthIncome") or 0)
+        expense = float(body.get("monthExpense") or 0)
+    except (TypeError, ValueError):
+        income, expense = 0.0, 0.0
+    await fb.put(f"/budgetSnapshots/{uid}", {
+        "balance": balance if math.isfinite(balance) else 0,
+        "monthIncome": income if math.isfinite(income) else 0,
+        "monthExpense": expense if math.isfinite(expense) else 0,
+        "currency": str(body.get("currency") or "UAH")[:8],
+        "history": history,
+        "updatedAt": now_ms(),
+    })
+    return {"ok": True}
+
+
+@app.post("/api/budget/alerts/check")
+async def api_budget_alerts_check(request: Request, uid: str = Depends(current_uid)):
+    """Claim alert transitions atomically, then notify the user or all family members."""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Некорректный запрос")
+    body = body if isinstance(body, dict) else {}
+    family_id = str(body.get("familyId") or "")
+    recipients = [uid]
+    scope = "user_" + uid
+    if family_id:
+        user = await get_user(uid)
+        if str(user.get("familyId") or "") != family_id:
+            raise HTTPException(403, "Нет доступа к семейному бюджету.")
+        family = await fb.get(f"/families/{family_id}") or {}
+        members = family.get("members") or {}
+        if family.get("archived") or not isinstance(members, dict) or uid not in members:
+            raise HTTPException(403, "Нет доступа к семейному бюджету.")
+        recipients = [str(member_uid) for member_uid in members]
+        scope = "family_" + re.sub(r"[^A-Za-z0-9_-]", "_", family_id)[:80]
+
+    try:
+        balance = float(body.get("balance") or 0)
+        month_income = max(0.0, float(body.get("monthIncome") or 0))
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Некорректные суммы бюджета.")
+    if not math.isfinite(balance) or not math.isfinite(month_income):
+        raise HTTPException(400, "Некорректные суммы бюджета.")
+    currency = escape(str(body.get("currency") or "UAH")[:8])
+    month_key = datetime.now(KYIV).strftime("%Y-%m")
+    raw_envelopes = body.get("envelopes") or []
+    if not isinstance(raw_envelopes, list):
+        raw_envelopes = []
+    safe_envelopes = []
+    for item in raw_envelopes[:100]:
+        if not isinstance(item, dict):
+            continue
+        try:
+            target = float(item.get("target") or 0)
+            spent = max(0.0, float(item.get("spent") or 0))
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(target) or not math.isfinite(spent) or target <= 0:
+            continue
+        envelope_id = re.sub(r"[^A-Za-z0-9_-]", "_", str(item.get("id") or "env"))[:50]
+        safe_envelopes.append({
+            "id": envelope_id, "name": str(item.get("name") or "Конверт")[:64],
+            "target": target, "spent": spent
+        })
+
+    state_path = f"/budgetAlertState/{scope}"
+    new_alerts = []
+    def update_state(raw):
+        state = dict(raw) if isinstance(raw, dict) else {}
+        new_alerts.clear()
+        balance_key = "balance_low_" + month_key.replace("-", "_")
+        low_threshold = max(1.0, month_income * 0.10) if month_income > 0 else 100.0
+        low_now = balance <= low_threshold
+        if low_now and not state.get(balance_key):
+            state[balance_key] = True
+            new_alerts.append({
+                "kind": "balance_low",
+                "text": f"⚠️ Баланс почти на нуле: осталось {balance:,.2f} {currency}."
+            })
+        elif not low_now:
+            state[balance_key] = False
+        for envelope in safe_envelopes:
+            prefix = "env_" + envelope["id"] + "_" + month_key.replace("-", "_")
+            ratio = envelope["spent"] / envelope["target"]
+            for threshold in (0.90, 1.0):
+                key = prefix + ("_90" if threshold == 0.90 else "_100")
+                breached = ratio >= threshold
+                if breached and not state.get(key):
+                    state[key] = True
+                    percent = int(threshold * 100)
+                    if threshold == 1.0:
+                        text_value = f"🚨 Лимит конверта «{escape(envelope['name'])}» превышен: {envelope['spent']:,.2f} / {envelope['target']:,.2f} {currency}."
+                    else:
+                        text_value = f"⚠️ Конверт «{escape(envelope['name'])}» использован на {percent}%: {envelope['spent']:,.2f} / {envelope['target']:,.2f} {currency}."
+                    new_alerts.append({"kind": "envelope_" + str(percent), "text": text_value})
+                elif not breached:
+                    state[key] = False
+        state["updatedAt"] = now_ms()
+        return state
+
+    try:
+        await fb.transaction(state_path, update_state)
+    except Exception:
+        log.exception("Budget alert state update failed for %s", scope)
+        raise HTTPException(502, "Не удалось проверить уведомления бюджета.")
+    if bot:
+        for alert in new_alerts:
+            for recipient in recipients:
+                try:
+                    await bot.send_message(int(recipient), alert["text"], parse_mode="HTML")
+                except Exception:
+                    log.warning("Could not deliver budget alert to %s", recipient, exc_info=True)
+    return {"ok": True, "alerts": new_alerts}
 
 
 @app.post("/api/activity/log")

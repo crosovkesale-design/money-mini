@@ -68,6 +68,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 </head>
 <body>
 <div class="container">
+<nav class="neo-bottom-nav" aria-label="Основная навигация">
+  <button type="button" class="neo-nav-item active" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-house"></i><span data-i18n="balance">Главная</span></button>
+  <button type="button" class="neo-nav-item" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-simple"></i><span data-i18n="analytics">Аналитика</span></button>
+  <button type="button" class="neo-nav-item neo-nav-primary" data-menu-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-layer-group"></i><span data-i18n="envelopes">Конверты</span></button>
+  <button type="button" class="neo-nav-item" data-menu-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-piggy-bank"></i><span data-i18n="banks">Копилки</span></button>
+  <button type="button" class="neo-nav-item" data-menu-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span data-i18n="settings">Настройки</span></button>
+</nav>
+
 <div class="app-topbar" id="appTopbar">
   <button class="menu-trigger" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
   <div class="app-topbar-title"><b>QUORIX</b><small id="currentSectionLabel">Главная</small></div>

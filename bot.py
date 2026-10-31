@@ -624,11 +624,14 @@ async def weekly_summary_worker():
                             continue
                         records = family.get("transactions") or {}
                         transactions = [tx for tx in records.values() if isinstance(tx, dict)] if isinstance(records, dict) else []
-                        balance = sum(
-                            (1 if tx.get("type") == "income" else -1) * float(tx.get("amount") or 0)
-                            for tx in transactions
-                            if math.isfinite(float(tx.get("amount") or 0))
-                        )
+                        balance = 0.0
+                        for tx in transactions:
+                            try:
+                                amount = float(tx.get("amount") or 0)
+                            except (TypeError, ValueError):
+                                continue
+                            if math.isfinite(amount) and amount > 0:
+                                balance += amount if tx.get("type") == "income" else -amount
                         currency = next((str(tx.get("currency") or "UAH") for tx in reversed(transactions)), "UAH")[:8]
                         message = make_summary(transactions, balance, currency, "Семейный бюджет")
                         delivered = False

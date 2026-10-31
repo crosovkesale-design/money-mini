@@ -913,7 +913,8 @@ function renderReferralStats(){
   if(paid)paid.textContent=String(Number(battlePassStats.paidCount||0));
   if(volume)volume.textContent='$'+Number(battlePassStats.volumeUsd||0).toLocaleString('en-US',{maximumFractionDigits:2});
   const now=new Date();
-  const endDate=new Date(now.getFullYear(),now.getMonth()+1,0);
+  const quarterStartMonth=Math.floor(now.getMonth()/3)*3;
+  const endDate=new Date(now.getFullYear(),quarterStartMonth+3,0);
   const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const localDaysLeft=Math.max(0,Math.ceil((endDate-today)/86400000));
   const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft??localDaysLeft):localDaysLeft;
@@ -953,8 +954,15 @@ function renderBattlePass(){
   const season=document.getElementById('battlePassSeason');
   if(season){
     const startDate=battlePassStats.startDate;
-    const date=startDate?new Date(startDate+'T00:00:00'):new Date();
-    season.textContent=date.toLocaleDateString(appData.lang||'ru',{month:'long',year:'numeric'});
+    const endDate=battlePassStats.endDate;
+    if(startDate&&endDate){
+      const locale=appData.lang||'ru';
+      const start=new Date(startDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short'});
+      const end=new Date(endDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'});
+      season.textContent=start+' — '+end;
+    }else{
+      season.textContent=new Date().toLocaleDateString(appData.lang||'ru',{month:'long',year:'numeric'});
+    }
   }
   const progressText=document.getElementById('battlePassProgressText');
   if(progressText)progressText.textContent=completed+' / '+BATTLE_PASS_TASKS.length+' '+t('заданий');
@@ -968,16 +976,18 @@ function renderBattlePass(){
   }).join('');
   const isPro=battlePassTrack==='pro';
   const claimed=new Set((battlePassStats.claimed?.[battlePassTrack]||[]).map(Number));
+  const nextTier=Math.max(0,...claimed)+1;
   const hasPro=Boolean(canUseProFeatures);
   rewardsEl.innerHTML=Array.from({length:30},(_,index)=>{
     const tier=index+1,task=battlePassTierRequirement(tier);
     const unlocked=stats[task.metric]>=task.target;
     const coupon=(isPro||tier%5===0)?10:0;
     const earned=claimed.has(tier),proLocked=isPro&&!hasPro;
-    const label=coupon?t('Купон −')+coupon+'%':(isPro?t('PRO бонус'):t('Монеты'));
-    const status=earned?t('Получено'):(proLocked?t('Нужен PRO'):(unlocked?t('Забрать'):t('Уровень ')+tier));
-    const disabled=earned||proLocked||!unlocked;
-    return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">'+t('Уровень ').trimEnd()+' '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':(isPro?'💎':'🪙'))+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):(isPro?t('PRO бонус'):t('Опыт сезона')))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';
+    const available=tier===nextTier&&unlocked;
+    const label=coupon?t('Купон −')+coupon+'%':(isPro?t('PRO бонус'):t('Монеты')+' +25');
+    const status=earned?t('Получено'):(proLocked?t('Нужен PRO'):(available?t('Забрать'):t('Уровень ')+tier));
+    const disabled=earned||proLocked||!available;
+    return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">'+t('Уровень ').trimEnd()+' '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':(isPro?'💎':'🪙'))+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):(isPro?t('PRO бонус'):t('Награда сезона')))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\\''+battlePassTrack+'\\','+tier+')">'+status+'</button></div>';
   }).join('');
   const note=document.getElementById('battlePassTrackNote');
   if(note)note.textContent=isPro?(hasPro?t('PRO: купон 10% на каждом из 30 уровней.'):t('Платная дорожка доступна с активной подпиской PRO.')):t('Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.');

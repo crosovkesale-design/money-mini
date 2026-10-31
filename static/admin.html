@@ -49,7 +49,7 @@ tr:last-child td{border:0}
 .sheet .row .cancel{background:#1d222d;color:#e8ecf5;border:1px solid #242a37}
 .action{background:#4d9fff;color:#fff;border:0;border-radius:6px;padding:5px 10px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 .scroll{max-height:70vh;overflow:auto;border-radius:12px}
-</style>
+.admin-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px;background:#161a22;border:1px solid #242a37;border-radius:12px;margin:12px 0 16px}.admin-form label{display:flex;flex-direction:column;gap:5px;color:#8a92a4;font-size:11px}.admin-form input,.admin-form select{min-width:0;background:#1d222d;color:#e8ecf5;border:1px solid #30394b;border-radius:9px;padding:10px;font:inherit}.activity-event{padding:9px 11px;border-top:1px solid #242a37;font-size:12px}.activity-event small{display:block;color:#8a92a4;margin-top:3px}.activity-user{background:#161a22;border:1px solid #242a37;border-radius:12px;margin:10px 0;overflow:hidden}.activity-user-head{display:flex;justify-content:space-between;gap:10px;padding:12px;flex-wrap:wrap}.promo-status{font-size:10px;border-radius:20px;padding:3px 8px;background:#173b2c;color:#35d07f}.promo-status.off{background:#3a2528;color:#ff8793}@media(max-width:560px){.tabs{flex-wrap:wrap}.tab{min-width:40%}}</style>
 </head>
 <body>
 <div class="wrap">
@@ -72,7 +72,7 @@ tr:last-child td{border:0}
 
   <div class="tabs">
     <div class="tab active" data-tab="users" onclick="switchTab('users')">👤 Пользователи</div>
-    <div class="tab" data-tab="refs" onclick="switchTab('refs')">🎁 Рефералы</div>
+    <div class="tab" data-tab="refs" onclick="switchTab('refs')">🎁 Рефералы</div><div class="tab" data-tab="activity" onclick="switchTab('activity')">🕒 Активность</div><div class="tab" data-tab="promos" onclick="switchTab('promos')">🎟️ Промокоды</div>
   </div>
 
   <div class="stats" id="totals"></div>
@@ -92,7 +92,7 @@ tr:last-child td{border:0}
 
   <div class="scroll">
     <div id="table-users"></div>
-    <div id="table-refs" style="display:none"></div>
+    <div id="table-refs" style="display:none"></div><div id="table-activity" style="display:none"></div><div id="table-promos" style="display:none"></div>
   </div>
 </div>
 
@@ -200,9 +200,8 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach(function(el){
     el.classList.toggle('active', el.dataset.tab === name);
   });
-  document.getElementById('table-users').style.display = name === 'users' ? 'block' : 'none';
-  document.getElementById('table-refs').style.display = name === 'refs' ? 'block' : 'none';
-  render();
+  ['users','refs','activity','promos'].forEach(function(key){var node=document.getElementById('table-'+key);if(node)node.style.display=name===key?'block':'none';});
+  if(name==='activity')loadActivity();else if(name==='promos')loadPromoCodes();else render();
 }
 
 function applyFilters(){

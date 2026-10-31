@@ -583,6 +583,30 @@ function startHardcodedTextTranslation(){
   });
   _autoTextObserver.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:AUTO_TRANSLATABLE_ATTRIBUTES});
 }
+
+const APP_SHELL_I18N = {
+ ru:{subtitle:"Навигация",sections:{budget:"Главная",analytics:"Аналитика",envelopes:"Конверты",banks:"Копилки и цели",referrals:"Рефералы",settings:"Настройки"},weekly:"📊 Неделя в цифрах",last7:"Последние 7 дней",income:"Доходы",expense:"Расходы",top:"Главная категория расходов",noData:"Пока нет данных",allCategories:"Все категории"},
+ uk:{subtitle:"Навігація",sections:{budget:"Головна",analytics:"Аналітика",envelopes:"Конверти",banks:"Скарбнички й цілі",referrals:"Реферали",settings:"Налаштування"},weekly:"📊 Підсумок тижня",last7:"Останні 7 днів",income:"Доходи",expense:"Витрати",top:"Найбільша категорія витрат",noData:"Поки немає даних",allCategories:"Усі категорії"},
+ en:{subtitle:"Navigation",sections:{budget:"Home",analytics:"Analytics",envelopes:"Envelopes",banks:"Savings & goals",referrals:"Referrals",settings:"Settings"},weekly:"📊 Weekly overview",last7:"Last 7 days",income:"Income",expense:"Expenses",top:"Top spending category",noData:"No data yet",allCategories:"All categories"},
+ de:{subtitle:"Navigation",sections:{budget:"Startseite",analytics:"Analysen",envelopes:"Budgets",banks:"Sparen & Ziele",referrals:"Empfehlungen",settings:"Einstellungen"},weekly:"📊 Wochenübersicht",last7:"Letzte 7 Tage",income:"Einnahmen",expense:"Ausgaben",top:"Größte Ausgabenkategorie",noData:"Noch keine Daten",allCategories:"Alle Kategorien"},
+ es:{subtitle:"Navegación",sections:{budget:"Inicio",analytics:"Estadísticas",envelopes:"Sobres",banks:"Ahorros y metas",referrals:"Referidos",settings:"Ajustes"},weekly:"📊 Resumen semanal",last7:"Últimos 7 días",income:"Ingresos",expense:"Gastos",top:"Categoría con más gastos",noData:"Aún no hay datos",allCategories:"Todas las categorías"},
+ fr:{subtitle:"Navigation",sections:{budget:"Accueil",analytics:"Analyses",envelopes:"Enveloppes",banks:"Épargne et objectifs",referrals:"Parrainage",settings:"Paramètres"},weekly:"📊 Bilan de la semaine",last7:"7 derniers jours",income:"Revenus",expense:"Dépenses",top:"Catégorie de dépense principale",noData:"Pas encore de données",allCategories:"Toutes les catégories"},
+ it:{subtitle:"Navigazione",sections:{budget:"Home",analytics:"Analisi",envelopes:"Buste",banks:"Risparmi e obiettivi",referrals:"Inviti",settings:"Impostazioni"},weekly:"📊 Riepilogo settimanale",last7:"Ultimi 7 giorni",income:"Entrate",expense:"Uscite",top:"Categoria di spesa principale",noData:"Ancora nessun dato",allCategories:"Tutte le categorie"},
+ pl:{subtitle:"Nawigacja",sections:{budget:"Główna",analytics:"Analityka",envelopes:"Koperty",banks:"Oszczędności i cele",referrals:"Polecenia",settings:"Ustawienia"},weekly:"📊 Podsumowanie tygodnia",last7:"Ostatnie 7 dni",income:"Przychody",expense:"Wydatki",top:"Główna kategoria wydatków",noData:"Brak danych",allCategories:"Wszystkie kategorie"},
+ tr:{subtitle:"Gezinme",sections:{budget:"Ana sayfa",analytics:"Analiz",envelopes:"Zarflar",banks:"Birikim ve hedefler",referrals:"Davetler",settings:"Ayarlar"},weekly:"📊 Haftalık özet",last7:"Son 7 gün",income:"Gelir",expense:"Gider",top:"En yüksek harcama kategorisi",noData:"Henüz veri yok",allCategories:"Tüm kategoriler"},
+ zh:{subtitle:"导航",sections:{budget:"首页",analytics:"分析",envelopes:"预算信封",banks:"储蓄与目标",referrals:"推荐",settings:"设置"},weekly:"📊 每周概览",last7:"最近 7 天",income:"收入",expense:"支出",top:"支出最多的类别",noData:"暂无数据",allCategories:"所有类别"}
+};
+function applyAppShellTranslations(){
+ const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0],v=APP_SHELL_I18N[lang]||APP_SHELL_I18N.en;
+ const set=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
+ set('drawerSubtitle',v.subtitle);set('menuLabelBudget',v.sections.budget);set('menuLabelAnalytics',v.sections.analytics);
+ set('menuLabelEnvelopes',v.sections.envelopes);set('menuLabelBanks',v.sections.banks);set('menuLabelReferrals',v.sections.referrals);set('menuLabelSettings',v.sections.settings);
+ set('weeklyTitle',v.weekly);set('weeklyPeriod',v.last7);set('weeklyIncomeLabel',v.income);set('weeklyExpenseLabel',v.expense);set('weeklyTopLabel',v.top);
+ set('histCategoryAll',v.allCategories);
+ const section=document.getElementById('currentSectionLabel');if(section){const active=document.querySelector('[data-menu-tab].active')?.dataset.menuTab||'budget';section.textContent=v.sections[active]||v.sections.budget;}
+ const top=document.getElementById('weeklyTopCategory');if(top&&top.dataset.empty==='1')top.textContent=v.noData;
+}
+
 function applyLang(){
   document.documentElement.lang = String(appData?.lang || 'ru').toLowerCase().split('-')[0];
   document.title = t('app_title');
@@ -596,6 +620,7 @@ function applyLang(){
   const currencyLabel=document.getElementById('currLabel');
   if(currencyLabel) currencyLabel.innerText = selectedCurrency.sym + ' ' + tCurrency(selectedCurrency.id);
   applyReceiptFormTranslations();
+  applyAppShellTranslations();
   applyPromoCardTranslations();
   translateHardcodedText();
   startHardcodedTextTranslation();
@@ -620,8 +645,7 @@ function switchTab(name){
   if(!tab) return;
   tab.style.display = 'block';
   document.querySelectorAll('[data-menu-tab]').forEach(item=>item.classList.toggle('active',item.dataset.menuTab===name));
-  const labels={budget:'Главная',analytics:'Аналитика',envelopes:'Конверты',banks:'Копилки и цели',referrals:'Рефералы',settings:'Настройки'};
-  const label=document.getElementById('currentSectionLabel');if(label)label.textContent=labels[name]||'Family Budget';
+  applyAppShellTranslations();
   closeAppMenu();
   if(name === 'analytics') renderCharts();
   renderAll();
@@ -2399,7 +2423,7 @@ function renderWeeklySummary(visibleBudget){
   }
   const top=Object.entries(categories).sort((x,y)=>y[1]-x[1])[0];
   incomeNode.textContent='+'+fmtMoney(income);expenseNode.textContent='−'+fmtMoney(expense);
-  categoryNode.textContent=top?tCat(top[0])+' · '+fmtMoney(top[1]):'Пока нет данных';
+  categoryNode.dataset.empty=top?'0':'1';categoryNode.textContent=top?tCat(top[0])+' · '+fmtMoney(top[1]):(APP_SHELL_I18N[String(appData?.lang||'ru').toLowerCase().split('-')[0]]||APP_SHELL_I18N.en).noData;
 }
 
 function renderAll(){

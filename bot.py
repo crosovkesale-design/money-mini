@@ -2451,6 +2451,9 @@ async def api_family_join(request: Request, uid: str = Depends(current_uid)):
     if uid in members:
         await fb.patch(f"/users/{uid}", {"familyId": code, "familyRole": "member"})
         family["id"] = code
+        owner_id = str(family.get("ownerId") or "")
+        owner = await get_user(owner_id) if owner_id else {}
+        family["memberLimit"] = family_member_limit(owner) or int(family.get("memberLimit") or 4)
         return {"ok": True, "family": family, "alreadyMember": True}
     owner_id = str(family.get("ownerId") or "")
     owner = await get_user(owner_id) if owner_id else {}
@@ -2475,6 +2478,7 @@ async def api_family_join(request: Request, uid: str = Depends(current_uid)):
 
     family["id"] = code
     family["members"] = members
+    family["memberLimit"] = member_limit
     return {"ok": True, "family": family}
 
 

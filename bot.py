@@ -2108,7 +2108,10 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
         if tier in claimed_tiers:
             result.update({"ok": False, "reason": "already"})
             return current
-        expected_tier = max(claimed_tiers, default=0) + 1
+        claimed_set = set(claimed_tiers)
+        expected_tier = 1
+        while expected_tier in claimed_set and expected_tier <= 30:
+            expected_tier += 1
         if tier != expected_tier:
             result.update({"ok": False, "reason": "order", "nextTier": expected_tier})
             return current

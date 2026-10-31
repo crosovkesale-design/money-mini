@@ -37,6 +37,7 @@ try {
 }
 
 let canUseProFeatures = false;
+let familyMemberLimit = 0;
 let referralStats = { count: 0, coupons10: 0, coupons20: 0 };
 let battlePassStats = { paidCount: 0, volumeUsd: 0, monthKey: '', monthLabel: '', daysLeft: 0, endDate: '', claimed: { free: [], pro: [] } };
 let battlePassTrack = 'free';
@@ -1194,6 +1195,7 @@ async function loadPlanStatus(){
   const tg = window.Telegram?.WebApp;
   if(!tg?.initData){
     canUseProFeatures = false;
+    familyMemberLimit = 0;
     // Still render the season countdown and a fallback referral link when Telegram
     // provides the user ID, instead of leaving the UI stuck on "loading".
     renderReferralStats();
@@ -1214,6 +1216,7 @@ async function loadPlanStatus(){
     if(!response.ok) throw new Error('Subscription status HTTP ' + response.status);
     const data = await response.json();
     canUseProFeatures = Boolean(data?.features?.pro);
+    familyMemberLimit = Math.max(0, Number(data?.features?.familyMembers || 0));
     referralStats = data?.referral || { count: 0, coupons10: 0, coupons20: 0 };
     battlePassStats = data?.battlepass || battlePassStats;
     renderReferralStats();
@@ -1991,7 +1994,7 @@ function hideFamilyForms(){
 
 function showFamilyCreateForm(){
   if(familyBusy) return;
-  if(!canUseProFeatures){requestProFeature('Создание семейного бюджета');return;}
+  if(familyMemberLimit<2){alert('Для создания семьи нужен активный тариф Basic или PRO.');window.location.href='?screen=pay';return;}
   familyFeedback('');
   const createForm = document.getElementById('familyCreateForm');
   const joinForm = document.getElementById('familyJoinForm');

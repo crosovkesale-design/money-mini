@@ -2103,6 +2103,7 @@ async function loadFamilyStatus(){
   } catch(error){
     if(error.status === 404 && error.message === 'no family'){
       renderFamilyStatus(null);
+      await joinFamilyFromStartParam();
       return;
     }
     if(status) status.textContent = error.message || 'Не удалось загрузить семейную группу.';
@@ -2152,32 +2153,85 @@ async function joinFamily(){
   }
 }
 
-async function copyReferralLink(){
-  const link = referralStats.link || document.getElementById('referralLinkInput')?.value || '';
-  if(!link) return;
+async function copyTextCompat(value){
+  const textValue=String(value||'');
+  if(!textValue)return false;
   try{
-    await navigator.clipboard.writeText(link);
-    const tg = window.Telegram?.WebApp;
-    if(tg?.showAlert) tg.showAlert(_localizeDialogMessage('Реферальная ссылка скопирована!'));
-    else alert('Реферальная ссылка скопирована!');
-  } catch(error){
-    const input = document.getElementById('referralLinkInput');
-    if(input){ input.focus(); input.select(); }
-    const tg = window.Telegram?.WebApp;
-    if(tg?.showAlert) tg.showAlert(_localizeDialogMessage('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.'));
-    else alert('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.');
-  }
+    if(navigator.clipboard?.writeText){
+      await navigator.clipboard.writeText(textValue);
+      return true;
+    }
+  }catch(error){console.warn('Clipboard API unavailable; trying compatibility copy:',error);}
+  const area=document.createElement('textarea');
+  area.value=textValue;area.setAttribute('readonly','');
+  area.style.position='fixed';area.style.opacity='0';area.style.pointerEvents='none';
+  document.body.appendChild(area);area.select();area.setSelectionRange(0,area.value.length);
+  let copied=false;
+  try{copied=Boolean(document.execCommand('copy'));}catch(error){copied=false;}
+  area.remove();
+  return copied;
 }
-
-async function copyFamilyCode(){
-  const code = currentFamily?.id;
-  if(!code) return;
+function openTelegramShare(url,message){
+  const shareUrl='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(message||'');
+  const tg=window.Telegram?.WebApp;
+  if(tg?.openTelegramLink){tg.openTelegramLink(shareUrl);return;}
+  window.open(shareUrl,'_blank','noopener');
+}
+async function copyReferralLink(){
+  const link=referralStats.link||document.getElementById('referralLinkInput')?.value||'';
+  if(!link)return;
+  const copied=await copyTextCompat(link);
+  const message=copied?'Ссылка скопирована':'Не удалось скопировать ссылку. Нажми и удерживай поле со ссылкой.';
+  const input=document.getElementById('referralLinkInput');
+  if(input&&!copied){input.focus();input.select();}
+  if(typeof showToast==='function')showToast(_localizeDialogMessage(message));
+  else if(window.Telegram?.WebApp?.showAlert)window.Telegram.WebApp.showAlert(_localizeDialogMessage(message));
+  else alert(_localizeDialogMessage(message));
+}
+async function shareReferralLink(){
+  const link=referralStats.link||document.getElementById('referralLinkInput')?.value||'';
+  if(!link)return;
+  const message='Присоединяйся к Family Budget — веди бюджет удобнее вместе с нами!';
   try{
-    await navigator.clipboard.writeText(code);
-    familyFeedback(t('family_code_copied').replace('{code}',String(code)));
-  } catch(error){
-    familyFeedback('Не удалось скопировать автоматически. Код: ' + code, true);
-  }
+    if(navigator.share){await navigator.share({title:'Family Budget',text:message,url:link});return;}
+  }catch(error){if(error?.name==='AbortError')return;console.warn('Native share failed; opening Telegram share:',error);}
+  openTelegramShare(link,message);
+}
+function familyInviteLink(){
+  const code=String(currentFamily?.id||'');
+  return code?'https://t.me/moneyfamilybudget_bot?startapp='+encodeURIComponent('family_'+code):'';
+}
+async function copyFamilyCode(){
+  const code=currentFamily?.id;
+  if(!code)return;
+  const copied=await copyTextCompat(code);
+  familyFeedback(copied?'Код приглашения скопирован: '+code:'Не удалось скопировать код. '+code,!copied);
+}
+async function shareFamilyInvite(){
+  const link=familyInviteLink();
+  if(!link)return;
+  const message='Присоединяйся к семейной группе «'+String(currentFamily?.name||'Family Budget')+'» в Family Budget.';
+  try{
+    if(navigator.share){await navigator.share({title:'Family Budget',text:message,url:link});return;}
+  }catch(error){if(error?.name==='AbortError')return;console.warn('Native family share failed:',error);}
+  openTelegramShare(link,message);
+}
+async function joinFamilyFromStartParam(){
+  const tg=window.Telegram?.WebApp;
+  const startParam=String(tg?.initDataUnsafe?.start_param||new URLSearchParams(window.location.search).get('startapp')||'');
+  const match=startParam.match(/^family_(FAM-[A-HJ-NP-Z2-9]{6})$/i);
+  if(!match||currentFamily)return false;
+  const code=match[1].toUpperCase();
+  setFamilyBusy(true);familyFeedback('Присоединяем к семейной группе…');
+  try{
+    const result=await familyRequest('/api/family/join','POST',{code});
+    renderFamilyStatus(result.family);
+    familyFeedback('Готово! Ты присоединился к семейной группе.');
+    return true;
+  }catch(error){
+    familyFeedback(error.message||'Не удалось присоединиться по ссылке.',true);
+    return false;
+  }finally{setFamilyBusy(false);}
 }
 
 async function leaveFamily(){

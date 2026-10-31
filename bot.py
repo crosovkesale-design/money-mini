@@ -125,6 +125,51 @@ def season_info(now_local=None) -> dict:
             "start": start_date.isoformat(), "end": end_date.isoformat(),
             "days_left": max(0, (end_date - now_local.date()).days)}
 
+def normalize_battle_pass_season(raw, season: dict) -> dict:
+    """Keep legacy monthly stats when that month belongs to the active quarter."""
+    bp = dict(raw) if isinstance(raw, dict) else {}
+    if str(bp.get("monthKey") or "") == season["key"]:
+        return bp
+    legacy_key = str(bp.get("monthKey") or "")
+    try:
+        legacy_month = datetime.strptime(legacy_key, "%Y-%m").date().isoformat()
+        belongs_to_season = season["start"] <= legacy_month <= season["end"]
+    except (TypeError, ValueError):
+        belongs_to_season = False
+    if belongs_to_season:
+        bp["monthKey"] = season["key"]
+        bp.setdefault("paidUsers", {})
+        bp.setdefault("paidInvoices", {})
+        bp.setdefault("volumeUsd", 0.0)
+        return bp
+    return {"monthKey": season["key"], "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+
+
+def season_claims_for(raw, season: dict) -> dict:
+    """Merge legacy month-keyed claims from the active quarter without losing earned rewards."""
+    claims = raw if isinstance(raw, dict) else {}
+    merged = {"free": [], "pro": []}
+    for key, value in claims.items():
+        belongs = key == season["key"]
+        if not belongs:
+            try:
+                legacy_month = datetime.strptime(str(key), "%Y-%m").date().isoformat()
+                belongs = season["start"] <= legacy_month <= season["end"]
+            except (TypeError, ValueError):
+                belongs = False
+        if not belongs or not isinstance(value, dict):
+            continue
+        for track in ("free", "pro"):
+            for tier in value.get(track) or []:
+                try:
+                    number = int(tier)
+                except (TypeError, ValueError):
+                    continue
+                if 1 <= number <= 30 and number not in merged[track]:
+                    merged[track].append(number)
+    return merged
+
+
 def gen_family_code() -> str:
     return "FAM-" + "".join(secrets.choice(FAMILY_CODE_ALPHABET) for _ in range(6))
 
@@ -382,9 +427,7 @@ async def award_referral_coupon(paid_uid: str, payment_path: str):
         current["referralCouponPayments"] = rewarded
         season = season_info()
         month_key = season["key"]
-        bp = dict(current.get("battlePassSeason") or {})
-        if str(bp.get("monthKey") or "") != month_key:
-            bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+        bp = normalize_battle_pass_season(current.get("battlePassSeason"), season)
         paid_users = dict(bp.get("paidUsers") or {})
         paid_invoices = dict(bp.get("paidInvoices") or {})
         if invoice_key not in paid_invoices:
@@ -2027,11 +2070,9 @@ async def api_init(uid: str = Depends(current_uid)):
                 season_count += 1
         except (TypeError, ValueError, OSError):
             continue
-    bp = dict(u.get("battlePassSeason") or {})
-    if str(bp.get("monthKey") or "") != season_key:
-        bp = {"monthKey": season_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
-    claims = dict(u.get("battlePassClaims") or {})
-    season_claims = claims.get(season_key) if isinstance(claims.get(season_key), dict) else {}
+    bp = normalize_battle_pass_season(u.get("battlePassSeason"), season)
+    claims = u.get("battlePassClaims") or {}
+    season_claims = season_claims_for(claims, season)
     days_left = season["days_left"]
     return {
         "subscription": {"tariff": u.get("tariff") or "trial", "subEnd": sub_end, "status": "active" if sub_end > now_ms() else "expired"},
@@ -2085,9 +2126,7 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
                     season_count += 1
             except (TypeError, ValueError, OSError):
                 pass
-    bp = dict(user.get("battlePassSeason") or {})
-    if str(bp.get("monthKey") or "") != month_key:
-        bp = {"monthKey": month_key, "paidUsers": {}, "paidInvoices": {}, "volumeUsd": 0.0}
+    bp = normalize_battle_pass_season(user.get("battlePassSeason"), season)
     stats = {"count": season_count, "paidCount": len(bp.get("paidUsers") or {}), "volumeUsd": float(bp.get("volumeUsd") or 0)}
     task_defs = [
         ("count", 1), ("count", 3), ("paidCount", 1), ("volumeUsd", 10), ("count", 5),
@@ -2102,7 +2141,7 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
     def claim_update(raw):
         current = dict(raw) if isinstance(raw, dict) else {}
         all_claims = dict(current.get("battlePassClaims") or {})
-        season_claims = dict(all_claims.get(month_key) or {})
+        season_claims = season_claims_for(all_claims, season)
         claimed_track = list(season_claims.get(track) or [])
         claimed_tiers = [int(x) for x in claimed_track]
         if tier in claimed_tiers:

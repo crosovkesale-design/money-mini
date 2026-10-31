@@ -58,12 +58,12 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js?v=20261030-localization-engine-v7" defer></script>
-<script src="./app.js?v=20261031-help-bugs-fix-v4" defer></script>
+<script src="./app.js?v=20261031-ai-tab-v1" defer></script>
 
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./style.css?v=20261031-help-bugs-fix-v4">
+<link rel="stylesheet" href="./style.css?v=20261031-ai-tab-v1">
 </head>
 <body>
 <div class="container">
@@ -79,6 +79,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <nav class="drawer-nav" aria-label="Разделы приложения">
     <button type="button" class="active" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span id="menuLabelBudget">Главная</span></button>
     <button type="button" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span id="menuLabelAnalytics">Аналитика</span></button>
+    <button type="button" data-menu-tab="ai" onclick="switchTab('ai')"><i class="fa-solid fa-wand-magic-sparkles"></i><span id="menuLabelAI">ИИ-помощник</span></button>
     <button type="button" data-menu-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span id="menuLabelEnvelopes">Конверты</span></button>
     <button type="button" data-menu-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span id="menuLabelBanks">Копилки и цели</span></button>
     <button type="button" data-menu-tab="referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span id="menuLabelReferrals">Рефералы</span></button>
@@ -344,33 +345,37 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
     <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
     <div id="proInsightsCard" class="pro-insights-card"></div>
+
+  </div>
+
+  <div id="tab-ai" class="tab-content" style="display:none">
     <section class="card finance-assistant-card" id="financeAssistantCard">
-      <div class="finance-assistant-heading">
-        <div><h4 data-i18n="ai_assistant_title">✨ Финансовый ИИ-помощник</h4><p data-i18n="ai_assistant_desc">Ответы на основе твоих записей в Family Budget</p></div>
-        <span class="pro-mini-tag" data-i18n="ai_pro_tag">30 запросов/мес. в PRO</span>
-      </div>
-      <div class="ai-credit-panel">
-        <p id="aiUsageStatus">Проверяю баланс ИИ-запросов…</p>
-        <div class="ai-credit-packs">
-          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai50')" data-i18n="ai_pack_50">50 запросов · $2,99 USDT</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai150')" data-i18n="ai_pack_150">150 запросов · $4,99 USDT</button>
-        </div>
-        <p id="aiPackStatus" class="ai-credit-note">Пакеты доступны и без подписки PRO.</p>
-      </div>
-      <div class="finance-assistant-suggestions">
-        <button type="button" onclick="askFinanceSuggestion('На что я больше всего трачу?')" data-i18n="ai_suggest_spending">На что больше трачу?</button>
-        <button type="button" onclick="askFinanceSuggestion('Как можно сократить расходы?')" data-i18n="ai_suggest_saving">Где сэкономить?</button>
-        <button type="button" onclick="askFinanceSuggestion('Сравни мои доходы и расходы за этот месяц.')" data-i18n="ai_suggest_compare">Доходы и расходы</button>
-      </div>
-      <div id="financeAssistantMessages" class="finance-assistant-messages" aria-live="polite">
-        <div class="finance-assistant-welcome" data-i18n="ai_welcome">Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.</div>
-      </div>
-      <form class="finance-assistant-form" onsubmit="event.preventDefault();sendFinanceQuestion();">
-        <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" data-i18n-placeholder="ai_question_placeholder" aria-label="Вопрос финансовому помощнику"></textarea>
-        <button id="financeAssistantSend" class="btn btn-accent" type="submit" data-i18n="ai_send">Отправить</button>
-      </form>
-      <p class="finance-assistant-privacy" data-i18n="ai_privacy">Для ответа отправляется только краткая сводка бюджета и последние операции. Переписка не сохраняется на сервере.</p>
-    </section>
+          <div class="finance-assistant-heading">
+            <div><h4 data-i18n="ai_assistant_title">✨ Финансовый ИИ-помощник</h4><p data-i18n="ai_assistant_desc">Ответы на основе твоих записей в Family Budget</p></div>
+            <span class="pro-mini-tag" data-i18n="ai_pro_tag">30 запросов/мес. в PRO</span>
+          </div>
+          <div class="ai-credit-panel">
+            <p id="aiUsageStatus">Проверяю баланс ИИ-запросов…</p>
+            <div class="ai-credit-packs">
+              <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai50')" data-i18n="ai_pack_50">50 запросов · $2,99 USDT</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="buyAIPack('ai150')" data-i18n="ai_pack_150">150 запросов · $4,99 USDT</button>
+            </div>
+            <p id="aiPackStatus" class="ai-credit-note">Пакеты доступны и без подписки PRO.</p>
+          </div>
+          <div class="finance-assistant-suggestions">
+            <button type="button" onclick="askFinanceSuggestion('На что я больше всего трачу?')" data-i18n="ai_suggest_spending">На что больше трачу?</button>
+            <button type="button" onclick="askFinanceSuggestion('Как можно сократить расходы?')" data-i18n="ai_suggest_saving">Где сэкономить?</button>
+            <button type="button" onclick="askFinanceSuggestion('Сравни мои доходы и расходы за этот месяц.')" data-i18n="ai_suggest_compare">Доходы и расходы</button>
+          </div>
+          <div id="financeAssistantMessages" class="finance-assistant-messages" aria-live="polite">
+            <div class="finance-assistant-welcome" data-i18n="ai_welcome">Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.</div>
+          </div>
+          <form class="finance-assistant-form" onsubmit="event.preventDefault();sendFinanceQuestion();">
+            <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" data-i18n-placeholder="ai_question_placeholder" aria-label="Вопрос финансовому помощнику"></textarea>
+            <button id="financeAssistantSend" class="btn btn-accent" type="submit" data-i18n="ai_send">Отправить</button>
+          </form>
+          <p class="finance-assistant-privacy" data-i18n="ai_privacy">Для ответа отправляется только краткая сводка бюджета и последние операции. Переписка не сохраняется на сервере.</p>
+        </section>
   </div>
 
   <div id="tab-envelopes" class="tab-content" style="display:none">

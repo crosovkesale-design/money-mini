@@ -133,3 +133,121 @@ h4,h5{color:#f1eee6!important}
  #envelopesList,#banksList{grid-template-columns:1fr!important}
 }
 @media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}*,*:before,*:after{transition:none!important}}
+
+
+/* PREMIUM COMPONENT SYSTEM — extend the visual treatment to every content card */
+:root{--r-gold:#c9ad76;--r-gold-soft:#e5d2a7;--r-edge:rgba(211,190,145,.17)}
+/* Shared card language */
+.card,.family-card,.app-dialog-card,.ai-credit-panel,.ai-transaction-draft,
+.bank-import-modal,.bank-import-summary,.bank-import-hint,.bank-import-footer,
+.bank-import-status,.promo-redeem-card,.crypto-coupon-shop,.reward-summary,
+.reward-shop,.reward-card,.pricing-hero,.pricing-group,.coupon-panel,
+.referral-hero,.financial-overview-card,.pro-insights-card,.chart-card,
+.family-code-box,.family-status,.battlepass-card,.trial-banner,
+.advantages-feature-grid,.advantages-cta{
+ position:relative!important;overflow:hidden!important;
+ border:1px solid var(--r-edge)!important;border-radius:20px!important;
+ background:linear-gradient(145deg,#1c2730 0%,#17212a 55%,#141c24 100%)!important;
+ box-shadow:0 12px 30px #0004,inset 0 1px #ffffff09!important;
+}
+.family-card:before,.reward-card:before,.promo-redeem-card:before,
+.ai-credit-panel:before,.pricing-hero:before,.coupon-panel:before,
+.referral-hero:before,.battlepass-card:before{
+ content:""!important;position:absolute!important;inset:0 0 auto!important;height:1px!important;
+ background:linear-gradient(90deg,transparent,#e5d2a755,transparent)!important;pointer-events:none!important;
+}
+.family-card,.reward-card,.promo-redeem-card,.reward-shop,.reward-summary,
+.ai-credit-panel,.bank-import-summary,.bank-import-hint,.bank-import-status,
+.family-code-box,.family-status{padding:16px!important}
+.family-detail-row,.financial-items-list>* ,.reward-shop-row,
+.bank-import-rows>* ,.ai-transaction-draft-row{
+ background:#101820!important;border:1px solid #ffffff10!important;border-radius:13px!important;
+}
+.family-status,.reward-status,.promo-code-status,.ai-transaction-status{
+ border:1px solid #c9ad7640!important;background:#c9ad7612!important;
+ border-radius:12px!important;color:#e3d1a7!important;padding:10px 12px!important;
+}
+.family-code-box{background:linear-gradient(135deg,#202b31,#18222a)!important}
+.family-code-box code,.family-code-box strong{color:#ead8af!important}
+.referral-stats-grid{gap:9px!important}
+.referral-stat{padding:14px!important;background:linear-gradient(145deg,#202b33,#172129)!important}
+.referral-stat strong{font-size:25px!important;color:#ead8af!important;letter-spacing:-.04em!important}
+.referral-stat span,.referral-stat small{color:#9eaaad!important}
+.referral-link-row{background:#101820!important;border:1px solid #ffffff12!important;border-radius:14px!important;padding:7px!important}
+.referral-link-row input{background:transparent!important;border:0!important}
+.coupon-panel{padding:18px!important;background:radial-gradient(ellipse at 100% 0%,#c9ad7620,transparent 58%),linear-gradient(145deg,#202a30,#151e25)!important}
+.coupon-heading-icon,.coupon-choice-icon{background:linear-gradient(145deg,#dfc995,#a98955)!important;color:#211d16!important;border-radius:13px!important;box-shadow:0 6px 15px #c9ad7626!important}
+.coupon-choice{border:1px solid #ffffff16!important;border-radius:15px!important;background:linear-gradient(120deg,#202b34,#18222a)!important;padding:13px!important}
+.coupon-choice.selected,.coupon-choice.active{border-color:#d8bd83!important;background:linear-gradient(120deg,#c9ad7620,#18222a)!important}
+.coupon-discount{color:#e8d4a7!important;font-weight:800!important}
+.coupon-none{color:#aeb8b9!important;border-top:1px solid #ffffff12!important}
+.coupon-footer{color:#98a5a8!important;border-top:1px solid #ffffff10!important}
+.pricing-hero{padding:20px!important;background:radial-gradient(ellipse at 95% 0%,#c9ad7624,transparent 65%),linear-gradient(145deg,#202a31,#151d24)!important}
+.pricing-kicker,.coupon-eyebrow,.eyebrow{color:#d7c394!important;letter-spacing:.15em!important}
+.pricing-hero h2{font-size:clamp(27px,7vw,38px)!important;letter-spacing:-.055em!important}
+.pricing-group{padding:18px!important}
+.pricing-group-head{padding-bottom:14px!important;border-bottom:1px solid #ffffff12!important}
+.pricing-plan-icon{background:linear-gradient(145deg,#dfc995,#a98955)!important;color:#201b13!important;border-radius:14px!important;box-shadow:0 6px 17px #c9ad7628!important}
+.pricing-benefits{gap:8px!important}
+.pricing-benefit{padding:11px 12px!important;border-radius:13px!important;background:#111a21!important;border:1px solid #ffffff0d!important}
+.pricing-benefit>span{color:#d8c18e!important}
+.pricing-benefit p,.pricing-benefit small{color:#c0c7c5!important}
+.price-option{padding:15px!important;box-shadow:0 8px 22px #0003!important}
+.price-option-top{color:#aeb8b8!important}
+.price-main{color:#f0e6ce!important;font-size:32px!important;letter-spacing:-.055em!important}
+.price-stars,.price-note{color:#a7b2b3!important}
+.option-tag{background:#c9ad7615!important;color:#d9c18e!important;border:1px solid #c9ad7633!important;border-radius:8px!important}
+.option-tag-featured{background:#c9ad76!important;color:#201b13!important;border:0!important}
+.pay-button{border-radius:11px!important;min-height:42px!important}
+.pay-stars{background:linear-gradient(135deg,#dfc995,#b79660)!important;color:#201b13!important}
+.pay-crypto{background:#26343b!important;color:#e5d4ad!important;border:1px solid #c9ad7640!important}
+.pro-saving-badge{background:#c9ad7615!important;border:1px solid #c9ad7635!important;border-radius:13px!important;color:#e6d4ac!important}
+.trial-banner{padding:16px!important}
+.trial-tag{background:#c9ad76!important;color:#1d1912!important;border-radius:9px!important}
+.reward-milestones{gap:9px!important}
+.reward-milestones>*{background:linear-gradient(145deg,#202a32,#172129)!important;border:1px solid #ffffff12!important;border-radius:14px!important;padding:12px!important}
+.reward-shop-row{padding:12px!important;margin:7px 0!important}
+.reward-summary{background:radial-gradient(ellipse at 100% 0%,#c9ad7620,transparent 65%),linear-gradient(145deg,#202b31,#172129)!important}
+.crypto-coupon-shop{padding:15px!important}
+.promo-redeem-row{display:flex!important;gap:8px!important;padding:8px!important;background:#101820!important;border:1px solid #ffffff12!important;border-radius:14px!important}
+.promo-redeem-row input{background:transparent!important;border:0!important}
+.advantages-feature-grid{padding:18px!important}
+.advantages-feature-grid .pricing-difference-grid>div{padding:14px!important;background:#111a21!important;border:1px solid #ffffff10!important;border-radius:14px!important}
+.advantages-feature-grid .pricing-difference-grid b{color:#e5d4ad!important}
+.advantages-feature-grid .pricing-difference-grid span{color:#aeb9b8!important}
+.advantages-cta{padding:17px!important;background:linear-gradient(110deg,#242b2b,#172129)!important}
+.chart-card canvas{filter:drop-shadow(0 5px 12px #0004)!important}
+#tab-analytics .card,#tab-analytics .pro-insights-card{margin-bottom:12px!important}
+#tab-ai .finance-assistant-suggestions button{background:#202b33!important;border:1px solid #c9ad7630!important;color:#dfd2b4!important;border-radius:12px!important;padding:10px 12px!important}
+#tab-ai .finance-assistant-form{background:#101820!important;border:1px solid #ffffff14!important;border-radius:15px!important;padding:8px!important}
+#tab-ai .finance-assistant-form textarea{background:transparent!important;border:0!important}
+#tab-settings .card,#tab-settings section,.settings-card,.setting-card{
+ border:1px solid #ffffff12!important;border-radius:18px!important;
+ background:linear-gradient(145deg,#1b252d,#151d24)!important;box-shadow:0 9px 22px #0003!important;
+}
+#tab-settings .row-between{padding:10px 0!important;border-bottom:1px solid #ffffff0d!important}
+#tab-settings button:not(.btn){border-radius:11px!important}
+#tab-envelopes .row-between,#tab-banks .row-between{margin:18px 0 12px!important}
+#envelopesList>*,#banksList>*{padding:16px!important;position:relative!important;overflow:hidden!important}
+#envelopesList>*>*:first-child,#banksList>*>*:first-child{color:#eee8d9!important}
+#historyContainer>*{padding:13px 14px!important;box-shadow:0 6px 17px #0003!important}
+#historyContainer>*:active,.reward-shop-row:active,.coupon-choice:active{transform:scale(.99)!important}
+.app-dialog-card{padding:20px!important}
+.picker-list>*{background:#17212a!important;border:1px solid #ffffff12!important;border-radius:12px!important}
+.edit-type-option{background:#17212a!important;border:1px solid #ffffff12!important;border-radius:13px!important}
+.edit-envelope-field{background:#101820!important;border:1px solid #ffffff12!important;border-radius:13px!important;padding:12px!important}
+.receipt-action-row,.receipt-items-input{background:#101820!important;border:1px solid #ffffff12!important;border-radius:13px!important;padding:10px!important}
+@media(min-width:700px){
+ .pricing-options{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .pricing-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .referral-stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .reward-milestones{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:430px){
+ .pricing-group,.coupon-panel,.pricing-hero,.family-card,.reward-card{padding:14px!important}
+ .pricing-options{gap:9px!important}
+ .price-option{padding:12px!important}
+ .referral-stats-grid{gap:7px!important}
+ .referral-stat{padding:11px 8px!important}
+ .referral-stat strong{font-size:21px!important}
+}

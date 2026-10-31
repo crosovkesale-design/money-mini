@@ -921,10 +921,10 @@ if bot:
             return
         await state.set_state(PromoState.waiting_code)
         await message.answer(
-            "🎁 <b>АКТИВАЦИЯ ПРОМОКОДА</b>\\n"
-            "━━━━━━━━━━━━━━━━━━\\n"
-            "Отправь следующим сообщением свой промокод.\\n\\n"
-            "Я проверю его срок действия и лимит активаций, а затем начислю награду в Family Budget.\\n"
+            "🎁 <b>АКТИВАЦИЯ ПРОМОКОДА</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "Отправь следующим сообщением свой промокод.\n\n"
+            "Я проверю его срок действия и лимит активаций, а затем начислю награду в Family Budget.\n"
             "Для отмены напиши /cancel.",
             parse_mode="HTML"
         )
@@ -947,13 +947,13 @@ if bot:
                     reward_lines.append(f"• {int(reward.get('amount') or 0)} монет")
                 elif kind == "subscription":
                     reward_lines.append(f"• {reward.get('name') or 'подписка'}")
-            extra = ("\\n\\n🎁 <b>Начислено:</b>\\n" + "\\n".join(reward_lines)) if reward_lines else ""
+            extra = ("\n\n🎁 <b>Начислено:</b>\n" + "\n".join(reward_lines)) if reward_lines else ""
             await message.answer(
                 "✅ <b>Промокод принят, награда отправлена в Family Budget.</b>" + extra,
                 parse_mode="HTML"
             )
         except HTTPException as exc:
-            await message.answer("❌ <b>Не удалось активировать промокод.</b>\\n" + str(exc.detail or ""), parse_mode="HTML")
+            await message.answer("❌ <b>Не удалось активировать промокод.</b>\n" + str(exc.detail or ""), parse_mode="HTML")
         except Exception:
             log.exception("Chat promo redemption failed for uid=%s", uid)
             await message.answer(

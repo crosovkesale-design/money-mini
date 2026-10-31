@@ -192,7 +192,63 @@ async function confirmBankImport(){
   finally{bankImportBusy=false;button.disabled=false;button.textContent=bankUi('Импортировать');}
 }
 
-function saveData(){ localStorage.setItem(appStorageKey, JSON.stringify(appData)); }
+let budgetSnapshotSyncTimer=null;
+let budgetAlertCheckTimer=null;
+let budgetAlertCheckRunning=false;
+function queueBudgetSnapshotSync(){
+  clearTimeout(budgetSnapshotSyncTimer);
+  budgetSnapshotSyncTimer=setTimeout(async()=>{
+    const tg=window.Telegram?.WebApp;if(!tg?.initData)return;
+    const history=(appData.history||[]).slice(-500).map(tx=>({
+      type:tx.type,amount:tx.amount,title:tx.title||tx.note,category:tx.category,
+      date:tx.date,ts:tx.ts,currency:tx.currency||appData.currency,
+      envelopeId:tx.envelopeId||null
+    }));
+    try{
+      await fetch('/api/budget/snapshot',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({
+        balance:Number(appData.balance||0),monthIncome:Number(appData.monthIncome||0),
+        monthExpense:Number(appData.monthExpense||0),currency:appData.currency||'UAH',history
+      })});
+    }catch(error){console.warn('Weekly summary snapshot sync failed:',error);}
+  },2500);
+}
+function scheduleBudgetAlertCheck(){
+  clearTimeout(budgetAlertCheckTimer);
+  budgetAlertCheckTimer=setTimeout(checkBudgetAlerts,1100);
+}
+async function checkBudgetAlerts(){
+  if(budgetAlertCheckRunning)return;
+  const tg=window.Telegram?.WebApp;if(!tg?.initData)return;
+  const visible=getVisibleBudget();
+  const familyMode=visible.isFamily&&currentFamily;
+  const envelopeItems=familyMode?(familyEnvelopes||[]):(appData.envelopes||[]);
+  const history=visible.history||[];
+  const envelopes=envelopeItems.map(envelope=>({
+    id:envelope.id,name:envelope.name,target:Number(envelope.target||0),
+    spent:history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(envelope.id))
+      .reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0)
+  }));
+  budgetAlertCheckRunning=true;
+  try{
+    const response=await fetch('/api/budget/alerts/check',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({
+      balance:Number(visible.balance||0),monthIncome:Number(visible.monthIncome||0),
+      currency:appData.currency||'UAH',familyId:familyMode?String(currentFamily.id||''):'',envelopes
+    })});
+    if(!response.ok)return;
+    const data=await response.json().catch(()=>({}));
+    const alerts=Array.isArray(data.alerts)?data.alerts:[];
+    if(alerts.length){
+      const message=alerts.map(item=>String(item.text||'')).join('\n\n');
+      if(tg.showAlert)tg.showAlert(_localizeDialogMessage(message));
+      else if(typeof showToast==='function')showToast(message);
+    }
+  }catch(error){console.warn('Budget alert check failed:',error);}
+  finally{budgetAlertCheckRunning=false;}
+}
+function saveData(){
+  localStorage.setItem(appStorageKey, JSON.stringify(appData));
+  queueBudgetSnapshotSync();
+}
 
 async function logClientActivity(action, tx){
   const tg=window.Telegram?.WebApp;
@@ -1365,25 +1421,8 @@ function txTypeReceiptAllowed(type){ return type === 'expense'; }
 
 
 function notifyEnvelopeThresholds(envelopeId, spentBefore, addedAmount, envelopeItems){
-  if(!envelopeId||!Number.isFinite(Number(addedAmount))||Number(addedAmount)<=0)return;
-  const envelope=(envelopeItems||[]).find(item=>String(item.id)===String(envelopeId));
-  if(!envelope)return;
-  const target=Number(envelope.target||0);
-  if(!Number.isFinite(target)||target<=0)return;
-  const before=Math.max(0,Number(spentBefore)||0);
-  const after=before+Number(addedAmount);
-  const thresholds=[60,90,100].filter(percent=>before/target*100<percent&&after/target*100>=percent);
-  if(!thresholds.length)return;
-  const name=String(envelope.name||'Конверт');
-  const lines=thresholds.map(percent=>{
-    if(percent===100)return t('envelope_limit_100');
-    if(percent===90)return t('envelope_limit_90').replace('{amount}',fmtMoney(Math.max(0,target-after)));
-    return t('envelope_limit_60');
-  });
-  const message=t('envelope_warning_title').replace('{name}',name)+'\n\n'+lines.join('\n')+'\n\n'+t('envelope_spent_summary').replace('{spent}',fmtMoney(after)).replace('{target}',fmtMoney(target));
-  const tg=window.Telegram?.WebApp;
-  if(tg?.showAlert)tg.showAlert(_localizeDialogMessage(message));
-  else alert(message);
+  // All budget alerts are evaluated centrally so the app and Telegram receive one deduplicated warning.
+  scheduleBudgetAlertCheck();
 }
 
 async function submitTransaction(){
@@ -2471,6 +2510,8 @@ function renderAll(){
   renderForecast();
   renderProInsights();
   updateProFeatureControls();
+  queueBudgetSnapshotSync();
+  scheduleBudgetAlertCheck();
 }
 
 

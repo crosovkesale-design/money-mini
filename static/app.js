@@ -539,6 +539,7 @@ function applyLang(){
   const currencyLabel=document.getElementById('currLabel');
   if(currencyLabel) currencyLabel.innerText = selectedCurrency.sym + ' ' + tCurrency(selectedCurrency.id);
   applyReceiptFormTranslations();
+  applyPromoCardTranslations();
   translateHardcodedText();
   startHardcodedTextTranslation();
   // Re-render dynamically generated Money Pass cards immediately after language changes.
@@ -2971,4 +2972,25 @@ async function redeemPromoCode(){
   if(typeof loadRewards==='function') await loadRewards();
  }catch(error){status.textContent=error.message||dict.error;status.className='promo-code-status error';}
  finally{btn.disabled=false;btn.textContent=label;}
+}
+
+
+
+const PROMO_CARD_I18N = {
+ ru:["Промокод","Введи код и получи скидочный купон на подписку","Например, FAMILY2026","Активировать","Один промокод можно активировать только один раз."],
+ uk:["Промокод","Введи код і отримай купон на знижку підписки","Наприклад, FAMILY2026","Активувати","Кожен промокод можна активувати лише один раз."],
+ en:["Promo code","Enter a code and get a subscription discount coupon","For example, FAMILY2026","Redeem","Each promo code can only be redeemed once."],
+ de:["Gutscheincode","Gib einen Code ein und erhalte einen Rabattgutschein für dein Abo","Zum Beispiel FAMILY2026","Einlösen","Jeder Gutscheincode kann nur einmal eingelöst werden."],
+ es:["Código promocional","Introduce un código y recibe un cupón de descuento para tu suscripción","Por ejemplo, FAMILY2026","Canjear","Cada código solo se puede canjear una vez."],
+ fr:["Code promo","Saisis un code et obtiens un coupon de réduction sur l’abonnement","Par exemple, FAMILY2026","Activer","Chaque code ne peut être utilisé qu’une seule fois."],
+ it:["Codice promozionale","Inserisci un codice e ricevi un coupon sconto per l’abbonamento","Ad esempio, FAMILY2026","Attiva","Ogni codice può essere utilizzato una sola volta."],
+ pl:["Kod promocyjny","Wpisz kod i odbierz kupon rabatowy na subskrypcję","Na przykład FAMILY2026","Aktywuj","Każdy kod można wykorzystać tylko raz."],
+ tr:["Promosyon kodu","Kodunu gir ve abonelik indirimi kuponu kazan","Örneğin, FAMILY2026","Kullan","Her kod yalnızca bir kez kullanılabilir."],
+ zh:["优惠码","输入代码，领取订阅折扣券","例如 FAMILY2026","兑换","每个优惠码只能兑换一次。"]
+};
+function applyPromoCardTranslations(){
+ const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0],v=PROMO_CARD_I18N[lang]||PROMO_CARD_I18N.en;
+ const card=document.querySelector('.promo-redeem-card');if(!card)return;
+ const title=card.querySelector('.promo-redeem-heading h5'),desc=card.querySelector('.promo-redeem-heading p'),input=card.querySelector('#promoCodeInput'),button=card.querySelector('#promoCodeRedeemBtn'),status=card.querySelector('#promoCodeStatus');
+ if(title)title.textContent=v[0];if(desc)desc.textContent=v[1];if(input){input.placeholder=v[2];input.setAttribute('aria-label',v[0]);}if(button&&!button.disabled)button.textContent=v[3];if(status&&status.classList.length===1)status.textContent=v[4];
 }

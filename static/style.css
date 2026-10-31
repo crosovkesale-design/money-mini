@@ -2195,3 +2195,218 @@ body {
   .history-item:active,.nav-item:active { transform:scale(.985); }
   .btn:active { transform:translateY(1px) scale(.985); }
 }
+
+
+/* RUVYQO — FULL CONCEPT PASS
+   Presentation-only layer. No application selectors, IDs, handlers or data logic are removed. */
+:root {
+  --bg:#0d0f14;
+  --surface:rgba(24,27,36,.90);
+  --surface-strong:rgba(19,22,30,.97);
+  --border:rgba(182,154,255,.15);
+  --text:#f5f5f7;
+  --muted:#9899a5;
+  --accent:#8055ff;
+  --accent-2:#b69aff;
+  --success:#55d6a4;
+  --danger:#ff8295;
+  --warning:#ffc96b;
+  --radius:22px;
+  --glass-shadow:0 18px 48px rgba(0,0,0,.30);
+}
+html { background:#0d0f14; }
+body {
+  background:
+    radial-gradient(ellipse at 10% -8%,rgba(128,85,255,.19),transparent 36%),
+    radial-gradient(ellipse at 95% 20%,rgba(182,154,255,.075),transparent 31%),
+    #0d0f14;
+  background-attachment:fixed;
+}
+.container { max-width:560px; padding: max(16px,env(safe-area-inset-top)) 18px 32px; }
+.tab-content { animation:ruvyqo-enter .28s ease both; }
+@keyframes ruvyqo-enter { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+
+/* Brand rail */
+.app-topbar {
+  position:sticky; top:max(7px,env(safe-area-inset-top)); z-index:220;
+  display:flex; align-items:center; gap:10px; margin:0 0 22px; padding:10px 11px;
+  border:1px solid rgba(182,154,255,.18); border-radius:18px;
+  background:rgba(17,19,26,.88); box-shadow:0 12px 34px rgba(0,0,0,.24);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+}
+.app-topbar-title { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.app-topbar-title b,.drawer-head b { color:#fff; font-size:15px; font-weight:850; letter-spacing:.16em; }
+.app-topbar-title small { color:#a5a2b1; font-size:10px; letter-spacing:.05em; }
+.menu-trigger,.topbar-help,.topbar-tariffs {
+  min-height:40px; border:1px solid rgba(182,154,255,.17); border-radius:13px;
+  background:rgba(255,255,255,.035); color:var(--text);
+}
+.menu-trigger { width:40px; }
+.topbar-help { width:38px;height:38px;flex:0 0 38px; }
+.topbar-tariffs { padding:0 12px; color:#d9caff; font-size:11px; font-weight:750; }
+.app-drawer { background:rgba(17,19,27,.985); border-color:rgba(182,154,255,.18); }
+.drawer-nav button { min-height:48px; border-radius:14px; }
+.drawer-nav button.active { background:linear-gradient(100deg,rgba(128,85,255,.21),rgba(128,85,255,.045)); border-color:rgba(182,154,255,.22); }
+
+/* Main balance — signature surface */
+.balance-card {
+  position:relative; overflow:hidden; isolation:isolate; margin:0 0 15px; padding:25px 21px 19px;
+  border:1px solid rgba(182,154,255,.23); border-radius:28px; text-align:left;
+  background:radial-gradient(ellipse at 92% 0%,rgba(128,85,255,.27),transparent 43%),
+    linear-gradient(145deg,#252036 0%,#191b25 62%,#171a22 100%);
+  box-shadow:0 22px 58px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.balance-card::after {
+  content:""; position:absolute; z-index:-1; width:190px;height:190px;right:-95px;bottom:-125px;
+  border:1px solid rgba(182,154,255,.20);border-radius:50%;
+  box-shadow:0 0 0 18px rgba(128,85,255,.035),0 0 0 40px rgba(128,85,255,.025);
+}
+.balance-title { color:#b2aabe; font-size:10px; letter-spacing:.17em; text-transform:uppercase; }
+.balance-val { margin:13px 0 23px; font-size:clamp(35px,9vw,48px); line-height:1.02; font-weight:800; letter-spacing:-.06em; font-variant-numeric:tabular-nums; }
+.balance-stats { padding-top:16px; border-color:rgba(255,255,255,.10); }
+.stat-item { text-align:left; padding-left:14px; }
+.stat-item:first-child { padding-left:0; border-right:1px solid rgba(255,255,255,.10); }
+.stat-label { color:#a7a2b1; font-size:10px; }
+.stat-amount { margin-top:6px; font-size:16px; }
+.stat-amount.inc { color:#65e0b3; }
+.stat-amount.exp { color:#ff91a2; }
+.budget-mode-switch { border-radius:13px; padding:4px; background:rgba(0,0,0,.20); }
+.budget-mode-btn { border-radius:10px; }
+
+/* Buttons and interactive controls */
+.btn { min-height:46px; border-radius:15px; font-weight:740; letter-spacing:-.01em; transition:transform .18s,filter .18s,box-shadow .18s; }
+.btn-accent { background:linear-gradient(135deg,#9674ff,#7045ee); box-shadow:0 9px 25px rgba(128,85,255,.22); }
+.btn-outline { border-color:rgba(182,154,255,.18); background:rgba(255,255,255,.035); }
+.btn-success { background:linear-gradient(135deg,#5de0b1,#32bd91); color:#092219; }
+.btn-danger { background:linear-gradient(135deg,#ff8295,#e85d7a); color:#2b0b13; }
+.btn:active { transform:translateY(1px) scale(.985); }
+.actions-grid { gap:11px; margin:0 0 18px; }
+.actions-grid .btn { min-height:55px; justify-content:flex-start; padding:0 17px; border-radius:17px; font-size:13px; box-shadow:0 10px 25px rgba(0,0,0,.18); }
+.actions-grid .btn-success { color:#082219; }
+.actions-grid .btn-danger { color:#fff; background:linear-gradient(135deg,#8055ff,#6540dc); box-shadow:0 10px 28px rgba(128,85,255,.22); }
+.custom-input,select.custom-input,textarea.custom-input,.finance-assistant-form textarea {
+  border-radius:14px; border-color:rgba(182,154,255,.16); background:rgba(255,255,255,.035);
+}
+.select-fake { min-height:48px; border-radius:14px; }
+
+/* Universal surface language */
+.card,.weekly-summary-card,.history-item,.month-bar,.financial-overview-card,
+.referral-hero,.finance-assistant-card,.chart-card,.pricing-page .pricing-plan,
+.pricing-page .price-option,.season-pass-card,.settings-card {
+  border:1px solid rgba(182,154,255,.13); border-radius:20px;
+  background:linear-gradient(145deg,rgba(29,31,42,.94),rgba(22,25,33,.92));
+  box-shadow:0 13px 34px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.025);
+}
+.card { padding:18px; }
+.weekly-summary-card { padding:17px; background:linear-gradient(145deg,rgba(42,32,62,.82),rgba(24,27,36,.94)); }
+.weekly-summary-grid>div { padding:13px; border:1px solid rgba(182,154,255,.11); border-radius:14px; background:rgba(255,255,255,.025); }
+.weekly-summary-badge { color:#d7c7ff; background:rgba(128,85,255,.17); border:1px solid rgba(182,154,255,.15); border-radius:999px; }
+.history-item { padding:14px; border-radius:16px; }
+.history-icon { width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:rgba(128,85,255,.13);border-color:rgba(182,154,255,.13); }
+.row-between h4,.tab-content>h4,.card h4 { letter-spacing:-.025em; font-weight:780; }
+.muted,.history-sub { color:#a09eaa; }
+
+/* Analytics: let charts sit in a deliberate dashboard frame */
+#tab-analytics { display:block; }
+#tab-analytics>h4 { margin:4px 0 14px!important; font-size:21px; letter-spacing:-.04em; }
+#tab-analytics .chart-card { min-height:210px; padding:18px; margin-bottom:14px; overflow:hidden; }
+#tab-analytics canvas { max-width:100%; }
+#proInsightsCard { border:1px solid rgba(182,154,255,.13); border-radius:20px; background:rgba(27,29,39,.82); padding:16px; }
+
+/* Envelope and savings/asset panels */
+#envelopesList,#banksList,#tab-banks>div { display:grid; gap:12px; }
+#envelopesList>.card,#tab-banks .card { border-radius:19px; }
+#tab-banks .financial-overview-card { padding:19px; }
+.financial-net-worth { margin:16px 0; padding:18px; border-radius:17px; background:radial-gradient(ellipse at 90% 0%,rgba(128,85,255,.18),transparent 55%),rgba(255,255,255,.025); border:1px solid rgba(182,154,255,.12); }
+.financial-net-worth strong { display:block; margin-top:8px; font-size:29px; letter-spacing:-.045em; }
+.financial-metrics { gap:9px; }
+.financial-metric { border:1px solid rgba(182,154,255,.10); border-radius:14px; background:rgba(255,255,255,.025); padding:12px; }
+
+/* AI workspace */
+.finance-assistant-card { padding:18px; }
+.finance-assistant-heading { align-items:flex-start; gap:12px; }
+.finance-assistant-heading h4 { font-size:18px; letter-spacing:-.035em; }
+.finance-assistant-heading p { color:var(--muted); }
+.ai-credit-panel { border:1px solid rgba(182,154,255,.13); border-radius:16px; background:rgba(128,85,255,.07); padding:13px; }
+.finance-assistant-messages { border-radius:17px; background:rgba(0,0,0,.13); padding:12px; }
+.finance-assistant-welcome { border:1px solid rgba(182,154,255,.12); border-radius:15px; padding:13px; background:rgba(128,85,255,.08); }
+.finance-assistant-form { gap:9px; }
+.finance-assistant-form textarea { min-height:48px; border:1px solid rgba(182,154,255,.16); border-radius:15px; padding:13px; }
+
+/* Referrals, season pass, rewards */
+.referral-hero { padding:19px; background:radial-gradient(ellipse at 100% 0%,rgba(128,85,255,.18),transparent 44%),linear-gradient(145deg,#211d2e,#191c25); }
+.referral-hero .eyebrow { color:#b69aff; letter-spacing:.15em; font-size:9px; font-weight:800; }
+.referral-hero h2 { font-size:25px; letter-spacing:-.045em; }
+.referral-stat { border:1px solid rgba(182,154,255,.12); border-radius:15px; background:rgba(255,255,255,.03); padding:13px; }
+.referral-stat strong { font-size:23px; letter-spacing:-.04em; }
+.referral-link-row { gap:7px; }
+.referral-link-row .btn { padding-left:10px; padding-right:10px; }
+#tab-referrals .card { border-radius:18px; }
+
+/* Pricing: premium product cards */
+.pricing-page { padding-top:4px; }
+.pricing-hero { margin-bottom:20px; }
+.pricing-kicker { color:#b69aff; letter-spacing:.14em; font-size:9px; font-weight:850; }
+.pricing-hero h2 { max-width:450px; font-size:clamp(27px,7vw,35px); line-height:1.06; letter-spacing:-.055em; }
+.pricing-hero p { margin-top:9px; color:#aaa7b3; line-height:1.55; }
+.trial-banner { border:1px solid rgba(182,154,255,.16); border-radius:18px; background:linear-gradient(120deg,rgba(128,85,255,.15),rgba(255,255,255,.025)); }
+.price-option,.pricing-plan { overflow:hidden; border-radius:20px; }
+.price-main { font-size:32px; letter-spacing:-.05em; }
+.option-tag,.pro-mini-tag { border-radius:999px; }
+.pricing-back { margin-top:14px; }
+
+/* Settings and all modal layers */
+#tab-settings>.card { padding:19px; }
+#tab-settings .lbl { margin-top:18px; }
+#tab-settings .seg { padding:4px; border-radius:14px; background:rgba(0,0,0,.17); }
+#tab-settings .seg-btn { border-radius:11px; }
+.modal-backdrop,.modal-overlay { backdrop-filter:blur(9px); -webkit-backdrop-filter:blur(9px); }
+.modal-content,.app-dialog-card { border:1px solid rgba(182,154,255,.19); border-radius:23px; background:linear-gradient(150deg,#222330,#171922); box-shadow:0 28px 80px rgba(0,0,0,.48); }
+.modal-content h3,.modal-content h4 { letter-spacing:-.035em; }
+.help-inline-button,.info-dot { border-radius:50%; }
+
+/* Navigation dock */
+.nav-bar {
+  padding:9px 7px calc(10px + env(safe-area-inset-bottom));
+  border:1px solid rgba(182,154,255,.16); border-bottom:0; border-radius:22px 22px 0 0;
+  background:rgba(16,18,25,.94); box-shadow:0 -12px 38px rgba(0,0,0,.28);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+}
+.nav-item { min-height:48px; gap:5px; font-size:9px; }
+.nav-item i { font-size:19px; }
+.nav-item.active { color:#c5adff; }
+.nav-item.active i { filter:drop-shadow(0 0 7px rgba(182,154,255,.42)); }
+@media (min-width:600px) {
+  .container { max-width:760px; }
+  #tab-budget { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start; }
+  #tab-budget .balance-card,#tab-budget #forecastCard,#tab-budget .weekly-summary-card,#tab-budget .actions-grid,#tab-budget .bank-import-launch,#tab-budget .row-between,#tab-budget .history-filter-panel,#tab-budget #historyContainer { grid-column:1/-1; }
+  #tab-budget .balance-card { min-height:220px; }
+  #tab-analytics { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  #tab-analytics>h4 { grid-column:1/-1; }
+  #tab-analytics .chart-card { min-width:0; }
+}
+@media (max-width:380px) {
+  .container { padding-left:13px; padding-right:13px; }
+  .balance-card { padding:22px 17px 17px; }
+  .actions-grid .btn { padding:0 12px; font-size:12px; }
+  .topbar-tariffs { padding:0 8px; }
+}
+/* Respect the app's explicit light-theme switch. */
+[data-theme="light"] body {
+  background:radial-gradient(ellipse at 10% -8%,rgba(128,85,255,.09),transparent 36%),#f1eff7;
+}
+[data-theme="light"] .app-topbar,
+[data-theme="light"] .nav-bar { background:rgba(255,255,255,.91); }
+[data-theme="light"] .app-topbar-title b,
+[data-theme="light"] .drawer-head b { color:#211d2d; }
+[data-theme="light"] .balance-card { background:radial-gradient(ellipse at 92% 0%,rgba(128,85,255,.16),transparent 43%),linear-gradient(145deg,#fff,#efedf7); color:#211d2d; }
+[data-theme="light"] .balance-title,[data-theme="light"] .stat-label { color:#716b7e; }
+[data-theme="light"] .card,[data-theme="light"] .weekly-summary-card,
+[data-theme="light"] .history-item,[data-theme="light"] .financial-overview-card,
+[data-theme="light"] .referral-hero,[data-theme="light"] .finance-assistant-card,
+[data-theme="light"] .chart-card,[data-theme="light"] .modal-content,
+[data-theme="light"] .app-dialog-card { background:rgba(255,255,255,.94); color:#211d2d; }
+@media (prefers-reduced-motion:reduce) {
+  .tab-content { animation:none; }
+  *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; }
+}

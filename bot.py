@@ -112,16 +112,21 @@ def now_ms() -> int:
     return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 def season_info(now_local=None) -> dict:
-    """Quarterly Money Pass season, based on the Kyiv calendar."""
+    """Three-month Money Pass seasons, anchored to the agreed Sep/Dec/Mar/Jun cycle in Kyiv."""
     now_local = now_local or datetime.now(KYIV)
-    quarter = (now_local.month - 1) // 3 + 1
-    start_month = (quarter - 1) * 3 + 1
-    start_date = datetime(now_local.year, start_month, 1, tzinfo=KYIV).date()
-    next_year = now_local.year + (1 if start_month == 10 else 0)
-    next_month = 1 if start_month == 10 else start_month + 3
+    shifted_month = (now_local.month - 9) % 12
+    quarter = shifted_month // 3 + 1
+    start_month = ((9 - 1) + (quarter - 1) * 3) % 12 + 1
+    start_year = now_local.year - (1 if start_month > now_local.month else 0)
+    start_date = datetime(start_year, start_month, 1, tzinfo=KYIV).date()
+    next_month = start_month + 3
+    next_year = start_year
+    if next_month > 12:
+        next_month -= 12
+        next_year += 1
     next_start = datetime(next_year, next_month, 1, tzinfo=KYIV).date()
     end_date = next_start - timedelta(days=1)
-    return {"key": f"{now_local.year}-Q{quarter}", "label": f"Q{quarter} {now_local.year}",
+    return {"key": f"{start_year}-Q{quarter}", "label": f"Q{quarter} {start_year}",
             "start": start_date.isoformat(), "end": end_date.isoformat(),
             "days_left": max(0, (end_date - now_local.date()).days)}
 

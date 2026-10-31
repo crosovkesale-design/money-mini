@@ -517,6 +517,9 @@ class ReviewState(StatesGroup):
     waiting_text = State()
     waiting_msg = State()
 
+class PromoState(StatesGroup):
+    waiting_code = State()
+
 class AdminSupportState(StatesGroup):
     waiting_reply = State()
 
@@ -908,6 +911,69 @@ if bot:
             "💬 Отзывы, новости и обновления — по кнопкам ниже.",
             reply_markup=kb, parse_mode="HTML"
         )
+
+    @dp.message(Command("promo"))
+    async def cmd_promo(message: Message, state: FSMContext):
+        parts = (message.text or "").split(maxsplit=1)
+        if len(parts) > 1 and parts[1].strip():
+            await state.clear()
+            await redeem_promo_from_chat(message, parts[1].strip())
+            return
+        await state.set_state(PromoState.waiting_code)
+        await message.answer(
+            "🎁 <b>АКТИВАЦИЯ ПРОМОКОДА</b>\\n"
+            "━━━━━━━━━━━━━━━━━━\\n"
+            "Отправь следующим сообщением свой промокод.\\n\\n"
+            "Я проверю его срок действия и лимит активаций, а затем начислю награду в Family Budget.\\n"
+            "Для отмены напиши /cancel.",
+            parse_mode="HTML"
+        )
+
+    async def redeem_promo_from_chat(message: Message, code: str):
+        uid = str(message.from_user.id)
+        class PromoRequest:
+            async def json(self):
+                return {"code": code}
+        try:
+            result = await api_redeem_promo_code(PromoRequest(), uid=uid)
+            reward_lines = []
+            for reward in result.get("rewards") or []:
+                kind = reward.get("type")
+                if kind == "c10":
+                    reward_lines.append("• купон скидки 10%")
+                elif kind == "c20":
+                    reward_lines.append("• купон скидки 20%")
+                elif kind == "coins":
+                    reward_lines.append(f"• {int(reward.get('amount') or 0)} монет")
+                elif kind == "subscription":
+                    reward_lines.append(f"• {reward.get('name') or 'подписка'}")
+            extra = ("\\n\\n🎁 <b>Начислено:</b>\\n" + "\\n".join(reward_lines)) if reward_lines else ""
+            await message.answer(
+                "✅ <b>Промокод принят, награда отправлена в Family Budget.</b>" + extra,
+                parse_mode="HTML"
+            )
+        except HTTPException as exc:
+            await message.answer("❌ <b>Не удалось активировать промокод.</b>\\n" + str(exc.detail or ""), parse_mode="HTML")
+        except Exception:
+            log.exception("Chat promo redemption failed for uid=%s", uid)
+            await message.answer(
+                "⚠️ Сейчас не удалось проверить промокод из-за временной ошибки. Попробуй ещё раз чуть позже.",
+                parse_mode="HTML"
+            )
+
+    @dp.message(PromoState.waiting_code, F.text & ~F.text.startswith("/"))
+    async def promo_code_text(message: Message, state: FSMContext):
+        code = (message.text or "").strip()
+        await state.clear()
+        if not code:
+            await message.answer("❌ Отправь промокод текстом или напиши /cancel.")
+            return
+        await redeem_promo_from_chat(message, code)
+
+    @dp.message(Command("cancel"), PromoState.waiting_code)
+    async def cancel_promo(message: Message, state: FSMContext):
+        await state.clear()
+        await message.answer("Активация промокода отменена.")
 
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
@@ -1987,6 +2053,7 @@ async def lifespan(app: FastAPI):
                 BotCommand(command="pay", description="💎 Тарифы и способы оплаты"),
                 BotCommand(command="status", description="🛡 Мой тариф и срок"),
                 BotCommand(command="referrals", description="🎁 Рефералы и купоны"),
+                BotCommand(command="promo", description="🎟 Активировать промокод"),
                 BotCommand(command="review", description="✍️ Отзыв и бонус 20%"),
                 BotCommand(command="support", description="🆘 Связаться с поддержкой"),
                 BotCommand(command="help", description="ℹ️ Все команды бота"),
@@ -4512,9 +4579,12 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
     def reserve(raw):
         promo = dict(raw) if isinstance(raw, dict) else {}
         redemptions = dict(promo.get("redemptions") or {})
-        if not promo or not promo.get("enabled", True):
-            reservation["reason"] = "invalid"
+        if not promo:
+            reservation["reason"] = "not_found"
             return raw
+        if not promo.get("enabled", True):
+            reservation["reason"] = "disabled"
+            return promo
         if str(uid) in redemptions:
             reservation["reason"] = "used"
             return promo
@@ -4565,8 +4635,10 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
         raise HTTPException(status_code=502, detail="Не удалось активировать промокод. Попробуйте позже.")
     if not reservation["ok"]:
         messages = {
-            "invalid": "Промокод не найден или отключён",
-            "used": "Вы уже активировали этот промокод",
+            "invalid": "Промокод недоступен или в нём не настроена награда",
+            "not_found": "Такого промокода не существует. Проверь написание и попробуй ещё раз.",
+            "disabled": "Этот промокод отключён и сейчас не может быть активирован.",
+            "used": "Вы уже активировали этот промокод. Повторное получение награды невозможно.",
             "expired": "Срок действия промокода истёк",
             "limit": "Лимит активаций этого промокода исчерпан",
         }

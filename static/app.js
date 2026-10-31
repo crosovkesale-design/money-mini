@@ -2237,12 +2237,16 @@ async function joinFamilyFromStartParam(){
   }finally{setFamilyBusy(false);}
 }
 
+function openLeaveFamilyConfirm(){
+  if(familyBusy||!currentFamily)return;
+  const name=String(currentFamily.name||t('family'));
+  const message=document.getElementById('leaveFamilyModalText');
+  if(message)message.textContent=t('dialog_leave_family').replace('{name}',name);
+  openModal('modalLeaveFamily');
+}
 async function leaveFamily(){
   if(familyBusy || !currentFamily) return;
-  const name = currentFamily.name || t('family');
-  const confirmed = confirm(t('dialog_leave_family').replace('{name}',name));
-  if(!confirmed) return;
-
+  closeModal('modalLeaveFamily');
   setFamilyBusy(true);
   familyFeedback('Выполняем выход из семейной группы…');
   try{

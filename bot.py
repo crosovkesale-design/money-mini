@@ -4419,8 +4419,8 @@ async def api_budget_alerts_check(request: Request, uid: str = Depends(current_u
     def update_state(raw):
         state = dict(raw) if isinstance(raw, dict) else {}
         new_alerts.clear()
-        balance_key = "balance_low_" + month_key.replace("-", "_")
-        low_threshold = max(1.0, month_income * 0.10) if month_income > 0 else 100.0
+        balance_key = "balance_low"
+        low_threshold = max(1.0, month_income * 0.10) if month_income > 0 else 50.0
         low_now = transaction_count > 0 and balance <= low_threshold
         if low_now and not state.get(balance_key):
             state[balance_key] = True

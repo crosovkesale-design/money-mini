@@ -4522,14 +4522,31 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
         if maximum and uses >= maximum:
             reservation["reason"] = "limit"
             return promo
-        reward = str(promo.get("reward") or "")
-        if reward not in {"c10", "c20"}:
+        raw_rewards = promo.get("rewards")
+        if not isinstance(raw_rewards, list):
+            legacy = str(promo.get("reward") or "")
+            raw_rewards = [{"type": legacy}] if legacy in {"c10", "c20"} else []
+        rewards = []
+        for item in raw_rewards:
+            if not isinstance(item, dict):
+                continue
+            kind = str(item.get("type") or "")
+            if kind in {"c10", "c20"}:
+                rewards.append({"type": kind})
+            elif kind == "coins":
+                try:
+                    amount = int(item.get("amount") or 0)
+                except (TypeError, ValueError):
+                    amount = 0
+                if 1 <= amount <= 1000000:
+                    rewards.append({"type": "coins", "amount": amount})
+        if not rewards:
             reservation["reason"] = "invalid"
             return promo
         redemptions[str(uid)] = now
         promo["redemptions"] = redemptions
         promo["uses"] = uses + 1
-        reservation.update({"ok": True, "reward": reward})
+        reservation.update({"ok": True, "rewards": rewards})
         return promo
 
     try:
@@ -4546,8 +4563,7 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
         }
         raise HTTPException(status_code=400, detail=messages.get(reservation["reason"], "Промокод недоступен"))
 
-    reward = reservation["reward"]
-    earned_field = "couponsEarned" if reward == "c10" else "coupons20Earned"
+    rewards = reservation["rewards"]
     applied = {"ok": False}
     def grant(raw):
         user = dict(raw) if isinstance(raw, dict) else {}
@@ -4556,10 +4572,22 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
             applied["ok"] = True
             applied["already"] = True
             return user
-        user[earned_field] = max(0, int(user.get(earned_field) or 0)) + 1
-        redeemed[code] = {"reward": reward, "at": now}
+        granted = []
+        for item in rewards:
+            kind = item["type"]
+            if kind == "c10":
+                user["couponsEarned"] = max(0, int(user.get("couponsEarned") or 0)) + 1
+                granted.append({"type": "c10"})
+            elif kind == "c20":
+                user["coupons20Earned"] = max(0, int(user.get("coupons20Earned") or 0)) + 1
+                granted.append({"type": "c20"})
+            elif kind == "coins":
+                amount = int(item["amount"])
+                user["rewardPoints"] = max(0, int(user.get("rewardPoints") or 0)) + amount
+                granted.append({"type": "coins", "amount": amount})
+        redeemed[code] = {"rewards": granted, "at": now}
         user["promoCodesRedeemed"] = redeemed
-        applied["ok"] = True
+        applied.update({"ok": True, "granted": granted})
         return user
     try:
         await fb.transaction(f"/users/{uid}", grant)
@@ -4568,8 +4596,9 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
         raise HTTPException(status_code=502, detail="Код принят, но награда не начислена. Обратись в поддержку.")
     if not applied["ok"]:
         raise HTTPException(status_code=502, detail="Не удалось начислить награду")
-    await log_user_activity(uid, "promo_redeemed", {"title": code, "type": reward})
-    return {"ok": True, "reward": 10 if reward == "c10" else 20, "message": "Промокод активирован! Купон добавлен в баланс."}
+    granted = applied.get("granted") or rewards
+    await log_user_activity(uid, "promo_redeemed", {"title": code, "rewards": granted})
+    return {"ok": True, "rewards": granted, "message": "Промокод активирован! Все награды начислены."}
 
 
 @app.get("/api/admin/activity")
@@ -4630,11 +4659,32 @@ async def api_admin_create_promo_code(request: Request, x_admin_key: str = Heade
     except Exception:
         raise HTTPException(status_code=400, detail="Некорректный JSON")
     code = normalize_promo_code(body.get("code") or "")
-    reward = str(body.get("reward") or "")
+    raw_rewards = body.get("rewards")
+    if not isinstance(raw_rewards, list):
+        legacy = str(body.get("reward") or "")
+        raw_rewards = [{"type": legacy}] if legacy in {"c10", "c20"} else []
+    rewards = []
+    seen = set()
+    for item in raw_rewards:
+        if not isinstance(item, dict):
+            continue
+        kind = str(item.get("type") or "")
+        if kind in {"c10", "c20"} and kind not in seen:
+            rewards.append({"type": kind})
+            seen.add(kind)
+        elif kind == "coins" and kind not in seen:
+            try:
+                amount = int(item.get("amount") or 0)
+            except (TypeError, ValueError):
+                amount = 0
+            if not 1 <= amount <= 1000000:
+                raise HTTPException(status_code=400, detail="Количество монет должно быть от 1 до 1 000 000")
+            rewards.append({"type": "coins", "amount": amount})
+            seen.add(kind)
     if len(code) < 4:
         raise HTTPException(status_code=400, detail="Код должен содержать минимум 4 символа")
-    if reward not in {"c10", "c20"}:
-        raise HTTPException(status_code=400, detail="Пока доступны награды: купон 10% или 20%")
+    if not rewards:
+        raise HTTPException(status_code=400, detail="Выбери хотя бы одну награду")
     try:
         max_uses = int(body.get("maxUses") or 0)
     except (TypeError, ValueError):
@@ -4651,7 +4701,7 @@ async def api_admin_create_promo_code(request: Request, x_admin_key: str = Heade
     existing = await fb.get(path)
     if existing:
         raise HTTPException(status_code=409, detail="Такой промокод уже существует")
-    record = {"reward": reward, "maxUses": max_uses, "uses": 0, "expiresAt": expires_at, "enabled": True, "createdAt": now_ms()}
+    record = {"rewards": rewards, "maxUses": max_uses, "uses": 0, "expiresAt": expires_at, "enabled": True, "createdAt": now_ms()}
     await fb.put(path, record)
     return {"ok": True, "code": code, **record}
 

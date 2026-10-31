@@ -575,16 +575,24 @@ function loadActivity(){
 }
 function loadPromoCodes(){
   var box=document.getElementById("table-promos");
-  box.innerHTML='<h2 style="font-size:16px;margin:8px 0">Создать промокод</h2><div class="admin-form"><label>Код<input id="promo-code" placeholder="WELCOME2026" maxlength="32"></label><label>Награда<select id="promo-reward"><option value="c10">Купон 10%</option><option value="c20">Купон 20%</option></select></label><label>Количество активаций<input id="promo-limit" type="number" min="0" placeholder="0 — без лимита"></label><label>Действует до<input id="promo-expiry" type="date"></label><button class="btn primary" id="promo-create">Создать промокод</button></div><div id="promo-list" class="muted">Загружаем…</div>';
+  box.innerHTML='<h2 style="font-size:16px;margin:8px 0">Создать промокод</h2><div class="admin-form"><label>Код<input id="promo-code" placeholder="WELCOME2026" maxlength="32"></label><label style="grid-column:1/-1">Награды — можно выбрать несколько<div style="display:flex;gap:14px;flex-wrap:wrap;padding:8px 0;color:#e8ecf5"><label style="flex-direction:row;align-items:center"><input type="checkbox" id="promo-c10"> Купон −10%</label><label style="flex-direction:row;align-items:center"><input type="checkbox" id="promo-c20"> Купон −20%</label><label style="flex-direction:row;align-items:center"><input type="checkbox" id="promo-coins-check"> Монетки</label></div></label><label>Количество монет<input id="promo-coins" type="number" min="1" max="1000000" value="100" disabled></label><label>Количество активаций<input id="promo-limit" type="number" min="0" placeholder="0 — без лимита"></label><label>Действует до<input id="promo-expiry" type="date"></label><button class="btn primary" id="promo-create">Создать промокод</button></div><div id="promo-list" class="muted">Загружаем…</div>';
+  var coinsCheck=document.getElementById("promo-coins-check"),coinsInput=document.getElementById("promo-coins");
+  coinsCheck.onchange=function(){coinsInput.disabled=!coinsCheck.checked;};
   document.getElementById("promo-create").onclick=function(){
-    var payload={code:document.getElementById("promo-code").value,reward:document.getElementById("promo-reward").value,maxUses:document.getElementById("promo-limit").value||0,expiresAt:document.getElementById("promo-expiry").value};
+    var rewards=[];
+    if(document.getElementById("promo-c10").checked)rewards.push({type:"c10"});
+    if(document.getElementById("promo-c20").checked)rewards.push({type:"c20"});
+    if(coinsCheck.checked)rewards.push({type:"coins",amount:coinsInput.value});
+    if(!rewards.length){alert("Выбери хотя бы одну награду");return;}
+    var payload={code:document.getElementById("promo-code").value,rewards:rewards,maxUses:document.getElementById("promo-limit").value||0,expiresAt:document.getElementById("promo-expiry").value};
     adminFetch("/api/admin/promo-codes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(){alert("Промокод создан");loadPromoCodes();}).catch(function(e){alert("Не удалось создать промокод: "+e.message);});
   };
   adminFetch("/api/admin/promo-codes").then(function(data){
     var codes=data.codes||[];var html='<h2 style="font-size:16px;margin:16px 0 8px">Созданные промокоды</h2>';
     if(!codes.length)html+='<div class="muted">Пока промокодов нет</div>';
     codes.forEach(function(p){
-      html+='<div class="activity-user"><div class="activity-user-head"><div><b>'+escapeHtml(p.code)+'</b><div class="muted">'+(p.reward==="c10"?"Купон 10%":"Купон 20%")+' · Использовано '+Number(p.uses||0)+' / '+(Number(p.maxUses||0)||"∞")+' · До '+(p.expiresAt?fmtDate(p.expiresAt):"без срока")+'</div></div><div><span class="promo-status '+(p.enabled?"":"off")+'">'+(p.enabled?"Активен":"Отключён")+'</span> <button class="action promo-toggle" data-code="'+escapeHtml(p.code)+'">'+(p.enabled?"Отключить":"Включить")+'</button></div></div></div>';
+       var rewards=Array.isArray(p.rewards)?p.rewards:[{type:p.reward||"c10"}];var rewardText=rewards.map(function(r){return r.type==="c10"?"Купон −10%":r.type==="c20"?"Купон −20%":r.type==="coins"?"🪙 "+Number(r.amount||0)+" монет":"";}).filter(Boolean).join(" + ");
+       html+='<div class="activity-user"><div class="activity-user-head"><div><b>'+escapeHtml(p.code)+'</b><div class="muted">'+escapeHtml(rewardText)+' · Использовано '+Number(p.uses||0)+' / '+(Number(p.maxUses||0)||"∞")+' · До '+(p.expiresAt?fmtDate(p.expiresAt):"без срока")+'</div></div><div><span class="promo-status '+(p.enabled?"":"off")+'">'+(p.enabled?"Активен":"Отключён")+'</span> <button class="action promo-toggle" data-code="'+escapeHtml(p.code)+'">'+(p.enabled?"Отключить":"Включить")+'</button></div></div></div>';
     });
     document.getElementById("promo-list").innerHTML=html;
     document.querySelectorAll(".promo-toggle").forEach(function(btn){btn.onclick=function(){adminFetch("/api/admin/promo-codes/"+encodeURIComponent(btn.dataset.code)+"/toggle",{method:"POST"}).then(loadPromoCodes).catch(function(e){alert(e.message);});};});

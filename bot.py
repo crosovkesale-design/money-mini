@@ -4540,6 +4540,10 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
                     amount = 0
                 if 1 <= amount <= 1000000:
                     rewards.append({"type": "coins", "amount": amount})
+            elif kind == "subscription":
+                plan = str(item.get("plan") or "")
+                if plan in TARIFFS:
+                    rewards.append({"type": "subscription", "plan": plan})
         if not rewards:
             reservation["reason"] = "invalid"
             return promo
@@ -4585,6 +4589,23 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
                 amount = int(item["amount"])
                 user["rewardPoints"] = max(0, int(user.get("rewardPoints") or 0)) + amount
                 granted.append({"type": "coins", "amount": amount})
+            elif kind == "subscription":
+                plan = str(item["plan"])
+                tariff = TARIFFS.get(plan)
+                if not tariff:
+                    continue
+                sub_end = int(user.get("subEnd") or 0)
+                if 0 < sub_end < 10**11:
+                    sub_end *= 1000
+                new_end = max(sub_end, now) + int(tariff["days"]) * 86400000
+                user.update({
+                    "tariff": plan,
+                    "subStart": now,
+                    "subEnd": new_end,
+                    "status": "active",
+                    "reminderSent": 0,
+                })
+                granted.append({"type": "subscription", "plan": plan, "name": tariff["name"], "days": tariff["days"]})
         redeemed[code] = {"rewards": granted, "at": now}
         user["promoCodesRedeemed"] = redeemed
         applied.update({"ok": True, "granted": granted})
@@ -4680,6 +4701,12 @@ async def api_admin_create_promo_code(request: Request, x_admin_key: str = Heade
             if not 1 <= amount <= 1000000:
                 raise HTTPException(status_code=400, detail="Количество монет должно быть от 1 до 1 000 000")
             rewards.append({"type": "coins", "amount": amount})
+            seen.add(kind)
+        elif kind == "subscription" and kind not in seen:
+            plan = str(item.get("plan") or "")
+            if plan not in TARIFFS:
+                raise HTTPException(status_code=400, detail="Выбери корректный тариф подписки")
+            rewards.append({"type": "subscription", "plan": plan})
             seen.add(kind)
     if len(code) < 4:
         raise HTTPException(status_code=400, detail="Код должен содержать минимум 4 символа")

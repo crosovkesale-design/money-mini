@@ -74,14 +74,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 </div>
 <div class="app-menu-backdrop" id="appMenuBackdrop" onclick="closeAppMenu()"></div>
 <aside class="app-drawer" id="appDrawer" aria-hidden="true">
-  <div class="drawer-head"><div><b>Family Budget</b><small>Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню">×</button></div>
+  <div class="drawer-head"><div><b>Family Budget</b><small id="drawerSubtitle">Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню">×</button></div>
   <nav class="drawer-nav" aria-label="Разделы приложения">
-    <button type="button" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></button>
-    <button type="button" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></button>
-    <button type="button" data-menu-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></button>
-    <button type="button" data-menu-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Копилки и цели</span></button>
-    <button type="button" data-menu-tab="referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span>Рефералы</span></button>
-    <button type="button" data-menu-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></button>
+    <button type="button" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span id="menuLabelBudget">Главная</span></button>
+    <button type="button" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span id="menuLabelAnalytics">Аналитика</span></button>
+    <button type="button" data-menu-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span id="menuLabelEnvelopes">Конверты</span></button>
+    <button type="button" data-menu-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span id="menuLabelBanks">Копилки и цели</span></button>
+    <button type="button" data-menu-tab="referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span id="menuLabelReferrals">Рефералы</span></button>
+    <button type="button" data-menu-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span id="menuLabelSettings">Настройки</span></button>
   </nav>
   <div class="drawer-foot">Family Budget · <span>Управляй деньгами вместе</span></div>
 </aside>
@@ -306,9 +306,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div id="forecastBody" style="font-size:12px"></div>
     </div>
     <section class="card weekly-summary-card" id="weeklySummaryCard">
-      <div class="weekly-summary-head"><div><b>📊 Неделя в цифрах</b><small>Последние 7 дней</small></div><span class="weekly-summary-badge">7 ДНЕЙ</span></div>
-      <div class="weekly-summary-grid"><div><small>Доходы</small><strong id="weeklyIncome">+0</strong></div><div><small>Расходы</small><strong id="weeklyExpense">−0</strong></div></div>
-      <div class="weekly-summary-foot"><span>Главная категория расходов</span><b id="weeklyTopCategory">Пока нет данных</b></div>
+      <div class="weekly-summary-head"><div><b id="weeklyTitle">📊 Неделя в цифрах</b><small id="weeklyPeriod">Последние 7 дней</small></div><span class="weekly-summary-badge">7 ДНЕЙ</span></div>
+      <div class="weekly-summary-grid"><div><small id="weeklyIncomeLabel">Доходы</small><strong id="weeklyIncome">+0</strong></div><div><small id="weeklyExpenseLabel">Расходы</small><strong id="weeklyExpense">−0</strong></div></div>
+      <div class="weekly-summary-foot"><span id="weeklyTopLabel">Главная категория расходов</span><b id="weeklyTopCategory">Пока нет данных</b></div>
     </section>
 
     <div class="actions-grid">
@@ -324,7 +324,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <h4 data-i18n="history">История</h4>
       <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" data-i18n-placeholder="search_placeholder" placeholder="Поиск..." oninput="renderAll()">
     </div>
-    <select id="histCategoryFilter" class="custom-input history-category-filter" aria-label="Фильтр по категории" onchange="renderAll()"><option value="">Все категории</option></select>
+    <select id="histCategoryFilter" class="custom-input history-category-filter" aria-label="Фильтр по категории" onchange="renderAll()"><option value="" id="histCategoryAll">Все категории</option></select>
     <select id="histMemberFilter" class="custom-input" style="display:none;margin:8px 0;width:100%;padding:8px;font-size:12px" onchange="renderAll()"><option value="">Все участники</option></select>
     <div id="historyContainer" class="history-list"></div>
   </div>

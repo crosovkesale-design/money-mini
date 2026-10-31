@@ -1936,6 +1936,7 @@ let familyBanks = [];
 let familyBanksBusy = false;
 let familyEnvelopesBusy = false;
 let familyTransactionsBusy = false;
+let ignoreFamilyStartParam = false;
 let budgetMode = 'personal'; // Always open on the personal budget; family mode is selected explicitly.
 function updateBudgetModeControls(){
  const sw=document.getElementById('budgetModeSwitch'); if(sw)sw.style.display=currentFamily?'flex':'none';
@@ -2220,6 +2221,7 @@ async function shareFamilyInvite(){
   openTelegramShare(link,message);
 }
 async function joinFamilyFromStartParam(){
+  if(ignoreFamilyStartParam)return false;
   const tg=window.Telegram?.WebApp;
   const startParam=String(tg?.initDataUnsafe?.start_param||new URLSearchParams(window.location.search).get('startapp')||'');
   const match=startParam.match(/^family_(FAM-[A-HJ-NP-Z2-9]{6})$/i);
@@ -2251,6 +2253,7 @@ async function leaveFamily(){
   familyFeedback('Выполняем выход из семейной группы…');
   try{
     await familyRequest('/api/family/leave', 'POST', {});
+    ignoreFamilyStartParam=true;
     currentFamily=null;
     familyTransactions=[];familyEnvelopes=[];familyBanks=[];
     budgetMode='personal';

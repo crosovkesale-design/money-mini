@@ -1,16 +1,16 @@
 const LANGS = [{id:'ru',flag:'🇷🇺',label:'Русский'},{id:'uk',flag:'🇺🇦',label:'Українська'},{id:'en',flag:'🇬🇧',label:'English'},{id:'de',flag:'🇩🇪',label:'Deutsch'},{id:'es',flag:'🇪🇸',label:'Español'},{id:'fr',flag:'🇫🇷',label:'Français'},{id:'it',flag:'🇮🇹',label:'Italiano'},{id:'pl',flag:'🇵🇱',label:'Polski'},{id:'tr',flag:'🇹🇷',label:'Türkçe'},{id:'zh',flag:'🇨🇳',label:'中文'}];
 
 const PROMO_CARD_I18N = {
- ru:["Промокод","Введи код и получи скидочный купон на подписку","Например, FAMILY2026","Активировать","Один промокод можно активировать только один раз."],
- uk:["Промокод","Введи код і отримай купон на знижку підписки","Наприклад, FAMILY2026","Активувати","Кожен промокод можна активувати лише один раз."],
- en:["Promo code","Enter a code and get a subscription discount coupon","For example, FAMILY2026","Redeem","Each promo code can only be redeemed once."],
- de:["Gutscheincode","Gib einen Code ein und erhalte einen Rabattgutschein für dein Abo","Zum Beispiel FAMILY2026","Einlösen","Jeder Gutscheincode kann nur einmal eingelöst werden."],
- es:["Código promocional","Introduce un código y recibe un cupón de descuento para tu suscripción","Por ejemplo, FAMILY2026","Canjear","Cada código solo se puede canjear una vez."],
- fr:["Code promo","Saisis un code et obtiens un coupon de réduction sur l’abonnement","Par exemple, FAMILY2026","Activer","Chaque code ne peut être utilisé qu’une seule fois."],
- it:["Codice promozionale","Inserisci un codice e ricevi un coupon sconto per l’abbonamento","Ad esempio, FAMILY2026","Attiva","Ogni codice può essere utilizzato una sola volta."],
- pl:["Kod promocyjny","Wpisz kod i odbierz kupon rabatowy na subskrypcję","Na przykład FAMILY2026","Aktywuj","Każdy kod można wykorzystać tylko raz."],
- tr:["Promosyon kodu","Kodunu gir ve abonelik indirimi kuponu kazan","Örneğin, FAMILY2026","Kullan","Her kod yalnızca bir kez kullanılabilir."],
- zh:["优惠码","输入代码，领取订阅折扣券","例如 FAMILY2026","兑换","每个优惠码只能兑换一次。"]
+ ru:["Промокод","Введи код и получи награду: купон, монеты или подписку","Например, FAMILY2026","Активировать","Один промокод можно активировать только один раз."],
+ uk:["Промокод","Введи код і отримай нагороду: купон, монети або підписку","Наприклад, FAMILY2026","Активувати","Кожен промокод можна активувати лише один раз."],
+ en:["Promo code","Enter a code and get a reward: a coupon, coins or a subscription","For example, FAMILY2026","Redeem","Each promo code can only be redeemed once."],
+ de:["Gutscheincode","Gib einen Code ein und erhalte eine Belohnung: Gutschein, Münzen oder ein Abo","Zum Beispiel FAMILY2026","Einlösen","Jeder Gutscheincode kann nur einmal eingelöst werden."],
+ es:["Código promocional","Introduce un código y recibe una recompensa: cupón, monedas o suscripción","Por ejemplo, FAMILY2026","Canjear","Cada código solo se puede canjear una vez."],
+ fr:["Code promo","Saisis un code et reçois une récompense : coupon, pièces ou abonnement","Par exemple, FAMILY2026","Activer","Chaque code ne peut être utilisé qu’une seule fois."],
+ it:["Codice promozionale","Inserisci un codice e ricevi una ricompensa: coupon, monete o abbonamento","Ad esempio, FAMILY2026","Attiva","Ogni codice può essere utilizzato una sola volta."],
+ pl:["Kod promocyjny","Wpisz kod i odbierz nagrodę: kupon, monety lub subskrypcję","Na przykład FAMILY2026","Aktywuj","Każdy kod można wykorzystać tylko raz."],
+ tr:["Promosyon kodu","Kodu gir ve kupon, jeton veya abonelik ödülü kazan","Örneğin, FAMILY2026","Kullan","Her kod yalnızca bir kez kullanılabilir."],
+ zh:["优惠码","输入代码，领取优惠券、金币或订阅奖励","例如 FAMILY2026","兑换","每个优惠码只能兑换一次。"]
 };
 const HISTORY_FILTER_I18N = {
  ru:{all:"Все",expense:"Расходы",income:"Доходы",categories:"Категории",reset:"Сбросить",search:"Поиск по операциям и категориям..."},

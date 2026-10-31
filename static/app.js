@@ -12,6 +12,18 @@ const PROMO_CARD_I18N = {
  tr:["Promosyon kodu","Kodunu gir ve abonelik indirimi kuponu kazan","Örneğin, FAMILY2026","Kullan","Her kod yalnızca bir kez kullanılabilir."],
  zh:["优惠码","输入代码，领取订阅折扣券","例如 FAMILY2026","兑换","每个优惠码只能兑换一次。"]
 };
+const HISTORY_FILTER_I18N = {
+ ru:{all:"Все",expense:"Расходы",income:"Доходы",categories:"Категории",reset:"Сбросить",search:"Поиск по операциям и категориям..."},
+ uk:{all:"Усі",expense:"Витрати",income:"Доходи",categories:"Категорії",reset:"Скинути",search:"Пошук операцій і категорій..."},
+ en:{all:"All",expense:"Expenses",income:"Income",categories:"Categories",reset:"Clear",search:"Search transactions and categories..."},
+ de:{all:"Alle",expense:"Ausgaben",income:"Einnahmen",categories:"Kategorien",reset:"Zurücksetzen",search:"Buchungen und Kategorien suchen..."},
+ es:{all:"Todo",expense:"Gastos",income:"Ingresos",categories:"Categorías",reset:"Limpiar",search:"Buscar operaciones y categorías..."},
+ fr:{all:"Tout",expense:"Dépenses",income:"Revenus",categories:"Catégories",reset:"Effacer",search:"Rechercher opérations et catégories..."},
+ it:{all:"Tutte",expense:"Spese",income:"Entrate",categories:"Categorie",reset:"Azzera",search:"Cerca operazioni e categorie..."},
+ pl:{all:"Wszystkie",expense:"Wydatki",income:"Przychody",categories:"Kategorie",reset:"Wyczyść",search:"Szukaj transakcji i kategorii..."},
+ tr:{all:"Tümü",expense:"Giderler",income:"Gelirler",categories:"Kategoriler",reset:"Temizle",search:"İşlem ve kategori ara..."},
+ zh:{all:"全部",expense:"支出",income:"收入",categories:"类别",reset:"清除",search:"搜索交易和类别..."}
+};
 const CURRENCIES = [{id:'UAH',sym:'₴',label:'Hryvnia'},{id:'RUB',sym:'₽',label:'Ruble'},{id:'USD',sym:'$',label:'US Dollar'},{id:'EUR',sym:'€',label:'Euro'},{id:'PLN',sym:'zł',label:'Polish Zloty'},{id:'GBP',sym:'£',label:'Pound Sterling'},{id:'TRY',sym:'₺',label:'Turkish Lira'},{id:'CHF',sym:'₣',label:'Swiss Franc'},{id:'CZK',sym:'Kč',label:'Czech Koruna'},{id:'JPY',sym:'¥',label:'Japanese Yen'},{id:'CNY',sym:'元',label:'Chinese Yuan'}];
 
 // Keep each Telegram account's financial data in its own browser storage namespace.
@@ -2471,6 +2483,10 @@ function renderAll(){
     }
   }
   const allHistory=Array.isArray(visibleBudget.history)?visibleBudget.history:[];
+  const filterLang=String(appData?.lang||'ru').toLowerCase().split('-')[0],filterText=HISTORY_FILTER_I18N[filterLang]||HISTORY_FILTER_I18N.en;
+  const setFilterText=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
+  setFilterText('histTypeAllLabel',filterText.all);setFilterText('histTypeExpenseLabel',filterText.expense);setFilterText('histTypeIncomeLabel',filterText.income);setFilterText('histCategoryHeading',filterText.categories);setFilterText('histClearCategory',filterText.reset);
+  const historySearchInput=document.getElementById('histSearch');if(historySearchInput)historySearchInput.placeholder=filterText.search;
   const typeButtons=document.querySelectorAll('#histTypeFilters [data-type]');
   typeButtons.forEach(button=>button.classList.toggle('active',button.dataset.type===historyTypeFilter));
   const categorySource=allHistory.filter(tx=>historyTypeFilter==='all'||tx.type===historyTypeFilter);
@@ -2480,7 +2496,7 @@ function renderAll(){
   if(categoryChips){
     const categories=[...categoryCounts.keys()].sort((a,b)=>tCat(a).localeCompare(tCat(b),appData.lang||'ru'));
     if(historyCategoryFilter&&!categoryCounts.has(historyCategoryFilter))historyCategoryFilter='';
-    const allLabel=t('Все категории');
+    const allLabel=(APP_SHELL_I18N[filterLang]||APP_SHELL_I18N.en).allCategories;
     categoryChips.innerHTML='<button type="button" class="history-category-chip '+(!historyCategoryFilter?'active':'')+'" onclick="setHistoryCategoryFilter(\'\')">'+allLabel+' <span>'+categorySource.length+'</span></button>'+
       categories.map(cat=>'<button type="button" class="history-category-chip '+(historyCategoryFilter===cat?'active':'')+'" onclick="setHistoryCategoryFilter('+JSON.stringify(cat).replace(/</g,'\\u003c')+')">'+bankEscape(tCat(cat))+' <span>'+categoryCounts.get(cat)+'</span></button>').join('');
   }

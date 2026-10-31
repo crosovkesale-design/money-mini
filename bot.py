@@ -216,6 +216,21 @@ def has_pro_access(user: dict) -> bool:
     return sub_end > now_ms() and tariff in {"trial", "pro", "pro1", "pro12"}
 
 
+def family_member_limit(user: dict) -> int:
+    """Family capacity by active subscription: Basic/trial=4, PRO=6."""
+    tariff = str(user.get("tariff") or "trial").lower()
+    sub_end = int(user.get("subEnd") or 0)
+    if 0 < sub_end < 10**11:
+        sub_end *= 1000
+    if sub_end <= now_ms():
+        return 0
+    if tariff in {"pro1", "pro12"}:
+        return 6
+    if tariff in {"trial", "1month", "3months", "6months", "12months"}:
+        return 4
+    return 0
+
+
 def has_active_pro_subscription(user: dict) -> bool:
     """Chat expense entry is available only to a paid, currently active PRO subscription."""
     tariff = str(user.get("tariff") or "").lower()
@@ -2229,14 +2244,17 @@ async def api_family_get(uid: str = Depends(current_uid)):
     family["currentRole"] = u.get("familyRole") or (
         "owner" if family.get("ownerId") == uid else "member"
     )
+    owner = await get_user(str(family.get("ownerId") or ""))
+    family["memberLimit"] = family_member_limit(owner) or int(family.get("memberLimit") or 4)
     return family
 
 
 @app.post("/api/family/create")
 async def api_family_create(request: Request, uid: str = Depends(current_uid)):
     user = await get_user(uid)
-    if not has_pro_access(user):
-        raise HTTPException(403, "Создание семейного бюджета доступно в PRO.")
+    member_limit = family_member_limit(user)
+    if member_limit < 2:
+        raise HTTPException(403, "Семейный бюджет доступен с активным тарифом Basic или PRO.")
     if user.get("familyId"):
         raise HTTPException(409, "Ты уже состоишь в семье. Сначала выйди из текущей семьи.")
 
@@ -2259,6 +2277,7 @@ async def api_family_create(request: Request, uid: str = Depends(current_uid)):
         "name": name,
         "ownerId": uid,
         "createdAt": ts,
+        "memberLimit": member_limit,
         "archived": False,
         "members": {
             uid: {
@@ -2306,10 +2325,12 @@ async def api_family_join(request: Request, uid: str = Depends(current_uid)):
         return {"ok": True, "family": family, "alreadyMember": True}
     owner_id = str(family.get("ownerId") or "")
     owner = await get_user(owner_id) if owner_id else {}
-    if not has_pro_access(owner):
-        raise HTTPException(403, "Владелец семьи должен иметь активный PRO, чтобы приглашать участников.")
-    if len(members) >= 6:
-        raise HTTPException(409, "В PRO можно объединить до 6 участников вместе с владельцем.")
+    member_limit = family_member_limit(owner)
+    if member_limit < 2:
+        raise HTTPException(403, "У владельца должен быть активный тариф Basic или PRO.")
+    if len(members) >= member_limit:
+        plan_name = "Basic" if member_limit == 4 else "PRO"
+        raise HTTPException(409, f"Лимит семьи по тарифу {plan_name} — до {member_limit} участников вместе с владельцем.")
 
     ts = now_ms()
     members[uid] = {

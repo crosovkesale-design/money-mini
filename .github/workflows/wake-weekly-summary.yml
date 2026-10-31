@@ -1,0 +1,22 @@
+name: Wake Family Budget for weekly summary
+
+on:
+  schedule:
+    # 06:00 UTC covers 09:00 Kyiv during summer time.
+    - cron: "0 6 * * 1"
+    # 07:00 UTC covers 09:00 Kyiv during winter time.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wake-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the Render service
+        run: |
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --retry-delay 15 --max-time 120 \
+            --output /dev/null https://money-mini.onrender.com/

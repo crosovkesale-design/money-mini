@@ -3129,7 +3129,7 @@ async function redeemPromoCode(){
   const response=await fetch('/api/promo-codes/redeem',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':window.Telegram?.WebApp?.initData||''},body:JSON.stringify({code})});
   const data=await response.json().catch(()=>({}));
   if(!response.ok){const detail=String(data.detail||'');const key=detail.includes('уже активировали')?'used':detail.includes('истёк')?'expired':detail.includes('Лимит')?'limit':detail.includes('не найден')?'invalid':'error';throw new Error(dict[key]||dict.error);}
-  const rewardLabels=(data.rewards||[]).map(function(r){return r.type==='c10'?'−10% coupon':r.type==='c20'?'−20% coupon':r.type==='coins'?('🪙 '+Number(r.amount||0)+' coins'):'';}).filter(Boolean);status.textContent=dict.success.replace('{rewards}',rewardLabels.join(' + '));status.className='promo-code-status success';input.value='';
+  const rewardLabels=(data.rewards||[]).map(function(r){return r.type==='c10'?'🎟️ −10%':r.type==='c20'?'🎟️ −20%':r.type==='coins'?('🪙 '+Number(r.amount||0)+' '+t('Монеты')):'';}).filter(Boolean);status.textContent=dict.success.replace('{rewards}',rewardLabels.join(' + '));status.className='promo-code-status success';input.value='';
   if(typeof refreshCryptoCouponBalance==='function') await refreshCryptoCouponBalance();
   if(typeof loadRewards==='function') await loadRewards();
  }catch(error){status.textContent=error.message||dict.error;status.className='promo-code-status error';}

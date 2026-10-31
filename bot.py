@@ -4629,7 +4629,7 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
 
 @app.get("/api/admin/revenue")
 async def api_admin_revenue(x_admin_key: str = Header(default="")):
-    """Aggregate confirmed payment records; never infer revenue from user subscription fields."""
+    """Aggregate only confirmed provider payments, grouped by Kyiv calendar periods."""
     if not admin_key_ok(x_admin_key):
         raise HTTPException(status_code=401, detail="Неверный ключ администратора")
 
@@ -4641,12 +4641,16 @@ async def api_admin_revenue(x_admin_key: str = Header(default="")):
     today_start = int(now_local.replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
     month_start = int(now_local.replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
 
-    periods = {
-        "today": {"byCurrency": {}, "count": 0},
-        "month": {"byCurrency": {}, "count": 0},
-        "all": {"byCurrency": {}, "count": 0},
-    }
-    kinds = {"subscription": 0, "coupon_purchase": 0, "ai_pack": 0, "other": 0}
+    def empty_period():
+        return {
+            "byCurrency": {},
+            "count": 0,
+            "subscriptions": 0,
+            "extras": 0,
+            "byKind": {"subscription": 0, "coupon_purchase": 0, "ai_pack": 0, "other": 0},
+        }
+
+    periods = {"today": empty_period(), "month": empty_period(), "all": empty_period()}
 
     for provider, records in raw.items():
         if not isinstance(records, dict):
@@ -4657,30 +4661,37 @@ async def api_admin_revenue(x_admin_key: str = Header(default="")):
             try:
                 amount = float(payment.get("amount") or 0)
                 paid_at = int(payment.get("paidAt") or 0)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, OverflowError):
                 continue
             if not math.isfinite(amount) or amount <= 0 or paid_at <= 0:
                 continue
+
             currency = str(payment.get("currency") or "UNKNOWN").upper()[:12]
+            # Existing subscription records from all three providers predate the
+            # optional kind field, so a missing kind means subscription.
             kind = str(payment.get("kind") or "subscription")
-            if kind not in kinds:
+            if kind not in ("subscription", "coupon_purchase", "ai_pack"):
                 kind = "other"
-            kinds[kind] += 1
-            for key, start in (("all", 0), ("month", month_start), ("today", today_start)):
-                if paid_at < start:
+
+            for key, period_start in (("all", 0), ("month", month_start), ("today", today_start)):
+                if paid_at < period_start:
                     continue
                 period = periods[key]
                 period["count"] += 1
                 period["byCurrency"][currency] = round(
                     float(period["byCurrency"].get(currency) or 0) + amount, 2
                 )
+                period["byKind"][kind] += 1
+                if kind == "subscription":
+                    period["subscriptions"] += 1
+                else:
+                    period["extras"] += 1
 
     return {
         "ok": True,
         "timezone": "Europe/Kyiv",
         "generatedAt": now_ms(),
         "periods": periods,
-        "kinds": kinds,
     }
 
 

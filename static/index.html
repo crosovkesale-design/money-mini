@@ -67,6 +67,25 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 </head>
 <body>
 <div class="container">
+<div class="app-topbar" id="appTopbar">
+  <button class="menu-trigger" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
+  <div class="app-topbar-title"><b>Family Budget</b><small id="currentSectionLabel">Главная</small></div>
+  <button type="button" class="topbar-tariffs" onclick="window.location.href='?screen=pay'">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
+</div>
+<div class="app-menu-backdrop" id="appMenuBackdrop" onclick="closeAppMenu()"></div>
+<aside class="app-drawer" id="appDrawer" aria-hidden="true">
+  <div class="drawer-head"><div><b>Family Budget</b><small>Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню">×</button></div>
+  <nav class="drawer-nav" aria-label="Разделы приложения">
+    <button type="button" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span>Главная</span></button>
+    <button type="button" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span>Аналитика</span></button>
+    <button type="button" data-menu-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span>Конверты</span></button>
+    <button type="button" data-menu-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span>Копилки и цели</span></button>
+    <button type="button" data-menu-tab="referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span>Рефералы</span></button>
+    <button type="button" data-menu-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span>Настройки</span></button>
+  </nav>
+  <div class="drawer-foot">Family Budget · <span>Управляй деньгами вместе</span></div>
+</aside>
+
 
   <div id="tab-pay" class="tab-content" style="display:none">
     <section class="pricing-page">
@@ -263,14 +282,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   </div>
 
     <div id="tab-budget" class="tab-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="font-weight:800;font-size:15px">Family Budget</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <button class="btn btn-accent btn-sm" onclick="window.location.href='?screen=pay'" style="padding:8px 11px;border-radius:11px;white-space:nowrap">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
-        <button onclick="openHelp()" style="background:var(--card);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:700">?</button>
-      </div>
-    </div>
-
     <div class="balance-card">    <div id="budgetModeSwitch" class="budget-mode-switch" style="display:none" role="group" aria-label="Режим бюджета">
       <button id="budgetModePersonal" class="budget-mode-btn active" onclick="setBudgetMode('personal')">Личный</button>
       <button id="budgetModeFamily" class="budget-mode-btn" onclick="setBudgetMode('family')">Семейный</button>
@@ -308,6 +319,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <h4 data-i18n="history">История</h4>
       <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" data-i18n-placeholder="search_placeholder" placeholder="Поиск..." oninput="renderAll()">
     </div>
+    <select id="histCategoryFilter" class="custom-input history-category-filter" aria-label="Фильтр по категории" onchange="renderAll()"><option value="">Все категории</option></select>
     <select id="histMemberFilter" class="custom-input" style="display:none;margin:8px 0;width:100%;padding:8px;font-size:12px" onchange="renderAll()"><option value="">Все участники</option></select>
     <div id="historyContainer" class="history-list"></div>
   </div>
@@ -513,8 +525,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   </div>
 </div>
 
-<div class="nav-bar">
-  <div class="nav-item active" id="nav-budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span data-i18n="home">Главная</span></div>
+
   <div class="nav-item" id="nav-analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span data-i18n="analytics">Аналитика</span></div>
   <div class="nav-item" id="nav-envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span data-i18n="envelopes">Конверты</span></div>
   <div class="nav-item" id="nav-banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span data-i18n="banks">Банки</span></div>

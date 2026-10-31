@@ -988,7 +988,7 @@ function renderBattlePass(){
     const label=coupon?t('Купон −')+coupon+'%':(isPro?t('PRO бонус'):t('Монеты')+' +25');
     const status=earned?t('Получено'):(proLocked?t('Нужен PRO'):(available?t('Забрать'):t('Уровень ')+tier));
     const disabled=earned||proLocked||!available;
-    return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">'+t('Уровень ').trimEnd()+' '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':(isPro?'💎':'🪙'))+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):(isPro?t('PRO бонус'):t('Награда сезона')))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\\''+battlePassTrack+'\\','+tier+')">'+status+'</button></div>';
+    return '<div class="battlepass-reward '+(unlocked?'is-unlocked ':'')+(earned?'is-claimed ':'')+(proLocked?'is-locked ':'')+'"><div class="battlepass-tier">'+t('Уровень ').trimEnd()+' '+tier+'</div><div class="battlepass-reward-icon">'+(coupon?'🎟️':(isPro?'💎':'🪙'))+'</div><b>'+label+'</b><small>'+(coupon?t('Награда сезона'):(isPro?t('PRO бонус'):t('Награда сезона')))+'</small><button class="btn btn-sm '+(disabled?'btn-outline':'btn-accent')+'" '+(disabled?'disabled':'')+' onclick="claimBattlePassReward(\''+battlePassTrack+'\','+tier+')">'+status+'</button></div>';
   }).join('');
   const note=document.getElementById('battlePassTrackNote');
   if(note)note.textContent=isPro?(hasPro?t('PRO: купон 10% на каждом из 30 уровней.'):t('Платная дорожка доступна с активной подпиской PRO.')):t('Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.');

@@ -324,9 +324,17 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     </div>
     <div class="row-between">
       <h4 data-i18n="history">История</h4>
-      <input type="text" id="histSearch" class="custom-input" style="margin:0;width:150px;padding:6px;font-size:12px" data-i18n-placeholder="search_placeholder" placeholder="Поиск..." oninput="renderAll()">
+      <input type="search" id="histSearch" class="custom-input history-search" style="margin:0;min-width:0;flex:1" data-i18n-placeholder="search_placeholder" placeholder="Поиск по операциям и категориям..." oninput="renderAll()">
     </div>
-    <select id="histCategoryFilter" class="custom-input history-category-filter" aria-label="Фильтр по категории" onchange="renderAll()"><option value="" id="histCategoryAll">Все категории</option></select>
+    <div class="history-filter-panel">
+      <div class="history-type-filters" id="histTypeFilters">
+        <button type="button" class="history-type-chip active" data-type="all" onclick="setHistoryTypeFilter('all')">Все</button>
+        <button type="button" class="history-type-chip" data-type="expense" onclick="setHistoryTypeFilter('expense')">Расходы</button>
+        <button type="button" class="history-type-chip" data-type="income" onclick="setHistoryTypeFilter('income')">Доходы</button>
+      </div>
+      <div class="history-category-heading"><span>Категории</span><button type="button" id="histClearCategory" onclick="setHistoryCategoryFilter('')">Сбросить</button></div>
+      <div class="history-category-chips" id="histCategoryChips"></div>
+    </div>
     <select id="histMemberFilter" class="custom-input" style="display:none;margin:8px 0;width:100%;padding:8px;font-size:12px" onchange="renderAll()"><option value="">Все участники</option></select>
     <div id="historyContainer" class="history-list"></div>
   </div>

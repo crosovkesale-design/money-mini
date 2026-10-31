@@ -189,3 +189,11 @@ button,.btn,.custom-input,input,select,textarea{transition:border-color .18s,bac
  #tab-pay .pricing-options{grid-template-columns:1fr 1fr!important}
 }
 @media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}}
+
+/* Keep JavaScript tab switching authoritative on desktop */
+@media(min-width:700px){
+ #tab-budget[style*="display: none"]{display:none!important}
+ #tab-budget[style*="display: block"]{display:grid!important}
+ #tab-analytics[style*="display: none"]{display:none!important}
+ #tab-analytics[style*="display: block"]{display:grid!important}
+}

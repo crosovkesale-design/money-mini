@@ -2940,3 +2940,35 @@ if (document.readyState === 'loading') {
 // Refresh after the page is fully loaded or restored from the browser cache.
 window.addEventListener('load', renderAll, { once: true });
 window.addEventListener('pageshow', renderAll);
+
+
+
+const PROMO_REDEEM_TEXT = {
+ ru:{working:"Проверяем промокод…",success:"Промокод активирован! Купон {n}% добавлен в баланс.",invalid:"Промокод не найден или отключён.",used:"Вы уже активировали этот промокод.",expired:"Срок действия промокода истёк.",limit:"Лимит активаций этого промокода исчерпан.",error:"Не удалось активировать промокод. Попробуйте позже.",hint:"Один промокод можно активировать только один раз."},
+ uk:{working:"Перевіряємо промокод…",success:"Промокод активовано! Купон {n}% додано до балансу.",invalid:"Промокод не знайдено або вимкнено.",used:"Ви вже активували цей промокод.",expired:"Термін дії промокоду минув.",limit:"Ліміт активацій цього промокоду вичерпано.",error:"Не вдалося активувати промокод. Спробуйте пізніше.",hint:"Кожен промокод можна активувати лише один раз."},
+ en:{working:"Checking promo code…",success:"Promo code activated! A {n}% coupon was added to your balance.",invalid:"Promo code not found or disabled.",used:"You have already redeemed this promo code.",expired:"This promo code has expired.",limit:"This promo code has reached its redemption limit.",error:"Could not activate the promo code. Please try again.",hint:"Each promo code can only be redeemed once."},
+ de:{working:"Gutscheincode wird geprüft…",success:"Gutscheincode aktiviert! Ein {n}%-Gutschein wurde hinzugefügt.",invalid:"Gutscheincode nicht gefunden oder deaktiviert.",used:"Du hast diesen Gutscheincode bereits eingelöst.",expired:"Dieser Gutscheincode ist abgelaufen.",limit:"Das Einlöselimit wurde erreicht.",error:"Gutscheincode konnte nicht aktiviert werden. Bitte erneut versuchen.",hint:"Jeder Gutscheincode kann nur einmal eingelöst werden."},
+ es:{working:"Comprobando código…",success:"¡Código activado! Se añadió un cupón del {n}%.",invalid:"Código no encontrado o desactivado.",used:"Ya has canjeado este código.",expired:"Este código ha caducado.",limit:"Se alcanzó el límite de usos.",error:"No se pudo activar el código. Inténtalo de nuevo.",hint:"Cada código solo se puede canjear una vez."},
+ fr:{working:"Vérification du code…",success:"Code activé ! Un coupon de {n} % a été ajouté.",invalid:"Code introuvable ou désactivé.",used:"Vous avez déjà utilisé ce code.",expired:"Ce code a expiré.",limit:"La limite d’utilisations est atteinte.",error:"Impossible d’activer le code. Réessayez.",hint:"Chaque code ne peut être utilisé qu’une seule fois."},
+ it:{working:"Verifica del codice…",success:"Codice attivato! Aggiunto un coupon del {n}%.",invalid:"Codice non trovato o disattivato.",used:"Hai già utilizzato questo codice.",expired:"Questo codice è scaduto.",limit:"Limite di utilizzi raggiunto.",error:"Impossibile attivare il codice. Riprova.",hint:"Ogni codice può essere utilizzato una sola volta."},
+ pl:{working:"Sprawdzanie kodu…",success:"Kod aktywowany! Dodano kupon {n}%.",invalid:"Nie znaleziono kodu lub jest wyłączony.",used:"Ten kod został już wykorzystany.",expired:"Ten kod wygasł.",limit:"Osiągnięto limit użyć kodu.",error:"Nie udało się aktywować kodu. Spróbuj ponownie.",hint:"Każdy kod można wykorzystać tylko raz."},
+ tr:{working:"Kod kontrol ediliyor…",success:"Kod etkinleştirildi! Bakiyene %{n} kupon eklendi.",invalid:"Kod bulunamadı veya devre dışı.",used:"Bu kodu zaten kullandın.",expired:"Bu kodun süresi doldu.",limit:"Kod kullanım sınırına ulaştı.",error:"Kod etkinleştirilemedi. Tekrar dene.",hint:"Her kod yalnızca bir kez kullanılabilir."},
+ zh:{working:"正在验证优惠码…",success:"优惠码已激活！已添加 {n}% 折扣券。",invalid:"优惠码不存在或已停用。",used:"你已经兑换过此优惠码。",expired:"此优惠码已过期。",limit:"此优惠码已达到使用上限。",error:"无法激活优惠码，请重试。",hint:"每个优惠码只能兑换一次。"}
+};
+async function redeemPromoCode(){
+ const input=document.getElementById('promoCodeInput'),btn=document.getElementById('promoCodeRedeemBtn'),status=document.getElementById('promoCodeStatus');
+ if(!input||!btn||!status)return;
+ const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0],dict=PROMO_REDEEM_TEXT[lang]||PROMO_REDEEM_TEXT.en;
+ const code=String(input.value||'').trim().toUpperCase();
+ if(code.length<4){status.textContent=dict.invalid;status.className='promo-code-status error';return;}
+ const label=btn.textContent;btn.disabled=true;btn.textContent=dict.working;status.textContent=dict.working;status.className='promo-code-status';
+ try{
+  const response=await fetch('/api/promo-codes/redeem',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':window.Telegram?.WebApp?.initData||''},body:JSON.stringify({code})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){const detail=String(data.detail||'');const key=detail.includes('уже активировали')?'used':detail.includes('истёк')?'expired':detail.includes('Лимит')?'limit':detail.includes('не найден')?'invalid':'error';throw new Error(dict[key]||dict.error);}
+  status.textContent=dict.success.replace('{n}',String(data.reward||10));status.className='promo-code-status success';input.value='';
+  if(typeof refreshCryptoCouponBalance==='function') await refreshCryptoCouponBalance();
+  if(typeof loadRewards==='function') await loadRewards();
+ }catch(error){status.textContent=error.message||dict.error;status.className='promo-code-status error';}
+ finally{btn.disabled=false;btn.textContent=label;}
+}

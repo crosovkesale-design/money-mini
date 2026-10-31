@@ -1941,9 +1941,7 @@ async function exportCSV() {
     showExportToast('Excel-файл отправлен в Telegram');
   } catch (error) {
     console.error('Export error:', error);
-    tg?.showAlert?.(
-      'Не удалось экспортировать файл. Попробуй ещё раз.'
-    );
+    showAppDialog('Не удалось экспортировать файл. Попробуй ещё раз.');
   }
 }
 function openPicker(kind){
@@ -2268,7 +2266,7 @@ async function copyReferralLink(){
   const input=document.getElementById('referralLinkInput');
   if(input&&!copied){input.focus();input.select();}
   if(typeof showToast==='function')showToast(_localizeDialogMessage(message));
-  else if(window.Telegram?.WebApp?.showAlert)window.Telegram.WebApp.showAlert(_localizeDialogMessage(message));
+  else showAppDialog(message);
   else alert(_localizeDialogMessage(message));
 }
 async function shareReferralLink(){

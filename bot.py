@@ -301,8 +301,8 @@ async def refund_ai_call(uid: str, reservation: dict | None) -> None:
 
     await fb.transaction(f"/users/{uid}", update)
 
-async def add_ai_credits(uid: str, amount: int, invoice_id: str = "") -> None:
-    """Atomically add AI credits; a paid invoice can only be applied once."""
+async def add_ai_credits(uid: str, amount: int, invoice_id: str = "") -> bool:
+    """Atomically add AI credits; return True only for the first application of an invoice."""
     amount = max(0, int(amount))
     result = {"added": False}
 
@@ -320,6 +320,7 @@ async def add_ai_credits(uid: str, amount: int, invoice_id: str = "") -> None:
         return user
 
     await fb.transaction(f"/users/{uid}", update)
+    return result["added"]
 
 
 def coupon_percent(coupon_type) -> int:
@@ -3754,9 +3755,9 @@ async def cryptopay_webhook(request: Request):
             return {"ok": True, "already_processed": True, "coupon_purchase": True}
         # Repair a partially completed AI-pack credit if the webhook was interrupted.
         if existing.get("kind") == "ai_pack" and not existing.get("creditsAdded") and ai_pack:
-            await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
+            credits_added = await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
             await fb.patch(payment_path, {"creditsAdded": True})
-            if bot:
+            if credits_added and bot:
                 try:
                     await bot.send_message(int(uid), f"🎉 ИИ-пакет начислен: {ai_pack['credits']} запросов.", parse_mode="HTML")
                 except Exception:
@@ -3774,9 +3775,9 @@ async def cryptopay_webhook(request: Request):
             "currency": asset, "amount": invoice["amount"], "invoiceId": invoice_id,
             "paidAt": now_ms(), "status": "processing",
         })
-        await add_crypto_coupon(uid, purchased_coupon_percent, invoice_id)
+        coupon_added = await add_crypto_coupon(uid, purchased_coupon_percent, invoice_id)
         await fb.patch(payment_path, {"status": "paid", "couponCredited": True})
-        if bot:
+        if coupon_added and bot:
             try:
                 await bot.send_message(
                     int(uid),
@@ -3796,9 +3797,9 @@ async def cryptopay_webhook(request: Request):
             "currency": asset, "amount": invoice["amount"],
             "invoiceId": invoice_id, "paidAt": now, "status": "paid",
         })
-        await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
+        credits_added = await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
         await fb.patch(payment_path, {"creditsAdded": True})
-        if bot:
+        if credits_added and bot:
             try:
                 await bot.send_message(int(uid), f"🎉 <b>ИИ-пакет оплачен!</b>\nНачислено запросов: <b>{ai_pack['credits']}</b>.\nБаланс запросов обновлён.", parse_mode="HTML")
             except Exception:
@@ -3858,7 +3859,7 @@ async def cryptopay_webhook(request: Request):
     except Exception:
         log.exception("Could not award referral coupon for crypto invoice %s", invoice_id)
 
-    if bot:
+    if not activation.get("already") and bot:
         try:
             await bot.send_message(
                 int(uid),

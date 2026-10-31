@@ -2376,9 +2376,35 @@ function renderForecast(){
   }
 }
 
+
+function weeklyDateForTransaction(tx){
+  if(tx&&tx.ts){const d=new Date(Number(tx.ts));if(!Number.isNaN(d.getTime()))return d;}
+  const raw=String(tx&&tx.date||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(raw))return new Date(raw.slice(0,10)+'T12:00:00');
+  const ru=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(ru)return new Date(Number(ru[3]),Number(ru[2])-1,Number(ru[1]),12);
+  return null;
+}
+function renderWeeklySummary(visibleBudget){
+  const incomeNode=document.getElementById('weeklyIncome'),expenseNode=document.getElementById('weeklyExpense'),categoryNode=document.getElementById('weeklyTopCategory');
+  if(!incomeNode||!expenseNode||!categoryNode)return;
+  const end=new Date();end.setHours(23,59,59,999);const start=new Date();start.setDate(start.getDate()-6);start.setHours(0,0,0,0);
+  let income=0,expense=0;const categories={};
+  for(const tx of visibleBudget.history||[]){
+    const date=weeklyDateForTransaction(tx);if(!date||date<start||date>end)continue;
+    const amount=Math.max(0,Number(tx.amount)||0);if(!amount)continue;
+    if(tx.type==='income')income+=amount;
+    else{expense+=amount;const key=String(tx.category||'Другое');categories[key]=(categories[key]||0)+amount;}
+  }
+  const top=Object.entries(categories).sort((x,y)=>y[1]-x[1])[0];
+  incomeNode.textContent='+'+fmtMoney(income);expenseNode.textContent='−'+fmtMoney(expense);
+  categoryNode.textContent=top?tCat(top[0])+' · '+fmtMoney(top[1]):'Пока нет данных';
+}
+
 function renderAll(){
   const visibleBudget=getVisibleBudget(),balance=document.getElementById('totalBalance'),income=document.getElementById('monthIncome'),expense=document.getElementById('monthExpense');
   if(balance)balance.innerText=fmtMoney(visibleBudget.balance);if(income)income.innerText='+'+fmtMoney(visibleBudget.monthIncome);if(expense)expense.innerText='-'+fmtMoney(visibleBudget.monthExpense);
+  renderWeeklySummary(visibleBudget);
   const title=document.getElementById('budgetBalanceTitle');if(title)title.textContent=visibleBudget.isFamily?t('family_balance_title') : t('personal_balance_title');
   const search=document.getElementById('histSearch'),q=search?search.value.toLowerCase():'';
   const memberFilter=document.getElementById('histMemberFilter');

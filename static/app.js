@@ -269,8 +269,7 @@ async function checkBudgetAlerts(){
     const alerts=Array.isArray(data.alerts)?data.alerts:[];
     if(alerts.length){
       const message=alerts.map(item=>String(item.text||'')).join('\n\n');
-      if(tg.showAlert)tg.showAlert(_localizeDialogMessage(message));
-      else if(typeof showToast==='function')showToast(message);
+      showAppDialog(message);
     }
   }catch(error){console.warn('Budget alert check failed:',error);}
   finally{
@@ -543,10 +542,76 @@ function _localizeDialogMessage(message){
   const source=String(message ?? '');
   return _translateAutoText(source) || source;
 }
-const _familyBudgetNativeAlert = window.alert.bind(window);
-const _familyBudgetNativeConfirm = window.confirm.bind(window);
-window.alert = function(message){ return _familyBudgetNativeAlert(_localizeDialogMessage(message)); };
-window.confirm = function(message){ return _familyBudgetNativeConfirm(_localizeDialogMessage(message)); };
+const APP_DIALOG_I18N = {
+  ru:{ok:'Понятно',cancel:'Отмена',confirm:'Подтвердить',title:'Family Budget',question:'Подтверждение'},
+  uk:{ok:'Зрозуміло',cancel:'Скасувати',confirm:'Підтвердити',title:'Family Budget',question:'Підтвердження'},
+  en:{ok:'Got it',cancel:'Cancel',confirm:'Confirm',title:'Family Budget',question:'Confirmation'},
+  de:{ok:'Verstanden',cancel:'Abbrechen',confirm:'Bestätigen',title:'Family Budget',question:'Bestätigung'},
+  es:{ok:'Entendido',cancel:'Cancelar',confirm:'Confirmar',title:'Family Budget',question:'Confirmación'},
+  fr:{ok:'Compris',cancel:'Annuler',confirm:'Confirmer',title:'Family Budget',question:'Confirmation'},
+  it:{ok:'Ho capito',cancel:'Annulla',confirm:'Conferma',title:'Family Budget',question:'Conferma'},
+  pl:{ok:'Rozumiem',cancel:'Anuluj',confirm:'Potwierdź',title:'Family Budget',question:'Potwierdzenie'},
+  tr:{ok:'Anladım',cancel:'İptal',confirm:'Onayla',title:'Family Budget',question:'Onay'},
+  zh:{ok:'知道了',cancel:'取消',confirm:'确认',title:'Family Budget',question:'确认'}
+};
+function appDialogLabels(){
+  const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0];
+  return APP_DIALOG_I18N[lang]||APP_DIALOG_I18N.ru;
+}
+function showAppDialog(message, options={}){
+  const labels=appDialogLabels();
+  const overlay=document.getElementById('appDialogOverlay');
+  if(!overlay)return Promise.resolve();
+  const title=document.getElementById('appDialogTitle');
+  const body=document.getElementById('appDialogMessage');
+  const icon=document.getElementById('appDialogIcon');
+  const actions=document.getElementById('appDialogActions');
+  const isConfirm=options.confirm===true;
+  const text=String(_localizeDialogMessage(message)||'');
+  const isError=/ошиб|error|failed|не удалось|неверн|invalid|erreur|fehler/i.test(text);
+  title.textContent=isConfirm?labels.question:labels.title;
+  body.textContent=text;
+  icon.className='app-dialog-icon '+(isError?'is-error':isConfirm?'is-question':'is-info');
+  icon.innerHTML=isError?'<i class="fa-solid fa-triangle-exclamation"></i>':isConfirm?'<i class="fa-solid fa-circle-question"></i>':'<i class="fa-solid fa-circle-info"></i>';
+  actions.innerHTML='';
+  return new Promise(resolve=>{
+    let settled=false;
+    const finish=value=>{
+      if(settled)return;
+      settled=true;
+      overlay.classList.remove('is-visible');
+      overlay.setAttribute('aria-hidden','true');
+      document.body.classList.remove('app-dialog-open');
+      document.removeEventListener('keydown',onKey);
+      actions.innerHTML='';
+      resolve(value);
+      if(typeof options.onClose==='function')options.onClose();
+    };
+    const onKey=event=>{if(event.key==='Escape'&&!isConfirm)finish(false);};
+    if(isConfirm){
+      const cancel=document.createElement('button');
+      cancel.type='button';cancel.className='app-dialog-btn app-dialog-cancel';cancel.textContent=labels.cancel;
+      cancel.addEventListener('click',()=>finish(false));
+      const confirm=document.createElement('button');
+      confirm.type='button';confirm.className='app-dialog-btn app-dialog-confirm';confirm.textContent=labels.confirm;
+      confirm.addEventListener('click',()=>finish(true));
+      actions.append(cancel,confirm);
+    }else{
+      const ok=document.createElement('button');
+      ok.type='button';ok.className='app-dialog-btn app-dialog-confirm';ok.textContent=labels.ok;
+      ok.addEventListener('click',()=>finish(true));
+      actions.append(ok);
+    }
+    overlay.onclick=event=>{if(event.target===overlay&&!isConfirm)finish(false);};
+    document.addEventListener('keydown',onKey);
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.classList.add('app-dialog-open');
+    const first=actions.querySelector('button');if(first)first.focus();
+  });
+}
+function showAppConfirm(message){return showAppDialog(message,{confirm:true});}
+window.alert=function(message){showAppDialog(message);};
 
 function _translateHardcodedNode(node){
   if(!node || node.nodeType !== 3) return;
@@ -730,12 +795,7 @@ function requestProFeature(feature){
   const message = t('pro_feature_message').replace('{feature}',localizedFeature);
   const tg = window.Telegram?.WebApp;
   const goToPay = () => { window.location.href = '?screen=pay'; };
-  if(tg?.initData && tg.showAlert){
-    tg.showAlert(_localizeDialogMessage(message), goToPay);
-  } else {
-    alert(message);
-    goToPay();
-  }
+  showAppDialog(message,{onClose:goToPay});
 }
 
 let pendingReceiptDraft = null;
@@ -878,7 +938,7 @@ function editReceipt(id){
 async function deleteReceipt(id){
   const tx = budgetMode==='family' ? familyTransactions.find(item=>String(item.id)===String(id)) : appData.history.find(item=>String(item.id)===String(id));
   if(!tx || !tx.receipt) return;
-  if(!window.confirm(receiptUi('removeConfirm'))) return;
+  if(!await showAppConfirm(receiptUi('removeConfirm'))) return;
   try{
     if(budgetMode==='family' && currentFamily){
       await familyRequest('/api/family/transactions/'+encodeURIComponent(String(id)),'PATCH',{receipt:null});
@@ -1602,7 +1662,7 @@ async function deleteTx(id){
   if(budgetMode==='family' && currentFamily){
     const tx = familyTransactions.find(item => String(item.id) === String(id));
     if(!tx) return;
-    if(!window.confirm('Удалить эту семейную операцию?')) return;
+    if(!await showAppConfirm('Удалить эту семейную операцию?')) return;
     try{
       await familyRequest('/api/family/transactions/' + encodeURIComponent(String(id)), 'DELETE');
       familyTransactions = familyTransactions.filter(item => String(item.id) !== String(id));
@@ -1615,7 +1675,7 @@ async function deleteTx(id){
   }
   const tx = appData.history.find(x => String(x.id) === String(id));
   if(!tx) return;
-  if(!window.confirm('Удалить эту операцию?')) return;
+  if(!await showAppConfirm('Удалить эту операцию?')) return;
   if(tx.type === 'expense'){ appData.balance += Number(tx.amount||0); }
   else { appData.balance -= Number(tx.amount||0); }
   if(isTransactionInCurrentMonth(tx)){
@@ -1640,7 +1700,7 @@ function openEnvelopeEditor(id){
 async function deleteEnvelope(id){
   const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;
   const item=list.find(x=>String(x.id)===String(id));if(!item)return;
-  if(!window.confirm(t('dialog_delete_envelope').replace('{name}',String(item.name||''))))return;
+  if(!await showAppConfirm(t('dialog_delete_envelope').replace('{name}',String(item.name||''))))return;
   try{
     if(budgetMode==='family'&&currentFamily){
       await familyRequest('/api/family/envelopes/'+encodeURIComponent(String(id)),'DELETE');
@@ -1689,7 +1749,7 @@ async function deleteBank(id){
   const familyMode=budgetMode==='family'&&currentFamily;
   const bankItems=familyMode?familyBanks:appData.banks;
   const item=bankItems.find(x=>String(x.id)===String(id));if(!item)return;
-  if(!window.confirm(t('dialog_delete_bank').replace('{name}',String(item.name||''))))return;
+  if(!await showAppConfirm(t('dialog_delete_bank').replace('{name}',String(item.name||''))))return;
   try{
     if(familyMode){
       await familyRequest('/api/family/banks/'+encodeURIComponent(String(id)),'DELETE');
@@ -1819,10 +1879,10 @@ function saveRecurring(){
   syncPaymentReminders();
 }
 
-function deleteRecurring(id){
+async function deleteRecurring(id){
   const items=ensureRecurringIds();
   const item=items.find(entry=>String(entry.id)===String(id));
-  if(!item||!confirm(t('delete_payment_confirm').replace('{name}',String(item.name||'').replace(/[<>]/g,''))))return;
+  if(!item||!await showAppConfirm(t('delete_payment_confirm').replace('{name}',String(item.name||'').replace(/[<>]/g,''))))return;
   appData.recurring=items.filter(entry=>String(entry.id)!==String(id));
   saveData();renderAll();syncPaymentReminders();
 }
@@ -2777,11 +2837,11 @@ function saveFinancialItem(){
   renderFinancialOverview();
 }
 
-function deleteFinancialItem(id){
+async function deleteFinancialItem(id){
   const items=ensureFinancialItems();
   const item=items.find(entry=>String(entry.id)===String(id));
   if(!item)return;
-  if(!confirm(t('delete_financial_confirm').replace('{name}',String(item.name||'').replace(/[<>]/g,''))))return;
+  if(!await showAppConfirm(t('delete_financial_confirm').replace('{name}',String(item.name||'').replace(/[<>]/g,''))))return;
   appData.financialItems=items.filter(entry=>String(entry.id)!==String(id));
   saveData();
   renderFinancialOverview();

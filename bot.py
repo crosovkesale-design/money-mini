@@ -224,9 +224,9 @@ def family_member_limit(user: dict) -> int:
         sub_end *= 1000
     if sub_end <= now_ms():
         return 0
-    if tariff in {"pro1", "pro12"}:
+    if tariff in {"pro", "pro1", "pro12"}:
         return 6
-    if tariff in {"trial", "1month", "3months", "6months", "12months"}:
+    if tariff in {"trial", "basic", "basic1", "basic3", "basic6", "basic12", "1month", "3months", "6months", "12months"}:
         return 4
     return 0
 

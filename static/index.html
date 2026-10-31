@@ -305,6 +305,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px" data-i18n="forecast">Прогноз</div>
       <div id="forecastBody" style="font-size:12px"></div>
     </div>
+    <section class="card weekly-summary-card" id="weeklySummaryCard">
+      <div class="weekly-summary-head"><div><b>📊 Неделя в цифрах</b><small>Последние 7 дней</small></div><span class="weekly-summary-badge">7 ДНЕЙ</span></div>
+      <div class="weekly-summary-grid"><div><small>Доходы</small><strong id="weeklyIncome">+0</strong></div><div><small>Расходы</small><strong id="weeklyExpense">−0</strong></div></div>
+      <div class="weekly-summary-foot"><span>Главная категория расходов</span><b id="weeklyTopCategory">Пока нет данных</b></div>
+    </section>
 
     <div class="actions-grid">
       <button class="btn btn-success" onclick="openTransactionModal('income')" data-i18n="btn_income">Доход</button>

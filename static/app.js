@@ -1194,7 +1194,7 @@ function renderBattlePass(){
   if(note)note.textContent=isPro?(hasPro?t('PRO: купон 10% на каждом из 30 уровней.'):t('Платная дорожка доступна с активной подпиской PRO.')):t('Бесплатная дорожка: 30 уровней, купоны на уровнях 5, 10, 15, 20, 25 и 30.');
 }
 async function claimBattlePassReward(track,tier){
-  try{const tg=window.Telegram?.WebApp,response=await fetch('/api/battlepass/claim',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg?.initData||''},body:JSON.stringify({track,tier})}),data=await response.json();if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду');battlePassStats.claimed=data.claimed||battlePassStats.claimed;referralStats.coupons10=Number(referralStats.coupons10||0)+Number(data.couponsAdded||0);renderReferralStats();updateCouponSelector();tg?.showAlert?.(_localizeDialogMessage(t('reward_claimed')));}catch(e){const tg=window.Telegram?.WebApp;if(tg?.showAlert)tg.showAlert(_localizeDialogMessage(e.message||t('reward_claim_error')));else alert(e.message||'Ошибка получения награды');}
+  try{const tg=window.Telegram?.WebApp,response=await fetch('/api/battlepass/claim',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg?.initData||''},body:JSON.stringify({track,tier})}),data=await response.json();if(!response.ok)throw new Error(data.detail||'Не удалось забрать награду');battlePassStats.claimed=data.claimed||battlePassStats.claimed;referralStats.coupons10=Number(referralStats.coupons10||0)+Number(data.couponsAdded||0);renderReferralStats();updateCouponSelector();showAppDialog(t('reward_claimed'));}catch(e){const tg=window.Telegram?.WebApp;showAppDialog(e.message||t('reward_claim_error'));}
 }
 
 function selectCoupon(value){

@@ -244,3 +244,72 @@ button{ -webkit-tap-highlight-color:transparent}
 [data-theme="light"] .custom-input,[data-theme="light"] #tab-settings .select-fake{background:#f7f5fb!important;color:#211d2d!important}
 [data-theme="light"] .nav-item{color:#777181!important}
 @media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+
+/* RUVYQO NEO 2 — rebuilt app navigation and screen composition */
+:root{--neo-bg:#0b0d13;--neo-panel:#151923;--neo-panel-2:#1c2130;--neo-line:rgba(177,153,255,.17)}
+.container{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
+.neo-bottom-nav{
+ position:fixed!important;z-index:500!important;left:50%!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;width:min(calc(100% - 24px),620px)!important;
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important;
+ padding:9px 8px!important;border:1px solid rgba(190,173,255,.2)!important;border-radius:23px!important;
+ background:rgba(18,20,29,.91)!important;box-shadow:0 18px 55px #000a, inset 0 1px #ffffff12!important;
+ backdrop-filter:blur(26px) saturate(150%)!important;-webkit-backdrop-filter:blur(26px) saturate(150%)!important
+}
+.neo-nav-item{min-width:0!important;min-height:53px!important;padding:7px 2px!important;border:0!important;border-radius:16px!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;
+ background:transparent!important;color:#888b9b!important;font-size:9px!important;font-weight:700!important;white-space:nowrap!important}
+.neo-nav-item i{font-size:17px!important;line-height:1!important}
+.neo-nav-item.active{color:#d8caff!important;background:linear-gradient(180deg,#8055ff2b,#8055ff0b)!important;box-shadow:inset 0 0 0 1px #a78bfa26!important}
+.neo-nav-item.active i{color:#b99cff!important;filter:drop-shadow(0 0 9px #8055ff88)}
+.neo-nav-primary{position:relative!important}
+.neo-nav-primary:before{content:"";position:absolute;inset:1px 7px;border-radius:15px;background:#8055ff0b;z-index:-1}
+#tab-budget{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+#tab-budget>.balance-card{min-height:270px!important;padding:26px 22px 20px!important;border-radius:30px!important}
+#tab-budget>.balance-card .balance-val{font-size:clamp(38px,11vw,58px)!important}
+#tab-budget>.row-between{margin-top:14px!important;padding:3px 2px}
+#tab-budget>.row-between h4{font-size:23px!important}
+#tab-budget .history-filter-panel{margin-top:0!important}
+#tab-analytics>h4{font-size:25px!important;letter-spacing:-.055em!important;margin:6px 0 18px!important}
+#tab-analytics .help-inline-button{float:right;margin-top:-49px!important}
+#tab-analytics .chart-card{padding:18px!important;margin:0 0 14px!important;min-height:245px!important;border-radius:25px!important;
+ border:1px solid var(--neo-line)!important;background:linear-gradient(145deg,#1a1d29,#12151d)!important;box-shadow:0 18px 45px #0003!important}
+#tab-analytics .chart-card canvas{max-height:230px!important}
+#tab-envelopes>.row-between,#tab-banks>.row-between{padding:8px 2px 15px!important;align-items:center!important}
+#tab-envelopes>.row-between h4,#tab-banks>.row-between h4{font-size:25px!important;letter-spacing:-.055em!important}
+#envelopesList,#banksList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+#envelopesList>* ,#banksList>*{min-width:0!important;margin:0!important;border-radius:23px!important;border:1px solid var(--neo-line)!important;
+ background:linear-gradient(145deg,#1c2030,#141720)!important;box-shadow:0 15px 35px #0003!important}
+#tab-banks .financial-overview-card{padding:20px!important;border-radius:27px!important;background:linear-gradient(145deg,#242039,#171a25)!important;border:1px solid #a78bfa35!important}
+#tab-banks .financial-net-worth{padding:18px!important;margin:14px 0!important;border-radius:19px!important;background:#8055ff18!important}
+#tab-banks .financial-net-worth strong{font-size:30px!important;letter-spacing:-.05em}
+#tab-ai .finance-assistant-card{padding:20px!important;border-radius:28px!important;background:linear-gradient(145deg,#211d32,#151923)!important;border:1px solid #a78bfa35!important}
+#tab-ai .finance-assistant-heading h4{font-size:22px!important;letter-spacing:-.04em}
+#tab-ai .finance-assistant-messages{min-height:260px!important;border-radius:20px!important;background:#0d1018!important;border:1px solid #ffffff0e!important}
+#tab-ai .finance-assistant-form textarea{border-radius:17px!important;background:#202432!important}
+#tab-referrals .referral-hero,#tab-referrals .battlepass-card{border-radius:27px!important;border:1px solid var(--neo-line)!important;background:linear-gradient(145deg,#211d32,#151923)!important}
+#tab-referrals .referral-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+#tab-referrals .referral-stat{padding:15px!important;border-radius:18px!important;background:#ffffff07!important;border:1px solid #ffffff0c!important}
+#tab-settings>.card{padding:19px!important;margin-bottom:13px!important;border-radius:24px!important;border:1px solid var(--neo-line)!important;background:linear-gradient(145deg,#191d29,#13161e)!important}
+#tab-settings h5{font-size:17px!important;letter-spacing:-.025em!important;margin-bottom:15px!important}
+#tab-settings .select-fake{min-height:49px!important;border-radius:15px!important;background:#222635!important;border:1px solid #ffffff12!important}
+#tab-settings .seg{padding:4px!important;border-radius:14px!important;background:#0d1018!important}
+#tab-settings .seg-btn.active{background:#8055ff!important;border-radius:11px!important}
+#tab-pay .pricing-hero h2{font-size:32px!important;letter-spacing:-.06em!important}
+#tab-pay .pricing-group,#tab-pay .coupon-panel{border-radius:26px!important;overflow:hidden}
+#tab-pay .price-option{border-radius:20px!important;background:#1a1e2a!important;border:1px solid var(--neo-line)!important}
+.tab-content:not(#tab-budget){padding-top:8px!important}
+button,input,select,textarea{transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+button:active{transform:scale(.975)}
+@media(min-width:680px){
+ .neo-bottom-nav{bottom:18px!important}
+ #tab-budget>.balance-card{min-height:300px!important}
+ #envelopesList,#banksList{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:390px){
+ .neo-nav-item{font-size:8px!important}
+ .neo-nav-item i{font-size:16px!important}
+ #envelopesList,#banksList{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}

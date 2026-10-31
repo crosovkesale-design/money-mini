@@ -4627,6 +4627,63 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
     return {"ok": True, "rewards": granted, "message": "Промокод активирован! Все награды начислены."}
 
 
+@app.get("/api/admin/revenue")
+async def api_admin_revenue(x_admin_key: str = Header(default="")):
+    """Aggregate confirmed payment records; never infer revenue from user subscription fields."""
+    if not admin_key_ok(x_admin_key):
+        raise HTTPException(status_code=401, detail="Неверный ключ администратора")
+
+    raw = await fb.get("/payments") or {}
+    if not isinstance(raw, dict):
+        raw = {}
+
+    now_local = datetime.now(KYIV)
+    today_start = int(now_local.replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+    month_start = int(now_local.replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+
+    periods = {
+        "today": {"byCurrency": {}, "count": 0},
+        "month": {"byCurrency": {}, "count": 0},
+        "all": {"byCurrency": {}, "count": 0},
+    }
+    kinds = {"subscription": 0, "coupon_purchase": 0, "ai_pack": 0, "other": 0}
+
+    for provider, records in raw.items():
+        if not isinstance(records, dict):
+            continue
+        for payment_id, payment in records.items():
+            if not isinstance(payment, dict) or str(payment.get("status") or "").lower() != "paid":
+                continue
+            try:
+                amount = float(payment.get("amount") or 0)
+                paid_at = int(payment.get("paidAt") or 0)
+            except (TypeError, ValueError):
+                continue
+            if not math.isfinite(amount) or amount <= 0 or paid_at <= 0:
+                continue
+            currency = str(payment.get("currency") or "UNKNOWN").upper()[:12]
+            kind = str(payment.get("kind") or "subscription")
+            if kind not in kinds:
+                kind = "other"
+            kinds[kind] += 1
+            for key, start in (("all", 0), ("month", month_start), ("today", today_start)):
+                if paid_at < start:
+                    continue
+                period = periods[key]
+                period["count"] += 1
+                period["byCurrency"][currency] = round(
+                    float(period["byCurrency"].get(currency) or 0) + amount, 2
+                )
+
+    return {
+        "ok": True,
+        "timezone": "Europe/Kyiv",
+        "generatedAt": now_ms(),
+        "periods": periods,
+        "kinds": kinds,
+    }
+
+
 @app.get("/api/admin/activity")
 async def api_admin_activity(x_admin_key: str = Header(default="")):
     if not admin_key_ok(x_admin_key):

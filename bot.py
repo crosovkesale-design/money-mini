@@ -4459,8 +4459,13 @@ async def api_budget_alerts_check(request: Request, uid: str = Depends(current_u
         log.exception("Budget alert state update failed for %s", scope)
         raise HTTPException(502, "Не удалось проверить уведомления бюджета.")
     if bot:
+        # The user who triggered the check receives the in-app Telegram WebApp
+        # alert from the API response. Send bot messages only to the other
+        # family members, avoiding duplicate notifications for the initiator.
         for alert in new_alerts:
             for recipient in recipients:
+                if str(recipient) == str(uid):
+                    continue
                 try:
                     await bot.send_message(int(recipient), alert["text"], parse_mode="HTML")
                 except Exception:

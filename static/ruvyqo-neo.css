@@ -313,3 +313,9 @@ button:active{transform:scale(.975)}
  #envelopesList,#banksList{grid-template-columns:1fr!important}
 }
 @media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+
+/* Navigation preference: keep navigation at the top; no fixed bottom bar. */
+.neo-bottom-nav{display:none!important}
+.container{padding-bottom:30px!important}
+.app-topbar{position:sticky!important;top:calc(7px + env(safe-area-inset-top))!important}

@@ -2498,7 +2498,7 @@ function renderAll(){
     if(historyCategoryFilter&&!categoryCounts.has(historyCategoryFilter))historyCategoryFilter='';
     const allLabel=(APP_SHELL_I18N[filterLang]||APP_SHELL_I18N.en).allCategories;
     categoryChips.innerHTML='<button type="button" class="history-category-chip '+(!historyCategoryFilter?'active':'')+'" onclick="setHistoryCategoryFilter(\'\')">'+allLabel+' <span>'+categorySource.length+'</span></button>'+
-      categories.map(cat=>'<button type="button" class="history-category-chip '+(historyCategoryFilter===cat?'active':'')+'" onclick="setHistoryCategoryFilter('+JSON.stringify(cat).replace(/</g,'\\u003c')+')">'+bankEscape(tCat(cat))+' <span>'+categoryCounts.get(cat)+'</span></button>').join('');
+      categories.map(cat=>'<button type="button" class="history-category-chip '+(historyCategoryFilter===cat?'active':'')+'" onclick="setHistoryCategoryFilter('+bankEscape(JSON.stringify(cat))+')">'+bankEscape(tCat(cat))+' <span>'+categoryCounts.get(cat)+'</span></button>').join('');
   }
   const selectedMember=memberFilter&&visibleBudget.isFamily?memberFilter.value:'';
   const filtered=allHistory.filter(tx => {

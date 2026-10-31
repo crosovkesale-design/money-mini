@@ -1975,3 +1975,23 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.9;
 .app-dialog-cancel{background:var(--surface);color:var(--text)}
 body.app-dialog-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.app-dialog-overlay,.app-dialog-card{transition:none}}
+
+
+/* Polished transaction editor controls */
+.edit-type-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;margin:0 0 15px;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+.edit-type-option{display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:10px 12px;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.edit-type-option i{font-size:15px}
+.edit-type-option:active{transform:scale(.98)}
+.edit-type-option.is-expense.active{color:#fff;background:linear-gradient(135deg,#f05b75,#d83f65);box-shadow:0 5px 16px rgba(216,63,101,.22)}
+.edit-type-option.is-income.active{color:#fff;background:linear-gradient(135deg,#27bd91,#159b78);box-shadow:0 5px 16px rgba(21,155,120,.22)}
+.edit-date-field,.edit-envelope-field{position:relative;display:flex;align-items:center;margin:0 0 13px}
+.edit-date-field>i,.edit-envelope-field>i:first-child{position:absolute;z-index:2;left:14px;color:var(--accent-2);font-size:16px;pointer-events:none}
+.edit-date-field input[type="date"],.edit-envelope-field select{width:100%;min-width:0;margin:0;padding:13px 42px 13px 43px!important;min-height:50px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(145deg,var(--surface),var(--card));color:var(--text);font:inherit;font-size:14px;font-weight:650;box-shadow:0 4px 14px rgba(0,0,0,.06);color-scheme:dark}
+[data-theme="light"] .edit-date-field input[type="date"],[data-theme="light"] .edit-envelope-field select{color-scheme:light}
+.edit-date-field input[type="date"]:focus,.edit-envelope-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,124,255,.15)}
+.edit-date-hint{display:none}
+.edit-envelope-field select{appearance:none;-webkit-appearance:none;cursor:pointer}
+.edit-envelope-chevron{position:absolute;right:15px;color:var(--muted);font-size:12px;pointer-events:none}
+.edit-envelope-field.is-disabled{opacity:.48}
+.edit-envelope-field.is-disabled select{cursor:not-allowed}
+@media(max-width:360px){.edit-type-option{font-size:12px;gap:6px;padding:9px 5px}}

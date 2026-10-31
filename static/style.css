@@ -1883,3 +1883,27 @@ select:focus-visible {
 .promo-code-status.error{color:#ff7777}
 #promoCodeRedeemBtn:disabled{opacity:.55;pointer-events:none}
 @media(max-width:380px){.promo-redeem-row{flex-direction:column}.promo-redeem-row .btn{width:100%}}
+
+
+/* Compact top navigation drawer */
+.app-topbar{position:sticky;top:0;z-index:120;display:flex;align-items:center;gap:12px;margin:0 -16px 14px;padding:10px 16px;background:var(--surface-strong);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.menu-trigger{width:42px;height:42px;flex:0 0 42px;border:1px solid var(--border);border-radius:13px;background:var(--card);color:var(--text);font-size:18px;cursor:pointer}
+.app-topbar-title{display:flex;flex:1;min-width:0;flex-direction:column;line-height:1.2}
+.app-topbar-title b{font-size:15px;font-weight:850;letter-spacing:.01em}
+.app-topbar-title small{margin-top:3px;color:var(--muted);font-size:11px}
+.topbar-tariffs{border:1px solid rgba(145,112,255,.3);border-radius:12px;padding:9px 11px;background:rgba(145,112,255,.12);color:var(--text);font-size:12px;font-weight:750;white-space:nowrap}
+.app-menu-backdrop{position:fixed;inset:0;z-index:300;visibility:hidden;opacity:0;background:rgba(3,6,18,.58);backdrop-filter:blur(3px);transition:opacity .22s,visibility .22s}
+.app-drawer{position:fixed;z-index:301;top:0;bottom:0;left:0;width:min(82vw,330px);padding:calc(18px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;background:var(--surface-strong);border-right:1px solid var(--border);box-shadow:18px 0 50px rgba(0,0,0,.25);transform:translateX(-105%);transition:transform .24s ease;overflow-y:auto}
+body.menu-open .app-menu-backdrop{visibility:visible;opacity:1}
+body.menu-open .app-drawer{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 20px;border-bottom:1px solid var(--border)}
+.drawer-head div{display:flex;flex-direction:column;gap:5px}.drawer-head b{font-size:18px}.drawer-head small,.drawer-foot{color:var(--muted);font-size:11px}
+.drawer-head button{width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:24px}
+.drawer-nav{display:flex;flex-direction:column;gap:6px;padding-top:16px}
+.drawer-nav button{display:flex;align-items:center;gap:14px;width:100%;padding:14px 13px;border:1px solid transparent;border-radius:13px;background:transparent;color:var(--text);text-align:left;font-size:14px;font-weight:700}
+.drawer-nav button i{width:22px;color:var(--accent-2);font-size:17px;text-align:center}
+.drawer-nav button.active{border-color:rgba(145,112,255,.3);background:rgba(145,112,255,.13)}
+.drawer-foot{margin-top:auto;padding:20px 5px 4px}.drawer-foot span{opacity:.75}
+.history-category-filter{width:100%;margin:8px 0;padding:9px 10px;font-size:12px}
+.container{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:600px){.app-topbar{margin-left:0;margin-right:0;border:1px solid var(--border);border-radius:16px}}

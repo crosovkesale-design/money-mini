@@ -4189,13 +4189,16 @@ async def api_admin_activity(x_admin_key: str = Header(default="")):
     raw_users = await fb.get("/users") or {}
     if not isinstance(raw_users, dict):
         raw_users = {}
+    all_logs = await fb.get("/activityLogs") or {}
+    if not isinstance(all_logs, dict):
+        all_logs = {}
     ordered = sorted(
         [(str(uid), u) for uid, u in raw_users.items() if isinstance(u, dict)],
         key=lambda item: int(item[1].get("lastSeen") or 0), reverse=True
     )[:300]
     result = []
     for uid, user in ordered:
-        events = await fb.get(f"/activityLogs/{uid}") or {}
+        events = all_logs.get(uid) or {}
         if isinstance(events, dict):
             events = sorted(
                 [dict(v, id=k) for k, v in events.items() if isinstance(v, dict)],

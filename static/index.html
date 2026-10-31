@@ -70,6 +70,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <div class="app-topbar" id="appTopbar">
   <button class="menu-trigger" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
   <div class="app-topbar-title"><b>Family Budget</b><small id="currentSectionLabel">Главная</small></div>
+  <button type="button" class="topbar-help" onclick="openHelp()" aria-label="Справка">?</button>
   <button type="button" class="topbar-tariffs" onclick="window.location.href='?screen=pay'">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
 </div>
 <div class="app-menu-backdrop" id="appMenuBackdrop" onclick="closeAppMenu()"></div>

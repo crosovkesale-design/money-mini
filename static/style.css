@@ -1995,3 +1995,30 @@ body.app-dialog-open{overflow:hidden}
 .edit-envelope-field.is-disabled{opacity:.48}
 .edit-envelope-field.is-disabled select{cursor:not-allowed}
 @media(max-width:360px){.edit-type-option{font-size:12px;gap:6px;padding:9px 5px}}
+
+
+/* Unified Family Budget popup and bottom-sheet system */
+.modal{opacity:0;transition:opacity .2s ease}
+.modal.active{opacity:1}
+.modal-content{transform:translateY(18px) scale(.99);transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease;border:1px solid var(--border);background:var(--surface-strong);box-shadow:0 22px 70px rgba(0,0,0,.28)}
+.modal.active .modal-content{transform:translateY(0) scale(1)}
+.modal-header{position:sticky;top:-22px;z-index:3;margin:-22px -18px 16px;padding:18px 18px 13px;background:var(--surface-strong);border-bottom:1px solid var(--border);border-radius:25px 25px 0 0}
+.modal-header h3{font-size:17px;font-weight:850;letter-spacing:-.02em}
+.modal-close{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid var(--border);border-radius:11px;background:var(--surface);font-size:22px;line-height:1}
+.modal-content input:not([type="checkbox"]):not([type="radio"]),.modal-content select,.modal-content textarea{border-radius:13px}
+.modal-content .btn{min-height:44px;border-radius:13px;font-weight:750}
+.app-dialog-overlay{z-index:11000;padding:18px;background:rgba(4,7,20,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.app-dialog-card{max-width:380px;padding:25px 21px 19px;border-radius:26px;background:var(--surface-strong);border-color:rgba(150,150,190,.22);box-shadow:0 28px 90px rgba(0,0,0,.45)}
+.app-dialog-icon{width:62px;height:62px;border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.app-dialog-actions{gap:10px}
+.app-dialog-btn{min-height:48px;border-radius:15px;font-size:13px}
+.app-dialog-confirm{background:linear-gradient(135deg,var(--accent),#7162e8)}
+.app-dialog-cancel{background:var(--surface);border-color:var(--border)}
+body.app-dialog-open .modal.active{pointer-events:none}
+@media(max-width:599px){
+  .modal{align-items:flex-end;padding:0}
+  .modal-content{max-height:min(88dvh,760px);padding:20px 16px calc(18px + env(safe-area-inset-bottom));border-radius:25px 25px 0 0;border-bottom:0}
+  .modal-header{top:-20px;margin:-20px -16px 15px;padding:17px 16px 12px;border-radius:24px 24px 0 0}
+  .app-dialog-card{width:min(100%,370px);margin:auto}
+}
+@media(prefers-reduced-motion:reduce){.modal,.modal-content{transition:none}}

@@ -340,7 +340,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   </div>
 
   <div id="tab-analytics" class="tab-content" style="display:none">
-    <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4>
+    <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4><button type="button" class="help-inline-button" onclick="openHelp('analytics')" aria-label="Справка по аналитике">?</button>
     <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
     <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
     <div id="proInsightsCard" class="pro-insights-card"></div>
@@ -375,7 +375,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-envelopes" class="tab-content" style="display:none">
     <div class="row-between">
-      <h4 data-i18n="envelopes">Конверты</h4>
+      <h4 data-i18n="envelopes">Конверты</h4><button type="button" class="help-inline-button" onclick="openHelp('envelopes')" aria-label="Справка по конвертам">?</button>
       <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')">+</button>
     </div>
     <div id="envelopesList"></div>
@@ -398,7 +398,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div id="financialItemsList" class="financial-items-list"></div>
     </section>
     <div class="row-between">
-      <h4 id="banksSectionTitle">Копилки и цели</h4>
+      <h4 id="banksSectionTitle">Копилки и цели</h4><button type="button" class="help-inline-button" onclick="openHelp('savings')" aria-label="Справка по копилкам">?</button>
       <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')">+</button>
     </div>
     <div id="banksList"></div>
@@ -406,7 +406,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-referrals" class="tab-content" style="display:none">
     <section class="referral-hero card">
-      <div class="referral-hero-top"><div><div class="eyebrow">FAMILY BUDGET · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
+      <div class="referral-hero-top"><div><div class="eyebrow">FAMILY BUDGET · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><button type="button" class="help-inline-button" onclick="openHelp('referrals')" aria-label="Справка по рефералам">?</button><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
       <label class="lbl" for="referralLinkInput">Твоя реферальная ссылка</label>
       <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button><button class="btn btn-outline btn-sm" type="button" onclick="shareReferralLink()">Поделиться</button></div>
       <div class="referral-stats-grid">
@@ -484,13 +484,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     </div>
 
     <div class="card">
-      <h5 data-i18n="recurring">Автоплатежи</h5>
+      <h5 data-i18n="recurring">Автоплатежи</h5><button type="button" class="help-inline-button" onclick="openHelp('recurring')" aria-label="Справка по автоплатежам">?</button>
       <div id="recurringList" class="muted" style="margin-bottom:8px" data-i18n="no_rules">Правил нет</div>
       <button class="btn btn-accent btn-sm" style="width:100%" onclick="openModal('modalAddRecurring')" data-i18n="add_rule">Добавить</button>
     </div>
 
     <div class="card family-card">
-      <h5 data-i18n="family">Семья</h5>
+      <h5 data-i18n="family">Семья</h5><button type="button" class="help-inline-button" onclick="openHelp('family')" aria-label="Справка по семье">?</button>
       <div id="familyStatus" class="family-status" aria-live="polite">Проверяем семейную группу…</div>
 
       <div id="familyCurrentInfo" class="family-current-info" style="display:none">
@@ -562,7 +562,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div class="modal-content">
     <div class="modal-header"><h3 id="txModalTitle"></h3><span class="modal-close" onclick="closeModal('modalTransaction')">×</span></div>
     <div class="row-between" style="margin-bottom:4px">
-      <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label>
+      <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label><button type="button" class="help-inline-button" onclick="openHelp('categories')" aria-label="Справка по категориям">?</button>
       <button id="customCategoryOpenBtn" class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px;display:flex;align-items:center;gap:5px" onclick="openCustomCategoryModal()"><span data-i18n="custom_cat">Своя</span><span id="customCategoryProTag" class="pro-mini-tag">PRO</span></button>
     </div>
     <div id="txEnvelopeWrap" style="display:none;margin:10px 0 14px;padding:12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)">
@@ -580,7 +580,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     </div>
     <input type="number" id="txAmountInput" class="custom-input" data-i18n="amount_lbl" placeholder="Сумма">
     <input type="text" id="txCommentInput" class="custom-input" data-i18n="comment_lbl" placeholder="Комментарий">
-    <div class="receipt-action-row">
+    <div class="row-between"><span class="lbl">Чеки</span><button type="button" class="help-inline-button" onclick="openHelp('receipts')" aria-label="Справка по чекам">?</button></div><div class="receipt-action-row">
       <button type="button" class="btn btn-outline receipt-action" onclick="openReceiptEntry()"><i class="fa-solid fa-receipt"></i><span>Ввести чек вручную</span><small>Basic</small></button>
       <button type="button" class="btn btn-outline receipt-action receipt-photo-action" onclick="openReceiptPhoto()"><i class="fa-solid fa-camera"></i><span>Чек по фото</span><small>1 ИИ-запрос</small></button>
     </div>

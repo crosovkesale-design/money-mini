@@ -1,0 +1,191 @@
+/* RUVYQO LAYOUT V3 — structural redesign, not a recolor */
+:root{
+ --v3-bg:#0a0e12;--v3-panel:#121a20;--v3-panel2:#18232a;
+ --v3-ink:#f2f0e9;--v3-muted:#929da0;--v3-line:rgba(225,211,180,.14);
+ --v3-gold:#d7bd87;--v3-green:#79c9a5;--v3-red:#e48b91;
+}
+html,body{background:var(--v3-bg)!important}
+body{
+ background:
+ radial-gradient(ellipse at 82% 0%,rgba(190,158,99,.10),transparent 34%),
+ linear-gradient(180deg,#0c1217 0%,#090d11 70%)!important;
+ color:var(--v3-ink)!important;
+}
+.container{max-width:520px!important;padding:0 17px 38px!important}
+.app-topbar{
+ position:sticky!important;top:0!important;margin:0 -17px 23px!important;
+ min-height:76px!important;padding:13px 18px!important;gap:13px!important;
+ background:rgba(10,15,19,.91)!important;border:0!important;border-bottom:1px solid var(--v3-line)!important;
+ border-radius:0!important;backdrop-filter:blur(22px)!important;
+}
+.app-topbar:before{
+ content:"R"!important;width:43px!important;height:43px!important;flex-basis:43px!important;
+ display:grid!important;place-items:center!important;border-radius:14px 5px 14px 5px!important;
+ background:linear-gradient(145deg,#f0dfb6,#aa8954)!important;color:#1a1b18!important;
+ font:700 25px Georgia,serif!important;box-shadow:0 8px 24px #c6a66a25!important;
+}
+.menu-trigger{order:-1!important;width:35px!important;height:38px!important;flex-basis:35px!important;
+ border:0!important;background:transparent!important;border-radius:9px!important;font-size:17px!important}
+.app-topbar-title{gap:3px!important}
+.app-topbar-title b{font-size:13px!important;letter-spacing:.24em!important}
+.app-topbar-title small{font-size:10px!important;letter-spacing:.1em!important;text-transform:uppercase}
+.topbar-help{width:34px!important;height:34px!important;border-radius:50%!important}
+.topbar-tariffs{min-height:37px!important;padding:0 12px!important;border-radius:6px 13px 6px 13px!important;font-size:11px!important}
+.app-drawer{width:min(86vw,340px)!important;border-radius:0 22px 22px 0!important;padding:23px 17px!important}
+.drawer-head{padding:8px 5px 20px!important}
+.drawer-nav{gap:6px!important;margin-top:18px!important}
+.drawer-nav button{min-height:53px!important;padding:0 14px!important;border-radius:7px 15px 7px 15px!important}
+.drawer-nav button.active{box-shadow:inset 3px 0 var(--v3-gold)!important}
+.tab-content{min-width:0!important;animation:v3-enter .28s ease both}
+@keyframes v3-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* Home: asymmetrical dashboard instead of a stack of identical boxes */
+#tab-budget{display:flex;flex-direction:column;gap:0!important}
+#tab-budget>.balance-card{
+ min-height:0!important;margin:0 0 13px!important;padding:26px 22px 21px!important;
+ text-align:left!important;position:relative!important;overflow:hidden!important;
+ border:1px solid rgba(222,197,146,.30)!important;border-radius:7px 27px 7px 27px!important;
+ background:
+ radial-gradient(circle at 93% 12%,rgba(214,187,130,.18),transparent 31%),
+ linear-gradient(128deg,#202b30 0%,#172127 54%,#11191f 100%)!important;
+ box-shadow:0 22px 48px #0006,inset 0 1px #ffffff13!important;
+}
+#tab-budget>.balance-card:before{
+ content:"";position:absolute;right:-32px;bottom:-92px;width:205px;height:205px;
+ border:1px solid #d9c18d35;border-radius:50%;box-shadow:0 0 0 19px #d9c18d0b,0 0 0 39px #d9c18d08;
+}
+#tab-budget>.balance-card:after{
+ content:"TOTAL ASSETS  /  FAMILY FINANCE";position:absolute;right:20px;top:22px;
+ color:#d8c69b9c;font-size:8px;letter-spacing:.18em;font-weight:700;
+}
+#budgetModeSwitch{position:relative;z-index:1;width:max-content;margin:0 0 23px!important;padding:3px!important}
+.balance-title{position:relative;z-index:1;text-align:left!important;font-size:11px!important;letter-spacing:.13em!important;text-transform:uppercase!important}
+.balance-val{position:relative;z-index:1;text-align:left!important;margin:8px 0 22px!important;font-size:clamp(40px,11vw,56px)!important;line-height:1!important;letter-spacing:-.07em!important}
+.balance-stats{position:relative;z-index:1;display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important}
+.balance-stats .stat-item{min-width:0!important;padding:11px 13px!important;text-align:left!important;border:1px solid #ffffff12!important;border-radius:4px 13px 4px 13px!important;background:#0b1218a8!important}
+.balance-stats .stat-label{font-size:9px!important;text-transform:uppercase!important;letter-spacing:.12em!important}
+.balance-stats .stat-amount{font-size:17px!important;margin-top:5px!important}
+#forecastCard{border-radius:5px 15px 5px 15px!important;margin-bottom:12px!important}
+#tab-budget>.weekly-summary-card{
+ display:block!important;margin:0 0 13px!important;padding:17px 17px 15px!important;
+ border:0!important;border-left:2px solid var(--v3-gold)!important;border-radius:0 14px 4px 0!important;
+ background:linear-gradient(100deg,#172128,#11191f)!important;box-shadow:none!important;
+}
+.weekly-summary-head{margin-bottom:15px!important}
+.weekly-summary-head b{font-size:14px!important;letter-spacing:-.02em!important}
+.weekly-summary-badge{border-radius:3px!important;letter-spacing:.16em!important}
+.weekly-summary-grid{gap:8px!important}
+.weekly-summary-grid>div{padding:12px!important;border-radius:4px 10px 4px 10px!important;background:#0c1319!important}
+.weekly-summary-grid strong{font-size:20px!important}
+.weekly-summary-foot{display:flex!important;justify-content:space-between!important;gap:10px!important;padding-top:12px!important;margin-top:11px!important;border-top:1px solid #ffffff12!important;font-size:10px!important}
+#tab-budget>.actions-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin:0 0 13px!important}
+#tab-budget>.actions-grid .btn{min-height:59px!important;border-radius:5px 17px 5px 17px!important;justify-content:flex-start!important;padding:0 18px!important;font-size:14px!important}
+#tab-budget>.actions-grid .btn:before{font-family:"Font Awesome 6 Free";font-weight:900;font-size:17px;margin-right:4px}
+#tab-budget>.actions-grid .btn-success:before{content:"\f067"}
+#tab-budget>.actions-grid .btn-danger:before{content:"\f068"}
+#tab-budget>.bank-import-launch{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;
+ padding:13px 15px!important;margin:0 0 25px!important;border-radius:4px 13px 4px 13px!important;
+ background:#111a20!important;border:1px solid var(--v3-line)!important;
+}
+#tab-budget>.row-between{margin:0 0 12px!important;align-items:center!important}
+#tab-budget>.row-between h4{font-size:24px!important;letter-spacing:-.06em!important}
+.history-filter-panel{padding:13px!important;border-radius:5px 14px 5px 14px!important;background:#11191f!important;border:1px solid #ffffff12!important}
+#historyContainer{gap:7px!important;margin-top:10px!important}
+#historyContainer>*{
+ display:flex!important;align-items:center!important;min-height:67px!important;padding:12px 14px!important;
+ border-radius:4px 13px 4px 13px!important;border:1px solid #ffffff0d!important;
+ background:linear-gradient(100deg,#172129,#11191f)!important;box-shadow:none!important;
+}
+/* Each destination gets its own layout language */
+#tab-analytics{min-width:0!important}
+#tab-analytics[style*="display: none"]{display:none!important}
+#tab-analytics[style*="display: block"]{display:block!important}
+#tab-analytics>h4{font-size:27px!important;letter-spacing:-.06em!important;margin:0 0 4px!important}
+#tab-analytics .chart-card{
+ min-height:245px!important;margin:13px 0!important;padding:18px!important;
+ border:1px solid #ffffff13!important;border-radius:5px 19px 5px 19px!important;
+ background:linear-gradient(145deg,#18232a,#10171d)!important;box-shadow:0 16px 34px #0003!important;
+}
+#tab-analytics #proInsightsCard{border-radius:4px 16px 4px 16px!important;padding:17px!important}
+#tab-ai .finance-assistant-card{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#tab-ai .finance-assistant-heading{
+ display:block!important;padding:23px 20px!important;margin-bottom:12px!important;
+ border:1px solid #d7bd8738!important;border-radius:7px 24px 7px 24px!important;
+ background:radial-gradient(circle at 100% 0%,#d7bd8723,transparent 45%),linear-gradient(140deg,#202b30,#121b21)!important;
+}
+#tab-ai .finance-assistant-heading h4{font-size:23px!important;letter-spacing:-.05em!important}
+#tab-ai .ai-credit-panel{padding:15px!important;border-radius:4px 13px 4px 13px!important}
+#tab-ai .finance-assistant-suggestions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;margin:13px 0!important}
+#tab-ai .finance-assistant-suggestions button{text-align:left!important;min-height:45px!important;padding:0 14px!important;border-radius:4px 12px 4px 12px!important}
+#tab-ai .finance-assistant-messages{min-height:210px!important;padding:17px!important;border-radius:5px 18px 5px 18px!important;background:#10181e!important}
+#tab-ai .finance-assistant-form{display:flex!important;align-items:flex-end!important;gap:8px!important;margin-top:10px!important;border-radius:5px 15px 5px 15px!important}
+#tab-ai .finance-assistant-form button{min-width:92px!important}
+#tab-envelopes>.row-between,#tab-banks>.row-between{margin:22px 0 13px!important}
+#tab-envelopes>.row-between h4,#tab-banks>.row-between h4{font-size:26px!important;letter-spacing:-.06em!important}
+#envelopesList,#banksList{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+#envelopesList>*{
+ position:relative!important;display:block!important;padding:17px 17px 17px 21px!important;
+ border:1px solid #ffffff12!important;border-left:3px solid #bd9e66!important;
+ border-radius:3px 15px 3px 15px!important;background:linear-gradient(105deg,#1b272e,#121a20)!important;
+ box-shadow:0 12px 25px #0003!important;
+}
+#banksList>*{
+ position:relative!important;padding:18px!important;border:1px solid #ffffff13!important;
+ border-radius:15px 4px 15px 4px!important;background:linear-gradient(145deg,#1b292d,#121a20)!important;
+ box-shadow:0 12px 25px #0003!important;
+}
+#tab-banks .financial-overview-card{
+ padding:19px!important;border-radius:7px 23px 7px 23px!important;
+ background:radial-gradient(circle at 100% 0%,#d7bd8719,transparent 45%),linear-gradient(145deg,#1b272d,#11191f)!important;
+}
+#tab-banks .financial-net-worth{padding:17px!important;border-radius:4px 14px 4px 14px!important;background:#0d151b!important}
+#tab-banks .financial-metrics{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+#tab-banks .financial-metric{padding:12px!important;border-radius:3px 11px 3px 11px!important;background:#111a20!important;border:1px solid #ffffff0d!important}
+#tab-referrals .referral-hero{padding:20px!important;border-radius:7px 24px 7px 24px!important;background:radial-gradient(circle at 100% 0%,#d7bd8720,transparent 42%),linear-gradient(145deg,#202b30,#121a20)!important}
+#tab-referrals .referral-hero-top h2{font-size:29px!important;letter-spacing:-.06em!important}
+#tab-referrals .referral-stats-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+#tab-referrals .referral-stat{padding:13px!important;border-radius:4px 12px 4px 12px!important;background:#10181e!important}
+#tab-referrals .battlepass-card{padding:18px!important;border-radius:4px 20px 4px 20px!important}
+#tab-settings{gap:0!important}
+#tab-settings>.card,#tab-settings .family-card,#tab-settings .reward-card{
+ padding:18px!important;margin:0 0 12px!important;border-radius:4px 16px 4px 16px!important;
+ background:linear-gradient(145deg,#19242a,#11191f)!important;border:1px solid #ffffff12!important;box-shadow:none!important;
+}
+#tab-settings h5{font-size:16px!important;letter-spacing:-.025em!important}
+#tab-settings .select-fake{min-height:48px!important;border-radius:4px 12px 4px 12px!important}
+#tab-pay .pricing-hero{padding:22px!important;border-radius:7px 24px 7px 24px!important}
+#tab-pay .pricing-group{padding:18px!important;border-radius:4px 18px 4px 18px!important}
+#tab-pay .price-option{border-radius:4px 14px 4px 14px!important}
+#tab-pay .price-option-featured{transform:translateY(-2px)!important}
+#tab-pay .pay-button{border-radius:4px 11px 4px 11px!important}
+.card{border-radius:5px 16px 5px 16px!important}
+button,.btn,.custom-input,input,select,textarea{transition:border-color .18s,background .18s,transform .18s,box-shadow .18s!important}
+.custom-input,input,select,textarea{border-radius:4px 12px 4px 12px!important;min-height:43px}
+.btn{border-radius:4px 13px 4px 13px!important;letter-spacing:.01em}
+.btn-accent{background:linear-gradient(125deg,#e0c995,#a98a56)!important;color:#1c1b17!important;box-shadow:0 7px 17px #c5a66b20!important}
+.btn-outline{border:1px solid #d7bd8740!important;background:#d7bd870c!important;color:#e6d5ae!important}
+.modal-content,.modal-box,.picker-modal,.help-modal{border-radius:6px 23px 6px 23px!important}
+@media(min-width:700px){
+ .container{max-width:850px!important;padding-left:26px!important;padding-right:26px!important}
+ #tab-budget{display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr)!important;gap:13px!important;align-items:start!important}
+ #tab-budget>.balance-card,#tab-budget>#forecastCard,#tab-budget>.row-between,#tab-budget>.history-filter-panel,#tab-budget>#histMemberFilter,#tab-budget>#historyContainer{grid-column:1/-1!important}
+ #tab-budget>.weekly-summary-card{grid-column:1!important}
+ #tab-budget>.actions-grid{grid-column:2!important;align-self:stretch!important;align-content:center!important;margin:0!important}
+ #tab-budget>.bank-import-launch{grid-column:1/-1!important}
+ #tab-budget>.row-between{margin-top:12px!important}
+ #envelopesList,#banksList{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #tab-analytics[style*="display: block"]{display:grid!important;grid-template-columns:1fr 1fr!important;gap:13px!important}
+ #tab-analytics>h4,#tab-analytics>.help-inline-button,#tab-analytics>#proInsightsCard{grid-column:1/-1!important}
+ #tab-analytics .chart-card{margin:0!important}
+}
+@media(max-width:430px){
+ .container{width:100%!important;padding:0 14px 30px!important}
+ .app-topbar{margin-left:-14px!important;margin-right:-14px!important;padding:11px 13px!important}
+ #tab-budget>.balance-card{padding:23px 17px 18px!important}
+ #tab-budget>.balance-card:after{font-size:7px!important;right:13px!important;top:16px!important}
+ .balance-val{font-size:42px!important}
+ #tab-budget>.actions-grid .btn{padding:0 12px!important;font-size:12px!important}
+ #tab-referrals .referral-stats-grid{grid-template-columns:1fr 1fr!important}
+ #tab-pay .pricing-options{grid-template-columns:1fr 1fr!important}
+}
+@media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}}

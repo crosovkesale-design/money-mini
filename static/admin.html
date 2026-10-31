@@ -156,6 +156,7 @@ function load(){
       users.push(u);
     }
     render();
+    loadRevenue();
   }).catch(function(e){
     showErr("err", "DB: " + e.message);
   });
@@ -294,46 +295,31 @@ function render(){
   else renderRefsTab(filtered);
 }
 
-function renderRevenue(list){
-  var now = new Date();
-  var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-
-  var allSum = 0;
-  var todaySum = 0;
-  var monthSum = 0;
-  var allCount = 0;
-  var todayCount = 0;
-  var monthCount = 0;
-  var paidUsers = 0;
-
-  list.forEach(function(u){
-    var amount = parseFloat(u.paidAmount) || 0;
-    var when = u.subStart || 0;
-    if(amount > 0){
-      allSum += amount;
-      allCount += 1;
-      paidUsers += 1;
-    }
-    if(amount > 0 && when >= todayStart){
-      todaySum += amount;
-      todayCount += 1;
-    }
-    if(amount > 0 && when >= monthStart){
-      monthSum += amount;
-      monthCount += 1;
-    }
+function renderRevenue(data){
+  var periods=(data&&data.periods)||{};
+  function periodCard(key,title,cls){
+    var p=periods[key]||{byCurrency:{},count:0};
+    var currencies=p.byCurrency||{};
+    var parts=Object.keys(currencies).sort().map(function(code){
+      return Number(currencies[code]||0).toLocaleString(undefined,{maximumFractionDigits:2})+' '+code;
+    });
+    var value=parts.length?parts.join(' · '):'0';
+    return '<div class="stat"><div class="lbl">'+title+'</div><div class="val '+cls+'" style="font-size:18px;line-height:1.4">'+value+'</div><div class="muted" style="margin-top:4px">'+Number(p.count||0)+' подтверждённых оплат</div></div>';
+  }
+  var h=periodCard('today','🔥 Сегодня','')
+    +periodCard('month','📅 Этот месяц','b')
+    +periodCard('all','💰 За всё время','g');
+  h+='<div class="muted" style="grid-column:1/-1">Учитываются только платежи со статусом paid. Валюты показаны отдельно: XTR — Telegram Stars, USDT — криптооплата. Это валовая выручка, не чистая прибыль.</div>';
+  document.getElementById('revenue').innerHTML=h;
+}
+function loadRevenue(){
+  var box=document.getElementById('revenue');
+  box.innerHTML='<div class="muted">Загружаем данные об оплатах…</div>';
+  adminFetch('/api/admin/revenue').then(function(data){
+    renderRevenue(data);
+  }).catch(function(e){
+    box.innerHTML='<div class="err">Не удалось загрузить выручку: '+escapeHtml(e.message)+'</div>';
   });
-
-  var avg = paidUsers > 0 ? Math.round(allSum / paidUsers) : 0;
-
-  var h = '';
-  h += '<div class="stat"><div class="lbl">💰 За всё время</div><div class="val g">' + allSum.toLocaleString() + ' ₴</div><div class="muted" style="margin-top:4px">' + allCount + ' оплат</div></div>';
-  h += '<div class="stat"><div class="lbl">📅 За этот месяц</div><div class="val b">' + monthSum.toLocaleString() + ' ₴</div><div class="muted" style="margin-top:4px">' + monthCount + ' оплат</div></div>';
-  h += '<div class="stat"><div class="lbl">🔥 Сегодня</div><div class="val">' + todaySum.toLocaleString() + ' ₴</div><div class="muted" style="margin-top:4px">' + todayCount + ' оплат</div></div>';
-  h += '<div class="stat"><div class="lbl">📊 Средний чек</div><div class="val b">' + avg.toLocaleString() + ' ₴</div></div>';
-
-  document.getElementById('revenue').innerHTML = h;
 }
   
 function renderUsersTab(list){

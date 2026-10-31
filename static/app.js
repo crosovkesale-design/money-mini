@@ -1585,12 +1585,31 @@ function txDateForInput(tx){
   return new Date().toISOString().slice(0,10);
 }
 
+function syncEditTxEnvelopeState(){
+  const type=document.getElementById('editTxType')?.value||'expense';
+  const select=document.getElementById('editTxEnvelope');
+  const wrap=select?.closest('.edit-envelope-field');
+  if(select){
+    select.disabled=type!=='expense';
+    if(select.disabled)select.value='';
+  }
+  if(wrap)wrap.classList.toggle('is-disabled',type!=='expense');
+}
+function setEditTxType(type){
+  if(!['income','expense'].includes(type))return;
+  const input=document.getElementById('editTxType');
+  if(input)input.value=type;
+  document.getElementById('editTxExpenseBtn')?.classList.toggle('active',type==='expense');
+  document.getElementById('editTxIncomeBtn')?.classList.toggle('active',type==='income');
+  syncEditTxEnvelopeState();
+}
+
 function openTxEditor(id){
   const list=budgetMode==='family'&&currentFamily?familyTransactions:appData.history;
   const tx=list.find(item=>String(item.id)===String(id));
   if(!tx)return;
   editingTxId=id;
-  document.getElementById('editTxType').value=tx.type==='income'?'income':'expense';
+  setEditTxType(tx.type==='income'?'income':'expense');
   document.getElementById('editTxAmount').value=Number(tx.amount||0);
   document.getElementById('editTxTitle').value=tx.title||tx.note||tx.category||'Операция';
   document.getElementById('editTxCategory').value=tx.category||'Разное';
@@ -1600,7 +1619,7 @@ function openTxEditor(id){
   select.innerHTML='<option value="">Без конверта</option>'+envelopes.map(e=>'<option value="'+bankEscape(e.id)+'">'+bankEscape(e.name)+'</option>').join('');
   select.value=tx.envelopeId==null?'':String(tx.envelopeId);
   select.disabled=document.getElementById('editTxType').value!=='expense';
-  document.getElementById('editTxType').onchange=()=>{select.disabled=document.getElementById('editTxType').value!=='expense';if(select.disabled)select.value='';};
+  syncEditTxEnvelopeState();
   const error=document.getElementById('editTxError');if(error)error.textContent='';
   openModal('modalEditTransaction');
 }

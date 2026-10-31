@@ -534,6 +534,63 @@ function grantCoupon(uid, kind, modal){
     if(btn){ btn.disabled = false; btn.textContent = kind === "c10" ? "🎁 Купон 10%" : "🎁 Купон 20%"; }
   });
   }
+
+function getAdminKey(){
+  if(!adminApiKey) adminApiKey=window.prompt("Введи ADMIN_KEY из настроек Render")||"";
+  return adminApiKey;
+}
+function adminFetch(url,options){
+  var key=getAdminKey();
+  if(!key) return Promise.reject(new Error("Не введён ключ администратора"));
+  options=options||{};
+  options.headers=Object.assign({},options.headers||{},{"X-Admin-Key":key});
+  return fetch(url,options).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.detail||("HTTP "+r.status));return j;});}).catch(function(e){if(String(e.message).includes("401"))adminApiKey="";throw e;});
+}
+function fmtDateTime(ts){
+  if(!ts)return "—";var d=new Date(Number(ts));return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()+" "+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+function escapeHtml(v){
+  return String(v==null?"":v).replace(/[&<>"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];});
+}
+function loadActivity(){
+  var box=document.getElementById("table-activity");box.innerHTML='<div class="muted">Загружаем активность…</div>';
+  adminFetch("/api/admin/activity").then(function(data){
+    var users=data.users||[];
+    var html='<h2 style="font-size:16px;margin:8px 0">Последняя активность пользователей</h2><div class="muted">Новые события будут записываться после обновления приложения.</div>';
+    users.forEach(function(u){
+      var events=u.events||[];
+      html+='<div class="activity-user"><div class="activity-user-head"><div><b>'+escapeHtml(u.name)+'</b> '+(u.username?'@'+escapeHtml(u.username):'')+'<div class="muted">ID: '+escapeHtml(u.uid)+' · '+escapeHtml(u.tariff)+'</div></div><div><b>'+fmtDateTime(u.lastSeen)+'</b><div class="muted">Последний вход</div></div></div>';
+      if(events.length){
+        events.forEach(function(ev){
+          var d=ev.details||{};
+          var label=ev.action==="login"?"Вход в приложение":ev.action==="transaction_added"?"Добавил операцию":ev.action==="transaction_edited"?"Изменил операцию":ev.action==="transaction_deleted"?"Удалил операцию":ev.action;
+          var detail=[d.type==="income"?"Доход":d.type==="expense"?"Расход":"",d.title,d.category,d.amount!==undefined?d.amount+" "+(d.currency||""):""].filter(Boolean).join(" · ");
+          html+='<div class="activity-event">• '+escapeHtml(label)+'<small>'+fmtDateTime(ev.ts)+(detail?' · '+escapeHtml(detail):'')+'</small></div>';
+        });
+      }else html+='<div class="activity-event muted">Подробных действий пока нет</div>';
+      html+='</div>';
+    });
+    box.innerHTML=html;
+  }).catch(function(e){box.innerHTML='<div class="err">'+escapeHtml(e.message)+'</div>';});
+}
+function loadPromoCodes(){
+  var box=document.getElementById("table-promos");
+  box.innerHTML='<h2 style="font-size:16px;margin:8px 0">Создать промокод</h2><div class="admin-form"><label>Код<input id="promo-code" placeholder="WELCOME2026" maxlength="32"></label><label>Награда<select id="promo-reward"><option value="c10">Купон 10%</option><option value="c20">Купон 20%</option></select></label><label>Количество активаций<input id="promo-limit" type="number" min="0" placeholder="0 — без лимита"></label><label>Действует до<input id="promo-expiry" type="date"></label><button class="btn primary" id="promo-create">Создать промокод</button></div><div id="promo-list" class="muted">Загружаем…</div>';
+  document.getElementById("promo-create").onclick=function(){
+    var payload={code:document.getElementById("promo-code").value,reward:document.getElementById("promo-reward").value,maxUses:document.getElementById("promo-limit").value||0,expiresAt:document.getElementById("promo-expiry").value};
+    adminFetch("/api/admin/promo-codes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(){alert("Промокод создан");loadPromoCodes();}).catch(function(e){alert("Не удалось создать промокод: "+e.message);});
+  };
+  adminFetch("/api/admin/promo-codes").then(function(data){
+    var codes=data.codes||[];var html='<h2 style="font-size:16px;margin:16px 0 8px">Созданные промокоды</h2>';
+    if(!codes.length)html+='<div class="muted">Пока промокодов нет</div>';
+    codes.forEach(function(p){
+      html+='<div class="activity-user"><div class="activity-user-head"><div><b>'+escapeHtml(p.code)+'</b><div class="muted">'+(p.reward==="c10"?"Купон 10%":"Купон 20%")+' · Использовано '+Number(p.uses||0)+' / '+(Number(p.maxUses||0)||"∞")+' · До '+(p.expiresAt?fmtDate(p.expiresAt):"без срока")+'</div></div><div><span class="promo-status '+(p.enabled?"":"off")+'">'+(p.enabled?"Активен":"Отключён")+'</span> <button class="action promo-toggle" data-code="'+escapeHtml(p.code)+'">'+(p.enabled?"Отключить":"Включить")+'</button></div></div></div>';
+    });
+    document.getElementById("promo-list").innerHTML=html;
+    document.querySelectorAll(".promo-toggle").forEach(function(btn){btn.onclick=function(){adminFetch("/api/admin/promo-codes/"+encodeURIComponent(btn.dataset.code)+"/toggle",{method:"POST"}).then(loadPromoCodes).catch(function(e){alert(e.message);});};});
+  }).catch(function(e){document.getElementById("promo-list").innerHTML='<div class="err">'+escapeHtml(e.message)+'</div>';});
+}
+
 /* ====== ЭКСПОРТ ====== */
 document.getElementById("export").onclick = function(){
   var filtered = users.filter(userInRange);

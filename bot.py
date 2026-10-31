@@ -4158,6 +4158,30 @@ async def api_admin_grant_coupon(request: Request, x_admin_key: str = Header(def
     return {"ok": True, "uid": uid, "kind": kind, "value": result["value"]}
 
 
+
+
+@app.post("/api/activity/log")
+async def api_activity_log(request: Request, uid: str = Depends(current_uid)):
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Некорректный JSON")
+    action = str((body or {}).get("action") or "")
+    if action not in {"transaction_added", "transaction_edited", "transaction_deleted"}:
+        raise HTTPException(status_code=400, detail="Недопустимое действие")
+    tx = (body or {}).get("transaction") or {}
+    if not isinstance(tx, dict):
+        tx = {}
+    details = {
+        "type": str(tx.get("type") or "")[:12],
+        "amount": tx.get("amount"),
+        "title": str(tx.get("title") or tx.get("note") or "")[:120],
+        "category": str(tx.get("category") or "")[:64],
+        "currency": str(tx.get("currency") or "")[:8]
+    }
+    await log_user_activity(uid, action, details)
+    return {"ok": True}
+
 @app.get("/api/admin/activity")
 async def api_admin_activity(x_admin_key: str = Header(default="")):
     if not admin_key_ok(x_admin_key):

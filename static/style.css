@@ -1956,3 +1956,22 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.9;
 .referral-link-row{flex-wrap:wrap}.referral-link-row input{flex:1 1 100%;width:100%}.referral-link-row .btn{flex:1 1 auto;min-width:110px}
 .family-code-box{flex-wrap:wrap}.family-code-main{flex:1 1 100%}.family-code-box .btn{flex:1 1 120px;min-width:0}
 .family-exit-warning{padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);font-size:13px;line-height:1.55;margin:8px 0 16px}
+
+
+/* Family Budget branded dialogs: replace dated browser/Android alert boxes */
+.app-dialog-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(3,6,18,.68);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease}
+.app-dialog-overlay.is-visible{opacity:1;visibility:visible}
+.app-dialog-card{width:min(100%,360px);padding:24px 20px 18px;border:1px solid var(--border);border-radius:24px;background:var(--surface-strong);box-shadow:0 24px 80px rgba(0,0,0,.38);text-align:center;transform:translateY(12px) scale(.98);transition:transform .2s ease}
+.app-dialog-overlay.is-visible .app-dialog-card{transform:translateY(0) scale(1)}
+.app-dialog-icon{width:58px;height:58px;margin:0 auto 14px;border-radius:19px;display:grid;place-items:center;font-size:25px;background:rgba(139,124,255,.14);color:var(--accent-2)}
+.app-dialog-icon.is-error{background:rgba(255,102,133,.13);color:var(--danger)}
+.app-dialog-icon.is-question{background:rgba(139,124,255,.16);color:var(--accent)}
+.app-dialog-card h3{margin:0 0 9px;color:var(--text);font-size:18px;font-weight:850;letter-spacing:-.02em}
+.app-dialog-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere}
+.app-dialog-actions{display:flex;gap:9px;margin-top:22px}
+.app-dialog-btn{flex:1;min-height:46px;padding:10px 14px;border:1px solid var(--border);border-radius:14px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:transform .15s,filter .15s}
+.app-dialog-btn:active{transform:scale(.97)}
+.app-dialog-confirm{border-color:transparent;background:linear-gradient(135deg,var(--accent),#6c5ce7);color:#fff;box-shadow:0 7px 18px rgba(108,92,231,.24)}
+.app-dialog-cancel{background:var(--surface);color:var(--text)}
+body.app-dialog-open{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.app-dialog-overlay,.app-dialog-card{transition:none}}

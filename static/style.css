@@ -1,4 +1,4 @@
-/* static/style.css — Money Mini Neon Glass */
+/* QUORIX — premium graphite & electric violet design system */
 
 :root {
   color-scheme: dark;
@@ -2022,3 +2022,56 @@ body.app-dialog-open .modal.active{pointer-events:none}
   .app-dialog-card{width:min(100%,370px);margin:auto}
 }
 @media(prefers-reduced-motion:reduce){.modal,.modal-content{transition:none}}
+
+
+/* QUORIX brand identity — graphite, silver and electric violet */
+:root {
+  --bg: #09090d;
+  --surface: rgba(25, 25, 33, 0.82);
+  --surface-strong: rgba(31, 30, 41, 0.96);
+  --border: rgba(178, 164, 255, 0.18);
+  --text: #f7f6fb;
+  --muted: #aaa7b8;
+  --accent: #9b7cff;
+  --accent-2: #c5b4ff;
+  --success: #56d6a5;
+  --danger: #ff6685;
+  --warning: #f5c66b;
+  --radius: 22px;
+  --glass-shadow: 0 18px 46px rgba(0, 0, 0, 0.34);
+}
+body {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(128, 86, 255, 0.20), transparent 44%),
+    radial-gradient(ellipse at 100% 46%, rgba(91, 69, 150, 0.10), transparent 36%),
+    #09090d;
+}
+[data-theme="light"] {
+  --bg: #f1eff7;
+  --surface: rgba(255, 255, 255, 0.84);
+  --surface-strong: rgba(255, 255, 255, 0.97);
+  --border: rgba(103, 82, 158, 0.17);
+  --text: #191720;
+  --muted: #777181;
+  --accent: #7553d6;
+  --accent-2: #9879f0;
+  --success: #168c66;
+  --danger: #d74768;
+  --warning: #9a6a16;
+  --glass-shadow: 0 16px 38px rgba(41, 31, 69, 0.10);
+}
+[data-theme="light"] body {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(146, 113, 231, 0.15), transparent 44%),
+    #f1eff7;
+}
+.app-topbar, .app-drawer, .modal-content, .app-dialog-card,
+.card, .history-item, .month-bar, .balance-card {
+  border-color: var(--border);
+}
+.app-topbar-title b, .drawer-head b, #appDialogTitle {
+  letter-spacing: 0.045em;
+}
+.app-topbar-title b, .drawer-head b {
+  font-weight: 850;
+}

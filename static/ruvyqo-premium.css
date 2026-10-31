@@ -1,0 +1,135 @@
+/* RUVYQO PREMIUM — restrained private-banking visual layer.
+   Keeps existing DOM, IDs, handlers, calculations and translations intact. */
+:root{
+  --r-bg:#0c1015;--r-surface:#141a21;--r-card:#171f28;--r-card2:#1d2731;
+  --r-line:rgba(214,190,139,.16);--r-violet:#c9ad76;--r-violet2:#ead6aa;
+  --r-green:#73c9a5;--r-red:#e58c91;--r-text:#f3f1eb;--r-muted:#929da6;
+  --r-radius:22px;color-scheme:dark;
+}
+html,body{background:#0c1015!important;color:var(--r-text)!important}
+body{
+ background:radial-gradient(ellipse 85% 34% at 50% -18%,rgba(199,171,116,.12),transparent 72%),
+ linear-gradient(180deg,#0c1015 0%,#10161d 52%,#0c1015 100%)!important;
+ background-attachment:fixed!important;
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ letter-spacing:-.012em;
+}
+.container{width:min(100% - 28px,850px)!important;max-width:850px!important;padding:calc(14px + env(safe-area-inset-top)) 0 38px!important}
+.app-topbar{
+ min-height:66px!important;margin-bottom:25px!important;padding:10px 14px!important;
+ border:1px solid rgba(220,203,164,.16)!important;border-radius:19px!important;
+ background:rgba(20,26,33,.91)!important;box-shadow:0 12px 36px #0006,inset 0 1px #ffffff0b!important;
+ backdrop-filter:blur(22px) saturate(125%)!important;
+}
+.app-topbar:before{
+ content:"F"!important;background:linear-gradient(145deg,#e7d5aa,#a98a53)!important;
+ color:#202018!important;box-shadow:0 5px 16px #c9ad7630!important;
+ width:38px!important;height:38px!important;flex-basis:38px!important;border-radius:12px!important;
+ font-family:Georgia,serif!important;font-size:23px!important;font-weight:700!important;
+}
+.app-topbar-title b{font-size:12px!important;letter-spacing:.2em!important;color:#f2eee3!important}
+.app-topbar-title small{color:#9da6ab!important;font-size:10px!important;letter-spacing:.06em!important}
+.menu-trigger{color:#e6dfcf!important}
+.topbar-help{border:1px solid #d6be8b2c!important;background:#ffffff06!important;color:#dfc998!important;border-radius:11px!important}
+.topbar-tariffs{border:1px solid #d6be8b55!important;background:linear-gradient(120deg,#c9ad7625,#c9ad7608)!important;color:#ead6aa!important;border-radius:12px!important}
+.app-menu-backdrop{background:#05080bdc!important;backdrop-filter:blur(8px)!important}
+.app-drawer{background:linear-gradient(155deg,#1b232b,#11171e 70%)!important;border:1px solid var(--r-line)!important}
+.drawer-head{border-bottom:1px solid var(--r-line)!important}
+.drawer-head b{color:#ead6aa!important;letter-spacing:.18em!important}
+.drawer-nav button{border-radius:13px!important;color:#c1c8c9!important}
+.drawer-nav button i{color:#c9ad76!important}
+.drawer-nav button.active{background:linear-gradient(100deg,#c9ad7625,#c9ad7608)!important;border-color:#c9ad7635!important;box-shadow:inset 2px 0 #d6be8b!important;color:#fff!important}
+.drawer-foot{border-color:var(--r-line)!important}
+.tab-content{animation:r-premium-in .2s ease both}
+@keyframes r-premium-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+/* Main balance: quiet, spacious, private-bank feel */
+#tab-budget{gap:13px!important}
+#tab-budget>.balance-card{
+ min-height:250px!important;padding:25px!important;border:1px solid #d6be8b35!important;border-radius:26px!important;
+ background:radial-gradient(ellipse 55% 95% at 100% 0%,#c9ad7626,transparent 75%),linear-gradient(145deg,#202a31,#151d25 62%,#121920)!important;
+ box-shadow:0 20px 50px #0007,inset 0 1px #ffffff12!important;
+}
+#tab-budget>.balance-card:before{border-color:#e2d0a02a!important;box-shadow:0 0 0 22px #d6be8b08,0 0 0 48px #d6be8b05!important}
+#tab-budget>.balance-card:after{content:"FAMILY FINANCE · OVERVIEW"!important;color:#cbbb98a8!important;font-size:8px!important;letter-spacing:.18em!important}
+#budgetModeSwitch{background:#0b1118a8!important;border:1px solid #ffffff18!important;border-radius:11px!important}
+.budget-mode-btn.active{background:linear-gradient(135deg,#d9c28f,#b4935e)!important;color:#1b1a16!important;box-shadow:0 4px 13px #0004!important}
+.balance-title{color:#b5b8b4!important;font-size:12px!important;letter-spacing:.03em!important}
+.balance-val{font-size:clamp(38px,10vw,54px)!important;letter-spacing:-.065em!important;font-weight:760!important;color:#f4f1e9!important}
+.balance-stats .stat-item{background:#0d141ba8!important;border:1px solid #ffffff12!important;border-radius:14px!important}
+.balance-stats .stat-label{color:#a8b0b1!important}
+.balance-stats .inc{color:var(--r-green)!important}.balance-stats .exp{color:var(--r-red)!important}
+.weekly-summary-card,.card{
+ border:1px solid rgba(207,194,164,.12)!important;border-radius:21px!important;
+ background:linear-gradient(145deg,#19222a,#141b22)!important;
+ box-shadow:0 12px 30px #0003!important;
+}
+.weekly-summary-card{padding:18px!important}
+.weekly-summary-head b{color:#f1eee5!important;font-size:14px!important}
+.weekly-summary-head small,.weekly-summary-grid small{color:#98a3a6!important}
+.weekly-summary-badge{border:1px solid #c9ad7633!important;background:#c9ad7612!important;color:#d9c28f!important;border-radius:9px!important}
+.weekly-summary-grid>div{background:#0e151c!important;border:1px solid #ffffff0c!important;border-radius:13px!important;padding:13px!important}
+.weekly-summary-grid strong{font-size:19px!important}
+.actions-grid{gap:10px!important}
+.actions-grid .btn{min-height:56px!important;border-radius:14px!important;font-weight:750!important;box-shadow:0 7px 18px #0003!important}
+.btn-success{background:linear-gradient(135deg,#79c9a7,#4c9e7b)!important;color:#102219!important}
+.btn-danger{background:linear-gradient(135deg,#e69a9d,#c96f79)!important;color:#2a1115!important}
+.bank-import-launch{background:linear-gradient(110deg,#1c292d,#172129)!important;border:1px solid #8db9a52b!important;border-radius:16px!important;padding:15px!important}
+.bank-import-launch b{color:#e9eee9!important}.bank-import-launch small{color:#9ba9a8!important}
+#tab-budget>.row-between h4,#tab-envelopes h4,#tab-banks h4,#tab-analytics h4{font-size:25px!important;letter-spacing:-.055em!important}
+.history-filter-panel{padding:13px!important;background:#141c24!important;border:1px solid #ffffff12!important;border-radius:16px!important}
+.history-type-chip{border-radius:10px!important}
+#historyContainer{gap:9px!important}
+#historyContainer>*{border:1px solid #ffffff10!important;border-radius:15px!important;background:linear-gradient(145deg,#1b252e,#151d25)!important}
+/* Common controls */
+h4,h5{color:#f1eee6!important}
+.muted,.text-muted{color:#99a3a7!important}
+.custom-input,input,select,textarea{background:#1b252e!important;border:1px solid #ffffff18!important;border-radius:12px!important;color:#f2f0e9!important}
+.custom-input:focus,input:focus,select:focus,textarea:focus{border-color:#c9ad76!important;box-shadow:0 0 0 3px #c9ad761c!important;outline:none!important}
+.btn{border-radius:12px!important;font-weight:700!important}
+.btn-accent{background:linear-gradient(135deg,#dfc995,#b79660)!important;color:#211d15!important;box-shadow:0 7px 18px #c9ad7626!important}
+.btn-outline{border:1px solid #c9ad7650!important;background:#c9ad760d!important;color:#e4d2a8!important}
+.help-inline-button,.info-dot{border:1px solid #c9ad7650!important;background:#c9ad7612!important;color:#e4d2a8!important}
+/* Analytics, AI and long-form screens */
+#tab-analytics .chart-card{border:1px solid #ffffff12!important;border-radius:20px!important;background:linear-gradient(145deg,#19232c,#141b22)!important;padding:18px!important}
+#proInsightsCard{border:1px solid #c9ad7635!important;border-radius:20px!important;background:linear-gradient(140deg,#242a2b,#171e25)!important}
+#tab-ai .finance-assistant-card{border:1px solid #c9ad7630!important;border-radius:24px!important;background:radial-gradient(ellipse at 100% 0%,#c9ad7615,transparent 58%),linear-gradient(145deg,#1b252d,#141b22)!important}
+#tab-ai .finance-assistant-messages{background:#0e151b!important;border:1px solid #ffffff10!important;border-radius:17px!important}
+#envelopesList,#banksList{gap:11px!important}
+#envelopesList>*,#banksList>*{border:1px solid #ffffff12!important;border-radius:18px!important;background:linear-gradient(145deg,#1c2730,#151d25)!important;box-shadow:0 10px 25px #0003!important}
+#tab-banks .financial-overview-card{border:1px solid #c9ad7630!important;border-radius:23px!important;background:radial-gradient(ellipse at 100% 0%,#c9ad7618,transparent 65%),linear-gradient(145deg,#202a30,#151d24)!important}
+#tab-banks .financial-net-worth{background:#c9ad7613!important;border:1px solid #c9ad7620!important;border-radius:16px!important}
+#tab-banks .financial-net-worth strong{font-size:30px!important;color:#e8d5a9!important}
+#tab-referrals .referral-hero,#tab-referrals .battlepass-card{border:1px solid #c9ad7630!important;border-radius:23px!important;background:radial-gradient(ellipse at 100% 0%,#c9ad7618,transparent 65%),linear-gradient(145deg,#20272d,#151d24)!important}
+#tab-referrals .referral-stat{background:#0f171e!important;border:1px solid #ffffff12!important;border-radius:15px!important}
+#tab-settings>.card{border-radius:19px!important;border:1px solid #ffffff12!important;background:linear-gradient(145deg,#1b252d,#151d24)!important}
+#tab-settings .select-fake{background:#1b252e!important;border:1px solid #ffffff15!important;border-radius:12px!important}
+#tab-settings .seg{background:#0d141b!important;border-radius:12px!important}
+#tab-settings .seg-btn.active{background:linear-gradient(135deg,#dfc995,#b79660)!important;color:#211d15!important}
+#tab-pay .pricing-group,#tab-pay .coupon-panel{border:1px solid #c9ad762b!important;border-radius:22px!important;background:linear-gradient(145deg,#1b252d,#141b22)!important}
+#tab-pay .price-option{background:#202b34!important;border:1px solid #ffffff12!important;border-radius:17px!important}
+#tab-pay .price-option-featured{border-color:#c9ad7680!important;box-shadow:0 0 0 1px #c9ad7620!important}
+#tab-pay .trial-banner{border:1px solid #c9ad7630!important;border-radius:18px!important;background:linear-gradient(110deg,#282a28,#1a2228)!important}
+#tab-pay .pricing-group-pro{border-color:#c9ad7650!important}
+#tab-pay .pro-eyebrow,#tab-pay .pro-label{color:#dfc995!important}
+.modal-content,.modal-box,.picker-modal,.help-modal{border:1px solid #c9ad7630!important;border-radius:22px!important;background:linear-gradient(150deg,#202a32,#131a21)!important;box-shadow:0 24px 75px #000b!important}
+.modal-backdrop{backdrop-filter:blur(8px)!important}
+@media(min-width:700px){
+ .container{max-width:930px!important}
+ #tab-budget>.balance-card{min-height:275px!important;padding:29px!important}
+ #tab-budget>.weekly-summary-card{grid-column:span 7!important}
+ #tab-budget>.actions-grid{grid-column:span 5!important;align-self:stretch!important;align-content:center!important}
+ #envelopesList,#banksList{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #tab-analytics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+ #tab-analytics h4,#tab-analytics>.help-inline-button,#tab-analytics #proInsightsCard{grid-column:1/-1!important}
+}
+@media(max-width:430px){
+ .container{width:calc(100% - 22px)!important}
+ .app-topbar{gap:7px!important;padding:9px!important;min-height:61px!important}
+ .app-topbar:before{width:34px!important;height:34px!important;flex-basis:34px!important}
+ .menu-trigger{width:30px!important;flex-basis:30px!important}
+ .topbar-tariffs{padding:0 8px!important;font-size:10px!important}
+ #tab-budget>.balance-card{padding:22px 18px 18px!important;min-height:230px!important}
+ #tab-budget>.balance-card:after{display:none!important}
+ #envelopesList,#banksList{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){.tab-content{animation:none!important}*,*:before,*:after{transition:none!important}}

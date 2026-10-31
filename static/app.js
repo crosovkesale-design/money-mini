@@ -546,14 +546,26 @@ function applyLang(){
   if (typeof renderBattlePass === 'function') renderBattlePass();
 }
 
+function toggleAppMenu(){
+  const open=!document.body.classList.contains('menu-open');
+  document.body.classList.toggle('menu-open',open);
+  document.querySelector('.menu-trigger')?.setAttribute('aria-expanded',String(open));
+  document.getElementById('appDrawer')?.setAttribute('aria-hidden',String(!open));
+}
+function closeAppMenu(){
+  document.body.classList.remove('menu-open');
+  document.querySelector('.menu-trigger')?.setAttribute('aria-expanded','false');
+  document.getElementById('appDrawer')?.setAttribute('aria-hidden','true');
+}
 function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   const tab = document.getElementById('tab-' + name);
   if(!tab) return;
   tab.style.display = 'block';
-  const nav = document.getElementById('nav-' + name);
-  if(nav) nav.classList.add('active');
+  document.querySelectorAll('[data-menu-tab]').forEach(item=>item.classList.toggle('active',item.dataset.menuTab===name));
+  const labels={budget:'Главная',analytics:'Аналитика',envelopes:'Конверты',banks:'Копилки и цели',referrals:'Рефералы',settings:'Настройки'};
+  const label=document.getElementById('currentSectionLabel');if(label)label.textContent=labels[name]||'Family Budget';
+  closeAppMenu();
   if(name === 'analytics') renderCharts();
   renderAll();
 }
@@ -2342,6 +2354,14 @@ function renderAll(){
       memberFilter.value=members.includes(currentMember)?currentMember:'';
     }
   }
+  const categoryFilter=document.getElementById('histCategoryFilter');
+  if(categoryFilter){
+    const selectedCategory=categoryFilter.value;
+    const categories=[...new Set(visibleBudget.history.map(tx=>String(tx.category||'').trim()).filter(Boolean))].sort((x,y)=>tCat(x).localeCompare(tCat(y),appData.lang||'ru'));
+    const options='<option value="">Все категории</option>'+categories.map(cat=>'<option value="'+bankEscape(cat)+'">'+bankEscape(tCat(cat))+'</option>').join('');
+    if(categoryFilter.dataset.options!==options){categoryFilter.innerHTML=options;categoryFilter.dataset.options=options;categoryFilter.value=categories.includes(selectedCategory)?selectedCategory:'';}
+  }
+  const selectedCategory=categoryFilter?categoryFilter.value:'';
   const selectedMember=memberFilter&&visibleBudget.isFamily?memberFilter.value:'';
   const filtered=visibleBudget.history.filter(tx => {
     const matchesSearch=!q ||
@@ -2349,7 +2369,8 @@ function renderAll(){
       tCat(tx.category || '').toLowerCase().includes(q) ||
       String(tx.memberName || '').toLowerCase().includes(q);
     const matchesMember=!selectedMember||String(tx.memberName||'')===selectedMember;
-    return matchesSearch&&matchesMember;
+    const matchesCategory=!selectedCategory||String(tx.category||'')===selectedCategory;
+    return matchesSearch&&matchesMember&&matchesCategory;
   });
 
   const hist = document.getElementById('historyContainer');

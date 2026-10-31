@@ -49,6 +49,8 @@ try {
   console.warn('Browser storage is unavailable; Family Budget is running with temporary default data:', storageError);
 }
 
+let historyTypeFilter = 'all';
+let historyCategoryFilter = '';
 let canUseProFeatures = false;
 let familyMemberLimit = 0;
 let referralStats = { count: 0, coupons10: 0, coupons20: 0 };
@@ -2447,6 +2449,9 @@ function renderWeeklySummary(visibleBudget){
   categoryNode.dataset.empty=top?'0':'1';categoryNode.textContent=top?tCat(top[0])+' · '+fmtMoney(top[1]):(APP_SHELL_I18N[String(appData?.lang||'ru').toLowerCase().split('-')[0]]||APP_SHELL_I18N.en).noData;
 }
 
+function setHistoryTypeFilter(type){historyTypeFilter=['all','expense','income'].includes(type)?type:'all';historyCategoryFilter='';renderAll();}
+function setHistoryCategoryFilter(category){historyCategoryFilter=String(category||'');renderAll();}
+
 function renderAll(){
   const visibleBudget=getVisibleBudget(),balance=document.getElementById('totalBalance'),income=document.getElementById('monthIncome'),expense=document.getElementById('monthExpense');
   if(balance)balance.innerText=fmtMoney(visibleBudget.balance);if(income)income.innerText='+'+fmtMoney(visibleBudget.monthIncome);if(expense)expense.innerText='-'+fmtMoney(visibleBudget.monthExpense);
@@ -2465,23 +2470,30 @@ function renderAll(){
       memberFilter.value=members.includes(currentMember)?currentMember:'';
     }
   }
-  const categoryFilter=document.getElementById('histCategoryFilter');
-  if(categoryFilter){
-    const selectedCategory=categoryFilter.value;
-    const categories=[...new Set(visibleBudget.history.map(tx=>String(tx.category||'').trim()).filter(Boolean))].sort((x,y)=>tCat(x).localeCompare(tCat(y),appData.lang||'ru'));
-    const shellText=APP_SHELL_I18N[String(appData?.lang||'ru').toLowerCase().split('-')[0]]||APP_SHELL_I18N.en;const options='<option value="" id="histCategoryAll">'+shellText.allCategories+'</option>'+categories.map(cat=>'<option value="'+bankEscape(cat)+'">'+bankEscape(tCat(cat))+'</option>').join('');
-    if(categoryFilter.dataset.options!==options){categoryFilter.innerHTML=options;categoryFilter.dataset.options=options;categoryFilter.value=categories.includes(selectedCategory)?selectedCategory:'';}
+  const allHistory=Array.isArray(visibleBudget.history)?visibleBudget.history:[];
+  const typeButtons=document.querySelectorAll('#histTypeFilters [data-type]');
+  typeButtons.forEach(button=>button.classList.toggle('active',button.dataset.type===historyTypeFilter));
+  const categorySource=allHistory.filter(tx=>historyTypeFilter==='all'||tx.type===historyTypeFilter);
+  const categoryCounts=new Map();
+  categorySource.forEach(tx=>{const key=String(tx.category||'Разное').trim()||'Разное';categoryCounts.set(key,(categoryCounts.get(key)||0)+1);});
+  const categoryChips=document.getElementById('histCategoryChips');
+  if(categoryChips){
+    const categories=[...categoryCounts.keys()].sort((a,b)=>tCat(a).localeCompare(tCat(b),appData.lang||'ru'));
+    if(historyCategoryFilter&&!categoryCounts.has(historyCategoryFilter))historyCategoryFilter='';
+    const allLabel=t('Все категории');
+    categoryChips.innerHTML='<button type="button" class="history-category-chip '+(!historyCategoryFilter?'active':'')+'" onclick="setHistoryCategoryFilter(\'\')">'+allLabel+' <span>'+categorySource.length+'</span></button>'+
+      categories.map(cat=>'<button type="button" class="history-category-chip '+(historyCategoryFilter===cat?'active':'')+'" onclick="setHistoryCategoryFilter('+JSON.stringify(cat).replace(/</g,'\\u003c')+')">'+bankEscape(tCat(cat))+' <span>'+categoryCounts.get(cat)+'</span></button>').join('');
   }
-  const selectedCategory=categoryFilter?categoryFilter.value:'';
   const selectedMember=memberFilter&&visibleBudget.isFamily?memberFilter.value:'';
-  const filtered=visibleBudget.history.filter(tx => {
+  const filtered=allHistory.filter(tx => {
     const matchesSearch=!q ||
       String(tx.title || '').toLowerCase().includes(q) ||
       tCat(tx.category || '').toLowerCase().includes(q) ||
       String(tx.memberName || '').toLowerCase().includes(q);
     const matchesMember=!selectedMember||String(tx.memberName||'')===selectedMember;
-    const matchesCategory=!selectedCategory||String(tx.category||'')===selectedCategory;
-    return matchesSearch&&matchesMember&&matchesCategory;
+    const matchesCategory=!historyCategoryFilter||String(tx.category||'Разное')===historyCategoryFilter;
+    const matchesType=historyTypeFilter==='all'||tx.type===historyTypeFilter;
+    return matchesSearch&&matchesMember&&matchesCategory&&matchesType;
   });
 
   const hist = document.getElementById('historyContainer');

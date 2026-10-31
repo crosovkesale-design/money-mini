@@ -232,6 +232,7 @@ async function checkBudgetAlerts(){
   try{
     const response=await fetch('/api/budget/alerts/check',{method:'POST',headers:{'Content-Type':'application/json','X-Init-Data':tg.initData},body:JSON.stringify({
       balance:Number(visible.balance||0),monthIncome:Number(visible.monthIncome||0),
+      transactionCount:(visible.history||[]).length,
       currency:appData.currency||'UAH',familyId:familyMode?String(currentFamily.id||''):'',envelopes
     })});
     if(!response.ok)return;

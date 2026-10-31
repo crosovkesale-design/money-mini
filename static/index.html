@@ -408,7 +408,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="referral-hero card">
       <div class="referral-hero-top"><div><div class="eyebrow">FAMILY BUDGET · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
       <label class="lbl" for="referralLinkInput">Твоя реферальная ссылка</label>
-      <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button></div>
+      <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button><button class="btn btn-outline btn-sm" type="button" onclick="shareReferralLink()">Поделиться</button></div>
       <div class="referral-stats-grid">
         <div class="referral-stat"><span>Приглашено</span><strong id="referralCountValue">0</strong><small>всего пользователей</small></div>
         <div class="referral-stat"><span>Платные рефералы</span><strong id="referralPaidCountValue">0</strong><small>с оплатой подписки</small></div>
@@ -497,7 +497,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="family-detail-row"><span data-i18n="item_name">Название</span><b id="familyNameText">Моя семья</b></div>
         <div class="family-code-box">
           <div class="family-code-main"><span>Код приглашения</span><code id="familyCodeText"></code></div>
-          <button class="btn btn-outline btn-sm family-copy-btn" onclick="copyFamilyCode()">Копировать</button>
+          <button class="btn btn-outline btn-sm family-copy-btn" onclick="copyFamilyCode()">Копировать код</button>
+          <button class="btn btn-accent btn-sm family-share-btn" onclick="shareFamilyInvite()">Пригласить по ссылке</button>
         </div>
         <div id="familyMembersCount" class="family-members-count"></div>
       </div>

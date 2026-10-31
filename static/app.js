@@ -227,7 +227,7 @@ async function checkBudgetAlerts(){
   const history=visible.history||[];
   const envelopes=envelopeItems.map(envelope=>({
     id:envelope.id,name:envelope.name,target:Number(envelope.target||0),
-    spent:history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(envelope.id))
+    spent:history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(envelope.id)&&isTransactionInCurrentMonth(tx))
       .reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0)
   }));
   budgetAlertCheckRunning=true;

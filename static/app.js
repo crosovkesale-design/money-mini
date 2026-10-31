@@ -196,6 +196,7 @@ async function confirmBankImport(){
 let budgetSnapshotSyncTimer=null;
 let budgetAlertCheckTimer=null;
 let budgetAlertCheckRunning=false;
+let budgetAlertCheckPending=false;
 function queueBudgetSnapshotSync(){
   clearTimeout(budgetSnapshotSyncTimer);
   budgetSnapshotSyncTimer=setTimeout(async()=>{
@@ -218,7 +219,7 @@ function scheduleBudgetAlertCheck(){
   budgetAlertCheckTimer=setTimeout(checkBudgetAlerts,1100);
 }
 async function checkBudgetAlerts(){
-  if(budgetAlertCheckRunning)return;
+  if(budgetAlertCheckRunning){budgetAlertCheckPending=true;return;}
   const tg=window.Telegram?.WebApp;if(!tg?.initData)return;
   const visible=getVisibleBudget();
   const familyMode=visible.isFamily&&currentFamily;
@@ -245,7 +246,10 @@ async function checkBudgetAlerts(){
       else if(typeof showToast==='function')showToast(message);
     }
   }catch(error){console.warn('Budget alert check failed:',error);}
-  finally{budgetAlertCheckRunning=false;}
+  finally{
+    budgetAlertCheckRunning=false;
+    if(budgetAlertCheckPending){budgetAlertCheckPending=false;scheduleBudgetAlertCheck();}
+  }
 }
 function saveData(){
   localStorage.setItem(appStorageKey, JSON.stringify(appData));

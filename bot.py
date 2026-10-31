@@ -4182,6 +4182,88 @@ async def api_activity_log(request: Request, uid: str = Depends(current_uid)):
     await log_user_activity(uid, action, details)
     return {"ok": True}
 
+
+@app.post("/api/promo-codes/redeem")
+async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid)):
+    """Redeem a public promo code once per Telegram user, with server-side limits."""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Некорректный запрос")
+    code = normalize_promo_code((body or {}).get("code") or "")
+    if len(code) < 4:
+        raise HTTPException(status_code=400, detail="Введите корректный промокод")
+    now = now_ms()
+    reservation = {"ok": False, "reason": "invalid"}
+
+    def reserve(raw):
+        promo = dict(raw) if isinstance(raw, dict) else {}
+        redemptions = dict(promo.get("redemptions") or {})
+        if not promo or not promo.get("enabled", True):
+            reservation["reason"] = "invalid"
+            return raw
+        if str(uid) in redemptions:
+            reservation["reason"] = "used"
+            return promo
+        expires = int(promo.get("expiresAt") or 0)
+        if expires and now > expires:
+            reservation["reason"] = "expired"
+            return promo
+        uses = max(0, int(promo.get("uses") or 0))
+        maximum = max(0, int(promo.get("maxUses") or 0))
+        if maximum and uses >= maximum:
+            reservation["reason"] = "limit"
+            return promo
+        reward = str(promo.get("reward") or "")
+        if reward not in {"c10", "c20"}:
+            reservation["reason"] = "invalid"
+            return promo
+        redemptions[str(uid)] = now
+        promo["redemptions"] = redemptions
+        promo["uses"] = uses + 1
+        reservation.update({"ok": True, "reward": reward})
+        return promo
+
+    try:
+        await fb.transaction(f"/promoCodes/{code}", reserve)
+    except Exception:
+        log.exception("Promo redemption reservation failed for code %s", code)
+        raise HTTPException(status_code=502, detail="Не удалось активировать промокод. Попробуйте позже.")
+    if not reservation["ok"]:
+        messages = {
+            "invalid": "Промокод не найден или отключён",
+            "used": "Вы уже активировали этот промокод",
+            "expired": "Срок действия промокода истёк",
+            "limit": "Лимит активаций этого промокода исчерпан",
+        }
+        raise HTTPException(status_code=400, detail=messages.get(reservation["reason"], "Промокод недоступен"))
+
+    reward = reservation["reward"]
+    earned_field = "couponsEarned" if reward == "c10" else "coupons20Earned"
+    applied = {"ok": False}
+    def grant(raw):
+        user = dict(raw) if isinstance(raw, dict) else {}
+        redeemed = dict(user.get("promoCodesRedeemed") or {})
+        if code in redeemed:
+            applied["ok"] = True
+            applied["already"] = True
+            return user
+        user[earned_field] = max(0, int(user.get(earned_field) or 0)) + 1
+        redeemed[code] = {"reward": reward, "at": now}
+        user["promoCodesRedeemed"] = redeemed
+        applied["ok"] = True
+        return user
+    try:
+        await fb.transaction(f"/users/{uid}", grant)
+    except Exception:
+        log.exception("Promo reward grant failed for uid=%s code=%s", uid, code)
+        raise HTTPException(status_code=502, detail="Код принят, но награда не начислена. Обратись в поддержку.")
+    if not applied["ok"]:
+        raise HTTPException(status_code=502, detail="Не удалось начислить награду")
+    await log_user_activity(uid, "promo_redeemed", {"title": code, "type": reward})
+    return {"ok": True, "reward": 10 if reward == "c10" else 20, "message": "Промокод активирован! Купон добавлен в баланс."}
+
+
 @app.get("/api/admin/activity")
 async def api_admin_activity(x_admin_key: str = Header(default="")):
     if not admin_key_ok(x_admin_key):

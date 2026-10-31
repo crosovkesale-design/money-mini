@@ -112,15 +112,16 @@ def now_ms() -> int:
     return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 def season_info(now_local=None) -> dict:
-    """Monthly season: starts on the first day and ends on the last day of each Kyiv month."""
+    """Quarterly Money Pass season, based on the Kyiv calendar."""
     now_local = now_local or datetime.now(KYIV)
-    start_date = now_local.date().replace(day=1)
-    if now_local.month == 12:
-        next_month = datetime(now_local.year + 1, 1, 1, tzinfo=KYIV).date()
-    else:
-        next_month = datetime(now_local.year, now_local.month + 1, 1, tzinfo=KYIV).date()
-    end_date = next_month - timedelta(days=1)
-    return {"key": start_date.strftime("%Y-%m"), "label": now_local.strftime("%B %Y"),
+    quarter = (now_local.month - 1) // 3 + 1
+    start_month = (quarter - 1) * 3 + 1
+    start_date = datetime(now_local.year, start_month, 1, tzinfo=KYIV).date()
+    next_year = now_local.year + (1 if start_month == 10 else 0)
+    next_month = 1 if start_month == 10 else start_month + 3
+    next_start = datetime(next_year, next_month, 1, tzinfo=KYIV).date()
+    end_date = next_start - timedelta(days=1)
+    return {"key": f"{now_local.year}-Q{quarter}", "label": f"Q{quarter} {now_local.year}",
             "start": start_date.isoformat(), "end": end_date.isoformat(),
             "days_left": max(0, (end_date - now_local.date()).days)}
 
@@ -2103,8 +2104,13 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
         all_claims = dict(current.get("battlePassClaims") or {})
         season_claims = dict(all_claims.get(month_key) or {})
         claimed_track = list(season_claims.get(track) or [])
-        if tier in [int(x) for x in claimed_track]:
+        claimed_tiers = [int(x) for x in claimed_track]
+        if tier in claimed_tiers:
             result.update({"ok": False, "reason": "already"})
+            return current
+        expected_tier = max(claimed_tiers, default=0) + 1
+        if tier != expected_tier:
+            result.update({"ok": False, "reason": "order", "nextTier": expected_tier})
             return current
         if coupon_percent:
             current["couponsEarned"] = max(0, int(current.get("couponsEarned") or 0)) + 1
@@ -2118,6 +2124,8 @@ async def api_battlepass_claim(request: Request, uid: str = Depends(current_uid)
         return current
     await fb.transaction(f"/users/{uid}", claim_update)
     if not result.get("ok"):
+        if result.get("reason") == "order":
+            raise HTTPException(status_code=409, detail="Сначала забери предыдущую награду.")
         raise HTTPException(status_code=409, detail="Эта награда уже получена в текущем сезоне.")
     return result
 

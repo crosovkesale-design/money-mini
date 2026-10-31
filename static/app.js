@@ -976,7 +976,8 @@ function renderBattlePass(){
   }).join('');
   const isPro=battlePassTrack==='pro';
   const claimed=new Set((battlePassStats.claimed?.[battlePassTrack]||[]).map(Number));
-  const nextTier=Math.max(0,...claimed)+1;
+  let nextTier=1;
+  while(claimed.has(nextTier)&&nextTier<=30)nextTier++;
   const hasPro=Boolean(canUseProFeatures);
   rewardsEl.innerHTML=Array.from({length:30},(_,index)=>{
     const tier=index+1,task=battlePassTierRequirement(tier);

@@ -953,7 +953,7 @@ if bot:
                 parse_mode="HTML"
             )
         except HTTPException as exc:
-            await message.answer("❌ <b>Не удалось активировать промокод.</b>\n" + str(exc.detail or ""), parse_mode="HTML")
+            await message.answer("❌ <b>Не удалось активировать промокод.</b>\n" + escape(str(exc.detail or "")), parse_mode="HTML")
         except Exception:
             log.exception("Chat promo redemption failed for uid=%s", uid)
             await message.answer(
@@ -4692,7 +4692,21 @@ async def api_redeem_promo_code(request: Request, uid: str = Depends(current_uid
         await fb.transaction(f"/users/{uid}", grant)
     except Exception:
         log.exception("Promo reward grant failed for uid=%s code=%s", uid, code)
-        raise HTTPException(status_code=502, detail="Код принят, но награда не начислена. Обратись в поддержку.")
+        # Release only this user's reservation so the same code can be retried.
+        # Do not touch another user's redemption or any already granted reward.
+        def release_reservation(raw):
+            promo = dict(raw) if isinstance(raw, dict) else {}
+            redemptions = dict(promo.get("redemptions") or {})
+            if str(redemptions.get(str(uid)) or "") == str(now):
+                redemptions.pop(str(uid), None)
+                promo["redemptions"] = redemptions
+                promo["uses"] = max(0, int(promo.get("uses") or 0) - 1)
+            return promo
+        try:
+            await fb.transaction(f"/promoCodes/{code}", release_reservation)
+        except Exception:
+            log.exception("Could not release promo reservation for uid=%s code=%s", uid, code)
+        raise HTTPException(status_code=502, detail="Не удалось начислить награду. Попробуй активировать код ещё раз чуть позже.")
     if not applied["ok"]:
         raise HTTPException(status_code=502, detail="Не удалось начислить награду")
     granted = applied.get("granted") or rewards

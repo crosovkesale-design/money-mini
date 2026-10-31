@@ -913,8 +913,11 @@ function renderReferralStats(){
   if(paid)paid.textContent=String(Number(battlePassStats.paidCount||0));
   if(volume)volume.textContent='$'+Number(battlePassStats.volumeUsd||0).toLocaleString('en-US',{maximumFractionDigits:2});
   const now=new Date();
-  const quarterStartMonth=Math.floor(now.getMonth()/3)*3;
-  const endDate=new Date(now.getFullYear(),quarterStartMonth+3,0);
+  const shiftedMonth=(now.getMonth()-8+12)%12;
+  const seasonQuarter=Math.floor(shiftedMonth/3);
+  const seasonStartMonth=(8+seasonQuarter*3)%12;
+  const seasonStartYear=now.getFullYear()-(seasonStartMonth>now.getMonth()?1:0);
+  const endDate=new Date(seasonStartYear,seasonStartMonth+3,0);
   const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const localDaysLeft=Math.max(0,Math.ceil((endDate-today)/86400000));
   const daysLeft=battlePassStats.monthKey?Number(battlePassStats.daysLeft??localDaysLeft):localDaysLeft;

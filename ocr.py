@@ -26,9 +26,16 @@ def extract_receipt(image_bytes: bytes) -> dict:
     img = ImageOps.autocontrast(img)
 
     try:
-        # A single Cyrillic model is much lighter; it still recognizes digits and Latin text.
+        # Receipts may mix Ukrainian, Russian and Latin product names. Use every
+        # language model installed in the Render image instead of forcing Ukrainian.
+        try:
+            available = set(pytesseract.get_languages(config=""))
+        except Exception:
+            available = set()
+        preferred = [name for name in ("ukr", "rus", "eng") if name in available]
+        language = "+".join(preferred) if preferred else "eng"
         text = pytesseract.image_to_string(
-            img, lang="ukr", config="--oem 1 --psm 6", timeout=OCR_TIMEOUT_SECONDS
+            img, lang=language, config="--oem 1 --psm 6", timeout=OCR_TIMEOUT_SECONDS
         )
     except TesseractNotFoundError as exc:
         raise RuntimeError("OCR_ENGINE_MISSING") from exc

@@ -560,3 +560,35 @@ input::placeholder,textarea::placeholder{color:#77837f}
   #historyContainer .history-title{font-size:12px}
   #historyContainer .history-amount{font-size:13px}
 }
+
+
+/* Ruviko custom receipt calendar — replaces Android native date popup */
+#modalReceiptEntry #receiptDateInput{display:none!important}
+#receiptDatePicker{position:relative;margin:0 0 14px}
+#receiptDateTrigger{
+ width:100%;min-height:54px;display:flex;align-items:center;gap:12px;
+ padding:9px 13px;border:1px solid rgba(125,216,189,.24);border-radius:15px;
+ background:linear-gradient(135deg,rgba(125,216,189,.10),rgba(125,216,189,.035));
+ color:var(--text,#f1f5f4);text-align:left;font:inherit;cursor:pointer;
+}
+.ruviko-date-trigger-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:rgba(125,216,189,.15);color:#8ce2c5;font-size:16px}
+.ruviko-date-trigger-value{flex:1;font-weight:700;font-size:14px}
+.ruviko-date-chevron{color:#8ce2c5;font-size:11px}
+.ruviko-calendar{
+ position:relative;margin-top:9px;padding:13px;border:1px solid rgba(125,216,189,.20);
+ border-radius:18px;background:#172126;box-shadow:0 14px 36px rgba(0,0,0,.32);
+}
+.ruviko-calendar[hidden]{display:none!important}
+.ruviko-calendar-head{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:8px;margin-bottom:12px}
+.ruviko-calendar-head strong{text-align:center;text-transform:capitalize;font-size:15px;color:#f3f8f6}
+.ruviko-calendar-head button{height:36px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:#223138;color:#a8e8d2}
+.ruviko-calendar-weekdays,.ruviko-calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}
+.ruviko-calendar-weekdays{margin-bottom:6px}
+.ruviko-calendar-weekdays span{padding:5px 0;color:#8ea39d;font-size:11px;font-weight:700}
+.ruviko-calendar-day,.ruviko-calendar-empty{min-width:0;aspect-ratio:1;display:grid;place-items:center}
+.ruviko-calendar-day{border:1px solid transparent;border-radius:11px;background:rgba(255,255,255,.045);color:#e8f0ed;font-size:13px;font-weight:600}
+.ruviko-calendar-day:active{transform:scale(.94)}
+.ruviko-calendar-day.is-today{border-color:rgba(125,216,189,.55);color:#9be8ce}
+.ruviko-calendar-day.is-selected{background:linear-gradient(135deg,#78d7b8,#48ad91);color:#10231d;box-shadow:0 4px 13px rgba(72,173,145,.25)}
+.ruviko-calendar-today{width:100%;margin-top:11px;padding:10px;border:1px solid rgba(125,216,189,.17);border-radius:11px;background:rgba(125,216,189,.08);color:#9be8ce;font-weight:700}
+@media(max-width:380px){.ruviko-calendar{padding:10px}.ruviko-calendar-weekdays,.ruviko-calendar-days{gap:3px}.ruviko-calendar-day{font-size:12px}}

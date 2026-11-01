@@ -2660,7 +2660,7 @@ function renderAll(){
             <div class="history-info">
               <div class="history-title">${tx.title || tCat(tx.category || 'Разное')} ${tx.receipt ? '🧾' : ''}</div>
               <div class="history-sub">
-                <span class="history-kind">${tx.type === 'expense' ? 'Расход' : 'Доход'}</span>
+                <span class="history-kind">${tx.type === 'expense' ? t('btn_expense') : t('btn_income')}</span>
                 <span class="history-meta">${visibleBudget.isFamily ? ((tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : '') + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</span>
               </div>
               ${tx.comment ? '<div class="history-comment">'+String(tx.comment).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : ''}

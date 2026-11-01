@@ -29,9 +29,9 @@ h4{font-size:21px}
 .topbar-help{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--gold-hi)}
 .topbar-tariffs{min-height:36px;padding:0 12px;border:1px solid #c9ad7650;border-radius:6px 13px 6px 13px;background:#c9ad7614;color:var(--gold-hi);font-size:11px;font-weight:750}
 .app-menu-backdrop{position:fixed;inset:0;z-index:299;background:#030607b8;backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:.2s}
-.app-menu-backdrop.open,.app-menu-backdrop.active{opacity:1;visibility:visible}
+body.menu-open .app-menu-backdrop{opacity:1;visibility:visible}
 .app-drawer{position:fixed;z-index:300;inset:0 auto 0 0;width:min(86vw,340px);padding:24px 17px;background:#11191e;border-right:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(-105%);transition:transform .25s ease;overflow:auto}
-.app-drawer.open,.app-drawer.active{transform:translateX(0)}
+body.menu-open .app-drawer{transform:translateX(0)}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:8px 5px 22px;border-bottom:1px solid var(--line)}
 .drawer-head b{display:block;letter-spacing:.2em;font-size:15px}.drawer-head small{color:var(--muted)}
 .drawer-head button{border:0;background:none;font-size:26px;color:var(--muted)}
@@ -142,7 +142,7 @@ input::placeholder,textarea::placeholder{color:#77837f}
 .advantages-page{display:grid;gap:12px}.advantages-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .advantages-feature-grid>*{padding:14px;border:1px solid var(--line);border-radius:4px 14px 4px 14px;background:#151f24}
 .modal,.app-dialog-overlay,.bank-import-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;background:#030607bd;backdrop-filter:blur(5px)}
-.modal-content,.app-dialog-card{width:min(100%,480px);max-height:min(88vh,820px);overflow:auto;padding:20px;background:#151f24}
+.modal:not(.active),.app-dialog-overlay:not(.active){display:none!important}.modal.active,.app-dialog-overlay.active{display:flex!important}.modal-content,.app-dialog-card{width:min(100%,480px);max-height:min(88vh,820px);overflow:auto;padding:20px;background:#151f24}
 .modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .modal-close{border:0;background:transparent;color:var(--muted);font-size:24px}
 .app-dialog-card{width:min(100%,390px);text-align:center}.app-dialog-actions{display:flex;justify-content:center;gap:8px;margin-top:17px}

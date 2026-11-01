@@ -1,2 +1,2 @@
 # money-mini
-Family Budget mini app
+Рувико mini app

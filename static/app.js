@@ -2417,15 +2417,27 @@ function renderCharts(){
 }
 
 function analyticsDateKey(tx){
-  if(tx && tx.ts){
-    const d=new Date(Number(tx.ts));
-    if(!Number.isNaN(d.getTime())) return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  if(tx){
+    const rawTs=Number(tx.ts);
+    if(Number.isFinite(rawTs)&&rawTs>0){
+      const normalizedTs=rawTs<100000000000?rawTs*1000:rawTs;
+      const d=new Date(normalizedTs);
+      if(!Number.isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
   }
   const raw=String(tx?.date||'').trim();
-  let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if(m)return m[1]+'-'+m[2]+'-'+m[3];
+  let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T)/);
+  if(m){
+    const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
+    const d=new Date(year,month-1,day);
+    if(d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day)return m[1]+'-'+m[2]+'-'+m[3];
+    return '';
+  }
   m=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-  if(m)return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+  if(m){
+    const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]),d=new Date(year,month-1,day);
+    if(d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day)return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  }
   return '';
 }
 
@@ -2491,20 +2503,17 @@ function renderProInsights(){
 }
 
 function renderForecast(){
-  const card = document.getElementById('forecastCard');
-  if(!card) return;
-
-  const now = new Date();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-
-  if(appData.monthExpense > 0 && now.getDate() > 0){
-    const projected = appData.monthExpense / now.getDate() * daysInMonth;
-    card.style.display = 'block';
-    document.getElementById('forecastBody').innerHTML =
-      t('forecast_text').replace('{sum}', fmtMoney(projected));
-  } else {
-    card.style.display = 'none';
-  }
+  const card=document.getElementById('forecastCard');
+  if(!card)return;
+  const now=new Date(),daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const visibleBudget=getVisibleBudget();
+  const monthExpense=Math.max(0,Number(visibleBudget.monthExpense)||0);
+  const body=document.getElementById('forecastBody');
+  if(monthExpense>0&&now.getDate()>0){
+    const projected=monthExpense/now.getDate()*daysInMonth;
+    card.style.display='block';
+    if(body)body.textContent=t('forecast_text').replace('{sum}',fmtMoney(projected));
+  }else card.style.display='none';
 }
 
 
@@ -2525,7 +2534,7 @@ function renderWeeklySummary(visibleBudget){
     const date=weeklyDateForTransaction(tx);if(!date||date<start||date>end)continue;
     const amount=Math.max(0,Number(tx.amount)||0);if(!amount)continue;
     if(tx.type==='income')income+=amount;
-    else{expense+=amount;const key=String(tx.category||'Другое');categories[key]=(categories[key]||0)+amount;}
+    else if(tx.type==='expense'){expense+=amount;const key=String(tx.category||'Другое');categories[key]=(categories[key]||0)+amount;}
   }
   const top=Object.entries(categories).sort((x,y)=>y[1]-x[1])[0];
   incomeNode.textContent='+'+fmtMoney(income);expenseNode.textContent='−'+fmtMoney(expense);

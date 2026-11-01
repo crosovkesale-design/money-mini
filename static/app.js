@@ -1470,6 +1470,60 @@ async function parseTransactionWithAI(){
   }
 }
 
+function renderEnvelopePicker(){
+  const select=document.getElementById('txEnvelopeSelect');
+  const list=document.getElementById('txEnvelopeOptions');
+  const current=document.getElementById('txEnvelopeCurrentLabel');
+  if(!select||!list||!current)return;
+  const selected=select.options[select.selectedIndex];
+  current.textContent=selected?.textContent||'Без конверта';
+  list.innerHTML='';
+  [...select.options].forEach(option=>{
+    const item=document.createElement('button');
+    item.type='button';
+    item.className='envelope-picker-option'+(option.value===select.value?' active':'');
+    item.setAttribute('role','option');
+    item.setAttribute('aria-selected',String(option.value===select.value));
+    const icon=document.createElement('span');
+    icon.className='envelope-option-icon';
+    icon.textContent=option.value?'✉':'○';
+    const label=document.createElement('span');
+    label.className='envelope-option-label';
+    label.textContent=option.textContent;
+    const mark=document.createElement('span');
+    mark.className='envelope-option-check';
+    mark.textContent=option.value===select.value?'✓':'';
+    item.append(icon,label,mark);
+    item.addEventListener('click',()=>{
+      select.value=option.value;
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+      renderEnvelopePicker();
+      closeEnvelopePicker();
+    });
+    list.appendChild(item);
+  });
+}
+function toggleEnvelopePicker(){
+  const list=document.getElementById('txEnvelopeOptions');
+  const trigger=document.getElementById('txEnvelopeTrigger');
+  if(!list||!trigger)return;
+  const opening=list.hidden;
+  list.hidden=!opening;
+  trigger.setAttribute('aria-expanded',String(opening));
+  trigger.classList.toggle('is-open',opening);
+  if(opening)renderEnvelopePicker();
+}
+function closeEnvelopePicker(){
+  const list=document.getElementById('txEnvelopeOptions');
+  const trigger=document.getElementById('txEnvelopeTrigger');
+  if(list)list.hidden=true;
+  if(trigger){trigger.setAttribute('aria-expanded','false');trigger.classList.remove('is-open');}
+}
+document.addEventListener('click',event=>{
+  const wrap=document.getElementById('txEnvelopeWrap');
+  if(wrap&&!wrap.contains(event.target))closeEnvelopePicker();
+});
+
 function openTransactionModal(type) {
   pendingReceiptDraft = null;
   const receiptStatus = document.getElementById('receiptDraftStatus');
@@ -1488,6 +1542,8 @@ function openTransactionModal(type) {
     const availableEnvelopes = budgetMode === 'family' ? familyEnvelopes : (appData.envelopes || []);
     envelopeSelect.innerHTML = '<option value="">Без конверта</option>' + availableEnvelopes.map(e => '<option value="' + e.id + '">' + String(e.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</option>').join('');
     envelopeSelect.value = '';
+    renderEnvelopePicker();
+    closeEnvelopePicker();
   }
 
   document.getElementById('txModalTitle').innerText =

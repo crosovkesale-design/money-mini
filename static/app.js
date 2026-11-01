@@ -172,6 +172,7 @@ function renderBankImportRows(){
       '<label>Категория<select onchange="updateBankImportRow('+i+',\'category\',this.value)">'+options+'</select></label>'+
       '<label>Сумма<input type="number" min="0.01" step="0.01" value="'+bankEscape(row.amount)+'" onchange="updateBankImportRow('+i+',\'amount\',this.value)"></label></div></div>';
   }).join('');
+  initRuvikoDatePickers(node);
 }
 function updateBankImportRow(index,field,value){
   const row=bankImportRows[index];if(!row)return;
@@ -852,6 +853,77 @@ function receiptUi(key, values={}){
   Object.keys(values).forEach(name=>{ value=value.replaceAll('{'+name+'}',String(values[name])); });
   return value;
 }
+
+
+/* Unified Ruviko date picker for every date field except the receipt's dedicated picker. */
+let ruvikoDateCalendarView = new Date();
+const RUVIKO_DATE_LOCALE = {
+ ru:{week:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],today:'Сегодня',choose:'Выбрать дату'},
+ uk:{week:['Пн','Вт','Ср','Чт','Пт','Сб','Нд'],today:'Сьогодні',choose:'Вибрати дату'},
+ en:{week:['Mo','Tu','We','Th','Fr','Sa','Su'],today:'Today',choose:'Choose date'},
+ de:{week:['Mo','Di','Mi','Do','Fr','Sa','So'],today:'Heute',choose:'Datum wählen'},
+ es:{week:['Lu','Ma','Mi','Ju','Vi','Sá','Do'],today:'Hoy',choose:'Elegir fecha'},
+ fr:{week:['Lu','Ma','Me','Je','Ve','Sa','Di'],today:"Aujourd’hui",choose:'Choisir une date'},
+ it:{week:['Lu','Ma','Me','Gi','Ve','Sa','Do'],today:'Oggi',choose:'Scegli data'},
+ pl:{week:['Pn','Wt','Śr','Cz','Pt','So','Nd'],today:'Dzisiaj',choose:'Wybierz datę'},
+ tr:{week:['Pt','Sa','Ça','Pe','Cu','Ct','Pa'],today:'Bugün',choose:'Tarih seç'},
+ zh:{week:['一','二','三','四','五','六','日'],today:'今天',choose:'选择日期'}
+};
+function ruvikoDateLang(){const k=String(appData?.lang||'ru').toLowerCase().split('-')[0];return RUVIKO_DATE_LOCALE[k]||RUVIKO_DATE_LOCALE.ru;}
+function ruvikoDateISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function ruvikoDateLabel(value){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return ruvikoDateLang().choose;
+ const [y,m,d]=value.split('-').map(Number);
+ return new Intl.DateTimeFormat(appData?.lang||'ru',{day:'2-digit',month:'long',year:'numeric'}).format(new Date(y,m-1,d));
+}
+function renderRuvikoDateCalendar(picker){
+ const input=picker.querySelector('input[type="date"]');if(!input)return;
+ const view=new Date(Number(picker.dataset.year),Number(picker.dataset.month),1);
+ const month=picker.querySelector('.ruviko-universal-month');
+ month.textContent=new Intl.DateTimeFormat(appData?.lang||'ru',{month:'long',year:'numeric'}).format(view);
+ picker.querySelector('.ruviko-universal-week').innerHTML=ruvikoDateLang().week.map(x=>'<span>'+x+'</span>').join('');
+ const offset=(view.getDay()+6)%7,count=new Date(view.getFullYear(),view.getMonth()+1,0).getDate(),selected=input.value,today=ruvikoDateISO(new Date());
+ let out='';for(let n=0;n<offset;n++)out+='<span class="ruviko-universal-empty"></span>';
+ for(let d=1;d<=count;d++){const value=ruvikoDateISO(new Date(view.getFullYear(),view.getMonth(),d));out+='<button type="button" class="ruviko-universal-day '+(value===selected?'is-selected ':'')+(value===today?'is-today':'')+'" data-date-value="'+value+'">'+d+'</button>';}
+ picker.querySelector('.ruviko-universal-days').innerHTML=out;
+}
+function initRuvikoDatePickers(root=document){
+ root.querySelectorAll('input[type="date"]:not(#receiptDateInput)').forEach(input=>{
+  if(input.dataset.ruvikoPicker==='1')return;
+  input.dataset.ruvikoPicker='1';
+  const wrap=document.createElement('div');wrap.className='ruviko-universal-picker';
+  input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+  input.classList.add('ruviko-date-native');input.tabIndex=-1;input.setAttribute('aria-hidden','true');
+  const trigger=document.createElement('button');trigger.type='button';trigger.className='ruviko-universal-trigger';trigger.setAttribute('aria-expanded','false');
+  trigger.innerHTML='<span class="ruviko-universal-icon"><i class="fa-regular fa-calendar-days"></i></span><span class="ruviko-universal-label"></span><i class="fa-solid fa-chevron-down"></i>';
+  const popup=document.createElement('div');popup.className='ruviko-universal-popup';popup.hidden=true;
+  popup.innerHTML='<div class="ruviko-universal-head"><button type="button" data-date-shift="-1" aria-label="Previous month">‹</button><strong class="ruviko-universal-month"></strong><button type="button" data-date-shift="1" aria-label="Next month">›</button></div><div class="ruviko-universal-week"></div><div class="ruviko-universal-days"></div><button type="button" class="ruviko-universal-today"></button>';
+  wrap.append(trigger,popup);
+  const sync=()=>{trigger.querySelector('.ruviko-universal-label').textContent=ruvikoDateLabel(input.value);};
+  sync();
+  trigger.addEventListener('click',()=>{
+   const open=popup.hidden;
+   document.querySelectorAll('.ruviko-universal-popup').forEach(p=>p.hidden=true);
+   document.querySelectorAll('.ruviko-universal-trigger').forEach(t=>t.setAttribute('aria-expanded','false'));
+   popup.hidden=!open;trigger.setAttribute('aria-expanded',String(open));
+   if(open){const v=input.value||ruvikoDateISO(new Date()),parts=v.split('-').map(Number);wrap.dataset.year=parts[0];wrap.dataset.month=parts[1]-1;renderRuvikoDateCalendar(wrap);}
+  });
+  popup.addEventListener('click',e=>{
+   const shift=e.target.closest('[data-date-shift]');
+   if(shift){const d=new Date(Number(wrap.dataset.year),Number(wrap.dataset.month)+Number(shift.dataset.dateShift),1);wrap.dataset.year=d.getFullYear();wrap.dataset.month=d.getMonth();renderRuvikoDateCalendar(wrap);return;}
+   const day=e.target.closest('[data-date-value]');
+   if(day){input.value=day.dataset.dateValue;input.dispatchEvent(new Event('change',{bubbles:true}));sync();popup.hidden=true;trigger.setAttribute('aria-expanded','false');return;}
+   if(e.target.closest('.ruviko-universal-today')){input.value=ruvikoDateISO(new Date());input.dispatchEvent(new Event('change',{bubbles:true}));sync();popup.hidden=true;trigger.setAttribute('aria-expanded','false');}
+  });
+  popup.querySelector('.ruviko-universal-today').textContent=ruvikoDateLang().today;
+  input.addEventListener('change',sync);
+ });
+}
+document.addEventListener('click',e=>{
+ if(e.target.closest('.ruviko-universal-picker'))return;
+ document.querySelectorAll('.ruviko-universal-popup').forEach(p=>p.hidden=true);
+ document.querySelectorAll('.ruviko-universal-trigger').forEach(t=>t.setAttribute('aria-expanded','false'));
+});
 
 let receiptCalendarView = new Date();
 const RECEIPT_CALENDAR_LOCALES = {
@@ -3360,7 +3432,8 @@ function askFinanceSuggestion(question){
 
 // Initialize safely whether this file runs before or after DOMContentLoaded.
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp, { once: true });
+  document.addEventListener('DOMContentLoaded',()=>initRuvikoDatePickers());
+document.addEventListener('DOMContentLoaded', initApp, { once: true });
 } else {
   initApp();
 }

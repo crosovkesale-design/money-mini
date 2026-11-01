@@ -58,12 +58,12 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js?v=20261101-ruviko-stability-v1" defer></script>
-<script src="./app.js?v=20261101-ruviko-brand-v1" defer></script>
+<script src="./app.js?v=20261101-ruviko-receipt-calendar-v1" defer></script>
 
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261101-ruviko-brand-v1">
+<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261101-ruviko-receipt-calendar-v1">
 </head>
 <body>
 <div class="container">
@@ -606,7 +606,24 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <label class="lbl" for="receiptStoreInput">Магазин</label>
     <input type="text" id="receiptStoreInput" class="custom-input" maxlength="80" placeholder="Например, АТБ">
     <label class="lbl" for="receiptDateInput">Дата покупки</label>
-    <input type="date" id="receiptDateInput" class="custom-input">
+    <input type="date" id="receiptDateInput" class="custom-input" hidden>
+    <div class="ruviko-date-picker" id="receiptDatePicker">
+      <button type="button" class="ruviko-date-trigger" id="receiptDateTrigger" aria-haspopup="dialog" aria-expanded="false">
+        <span class="ruviko-date-trigger-icon"><i class="fa-regular fa-calendar"></i></span>
+        <span class="ruviko-date-trigger-value" id="receiptDateLabel">Выбрать дату</span>
+        <i class="fa-solid fa-chevron-down ruviko-date-chevron"></i>
+      </button>
+      <div class="ruviko-calendar" id="receiptCalendar" role="dialog" aria-label="Календарь" hidden>
+        <div class="ruviko-calendar-head">
+          <button type="button" id="receiptCalendarPrev" aria-label="Предыдущий месяц"><i class="fa-solid fa-chevron-left"></i></button>
+          <strong id="receiptCalendarMonth"></strong>
+          <button type="button" id="receiptCalendarNext" aria-label="Следующий месяц"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="ruviko-calendar-weekdays" id="receiptCalendarWeekdays"></div>
+        <div class="ruviko-calendar-days" id="receiptCalendarDays"></div>
+        <button type="button" class="ruviko-calendar-today" id="receiptCalendarToday">Сегодня</button>
+      </div>
+    </div>
     <label class="lbl" for="receiptItemsInput">Товары</label>
     <textarea id="receiptItemsInput" class="custom-input receipt-items-input" rows="5" placeholder="Молоко; 42.50; 1&#10;Хлеб; 28; 2&#10;Яблоки; 35; 1.5"></textarea>
     <label class="lbl" for="receiptTotalInput">Итого по чеку</label>

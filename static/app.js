@@ -2047,11 +2047,22 @@ async function loadFamilyTransactions(){if(!currentFamily||familyTransactionsBus
 async function loadFamilyEnvelopes(){if(!currentFamily||familyEnvelopesBusy)return;familyEnvelopesBusy=true;try{const r=await familyRequest('/api/family/envelopes');familyEnvelopes=Array.isArray(r.envelopes)?r.envelopes:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные конверты.',true);}finally{familyEnvelopesBusy=false;renderAll();}}
 async function loadFamilyBanks(){if(!currentFamily||familyBanksBusy)return;familyBanksBusy=true;try{const r=await familyRequest('/api/family/banks');familyBanks=Array.isArray(r.banks)?r.banks:[];}catch(e){familyFeedback(e.message||'Не удалось загрузить семейные копилки.',true);}finally{familyBanksBusy=false;renderAll();}}
 function getVisibleBudget(){
- if(budgetMode!=='family'||!currentFamily)return {balance:appData.balance,monthIncome:appData.monthIncome,monthExpense:appData.monthExpense,history:appData.history,isFamily:false};
- const now=new Date(),history=familyTransactions.map(tx=>({...tx,title:tx.title||tx.note||tx.category||'Операция',date:tx.date||(tx.ts?new Date(Number(tx.ts)).toLocaleDateString('ru-RU'):'')}));
- const month=history.filter(tx=>{const d=tx.ts?new Date(Number(tx.ts)):new Date(tx.date||'');return !isNaN(d)&&d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
- const income=month.filter(tx=>tx.type==='income').reduce((s,tx)=>s+Number(tx.amount||0),0),expense=month.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+Number(tx.amount||0),0);
- const balance=history.reduce((s,tx)=>s+(tx.type==='income'?1:-1)*Number(tx.amount||0),0);
+ if(budgetMode!=='family'||!currentFamily)return {balance:appData.balance,monthIncome:appData.monthIncome,monthExpense:appData.monthExpense,history:Array.isArray(appData.history)?appData.history:[],isFamily:false};
+ const source=Array.isArray(familyTransactions)?familyTransactions:[];
+ const history=source.map(tx=>({...tx,title:tx.title||tx.note||tx.category||'Операция',date:tx.date||(tx.ts?new Date(Number(tx.ts)).toLocaleDateString(appData.lang||'ru-RU'):'' )}));
+ const now=new Date(),currentMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+ let income=0,expense=0,balance=0;
+ for(const tx of history){
+   const amount=Number(tx.amount);
+   if(!Number.isFinite(amount)||amount<0)continue;
+   if(tx.type==='income')balance+=amount;
+   else if(tx.type==='expense')balance-=amount;
+   else continue;
+   if(analyticsDateKey(tx).slice(0,7)===currentMonth){
+     if(tx.type==='income')income+=amount;
+     else expense+=amount;
+   }
+ }
  return {balance,monthIncome:income,monthExpense:expense,history,isFamily:true};
 }
 

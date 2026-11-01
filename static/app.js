@@ -2351,144 +2351,57 @@ let chart1, chart2;
 
 function renderCharts(){
   if(typeof Chart === 'undefined') return;
+  const expensesCanvas=document.getElementById('expensesChart');
+  const monthsCanvas=document.getElementById('monthsChart');
+  if(!expensesCanvas||!monthsCanvas)return;
 
-  const expensesCanvas = document.getElementById('expensesChart');
-  const monthsCanvas = document.getElementById('monthsChart');
-  if(!expensesCanvas || !monthsCanvas) return;
+  const budget=getVisibleBudget();
+  const history=Array.isArray(budget.history)?budget.history:[];
+  const textColor=getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#f5f7ff';
+  const gridColor=getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'rgba(150,160,190,.2)';
+  if(chart1){chart1.destroy();chart1=null;}
+  if(chart2){chart2.destroy();chart2=null;}
 
-  const textColor = getComputedStyle(document.documentElement)
-    .getPropertyValue('--text').trim() || '#f5f7ff';
-  const gridColor = getComputedStyle(document.documentElement)
-    .getPropertyValue('--border').trim() || 'rgba(150,160,190,.2)';
-
-  if(chart1) chart1.destroy();
-  if(chart2) chart2.destroy();
-
-  const categories = {};
-  appData.history.filter(tx => tx.type === 'expense').forEach(tx => {
-    const key = tx.category || 'Разное';
-    categories[key] = (categories[key] || 0) + Number(tx.amount || 0);
-  });
-
-  const palette = [
-    '#8b7cff','#36d9ff','#36d6a0','#ff6685','#ffc96b',
-    '#ff9f6e','#9b8cff','#53b7ff','#d17cff','#72d6bd'
-  ];
-
-  chart1 = new Chart(expensesCanvas.getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: Object.keys(categories).map(tCat),
-      datasets: [{
-        data: Object.values(categories),
-        backgroundColor: Object.keys(categories).map((_,i) => palette[i % palette.length]),
-        borderColor: getComputedStyle(document.documentElement)
-          .getPropertyValue('--surface-strong').trim() || '#13192e',
-        borderWidth: 3,
-        hoverOffset: 7
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      cutout: '62%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: textColor, padding: 14, usePointStyle: true }
-        },
-        title: {
-          display: true,
-          text: t('expense'),
-          color: textColor,
-          padding: { bottom: 16 }
-        }
-      }
-    }
-  });
-
-  const monthKeys = [];
-  const monthLabels = [];
-  const now = new Date();
-
-  for(let i = 5; i >= 0; i--){
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthKeys.push(
-      `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-    );
-    monthLabels.push(
-      d.toLocaleDateString(appData.lang || 'ru', { month: 'short' })
-    );
+  const now=new Date();
+  const currentMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const categories={};
+  for(const tx of history){
+    if(!tx||tx.type!=='expense')continue;
+    const amount=Number(tx.amount);
+    if(!Number.isFinite(amount)||amount<=0||analyticsDateKey(tx).slice(0,7)!==currentMonth)continue;
+    const key=String(tx.category||'Разное').trim()||'Разное';
+    categories[key]=(categories[key]||0)+amount;
   }
-
-  const incomes = Object.fromEntries(monthKeys.map(k => [k, 0]));
-  const expenses = Object.fromEntries(monthKeys.map(k => [k, 0]));
-
-  appData.history.forEach(tx => {
-    const parts = String(tx.date || '').split('.');
-    if(parts.length !== 3) return;
-
-    const key = `${parts[2]}-${String(parts[1]).padStart(2,'0')}`;
-    if(!(key in incomes)) return;
-
-    if(tx.type === 'income'){
-      incomes[key] += Number(tx.amount || 0);
-    } else {
-      expenses[key] += Number(tx.amount || 0);
-    }
+  const palette=['#8b7cff','#36d9ff','#36d6a0','#ff6685','#ffc96b','#ff9f6e','#9b8cff','#53b7ff','#d17cff','#72d6bd'];
+  chart1=new Chart(expensesCanvas.getContext('2d'),{
+    type:'doughnut',
+    data:{labels:Object.keys(categories).map(tCat),datasets:[{data:Object.values(categories),backgroundColor:Object.keys(categories).map((_,i)=>palette[i%palette.length]),borderColor:getComputedStyle(document.documentElement).getPropertyValue('--surface-strong').trim()||'#13192e',borderWidth:3,hoverOffset:7}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:textColor,padding:14,usePointStyle:true}},title:{display:true,text:t('expense')+' — '+now.toLocaleDateString(appData.lang||'ru',{month:'long',year:'numeric'}),color:textColor,padding:{bottom:16}}}}
   });
 
-  chart2 = new Chart(monthsCanvas.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: monthLabels,
-      datasets: [
-        {
-          label: t('income'),
-          data: monthKeys.map(k => incomes[k]),
-          borderColor: '#36d6a0',
-          backgroundColor: 'rgba(54,214,160,.13)',
-          fill: true,
-          tension: .35,
-          pointRadius: 3
-        },
-        {
-          label: t('expense'),
-          data: monthKeys.map(k => expenses[k]),
-          borderColor: '#ff6685',
-          backgroundColor: 'rgba(255,102,133,.10)',
-          fill: true,
-          tension: .35,
-          pointRadius: 3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: textColor, usePointStyle: true }
-        },
-        title: {
-          display: true,
-          text: `${t('income')} / ${t('expense')} — ${t('за 6 месяцев')}`,
-          color: textColor
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: textColor },
-          grid: { color: gridColor }
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: textColor },
-          grid: { color: gridColor }
-        }
-      }
-    }
+  const monthKeys=[],monthLabels=[];
+  for(let offset=5;offset>=0;offset--){
+    const d=new Date(now.getFullYear(),now.getMonth()-offset,1);
+    monthKeys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    monthLabels.push(d.toLocaleDateString(appData.lang||'ru',{month:'short'}));
+  }
+  const incomes=Object.fromEntries(monthKeys.map(key=>[key,0]));
+  const expenses=Object.fromEntries(monthKeys.map(key=>[key,0]));
+  for(const tx of history){
+    if(!tx||(tx.type!=='income'&&tx.type!=='expense'))continue;
+    const amount=Number(tx.amount);
+    if(!Number.isFinite(amount)||amount<=0)continue;
+    const key=analyticsDateKey(tx).slice(0,7);
+    if(!Object.prototype.hasOwnProperty.call(incomes,key))continue;
+    if(tx.type==='income')incomes[key]+=amount;else expenses[key]+=amount;
+  }
+  chart2=new Chart(monthsCanvas.getContext('2d'),{
+    type:'line',
+    data:{labels:monthLabels,datasets:[
+      {label:t('income'),data:monthKeys.map(key=>incomes[key]),borderColor:'#36d6a0',backgroundColor:'rgba(54,214,160,.13)',fill:true,tension:.35,pointRadius:3},
+      {label:t('expense'),data:monthKeys.map(key=>expenses[key]),borderColor:'#ff6685',backgroundColor:'rgba(255,102,133,.10)',fill:true,tension:.35,pointRadius:3}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:textColor,usePointStyle:true}},title:{display:true,text:t('income')+' / '+t('expense')+' — '+t('за 6 месяцев'),color:textColor}},scales:{x:{ticks:{color:textColor},grid:{color:gridColor}},y:{beginAtZero:true,ticks:{color:textColor},grid:{color:gridColor}}}}
   });
 }
 
@@ -2544,7 +2457,7 @@ function renderProInsights(){
   const envelopeItems=budgetMode==='family'&&currentFamily?familyEnvelopes:(appData.envelopes||[]);
   const historyForAlerts=budget.history||[];
   const envelopeWarnings=envelopeItems.map(env=>{
-    const spent=historyForAlerts.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(env.id)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0);
+    const spent=historyForAlerts.filter(tx=>tx.type==='expense'&&analyticsDateKey(tx).slice(0,7)===currentKey&&String(tx.envelopeId||'')===String(env.id)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0);
     const target=Number(env.target||0);
     return {name:String(env.name||'Конверт'),spent,target,over:spent-target};
   }).filter(env=>env.target>0&&env.over>0);
@@ -2756,6 +2669,8 @@ function renderAll(){
   renderFinancialOverview();
   renderForecast();
   renderProInsights();
+  const analyticsTab=document.getElementById('tab-analytics');
+  if(analyticsTab&&analyticsTab.style.display!=='none')renderCharts();
   updateProFeatureControls();
   queueBudgetSnapshotSync();
   scheduleBudgetAlertCheck();

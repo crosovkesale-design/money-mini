@@ -1475,6 +1475,8 @@ function openTransactionModal(type) {
   const receiptStatus = document.getElementById('receiptDraftStatus');
   if(receiptStatus) receiptStatus.style.display = 'none';
   appData.activeTxType = type;
+  const transactionModal = document.getElementById('modalTransaction');
+  if(transactionModal) transactionModal.dataset.txType = type;
 
   // Очищаем поля при каждом новом открытии
   document.getElementById('txAmountInput').value = '';

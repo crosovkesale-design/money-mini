@@ -978,7 +978,7 @@ if bot:
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         text = (
-            "✨ <b>FAMILY BUDGET · ЦЕНТР КОМАНД</b>\n"
+            "✨ <b>РУВИКО · ЦЕНТР КОМАНД</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "🏠 <b>/start</b> — открыть главное меню и приложение\n"
             "📊 <b>/stats</b> — общая статистика проекта\n"
@@ -1044,7 +1044,7 @@ if bot:
              InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "📊 <b>FAMILY BUDGET · СТАТИСТИКА</b>\n"
+            "📊 <b>РУВИКО · СТАТИСТИКА</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Всего пользователей: <b>{total:,}</b>\n"
             f"🎁 На пробном периоде: <b>{trial:,}</b>\n"
@@ -1099,7 +1099,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n"
+            "💎 <b>ТАРИФЫ РУВИКО</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Выбери план под свои задачи и управляй финансами удобнее.\n\n"
             "✨ <b>Basic</b>\n"
@@ -1334,7 +1334,7 @@ if bot:
              InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
         ])
         await cb.message.answer(
-            "👋 <b>FAMILY BUDGET</b>\n"
+            "👋 <b>РУВИКО</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Твой бюджет, подписка и бонусы — в одном месте.\n"
             "Выбери нужный раздел ниже.",
@@ -1352,7 +1352,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await cb.message.edit_text(
-            "💎 <b>ТАРИФЫ FAMILY BUDGET</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
+            "💎 <b>ТАРИФЫ РУВИКО</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
             reply_markup=kb, parse_mode="HTML"
         )
         await cb.answer()
@@ -1524,7 +1524,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "🆘 <b>ПОДДЕРЖКА FAMILY BUDGET</b>\n"
+            "🆘 <b>ПОДДЕРЖКА РУВИКО</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Опиши вопрос или проблему одним сообщением. Если можешь, добавь скриншот и напиши, что делал перед ошибкой.\n\n"
             "💬 Сообщение будет передано команде поддержки. Мы ответим, как только сможем.",

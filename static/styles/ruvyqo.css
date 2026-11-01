@@ -451,3 +451,55 @@ input::placeholder,textarea::placeholder{color:#77837f}
   #modalTransaction #txEnvelopeWrap{padding:13px 11px 12px 14px!important}
   #modalTransaction #txEnvelopeSelect{min-height:46px;font-size:12px}
 }
+
+
+/* RUVYQO — custom envelope dropdown (replaces the Android native select popup) */
+#modalTransaction #txEnvelopeSelect{display:none!important}
+#modalTransaction .envelope-picker-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:53px;margin:0;padding:11px 14px;
+  border:1px solid rgba(229,140,145,.28);border-radius:12px 5px 12px 5px;
+  background:linear-gradient(110deg,#101a1e,#1a292e);color:#f2f4ef;
+  text-align:left;font-size:13px;font-weight:750;
+  box-shadow:inset 0 1px #ffffff08;transition:border-color .18s,background .18s;
+}
+#modalTransaction .envelope-picker-trigger:active,
+#modalTransaction .envelope-picker-trigger.is-open{
+  border-color:#e58c91a8;background:linear-gradient(110deg,#182529,#223238);
+}
+.envelope-picker-current{display:flex;align-items:center;gap:11px;min-width:0}
+.envelope-picker-symbol{
+  display:grid;place-items:center;width:31px;height:31px;flex:0 0 31px;
+  border:1px solid #e58c9145;border-radius:10px 4px 10px 4px;
+  background:#e58c911b;color:#f0a2a5;font-size:16px;
+}
+#txEnvelopeCurrentLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.envelope-picker-chevron{color:#f0a2a5;font-size:22px;line-height:1;transition:transform .18s}
+.envelope-picker-trigger.is-open .envelope-picker-chevron{transform:rotate(180deg)}
+#modalTransaction .envelope-picker-options{
+  display:grid;gap:6px;max-height:220px;overflow-y:auto;margin-top:8px;padding:7px;
+  border:1px solid #e58c9140;border-radius:12px 5px 12px 5px;
+  background:linear-gradient(145deg,#1b292e,#10191e);
+  box-shadow:0 16px 35px #0008;animation:envelopePickerIn .16s ease;
+}
+#modalTransaction .envelope-picker-options[hidden]{display:none!important}
+.envelope-picker-option{
+  display:flex;align-items:center;gap:10px;width:100%;min-height:45px;padding:8px 10px;
+  border:1px solid transparent;border-radius:9px 4px 9px 4px;
+  background:#ffffff05;color:#c8d5cf;text-align:left;font-size:12px;font-weight:650;
+}
+.envelope-picker-option:active{transform:scale(.99)}
+.envelope-picker-option.active{
+  border-color:#e58c9160;background:#e58c9117;color:#ffe0e1;
+}
+.envelope-option-icon{
+  display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;
+  border-radius:9px 4px 9px 4px;background:#e58c9117;color:#f0a2a5;
+}
+.envelope-option-label{flex:1;min-width:0;overflow-wrap:anywhere}
+.envelope-option-check{width:18px;color:#f0a2a5;font-size:15px;font-weight:900;text-align:center}
+@keyframes envelopePickerIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+@media(max-width:390px){
+ #modalTransaction .envelope-picker-trigger{min-height:49px;padding:9px 11px}
+ #modalTransaction .envelope-picker-options{max-height:190px}
+}

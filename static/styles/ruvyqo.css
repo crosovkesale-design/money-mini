@@ -592,3 +592,25 @@ input::placeholder,textarea::placeholder{color:#77837f}
 .ruviko-calendar-day.is-selected{background:linear-gradient(135deg,#78d7b8,#48ad91);color:#10231d;box-shadow:0 4px 13px rgba(72,173,145,.25)}
 .ruviko-calendar-today{width:100%;margin-top:11px;padding:10px;border:1px solid rgba(125,216,189,.17);border-radius:11px;background:rgba(125,216,189,.08);color:#9be8ce;font-weight:700}
 @media(max-width:380px){.ruviko-calendar{padding:10px}.ruviko-calendar-weekdays,.ruviko-calendar-days{gap:3px}.ruviko-calendar-day{font-size:12px}}
+
+
+/* Ruviko unified calendar — used in transaction editing, savings deadlines and bank import */
+.ruviko-universal-picker{position:relative;width:100%;margin:6px 0 13px}
+.ruviko-universal-picker .ruviko-date-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;left:0;bottom:0;margin:0!important;padding:0!important}
+.ruviko-universal-trigger{width:100%;min-height:52px;display:flex;align-items:center;gap:11px;padding:9px 13px;border:1px solid rgba(125,216,189,.24);border-radius:14px 6px 14px 6px;background:linear-gradient(135deg,rgba(125,216,189,.10),rgba(125,216,189,.035));color:var(--text,#f1f5f4);text-align:left;font:inherit}
+.ruviko-universal-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(125,216,189,.15);color:#8ce2c5}
+.ruviko-universal-label{flex:1;font-size:13px;font-weight:750}
+.ruviko-universal-trigger>i:last-child{color:#8ce2c5;font-size:11px}
+.ruviko-universal-popup{position:relative;z-index:40;margin-top:8px;padding:12px;border:1px solid rgba(125,216,189,.2);border-radius:16px;background:linear-gradient(145deg,#1b292e,#10191e);box-shadow:0 16px 38px #0008}
+.ruviko-universal-popup[hidden]{display:none!important}
+.ruviko-universal-head{display:grid;grid-template-columns:36px 1fr 36px;align-items:center;gap:8px;margin-bottom:10px}
+.ruviko-universal-head strong{text-align:center;text-transform:capitalize;color:#f3f8f6;font-size:14px}
+.ruviko-universal-head button{height:34px;border:1px solid #ffffff16;border-radius:10px;background:#ffffff09;color:#a8e8d2;font-size:22px}
+.ruviko-universal-week,.ruviko-universal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}
+.ruviko-universal-week{margin-bottom:6px}
+.ruviko-universal-week span{padding:5px 0;color:#8ea39d;font-size:10px;font-weight:750}
+.ruviko-universal-empty,.ruviko-universal-day{aspect-ratio:1;min-width:0;display:grid;place-items:center}
+.ruviko-universal-day{border:1px solid transparent;border-radius:10px;background:#ffffff08;color:#e8f0ed;font-size:12px;font-weight:650}
+.ruviko-universal-day.is-today{border-color:#7dd8bd88;color:#9be8ce}
+.ruviko-universal-day.is-selected{background:linear-gradient(135deg,#78d7b8,#48ad91);color:#10231d;box-shadow:0 4px 13px #48ad9140}
+.ruviko-universal-today{width:100%;margin-top:10px;padding:9px;border:1px solid #7dd8bd30;border-radius:10px;background:#7dd8bd12;color:#9be8ce;font-size:12px;font-weight:750}

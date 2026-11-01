@@ -853,7 +853,97 @@ function receiptUi(key, values={}){
   return value;
 }
 
+let receiptCalendarView = new Date();
+const RECEIPT_CALENDAR_LOCALES = {
+  ru:{weekdays:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],today:'Сегодня',choose:'Выбрать дату'},
+  uk:{weekdays:['Пн','Вт','Ср','Чт','Пт','Сб','Нд'],today:'Сьогодні',choose:'Вибрати дату'},
+  en:{weekdays:['Mo','Tu','We','Th','Fr','Sa','Su'],today:'Today',choose:'Choose date'},
+  de:{weekdays:['Mo','Di','Mi','Do','Fr','Sa','So'],today:'Heute',choose:'Datum wählen'},
+  es:{weekdays:['Lu','Ma','Mi','Ju','Vi','Sá','Do'],today:'Hoy',choose:'Elegir fecha'},
+  fr:{weekdays:['Lu','Ma','Me','Je','Ve','Sa','Di'],today:"Aujourd’hui",choose:'Choisir une date'},
+  it:{weekdays:['Lu','Ma','Me','Gi','Ve','Sa','Do'],today:'Oggi',choose:'Scegli data'},
+  pl:{weekdays:['Pn','Wt','Śr','Cz','Pt','So','Nd'],today:'Dzisiaj',choose:'Wybierz datę'},
+  tr:{weekdays:['Pt','Sa','Ça','Pe','Cu','Ct','Pa'],today:'Bugün',choose:'Tarih seç'},
+  zh:{weekdays:['一','二','三','四','五','六','日'],today:'今天',choose:'选择日期'}
+};
+function receiptLocalISO(date){
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+}
+function receiptCalendarLocale(){
+  const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0];
+  return RECEIPT_CALENDAR_LOCALES[lang]||RECEIPT_CALENDAR_LOCALES.ru;
+}
+function syncReceiptDatePicker(){
+  const input=document.getElementById('receiptDateInput');
+  const label=document.getElementById('receiptDateLabel');
+  const locale=receiptCalendarLocale();
+  const raw=input?.value||'';
+  if(label){
+    if(/^\\d{4}-\\d{2}-\\d{2}$/.test(raw)){
+      const [y,m,d]=raw.split('-').map(Number);
+      label.textContent=new Intl.DateTimeFormat(appData?.lang||'ru',{day:'2-digit',month:'long',year:'numeric'}).format(new Date(y,m-1,d));
+    }else label.textContent=locale.choose;
+  }
+  const today=document.getElementById('receiptCalendarToday');
+  if(today)today.textContent=locale.today;
+}
+function renderReceiptCalendar(){
+  const monthLabel=document.getElementById('receiptCalendarMonth');
+  const weekdays=document.getElementById('receiptCalendarWeekdays');
+  const days=document.getElementById('receiptCalendarDays');
+  if(!monthLabel||!weekdays||!days)return;
+  const lang=appData?.lang||'ru';
+  monthLabel.textContent=new Intl.DateTimeFormat(lang,{month:'long',year:'numeric'}).format(receiptCalendarView);
+  const locale=receiptCalendarLocale();
+  weekdays.innerHTML=locale.weekdays.map(day=>'<span>'+day+'</span>').join('');
+  const year=receiptCalendarView.getFullYear(),month=receiptCalendarView.getMonth();
+  const first=new Date(year,month,1);
+  const offset=(first.getDay()+6)%7;
+  const count=new Date(year,month+1,0).getDate();
+  const selected=document.getElementById('receiptDateInput')?.value||'';
+  const today=receiptLocalISO(new Date());
+  let cells='';
+  for(let n=0;n<offset;n++)cells+='<span class="ruviko-calendar-empty"></span>';
+  for(let day=1;day<=count;day++){
+    const date=receiptLocalISO(new Date(year,month,day));
+    const cls=['ruviko-calendar-day',date===selected?'is-selected':'',date===today?'is-today':''].filter(Boolean).join(' ');
+    cells+='<button type="button" class="'+cls+'" data-receipt-date="'+date+'">'+day+'</button>';
+  }
+  days.innerHTML=cells;
+}
+function toggleReceiptCalendar(force){
+  const popup=document.getElementById('receiptCalendar');
+  const trigger=document.getElementById('receiptDateTrigger');
+  if(!popup||!trigger)return;
+  const open=typeof force==='boolean'?force:popup.hidden;
+  popup.hidden=!open;trigger.setAttribute('aria-expanded',String(open));
+  if(open){
+    const raw=document.getElementById('receiptDateInput')?.value;
+    const [y,m]=/^\\d{4}-\\d{2}-\\d{2}$/.test(raw||'')?raw.split('-').map(Number):[new Date().getFullYear(),new Date().getMonth()+1];
+    receiptCalendarView=new Date(y,m-1,1);renderReceiptCalendar();
+  }
+}
+function initReceiptCalendar(){
+  const picker=document.getElementById('receiptDatePicker');
+  if(!picker||picker.dataset.ready==='1')return;
+  picker.dataset.ready='1';
+  document.getElementById('receiptDateTrigger')?.addEventListener('click',()=>toggleReceiptCalendar());
+  document.getElementById('receiptCalendarPrev')?.addEventListener('click',()=>{receiptCalendarView.setMonth(receiptCalendarView.getMonth()-1);renderReceiptCalendar();});
+  document.getElementById('receiptCalendarNext')?.addEventListener('click',()=>{receiptCalendarView.setMonth(receiptCalendarView.getMonth()+1);renderReceiptCalendar();});
+  document.getElementById('receiptCalendarToday')?.addEventListener('click',()=>{
+    const input=document.getElementById('receiptDateInput');if(input)input.value=receiptLocalISO(new Date());
+    syncReceiptDatePicker();renderReceiptCalendar();toggleReceiptCalendar(false);
+  });
+  document.getElementById('receiptCalendarDays')?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-receipt-date]');if(!button)return;
+    const input=document.getElementById('receiptDateInput');if(input)input.value=button.dataset.receiptDate;
+    syncReceiptDatePicker();toggleReceiptCalendar(false);
+  });
+  document.addEventListener('click',event=>{if(!picker.contains(event.target))toggleReceiptCalendar(false);});
+  syncReceiptDatePicker();
+}
 function openReceiptEntry(){
+  initReceiptCalendar();
   receiptEditingTxId = null;
   const receiptSaveButton=document.querySelector('#modalReceiptEntry button[onclick="saveReceiptDraft()"]');
   if(receiptSaveButton)receiptSaveButton.innerHTML='<i class="fa-solid fa-check"></i> '+receiptUi('addButton');
@@ -867,7 +957,8 @@ function openReceiptEntry(){
     document.getElementById('receiptStoreInput').value = '';
     document.getElementById('receiptItemsInput').value = '';
     document.getElementById('receiptTotalInput').value = '';
-    document.getElementById('receiptDateInput').value = new Date().toISOString().slice(0,10);
+    document.getElementById('receiptDateInput').value = receiptLocalISO(new Date());
+    syncReceiptDatePicker();
   }
   openModal('modalReceiptEntry');
 }
@@ -926,7 +1017,8 @@ function editReceipt(id){
   receiptEditingTxId = id;
   const receipt=tx.receipt;
   document.getElementById('receiptStoreInput').value=receipt.store||'';
-  document.getElementById('receiptDateInput').value=receipt.date||new Date().toISOString().slice(0,10);
+  document.getElementById('receiptDateInput').value=receipt.date||receiptLocalISO(new Date());
+  initReceiptCalendar();syncReceiptDatePicker();
   document.getElementById('receiptItemsInput').value=(receipt.items||[]).map(item=>item.name+'; '+(item.price==null?'':item.price)+'; '+(item.quantity||1)).join('\n');
   document.getElementById('receiptTotalInput').value=receipt.total||tx.amount||'';
   const error=document.getElementById('receiptEntryError'); if(error)error.textContent='';
@@ -1062,7 +1154,8 @@ async function handleReceiptPhotoSelected(event){
       ? uniqueRows.slice(0,20).map(row=>row.name+'; '+row.price+'; 1')
       : fallbackNames;
     document.getElementById('receiptStoreInput').value = store;
-    document.getElementById('receiptDateInput').value = new Date().toISOString().slice(0,10);
+    document.getElementById('receiptDateInput').value = receiptLocalISO(new Date());
+    syncReceiptDatePicker();
     document.getElementById('receiptItemsInput').value = itemLines.join('\n');
     document.getElementById('receiptTotalInput').value = Number(data.amount_guess || 0) > 0 ? String(data.amount_guess) : '';
     const error = document.getElementById('receiptEntryError');

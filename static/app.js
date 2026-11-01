@@ -1626,7 +1626,7 @@ async function submitTransaction(){
   const personalEnvelopeItems=appData.envelopes||[];
   const spentBefore=envelopeId&&appData.activeTxType==='expense'
     ?appData.history.filter(tx=>tx.type==='expense'&&String(tx.envelopeId||'')===String(envelopeId)).reduce((sum,tx)=>sum+Math.max(0,Number(tx.amount)||0),0):0;
-  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:new Date().toLocaleDateString('ru-RU'),receipt:txTypeReceiptAllowed(appData.activeTxType)?pendingReceiptDraft:null};appData.history.unshift(tx);pendingReceiptDraft=null;
+  const tx={id:Date.now(),type:appData.activeTxType,title,category:appData.selectedCategory,icon:appData.currentIcon,amount,envelopeId,date:getLocalDateISO(),receipt:txTypeReceiptAllowed(appData.activeTxType)?pendingReceiptDraft:null};appData.history.unshift(tx);pendingReceiptDraft=null;
   if(tx.type==='expense'){appData.balance-=amount;appData.monthExpense+=amount;}else{appData.balance+=amount;appData.monthIncome+=amount;}
   saveData();logClientActivity('transaction_added',tx);closeModal('modalTransaction');renderAll();
   if(tx.type==='expense')notifyEnvelopeThresholds(envelopeId,spentBefore,amount,personalEnvelopeItems);
@@ -1634,13 +1634,39 @@ async function submitTransaction(){
 
 let editingTxId = null;
 
+function getLocalDateISO(){
+  const now=new Date();
+  return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+}
+
+function formatTransactionDate(value, fallbackTs){
+  const raw=String(value||'').trim();
+  let year,month,day;
+  const iso=raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+  const ru=raw.match(/^(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})$/);
+  if(iso){year=iso[1];month=iso[2];day=iso[3];}
+  else if(ru){day=ru[1];month=ru[2];year=ru[3];}
+  if(year&&month&&day){
+    const y=Number(year),m=Number(month),d=Number(day);
+    const check=new Date(y,m-1,d);
+    if(check.getFullYear()===y&&check.getMonth()===m-1&&check.getDate()===d)
+      return String(d).padStart(2,'0')+'.'+String(m).padStart(2,'0')+'.'+y;
+  }
+  if(fallbackTs){
+    const date=new Date(Number(fallbackTs));
+    if(!Number.isNaN(date.getTime()))
+      return String(date.getDate()).padStart(2,'0')+'.'+String(date.getMonth()+1).padStart(2,'0')+'.'+date.getFullYear();
+  }
+  return raw||'';
+}
+
 function txDateForInput(tx){
   const raw=String(tx && tx.date || '').trim();
   if(/^\d{4}-\d{2}-\d{2}/.test(raw))return raw.slice(0,10);
   const ru=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
   if(ru)return ru[3]+'-'+String(ru[2]).padStart(2,'0')+'-'+String(ru[1]).padStart(2,'0');
   if(tx && tx.ts){const d=new Date(Number(tx.ts));if(!Number.isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-  return new Date().toISOString().slice(0,10);
+  return getLocalDateISO();
 }
 
 function syncEditTxEnvelopeState(){
@@ -1728,7 +1754,7 @@ async function saveTxEdits(){
         if(type==='income')appData.monthIncome+=amount;else appData.monthExpense+=amount;
       }
       tx.type=type;tx.amount=amount;tx.title=title;tx.note=title;tx.category=category;tx.icon=icon;
-      tx.date=date.split('-').reverse().join('.');tx.ts=new Date(date+'T12:00:00').getTime();tx.envelopeId=envelopeId||null;
+      tx.date=date;tx.ts=new Date(date+'T12:00:00').getTime();tx.envelopeId=envelopeId||null;
       saveData();logClientActivity('transaction_edited',tx);renderAll();
     }
     editingTxId=null;closeModal('modalEditTransaction');
@@ -2661,7 +2687,7 @@ function renderAll(){
               <div class="history-title">${tx.title || tCat(tx.category || 'Разное')} ${tx.receipt ? '🧾' : ''}</div>
               <div class="history-sub">
                 <span class="history-kind">${tx.type === 'expense' ? t('btn_expense') : t('btn_income')}</span>
-                <span class="history-meta">${visibleBudget.isFamily ? ((tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : '') + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</span>
+                <span class="history-meta">${visibleBudget.isFamily ? (formatTransactionDate(tx.date,tx.ts) + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</span>
               </div>
               ${tx.comment ? '<div class="history-comment">'+String(tx.comment).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : ''}
             </div>

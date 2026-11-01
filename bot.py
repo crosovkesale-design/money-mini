@@ -526,7 +526,7 @@ class AdminSupportState(StatesGroup):
 
 # ---------- ФОНОВЫЕ ЗАДАЧИ ----------
 async def weekly_summary_worker():
-    """Send one personal and one family budget summary each Monday in Kyiv time."""
+    """Send one personal and one Рувико summary each Monday in Kyiv time."""
     while True:
         try:
             now = datetime.now(KYIV)
@@ -719,7 +719,7 @@ async def send_database_backup(chat_id: str):
     await bot.send_document(
         int(chat_id),
         BufferedInputFile(compressed, filename=filename),
-        caption=f"🛡 Резервная копия Family Budget\\nДата: {datetime.now(KYIV).strftime('%d.%m.%Y %H:%M')} (Киев)\\nРазмер после сжатия: {len(compressed) // 1024} КБ",
+        caption=f"🛡 Резервная копия Рувико\\nДата: {datetime.now(KYIV).strftime('%d.%m.%Y %H:%M')} (Киев)\\nРазмер после сжатия: {len(compressed) // 1024} КБ",
     )
     await fb.patch("/system/backups", {
         "lastSuccessDate": datetime.now(KYIV).strftime("%Y-%m-%d"),
@@ -895,19 +895,19 @@ if bot:
                             pass
  
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Открыть Family Budget", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="📊 Открыть Рувико", web_app=WebAppInfo(url=MINI_APP_URL))],
             [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
              InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
             [InlineKeyboardButton(text="⭐ Отзывы пользователей", url="https://t.me/familybudget_reviews")],
             [InlineKeyboardButton(text="📣 Наш канал", url="https://t.me/familybudjet")]
         ])
         await message.answer(
-            "👋 <b>Добро пожаловать в Family Budget!</b>\n"
+            "👋 <b>Добро пожаловать в Рувико!</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "💰 <b>Твой бюджет — под контролем.</b>\n\n"
             "Записывай доходы и расходы, веди историю операций, планируй накопления и контролируй бюджет. В PRO доступны текстовый ввод доходов и расходов через приложение и чат бота, расширенная аналитика, семейный бюджет до 6 участников, Excel-отчёты, персональные обои и напоминания.\n\n"
             "🎁 <b>Новым пользователям доступен пробный период на 30 дней.</b>\n\n"
-            "👇 Нажми <b>«Открыть Family Budget»</b>, чтобы начать.\n\n"
+            "👇 Нажми <b>«Открыть Рувико»</b>, чтобы начать.\n\n"
             "💬 Отзывы, новости и обновления — по кнопкам ниже.",
             reply_markup=kb, parse_mode="HTML"
         )
@@ -924,7 +924,7 @@ if bot:
             "🎁 <b>АКТИВАЦИЯ ПРОМОКОДА</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Отправь следующим сообщением свой промокод.\n\n"
-            "Я проверю его срок действия и лимит активаций, а затем начислю награду в Family Budget.\n"
+            "Я проверю его срок действия и лимит активаций, а затем начислю награду в Рувико.\n"
             "Для отмены напиши /cancel.",
             parse_mode="HTML"
         )
@@ -949,7 +949,7 @@ if bot:
                     reward_lines.append(f"• {reward.get('name') or 'подписка'}")
             extra = ("\n\n🎁 <b>Начислено:</b>\n" + "\n".join(reward_lines)) if reward_lines else ""
             await message.answer(
-                "✅ <b>Промокод принят, награда отправлена в Family Budget.</b>" + extra,
+                "✅ <b>Промокод принят, награда отправлена в Рувико.</b>" + extra,
                 parse_mode="HTML"
             )
         except HTTPException as exc:
@@ -1236,7 +1236,7 @@ if bot:
 
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
+             InlineKeyboardButton(text="📣 Канал Рувико", url="https://t.me/familybudjet")],
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(text, parse_mode="HTML", reply_markup=kb)
@@ -1245,7 +1245,7 @@ if bot:
     async def cb_ref_link(cb: CallbackQuery):
         uid = str(cb.from_user.id)
         link = f"https://t.me/moneyfamilybudget_bot?start=ref_{uid}"
-        share = f"https://t.me/share/url?url={link}&text=Заходи в Family Budget!"
+        share = f"https://t.me/share/url?url={link}&text=Заходи в Рувико!"
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📤 Поделиться", url=share)],
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
@@ -1327,7 +1327,7 @@ if bot:
     async def cb_go_start(cb: CallbackQuery, state: FSMContext):
         await state.clear()
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Открыть Family Budget", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="📊 Открыть Рувико", web_app=WebAppInfo(url=MINI_APP_URL))],
             [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
              InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
             [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
@@ -1363,13 +1363,13 @@ if bot:
         await state.set_state(ReviewState.waiting_text)
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")],
-            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="📣 Канал Рувико", url="https://t.me/familybudjet")],
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
             "✍️ <b>ТВОЙ ОТЗЫВ ВАЖЕН</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
-            "Расскажи, как тебе Family Budget и что помогло в управлении деньгами.\n\n"
+            "Расскажи, как тебе Рувико и что помогло в управлении деньгами.\n\n"
             "📌 <b>Перед отправкой:</b> минимум 20 символов и 4 слова — опиши свой реальный опыт.\n\n"
             "🎁 <b>Бонус:</b> за первый принятый отзыв начисляется купон на скидку 20%.\n\n"
             "Напиши отзыв следующим сообщением.\n\n"
@@ -1498,7 +1498,7 @@ if bot:
 
         review_done_kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⭐ Смотреть отзывы", url="https://t.me/familybudget_reviews")],
-            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")]
+            [InlineKeyboardButton(text="📣 Канал Рувико", url="https://t.me/familybudjet")]
         ])
         if already_received:
             await message.answer(
@@ -1519,7 +1519,7 @@ if bot:
     async def cmd_support(message: Message, state: FSMContext):
         await state.set_state(ReviewState.waiting_msg)
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📣 Канал Family Budget", url="https://t.me/familybudjet")],
+            [InlineKeyboardButton(text="📣 Канал Рувико", url="https://t.me/familybudjet")],
             [InlineKeyboardButton(text="⭐ Группа с отзывами", url="https://t.me/familybudget_reviews")],
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
@@ -1694,7 +1694,7 @@ if bot:
         try:
             await bot.send_message(
                 int(user_id),
-                "💬 <b>Ответ поддержки Family Budget</b>\n\n" + escape(reply_text),
+                "💬 <b>Ответ поддержки Рувико</b>\n\n" + escape(reply_text),
                 parse_mode="HTML",
             )
         except Exception:
@@ -1808,7 +1808,7 @@ if bot:
         if not has_active_pro_subscription(user):
             await message.answer(
                 "💎 <b>Добавление доходов и расходов через чат — функция PRO.</b>\n\n"
-                "Оформи активный PRO в Family Budget. Примеры: <code>кофе 120</code> или <code>зарплата 25000</code>.",
+                "Оформи активный PRO в Рувико. Примеры: <code>кофе 120</code> или <code>зарплата 25000</code>.",
                 parse_mode="HTML",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="💎 Выбрать PRO", callback_data="show_pay")]
@@ -1838,7 +1838,7 @@ if bot:
             + f"Сумма: <b>{amount_prefix}{parsed['amount']:,.2f} UAH</b>\n"
             + f"Категория: {escape(parsed['category'])}\n"
             + f"Сохранено: {destination}."
-            + ("\nОткрой Family Budget, чтобы синхронизировать операцию с приложением." if not parsed["family_mode"] else ""),
+            + ("\nОткрой Рувико, чтобы синхронизировать операцию с приложением." if not parsed["family_mode"] else ""),
             parse_mode="HTML",
         )
 
@@ -2049,7 +2049,7 @@ async def lifespan(app: FastAPI):
     async def initialize_bot():
         try:
             await bot.set_my_commands([
-                BotCommand(command="start", description="🏠 Запустить Family Budget"),
+                BotCommand(command="start", description="🏠 Запустить Рувико"),
                 BotCommand(command="stats", description="📊 Статистика проекта"),
                 BotCommand(command="pay", description="💎 Тарифы и способы оплаты"),
                 BotCommand(command="status", description="🛡 Мой тариф и срок"),
@@ -2625,7 +2625,7 @@ async def recognize_receipt_with_ai(image_bytes: bytes, content_type: str) -> di
     async with httpx.AsyncClient(timeout=httpx.Timeout(35.0, connect=8.0)) as client:
         response = await client.post(
             "https://openrouter.ai/api/v1/chat/completions",
-            headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json", "HTTP-Referer": os.getenv("MINI_APP_URL", "https://money-mini.onrender.com"), "X-Title": "Family Budget receipt recognition"},
+            headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json", "HTTP-Referer": os.getenv("MINI_APP_URL", "https://money-mini.onrender.com"), "X-Title": "Рувико receipt recognition"},
             json=payload,
         )
         response.raise_for_status()
@@ -2732,7 +2732,7 @@ async def api_finance_assistant(request: Request, uid: str = Depends(current_uid
     reservation = await reserve_ai_call(uid)
     context_json = json.dumps({"summary": safe_summary, "transactions": safe_transactions}, ensure_ascii=False)
     system_prompt = (
-        "Ты — финансовый помощник приложения Family Budget. Язык интерфейса пользователя: " + str(body.get("language") or "ru") + ". "
+        "Ты — финансовый помощник приложения Рувико. Язык интерфейса пользователя: " + str(body.get("language") or "ru") + ". "
         "Отвечай на языке последнего сообщения пользователя; если язык сообщения неоднозначен, используй язык интерфейса. "
         "Не переключай язык без явной просьбы пользователя. Будь дружелюбным и конкретным. Используй только переданные цифры; не выдумывай операции, доходы или долги. "
         "Если данных мало — прямо скажи об этом и предложи, какие записи добавить. "
@@ -2762,7 +2762,7 @@ async def api_finance_assistant(request: Request, uid: str = Depends(current_uid
                     "Authorization": "Bearer " + api_key,
                     "Content-Type": "application/json",
                     "HTTP-Referer": os.getenv("MINI_APP_URL", "https://money-mini.onrender.com"),
-                    "X-Title": "Family Budget financial assistant",
+                    "X-Title": "Рувико financial assistant",
                 },
                 json=payload,
             )
@@ -2824,7 +2824,7 @@ async def api_parse_transaction(request: Request, uid: str = Depends(current_uid
                     "Authorization":"Bearer " + api_key,
                     "Content-Type":"application/json",
                     "HTTP-Referer":os.getenv("MINI_APP_URL","https://money-mini.onrender.com"),
-                    "X-Title":"Family Budget transaction draft"
+                    "X-Title":"Рувико transaction draft"
                 },
                 json=payload
             )
@@ -3881,7 +3881,7 @@ async def api_buy_coupon_crypto(request: Request, uid: str = Depends(current_uid
     result = await cp.call("createInvoice", {
         "asset": "USDT",
         "amount": f"{prices[percent_raw]:.2f}",
-        "description": f"Family Budget — купон {percent}%",
+        "description": f"Рувико — купон {percent}%",
         "payload": json.dumps({"kind": "coupon_purchase", "uid": uid, "couponPercent": percent}),
         "allow_comments": False,
         "allow_anonymous": False,

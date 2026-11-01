@@ -278,3 +278,124 @@ input::placeholder,textarea::placeholder{color:#77837f}
  .app-topbar{margin-left:-25px;margin-right:-25px;padding-left:25px;padding-right:25px}
  .app-drawer{width:350px}
 }
+
+
+/* RUVYQO — income & expense transaction menus */
+#tab-budget .actions-grid .btn{
+  position:relative;min-height:66px;justify-content:flex-start;gap:12px;
+  padding:13px 16px 13px 18px;border-radius:17px 7px 17px 7px;
+  font-size:14px;letter-spacing:.01em;overflow:hidden;
+}
+#tab-budget .actions-grid .btn:before{
+  display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;
+  border-radius:12px;background:#ffffff12;font-family:"Font Awesome 6 Free";
+  font-weight:900;font-size:15px;
+}
+#tab-budget .actions-grid .btn-success:before{content:"\\f055";color:#9be6c9}
+#tab-budget .actions-grid .btn-danger:before{content:"\\f056";color:#ffadb1}
+#tab-budget .actions-grid .btn-success{
+  border:1px solid rgba(125,216,189,.27);
+  background:linear-gradient(115deg,rgba(62,166,132,.2),rgba(23,42,39,.72));
+  color:#baf1dc;box-shadow:inset 0 1px #ffffff09,0 9px 22px #0002;
+}
+#tab-budget .actions-grid .btn-danger{
+  border:1px solid rgba(235,139,146,.25);
+  background:linear-gradient(115deg,rgba(190,88,98,.2),rgba(48,29,34,.72));
+  color:#ffc2c5;box-shadow:inset 0 1px #ffffff09,0 9px 22px #0002;
+}
+#tab-budget .actions-grid .btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+#modalTransaction .modal-content,#modalEditTransaction .modal-content{
+  width:min(100%,510px);padding:21px;
+  border:1px solid rgba(190,211,204,.17);
+  border-radius:8px 25px 8px 25px;
+  background:radial-gradient(circle at 100% 0%,rgba(125,216,189,.08),transparent 34%),linear-gradient(155deg,#1b292e,#11191e 72%);
+  box-shadow:0 28px 90px #0009;
+}
+#modalTransaction .modal-header,#modalEditTransaction .modal-header{
+  position:relative;align-items:center;margin:-2px -1px 19px;padding:0 0 15px;
+  border-bottom:1px solid rgba(190,211,204,.13);
+}
+#modalTransaction #txModalTitle,#modalEditTransaction .modal-header h3{
+  display:flex;align-items:center;gap:10px;margin:0;font-size:21px;font-weight:800;
+}
+#modalTransaction #txModalTitle:before{
+  content:"";display:block;width:9px;height:27px;border-radius:8px;background:#e58c91;
+  box-shadow:0 0 18px #e58c9140;
+}
+#modalTransaction[data-tx-type="income"] #txModalTitle:before{
+  background:#7dd8bd;box-shadow:0 0 18px #7dd8bd55;
+}
+#modalTransaction .modal-close,#modalEditTransaction .modal-close{
+  display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--nav-border);
+  border-radius:11px;background:#ffffff08;color:#c7d8d1;font-size:23px;cursor:pointer;
+}
+#modalTransaction .row-between{align-items:center;gap:8px;margin-bottom:10px!important}
+#modalTransaction .row-between>.lbl{font-size:11px;color:#b7c9c1;letter-spacing:.12em}
+#modalTransaction #categoryGrid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 17px;
+}
+#modalTransaction #categoryGrid .icon-item{
+  display:flex;min-width:0;min-height:77px;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  padding:9px 5px;border:1px solid rgba(190,211,204,.12);border-radius:13px 5px 13px 5px;
+  background:#ffffff05;color:#b9c9c2;transition:background .16s,border-color .16s,transform .16s;
+}
+#modalTransaction #categoryGrid .icon-item .emoji{font-size:23px;line-height:1.1}
+#modalTransaction #categoryGrid .icon-item .name{
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:10px;font-weight:650;text-align:center;
+}
+#modalTransaction #categoryGrid .icon-item.active{
+  border-color:#7dd8bd88;background:rgba(125,216,189,.13);
+  color:#c6f5e3;box-shadow:inset 0 0 0 1px #7dd8bd20,0 5px 16px #0002;
+}
+#modalTransaction[data-tx-type="expense"] #categoryGrid .icon-item.active{
+  border-color:#e58c9180;background:rgba(229,140,145,.12);color:#ffd0d2;
+}
+#modalTransaction #txAmountInput{
+  min-height:62px;margin:0 0 11px;padding:13px 16px;
+  border:1px solid rgba(125,216,189,.25);border-radius:14px 5px 14px 5px;
+  background:#0b1418;font-size:25px;font-weight:800;letter-spacing:-.03em;
+}
+#modalTransaction[data-tx-type="expense"] #txAmountInput{border-color:rgba(229,140,145,.3)}
+#modalTransaction #txCommentInput{margin:0 0 13px}
+#modalTransaction #txEnvelopeWrap{
+  border-color:rgba(229,140,145,.25)!important;border-radius:13px 5px 13px 5px!important;
+  background:rgba(229,140,145,.055)!important;
+}
+#modalTransaction .ai-transaction-draft{
+  margin:0 0 14px;padding:13px;border:1px solid rgba(125,216,189,.16);
+  border-radius:13px 5px 13px 5px;background:rgba(125,216,189,.045);
+}
+#modalTransaction .ai-transaction-draft .lbl{margin:0 0 8px}
+#modalTransaction .ai-transaction-status{margin:8px 0 0;color:#8fa69c;font-size:10px;line-height:1.5}
+#modalTransaction .receipt-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 15px}
+#modalTransaction .receipt-action{
+  min-width:0;min-height:58px;flex-wrap:wrap;justify-content:flex-start;
+  padding:10px;border-radius:12px 5px 12px 5px;font-size:11px;
+}
+#modalTransaction .btn-accent[onclick="submitTransaction()"]{
+  min-height:52px;border:0;border-radius:13px 5px 13px 5px;
+  background:linear-gradient(125deg,#91e4c9,#4eaa8e);color:#092019;
+  font-size:14px;font-weight:850;letter-spacing:.02em;
+}
+#modalEditTransaction .edit-type-switch{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:5px 0 14px;padding:5px;
+  border:1px solid rgba(190,211,204,.12);border-radius:14px;background:#0b1418;
+}
+#modalEditTransaction .edit-type-option{
+  min-height:45px;border:1px solid transparent;border-radius:10px;
+  background:transparent;color:#9aaba4;font-weight:750;
+}
+#modalEditTransaction .edit-type-option.is-expense.active{
+  border-color:#e58c9150;background:rgba(229,140,145,.13);color:#ffc2c5;
+}
+#modalEditTransaction .edit-type-option.is-income.active{
+  border-color:#7dd8bd50;background:rgba(125,216,189,.13);color:#baf1dc;
+}
+#modalEditTransaction .custom-input{margin-bottom:9px}
+@media(max-width:390px){
+  #modalTransaction .modal-content,#modalEditTransaction .modal-content{padding:16px}
+  #modalTransaction #categoryGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  #modalTransaction #categoryGrid .icon-item{min-height:70px}
+  #modalTransaction #txAmountInput{font-size:23px}
+}

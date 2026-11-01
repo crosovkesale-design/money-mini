@@ -2265,9 +2265,10 @@ async function copyReferralLink(){
   const message=copied?'Ссылка скопирована':'Не удалось скопировать ссылку. Нажми и удерживай поле со ссылкой.';
   const input=document.getElementById('referralLinkInput');
   if(input&&!copied){input.focus();input.select();}
-  if(typeof showToast==='function')showToast(_localizeDialogMessage(message));
-  else showAppDialog(message);
-  else alert(_localizeDialogMessage(message));
+  const localizedMessage=_localizeDialogMessage(message);
+  if(typeof showToast==='function')showToast(localizedMessage);
+  else if(typeof showAppDialog==='function')showAppDialog(localizedMessage);
+  else alert(localizedMessage);
 }
 async function shareReferralLink(){
   const link=referralStats.link||document.getElementById('referralLinkInput')?.value||'';

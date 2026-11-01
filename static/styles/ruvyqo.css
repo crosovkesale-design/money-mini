@@ -399,3 +399,55 @@ input::placeholder,textarea::placeholder{color:#77837f}
   #modalTransaction #categoryGrid .icon-item{min-height:70px}
   #modalTransaction #txAmountInput{font-size:23px}
 }
+
+
+/* RUVYQO — polished envelope picker in expense form */
+#modalTransaction #txEnvelopeWrap{
+  position:relative!important;display:block;
+  margin:13px 0 16px!important;padding:15px 14px 14px 16px!important;
+  overflow:hidden;border:1px solid rgba(229,140,145,.24)!important;
+  border-radius:7px 18px 7px 18px!important;
+  background:radial-gradient(circle at 100% 0%,rgba(229,140,145,.12),transparent 42%),linear-gradient(135deg,#202c31,#151f24 78%)!important;
+  box-shadow:inset 0 1px #ffffff0a,0 9px 24px #0002;
+}
+#modalTransaction #txEnvelopeWrap:before{
+  content:"";position:absolute;left:0;top:13px;bottom:13px;width:3px;
+  border-radius:0 4px 4px 0;background:linear-gradient(#f0a2a5,#b96d75);
+}
+#modalTransaction #txEnvelopeWrap:after{
+  content:"▾";position:absolute;right:27px;bottom:26px;z-index:1;
+  color:#e8a0a4;font-size:18px;pointer-events:none;
+}
+#modalTransaction #txEnvelopeWrap label[for="txEnvelopeSelect"]{
+  display:flex!important;align-items:center;gap:9px;margin:0 0 11px!important;
+  color:#f0c6c6;font-size:12px;font-weight:800!important;
+  letter-spacing:.025em;
+}
+#modalTransaction #txEnvelopeWrap label[for="txEnvelopeSelect"]:before{
+  content:"";display:grid;place-items:center;width:31px;height:31px;flex:0 0 31px;
+  border:1px solid rgba(229,140,145,.25);border-radius:10px 4px 10px 4px;
+  background:rgba(229,140,145,.12);
+  /* Simple envelope mark without depending on an icon font */
+}
+#modalTransaction #txEnvelopeSelect{
+  position:relative;z-index:2;display:block;width:100%;min-height:49px;
+  margin:0!important;padding:12px 43px 12px 13px!important;
+  appearance:none;-webkit-appearance:none;
+  border:1px solid rgba(229,140,145,.23)!important;
+  border-radius:11px 5px 11px 5px!important;
+  background:linear-gradient(110deg,#101a1e,#172328)!important;
+  color:#f2f4ef!important;font-size:13px;font-weight:700;
+  box-shadow:inset 0 1px #ffffff08;
+}
+#modalTransaction #txEnvelopeSelect:focus{
+  outline:none;border-color:rgba(229,140,145,.7)!important;
+  box-shadow:0 0 0 3px rgba(229,140,145,.11),inset 0 1px #ffffff08;
+}
+#modalTransaction #txEnvelopeSelect option{
+  background:#172328;color:#f2f4ef;padding:10px;
+}
+#modalTransaction #txEnvelopeWrap:has(#txEnvelopeSelect:disabled){opacity:.65}
+@media(max-width:390px){
+  #modalTransaction #txEnvelopeWrap{padding:13px 11px 12px 14px!important}
+  #modalTransaction #txEnvelopeSelect{min-height:46px;font-size:12px}
+}

@@ -503,3 +503,6 @@ input::placeholder,textarea::placeholder{color:#77837f}
  #modalTransaction .envelope-picker-trigger{min-height:49px;padding:9px 11px}
  #modalTransaction .envelope-picker-options{max-height:190px}
 }
+
+/* Remove the former decorative arrow; the custom control has its own chevron. */
+#modalTransaction #txEnvelopeWrap:after{content:none!important}

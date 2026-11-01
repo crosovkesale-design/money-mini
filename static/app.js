@@ -1087,6 +1087,7 @@ async function handleReceiptPhotoSelected(event){
       const totalInput = document.getElementById("receiptTotalInput");
       if(storeInput) storeInput.value = String(receipt.store || "");
       if(dateInput) dateInput.value = /^\d{4}-\d{2}-\d{2}$/.test(String(receipt.date || "")) ? receipt.date : new Date().toISOString().slice(0,10);
+      initReceiptCalendar();syncReceiptDatePicker();
       if(itemsInput) itemsInput.value = items.slice(0,40).map(item=>{
         const name = String(item.name || "").replace(/[;\r\n]+/g," ").trim();
         const price = Number(item.price);

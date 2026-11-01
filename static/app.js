@@ -2417,19 +2417,10 @@ function renderCharts(){
 }
 
 function analyticsDateKey(tx){
-  if(tx){
-    const rawTs=Number(tx.ts);
-    if(Number.isFinite(rawTs)&&rawTs>0){
-      const normalizedTs=rawTs<100000000000?rawTs*1000:rawTs;
-      const d=new Date(normalizedTs);
-      if(!Number.isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    }
-  }
   const raw=String(tx?.date||'').trim();
   let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T)/);
   if(m){
-    const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
-    const d=new Date(year,month-1,day);
+    const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]),d=new Date(year,month-1,day);
     if(d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day)return m[1]+'-'+m[2]+'-'+m[3];
     return '';
   }
@@ -2437,6 +2428,14 @@ function analyticsDateKey(tx){
   if(m){
     const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]),d=new Date(year,month-1,day);
     if(d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day)return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    return '';
+  }
+  if(tx){
+    const rawTs=Number(tx.ts);
+    if(Number.isFinite(rawTs)&&rawTs>0){
+      const normalizedTs=rawTs<100000000000?rawTs*1000:rawTs,d=new Date(normalizedTs);
+      if(!Number.isNaN(d.getTime()))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
   }
   return '';
 }
@@ -2518,11 +2517,11 @@ function renderForecast(){
 
 
 function weeklyDateForTransaction(tx){
-  if(tx&&tx.ts){const d=new Date(Number(tx.ts));if(!Number.isNaN(d.getTime()))return d;}
-  const raw=String(tx&&tx.date||'').trim();
-  if(/^\d{4}-\d{2}-\d{2}/.test(raw))return new Date(raw.slice(0,10)+'T12:00:00');
-  const ru=raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-  if(ru)return new Date(Number(ru[3]),Number(ru[2])-1,Number(ru[1]),12);
+  const dateKey=analyticsDateKey(tx);
+  if(dateKey){
+    const parts=dateKey.split('-').map(Number);
+    return new Date(parts[0],parts[1]-1,parts[2],12);
+  }
   return null;
 }
 function renderWeeklySummary(visibleBudget){

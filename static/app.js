@@ -2654,21 +2654,27 @@ function renderAll(){
   if(hist){
     hist.innerHTML = filtered.length
       ? filtered.map(tx => `
-        <div class="history-item">
+        <article class="history-item ${tx.type === 'expense' ? 'history-expense' : 'history-income'}">
           <div class="history-left">
-            <div class="history-icon">${tx.icon || '📦'}</div>
-            <div>
+            <div class="history-icon">${tx.icon || (tx.type === 'expense' ? '↗' : '↙')}</div>
+            <div class="history-info">
               <div class="history-title">${tx.title || tCat(tx.category || 'Разное')} ${tx.receipt ? '🧾' : ''}</div>
-              <div class="history-sub">${visibleBudget.isFamily ? ((tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : '') + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</div>
+              <div class="history-sub">
+                <span class="history-kind">${tx.type === 'expense' ? 'Расход' : 'Доход'}</span>
+                <span class="history-meta">${visibleBudget.isFamily ? ((tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : '') + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</span>
+              </div>
+              ${tx.comment ? '<div class="history-comment">'+String(tx.comment).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : ''}
             </div>
           </div>
           <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">
-            ${tx.type === 'expense' ? '-' : '+'}${fmtMoney(tx.amount)}
+            <span class="history-sign">${tx.type === 'expense' ? '−' : '+'}</span>${fmtMoney(tx.amount)}
           </div>
-          ${tx.receipt ? '<div class="history-receipt-actions"><button class="card-action" aria-label="Изменить чек" onclick="editReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-pen"></i></button><button class="card-action danger" aria-label="Удалить чек" onclick="deleteReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-trash"></i></button></div>' : ''}
-          <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-pen"></i></button>
-          <button class="card-del" style="position:static" aria-label="Удалить операцию" onclick="deleteTx(${bankEscape(JSON.stringify(String(tx.id)))})">✕</button>
-        </div>
+          <div class="history-actions">
+            ${tx.receipt ? '<button class="card-action" aria-label="Изменить чек" title="Изменить чек" onclick="editReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-receipt"></i></button><button class="card-action danger" aria-label="Удалить чек" title="Удалить чек" onclick="deleteReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-trash"></i></button>' : ''}
+            <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-pen"></i></button>
+            <button class="card-action danger" aria-label="Удалить операцию" title="Удалить операцию" onclick="deleteTx(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </article>
       `).join('')
       : `<div class="muted" style="text-align:center">${t('no_rules')}</div>`;
   }

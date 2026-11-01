@@ -170,3 +170,111 @@ input::placeholder,textarea::placeholder{color:#77837f}
  .referral-link-row input,.promo-redeem-row input{min-width:0;flex:1}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+
+/* RUVYQO — navigation polish v1.1 */
+:root{
+ --nav-accent:#7dd8bd;
+ --nav-accent-soft:rgba(125,216,189,.12);
+ --nav-border:rgba(190,211,204,.12);
+}
+.app-topbar{
+ gap:10px;
+ min-height:72px;
+ padding-top:calc(12px + env(safe-area-inset-top));
+ background:rgba(10,16,20,.94);
+ border-bottom:1px solid var(--nav-border);
+ box-shadow:0 8px 26px rgba(0,0,0,.16);
+}
+.app-topbar:before{
+ order:0;
+ width:38px;height:38px;flex-basis:38px;
+ border-radius:12px;
+ background:linear-gradient(145deg,#8ce2c5,#398f7a);
+ color:#092019;
+ font:800 23px var(--font);
+ box-shadow:0 6px 18px rgba(77,183,151,.18);
+}
+.menu-trigger{
+ order:-1;display:grid;place-items:center;flex:0 0 38px;
+ width:38px;height:38px;border:1px solid var(--nav-border);
+ border-radius:12px;background:#ffffff07;color:#d8e9e3;
+ font-size:16px;transition:background .18s,border-color .18s;
+}
+.menu-trigger:active,.menu-trigger:hover{background:var(--nav-accent-soft);border-color:#7dd8bd55}
+.app-topbar-title b{font-size:14px;letter-spacing:.17em;color:#f4f8f5}
+.app-topbar-title small{font-size:10px;letter-spacing:.07em;text-transform:none;color:#a8b8b2}
+.topbar-help{width:36px;height:36px;border-color:var(--nav-border);color:#c8ddd5;background:#ffffff06}
+.topbar-tariffs{
+ min-height:36px;padding:0 11px;border:1px solid #7dd8bd50;
+ border-radius:11px;background:var(--nav-accent-soft);color:#a8ecd5;
+ font-size:11px;white-space:nowrap;
+}
+.app-drawer{
+ width:min(88vw,350px);
+ padding:calc(22px + env(safe-area-inset-top)) 17px calc(20px + env(safe-area-inset-bottom));
+ background:linear-gradient(165deg,#172329 0%,#10181d 56%,#0d1418 100%);
+ border-right:1px solid var(--nav-border);
+}
+.drawer-head{
+ min-height:66px;padding:4px 4px 18px;
+ border-bottom:1px solid var(--nav-border);
+}
+.drawer-head b{font-size:16px;letter-spacing:.17em;color:#f2f7f4}
+.drawer-head small{display:block;margin-top:4px;font-size:11px;color:#93a69e}
+.drawer-head button{
+ display:grid;place-items:center;width:36px;height:36px;
+ border:1px solid var(--nav-border);border-radius:11px;
+ background:#ffffff06;color:#c7d8d1;font-size:23px;
+}
+.drawer-nav{gap:6px;margin:19px 0}
+.drawer-nav button{
+ position:relative;min-height:51px;padding:0 13px;
+ border:1px solid transparent;border-radius:13px;
+ color:#c2d0ca;font-size:13px;font-weight:600;
+ transition:background .16s,border-color .16s,color .16s,transform .16s;
+}
+.drawer-nav button i{
+ display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;
+ border:1px solid transparent;border-radius:9px;
+ background:#ffffff08;color:#91aaa0;font-size:14px;
+}
+.drawer-nav button:hover{background:#ffffff08;border-color:var(--nav-border)}
+.drawer-nav button:active{transform:scale(.985)}
+.drawer-nav button.active{
+ border-color:#7dd8bd38;
+ background:linear-gradient(100deg,rgba(91,190,157,.17),rgba(91,190,157,.055));
+ color:#b8f0dc;box-shadow:inset 3px 0 #79d5b7;
+}
+.drawer-nav button.active i{
+ border-color:#7dd8bd35;background:rgba(125,216,189,.14);color:#8de4c5;
+}
+.drawer-foot{
+ margin-top:22px;padding:15px 5px 0;border-top:1px solid var(--nav-border);
+ color:#80928b;font-size:10px;letter-spacing:.06em;
+}
+.tab-content{scroll-margin-top:84px}
+.tab-content h2,.tab-content h3{color:#f0f5f2}
+.card,.chart-card,.family-card,.reward-card,.pricing-group,.coupon-panel,
+.promo-redeem-card,.financial-overview-card,.history-filter-panel,
+.pro-insights-card,.battlepass-card,.referral-hero,.ai-credit-panel{
+ border-color:rgba(190,211,204,.13);
+}
+.btn-accent,.pay-button{
+ background:linear-gradient(130deg,#91e4c9,#4eaa8e);
+ color:#092019;box-shadow:0 7px 18px rgba(77,183,151,.16);
+}
+.btn-outline{border-color:var(--nav-border);color:#b9e8d7}
+.info-dot:focus-visible,.drawer-head button:focus-visible,.menu-trigger:focus-visible,
+.drawer-nav button:focus-visible{outline:2px solid var(--nav-accent);outline-offset:3px}
+@media(max-width:380px){
+ .app-topbar{gap:7px}
+ .app-topbar:before{width:34px;height:34px;flex-basis:34px;font-size:21px}
+ .app-topbar-title b{font-size:12px;letter-spacing:.13em}
+ .topbar-tariffs{padding:0 8px;font-size:10px}
+ .topbar-help{width:32px;height:32px;flex:0 0 32px}
+}
+@media(min-width:720px){
+ .app-topbar{margin-left:-25px;margin-right:-25px;padding-left:25px;padding-right:25px}
+ .app-drawer{width:350px}
+}

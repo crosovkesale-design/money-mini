@@ -506,3 +506,57 @@ input::placeholder,textarea::placeholder{color:#77837f}
 
 /* Remove the former decorative arrow; the custom control has its own chevron. */
 #modalTransaction #txEnvelopeWrap:after{content:none!important}
+
+
+/* RUVYQO — clear, compact transaction history cards */
+#historyContainer{display:grid;gap:9px}
+#historyContainer>.history-item{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"main amount" "actions actions";
+  align-items:center;gap:10px 12px;padding:14px 13px!important;
+  border:1px solid #ffffff12!important;border-left:3px solid #71818a!important;
+  border-radius:7px 16px 7px 16px!important;
+  background:linear-gradient(120deg,#1b292e 0%,#121b20 78%)!important;
+  box-shadow:0 5px 16px #00000018;min-width:0;
+}
+#historyContainer>.history-expense{border-left-color:#ed8589!important}
+#historyContainer>.history-income{border-left-color:#54c9a0!important}
+#historyContainer .history-left{grid-area:main;display:flex;align-items:center;gap:11px;min-width:0}
+#historyContainer .history-icon{
+  display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;
+  border-radius:13px 5px 13px 5px;background:#ffffff09;border:1px solid #ffffff12;
+  font-size:19px;
+}
+#historyContainer .history-expense .history-icon{background:#ed858915;border-color:#ed858930;color:#f09a9d}
+#historyContainer .history-income .history-icon{background:#54c9a015;border-color:#54c9a030;color:#70dcb8}
+#historyContainer .history-info{min-width:0}
+#historyContainer .history-title{color:#f0f4f1;font-size:13px;font-weight:750;line-height:1.3;overflow-wrap:anywhere}
+#historyContainer .history-sub{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:5px;font-size:10px;color:#91a19f}
+#historyContainer .history-kind{padding:3px 7px;border-radius:20px;background:#ffffff0b;color:#aebbb7;font-weight:750}
+#historyContainer .history-expense .history-kind{background:#ed858916;color:#f09a9d}
+#historyContainer .history-income .history-kind{background:#54c9a016;color:#70dcb8}
+#historyContainer .history-meta{min-width:0}
+#historyContainer .history-comment{margin-top:5px;color:#aab8b3;font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+#historyContainer .history-amount{
+  grid-area:amount;align-self:center;white-space:nowrap;font-size:15px;font-weight:850;
+  letter-spacing:-.035em;font-variant-numeric:tabular-nums;
+}
+#historyContainer .history-amount.exp{color:#f08d91}
+#historyContainer .history-amount.inc{color:#65d5ae}
+#historyContainer .history-sign{font-size:16px;margin-right:2px}
+#historyContainer .history-actions{
+  grid-area:actions;display:flex;justify-content:flex-end;align-items:center;gap:6px;
+  padding-top:8px;border-top:1px solid #ffffff0c;
+}
+#historyContainer .history-actions .card-action{
+  display:grid;place-items:center;width:30px;height:29px;padding:0;
+  border:1px solid #ffffff12;border-radius:9px 4px 9px 4px;
+  background:#ffffff06;color:#9eafaa;font-size:11px;
+}
+#historyContainer .history-actions .card-action.danger{color:#e58c91}
+@media(max-width:380px){
+  #historyContainer>.history-item{padding:11px 10px!important;gap:8px}
+  #historyContainer .history-icon{width:36px;height:36px;flex-basis:36px;font-size:16px}
+  #historyContainer .history-title{font-size:12px}
+  #historyContainer .history-amount{font-size:13px}
+}

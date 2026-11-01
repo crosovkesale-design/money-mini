@@ -573,6 +573,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div id="txEnvelopeWrap" style="display:none;margin:10px 0 14px;padding:12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)">
       <label class="lbl" for="txEnvelopeSelect" style="display:block;margin-bottom:7px;font-weight:700">📩 Засчитать расход в конверт</label>
       <select id="txEnvelopeSelect" class="custom-input" style="margin:0"><option value="">Без конверта</option></select>
+        <button type="button" id="txEnvelopeTrigger" class="envelope-picker-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="toggleEnvelopePicker()">
+          <span class="envelope-picker-current"><span class="envelope-picker-symbol">✉</span><span id="txEnvelopeCurrentLabel">Без конверта</span></span>
+          <span class="envelope-picker-chevron">⌄</span>
+        </button>
+        <div id="txEnvelopeOptions" class="envelope-picker-options" role="listbox" aria-label="Выбор конверта" hidden></div>
     </div>
     <div id="categoryGrid" class="icon-grid"></div>
     <div class="ai-transaction-draft">

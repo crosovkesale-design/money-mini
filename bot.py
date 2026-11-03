@@ -858,6 +858,24 @@ async def payment_reminder():
 
 # ---------- ХЕНДЛЕРЫ БОТА ----------
 if bot:
+    def _main_menu_keyboard():
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📊 Открыть RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
+             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews")],
+            [InlineKeyboardButton(text="📣 Наш канал", url="https://t.me/familybudjet")]
+        ])
+
+    MAIN_MENU_TEXT = (
+        "👋 <b>Добро пожаловать в RUVYQO!</b>\\n"
+        "━━━━━━━━━━━━━━━━━━\\n"
+        "💰 <b>Твои деньги. Под твоим контролем.</b>\\n\\n"
+        "Учитывай доходы и расходы, просматривай историю операций, планируй накопления и держи бюджет под контролем. В PRO доступны добавление доходов и расходов текстом в приложении и чате бота, расширенная аналитика, семейный бюджет до 6 участников, отчёты Excel, собственные обои и напоминания.\\n\\n"
+        "🎁 <b>Новым пользователям доступен бесплатный пробный период на 30 дней.</b>\\n\\n"
+        "👇 Нажми <b>«Открыть RUVYQO»</b>, чтобы начать.\\n\\n"
+        "💬 Отзывы, новости и обновления — по кнопкам ниже."
+    )
     @dp.message(Command("start"))
     async def cmd_start(message: Message):
         args = message.text.split()
@@ -894,22 +912,10 @@ if bot:
                         except Exception:
                             pass
  
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Открыть RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
-             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
-            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews")],
-            [InlineKeyboardButton(text="📣 Наш канал", url="https://t.me/familybudjet")]
-        ])
         await message.answer(
-            "👋 <b>Добро пожаловать в RUVYQO!</b>\n"
-            "━━━━━━━━━━━━━━━━━━\n"
-            "💰 <b>Твои деньги. Под твоим контролем.</b>\n\n"
-            "Учитывай доходы и расходы, просматривай историю операций, планируй накопления и держи бюджет под контролем. В PRO доступны добавление доходов и расходов текстом в приложении и чате бота, расширенная аналитика, семейный бюджет до 6 участников, отчёты Excel, собственные обои и напоминания.\n\n"
-            "🎁 <b>Новым пользователям доступен бесплатный пробный период на 30 дней.</b>\n\n"
-            "👇 Нажми <b>«Открыть RUVYQO»</b>, чтобы начать.\n\n"
-            "💬 Отзывы, новости и обновления — по кнопкам ниже.",
-            reply_markup=kb, parse_mode="HTML"
+            MAIN_MENU_TEXT,
+            reply_markup=_main_menu_keyboard(),
+            parse_mode="HTML"
         )
 
     @dp.message(Command("promo"))
@@ -1326,19 +1332,9 @@ if bot:
     @dp.callback_query(F.data == "go_start")
     async def cb_go_start(cb: CallbackQuery, state: FSMContext):
         await state.clear()
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Открыть RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
-             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
-            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
-        ])
         await cb.message.answer(
-            "👋 <b>RUVYQO</b>\n"
-            "━━━━━━━━━━━━━━━━━━\n"
-            "Твой бюджет, подписка и бонусы — в одном месте.\n"
-            "Выбери нужный раздел с помощью кнопок ниже.",
-            reply_markup=kb,
+            MAIN_MENU_TEXT,
+            reply_markup=_main_menu_keyboard(),
             parse_mode="HTML"
         )
         await cb.answer()

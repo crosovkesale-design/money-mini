@@ -63,7 +63,7 @@
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-help-icons-gold-circle-v1">
+<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-settings-choice-cards-v1">
 </head>
 <body>
 <div class="container">
@@ -442,10 +442,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div id="tab-settings" class="tab-content" style="display:none">
     <div class="card">
       <h5 data-i18n="settings">Настройки</h5>
-      <label class="lbl" data-i18n="lang">Язык</label>
-      <button type="button" class="select-fake" onclick="openPicker('language')"><span id="langLabel"></span></button>
-      <label class="lbl" data-i18n="currency">Валюта</label>
-      <button type="button" class="select-fake" onclick="openPicker('currency')"><span id="currLabel"></span></button>
+      <div class="settings-choice-card settings-language-card">
+        <div class="settings-choice-heading"><span class="settings-choice-icon"><i class="fa-solid fa-language"></i></span><label class="lbl" data-i18n="lang">Язык</label></div>
+        <button type="button" class="select-fake settings-choice-control" onclick="openPicker('language')"><span id="langLabel"></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <div class="settings-choice-card settings-currency-card">
+        <div class="settings-choice-heading"><span class="settings-choice-icon"><i class="fa-solid fa-coins"></i></span><label class="lbl" data-i18n="currency">Валюта</label></div>
+        <button type="button" class="select-fake settings-choice-control" onclick="openPicker('currency')"><span id="currLabel"></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+      </div>
       <label class="lbl" data-i18n="theme">Тема</label>
       <div class="seg">
         <button class="seg-btn" data-theme-btn="dark" onclick="setTheme('dark')" data-i18n="dark">Тёмная</button>

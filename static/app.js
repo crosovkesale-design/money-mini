@@ -2407,6 +2407,7 @@ function renderFamilyStatus(family){
   if(!family){
     if(status) status.textContent = t('src_family_empty');
     if(currentInfo) currentInfo.style.display = 'none';
+    if(membersListNode) membersListNode.innerHTML = '';
     if(emptyInfo) emptyInfo.style.display = 'block';
     if(actions) actions.style.display = 'grid';
     if(leaveBtn) leaveBtn.style.display = 'none';
@@ -2424,12 +2425,30 @@ function renderFamilyStatus(family){
   const nameNode = document.getElementById('familyNameText');
   const codeNode = document.getElementById('familyCodeText');
   const countNode = document.getElementById('familyMembersCount');
+  const membersListNode = document.getElementById('familyMembersList');
   if(nameNode) nameNode.textContent = family.name || 'Моя семья';
   if(codeNode) codeNode.textContent = family.id || '';
   if(countNode){
     const count = Object.keys(members).length;
     const memberLimit=Number(family.memberLimit)||4;
     countNode.textContent = t('src_family_members').replace('{count}',String(count)).replace('{role}',family.currentRole === 'owner' ? t('src_family_owner') : '')+' · '+count+'/'+memberLimit;
+  }
+  if(membersListNode){
+    const orderedMembers = Object.entries(members)
+      .filter(([, member]) => member && typeof member === 'object')
+      .sort(([idA, memberA], [idB, memberB]) => {
+        const ownerA = idA === String(family.ownerId || '') || memberA.role === 'owner';
+        const ownerB = idB === String(family.ownerId || '') || memberB.role === 'owner';
+        if(ownerA !== ownerB) return ownerA ? -1 : 1;
+        return Number(memberA.joinedAt || 0) - Number(memberB.joinedAt || 0);
+      });
+    membersListNode.innerHTML = orderedMembers.map(([memberId, member]) => {
+      const isOwner = memberId === String(family.ownerId || '') || member.role === 'owner';
+      const memberName = bankEscape(String(member.name || 'Участник').trim() || 'Участник');
+      const initial = bankEscape(Array.from(String(member.name || 'У').trim())[0] || 'У');
+      const roleLabel = t(isOwner ? 'src_family_role_owner' : 'src_family_role_member');
+      return '<div class="family-member-row"><span class="family-member-avatar">'+initial+'</span><span class="family-member-copy"><b>'+memberName+'</b><small>'+roleLabel+'</small></span>'+(isOwner ? '<span class="family-member-owner-mark">★</span>' : '')+'</div>';
+    }).join('') || '<div class="family-members-empty">'+bankEscape(t('src_family_members_empty'))+'</div>';
   }
   hideFamilyForms();
 }

@@ -3231,7 +3231,7 @@ async function buyPlan(plan, method){
     const initData = tg && tg.initData;
 
     if(!initData){
-      alert('Открой приложение через Telegram');
+      alert(t('open_telegram_required'));
       return;
     }
 
@@ -3256,15 +3256,15 @@ async function buyPlan(plan, method){
     const data = await response.json();
 
     if(!response.ok || !data.invoice_url){
-      throw new Error(data.detail || 'Не удалось создать счёт');
+      throw new Error(data.detail || t('invoice_create_failed'));
     }
 
     if(method === 'stars' && tg.openInvoice){
       tg.openInvoice(data.invoice_url, status => {
         if(status === 'paid'){
-          alert('Платёж получен. Проверяем активацию подписки.');
+          alert(t('payment_pending_confirmation'));
         } else if(status === 'failed'){
-          alert('Оплата не прошла. Попробуй ещё раз.');
+          alert(t('payment_failed_retry'));
         }
       });
     } else if(tg.openLink){

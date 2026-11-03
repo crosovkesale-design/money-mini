@@ -895,20 +895,20 @@ if bot:
                             pass
  
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Open RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="💎 Plans & Payments", callback_data="show_pay"),
-             InlineKeyboardButton(text="🎁 Invite a Friend", callback_data="ref_link")],
-            [InlineKeyboardButton(text="⭐ User Reviews", url="https://t.me/familybudget_reviews")],
-            [InlineKeyboardButton(text="📣 Our Channel", url="https://t.me/familybudjet")]
+            [InlineKeyboardButton(text="📊 Открыть RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
+             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews")],
+            [InlineKeyboardButton(text="📣 Наш канал", url="https://t.me/familybudjet")]
         ])
         await message.answer(
-            "👋 <b>Welcome to RUVYQO!</b>\n"
-            "━━━━━━━━━━━━━━━━━━\n"
-            "💰 <b>Your money. Your control.</b>\n\n"
-            "Track income and expenses, review your transaction history, plan savings, and stay in control of your budget. PRO adds text-based income and expense entry in the app and bot chat, advanced analytics, family budgeting for up to 6 members, Excel reports, custom wallpapers, and reminders.\n\n"
-            "🎁 <b>New users get a 30-day free trial.</b>\n\n"
-            "👇 Tap <b>“Open RUVYQO”</b> to get started.\n\n"
-            "💬 Find reviews, news, and updates using the buttons below.",
+            "👋 <b>Добро пожаловать в RUVYQO!</b>\\n"
+            "━━━━━━━━━━━━━━━━━━\\n"
+            "💰 <b>Твои деньги. Под твоим контролем.</b>\\n\\n"
+            "Учитывай доходы и расходы, просматривай историю операций, планируй накопления и держи бюджет под контролем. В PRO доступны добавление доходов и расходов текстом в приложении и чате бота, расширенная аналитика, семейный бюджет до 6 участников, отчёты Excel, собственные обои и напоминания.\\n\\n"
+            "🎁 <b>Новым пользователям доступен бесплатный пробный период на 30 дней.</b>\\n\\n"
+            "👇 Нажми <b>«Открыть RUVYQO»</b>, чтобы начать.\\n\\n"
+            "💬 Отзывы, новости и обновления — по кнопкам ниже.",
             reply_markup=kb, parse_mode="HTML"
         )
 
@@ -1327,17 +1327,17 @@ if bot:
     async def cb_go_start(cb: CallbackQuery, state: FSMContext):
         await state.clear()
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📊 Open RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="💎 Plans & Payments", callback_data="show_pay"),
-             InlineKeyboardButton(text="🎁 Invite a Friend", callback_data="ref_link")],
-            [InlineKeyboardButton(text="⭐ Reviews", url="https://t.me/familybudget_reviews"),
-             InlineKeyboardButton(text="📣 Channel", url="https://t.me/familybudjet")]
+            [InlineKeyboardButton(text="📊 Открыть RUVYQO", web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="💎 Тарифы и оплата", callback_data="show_pay"),
+             InlineKeyboardButton(text="🎁 Пригласить друга", callback_data="ref_link")],
+            [InlineKeyboardButton(text="⭐ Отзывы", url="https://t.me/familybudget_reviews"),
+             InlineKeyboardButton(text="📣 Канал", url="https://t.me/familybudjet")]
         ])
         await cb.message.answer(
-            "👋 <b>RUVYQO</b>\n"
-            "━━━━━━━━━━━━━━━━━━\n"
-            "Your budget, subscription, and rewards — all in one place.\n"
-            "Choose an option below.",
+            "👋 <b>RUVYQO</b>\\n"
+            "━━━━━━━━━━━━━━━━━━\\n"
+            "Твой бюджет, подписка и бонусы — в одном месте.\\n"
+            "Выбери нужный раздел с помощью кнопок ниже.",
             reply_markup=kb,
             parse_mode="HTML"
         )

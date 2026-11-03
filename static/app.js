@@ -711,6 +711,7 @@ function applyLang(){
   _autoTextMapCache = null;
   _autoTextPatternCache = null;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  positionRuvyqoHelpButtons();
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   const languageLabel=document.getElementById('langLabel');
   if(languageLabel) languageLabel.innerText = (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).flag + ' ' + (LANGS.find(l=>l.id===appData.lang)||LANGS[0]).label;
@@ -726,6 +727,14 @@ function applyLang(){
   if (typeof renderBattlePass === 'function') renderBattlePass();
 }
 
+function positionRuvyqoHelpButtons(){
+  document.querySelectorAll('.help-inline-button,.info-dot').forEach(button=>{
+    if(button.dataset.ruvyqoCorner==='1')return;
+    const anchor=button.parentElement;if(!anchor)return;
+    anchor.classList.add('ruvyqo-help-anchor');button.classList.add('ruvyqo-help-corner');button.dataset.ruvyqoCorner='1';
+  });
+}
+document.addEventListener('DOMContentLoaded',positionRuvyqoHelpButtons);
 function toggleAppMenu(){
   const open=!document.body.classList.contains('menu-open');
   document.body.classList.toggle('menu-open',open);
@@ -763,8 +772,8 @@ function openHelp(topic='general'){
   if(!title || !body){ openModal('modalHelp'); return; }
   const content = {
     general: {
-      title: 'Как пользоваться приложением «Семейный бюджет»',
-      html: '<p>«Семейный бюджет» помогает вести личный бюджет прямо внутри Telegram — без необходимости переключаться между отдельными приложениями.</p><ul><li><b>Доходы и расходы:</b> записывай операции и смотри историю.</li><li><b>Планирование:</b> используй конверты, счета и финансовые цели.</li><li><b>Аналитика:</b> отслеживай структуру трат и сравнивай результаты.</li><li><b>Настройки:</b> выбирай валюту, язык и оформление.</li><li><b>PRO:</b> открывает собственные категории, персональные обои, Excel-отчёты и ежедневные напоминания.</li></ul><p class="help-note">Совет: записывай расходы сразу после покупки — так статистика будет точнее.</p>'
+      title: 'Как пользоваться RUVYQO',
+      html: '<p>RUVYQO помогает вести личный бюджет прямо внутри Telegram — без необходимости переключаться между отдельными приложениями.</p><ul><li><b>Доходы и расходы:</b> записывай операции и смотри историю.</li><li><b>Планирование:</b> используй конверты, счета и финансовые цели.</li><li><b>Аналитика:</b> отслеживай структуру трат и сравнивай результаты.</li><li><b>Настройки:</b> выбирай валюту, язык и оформление.</li><li><b>PRO:</b> открывает собственные категории, персональные обои, Excel-отчёты и ежедневные напоминания.</li></ul><p class="help-note">Совет: записывай расходы сразу после покупки — так статистика будет точнее.</p>'
     },
     advantages: {
       title: 'help_adv_title',
@@ -1379,10 +1388,6 @@ function updateCouponSelector(){
   if(!select) return;
   const count10 = Number(referralStats.coupons10 || 0);
   const count20 = Number(referralStats.coupons20 || 0);
-  const option10 = select.querySelector('option[value="10"]');
-  const option20 = select.querySelector('option[value="20"]');
-  if(option10) option10.disabled = count10 <= 0;
-  if(option20) option20.disabled = count20 <= 0;
   if(select.value === '10' && count10 <= 0) select.value = '';
   if(select.value === '20' && count20 <= 0) select.value = '';
 
@@ -3083,6 +3088,13 @@ function initApp(){
   localStorage.setItem('budgetMode_' + telegramUserId, 'personal');
 
   setTheme(appData.theme || 'dark');
+  initRuvikoDatePickers(document);
+  if(!window.__ruvyqoDateObserver){
+    window.__ruvyqoDateObserver = new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{
+      if(node.nodeType===1){if(node.matches?.('input[type="date"]'))initRuvikoDatePickers(node.parentNode||document);else if(node.querySelector?.('input[type="date"]'))initRuvikoDatePickers(node);}
+    })));
+    window.__ruvyqoDateObserver.observe(document.body,{childList:true,subtree:true});
+  }
   applyLang();
   applyWallpaper();
   renderAll();

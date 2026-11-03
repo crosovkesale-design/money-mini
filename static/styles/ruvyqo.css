@@ -1141,3 +1141,31 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   #tab-settings .family-copy-btn{grid-column:1;grid-row:auto;width:100%}
   #tab-settings .family-share-btn{grid-column:1}
 }
+
+
+/* RUVYQO — matching help controls for Family and Recurring */
+#tab-settings .recurring-card>.help-inline-button,
+#tab-settings .family-card>.help-inline-button{
+  position:absolute;top:17px;right:17px;
+  display:grid;place-items:center;
+  width:29px;height:29px;min-width:29px;padding:0;
+  border:1px solid rgba(201,173,118,.58)!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle at 35% 25%,rgba(201,173,118,.19),rgba(201,173,118,.045) 68%,rgba(8,13,15,.35))!important;
+  color:#e5cc96!important;
+  font-family:Georgia,serif;font-size:17px;font-weight:700;line-height:1;
+  box-shadow:0 0 0 3px rgba(201,173,118,.045),0 3px 12px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.12);
+  opacity:1;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+#tab-settings .recurring-card>.help-inline-button:before,
+#tab-settings .family-card>.help-inline-button:before{content:none!important;display:none!important}
+#tab-settings .recurring-card>.help-inline-button:hover,
+#tab-settings .family-card>.help-inline-button:hover{
+  transform:rotate(12deg) scale(1.06);
+  border-color:rgba(201,173,118,.9)!important;
+  box-shadow:0 0 0 4px rgba(201,173,118,.08),0 0 15px rgba(201,173,118,.2);
+}
+#tab-settings .recurring-card>.help-inline-button:focus-visible,
+#tab-settings .family-card>.help-inline-button:focus-visible{
+  outline:2px solid #c9ad76!important;outline-offset:3px;
+}

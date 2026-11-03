@@ -1640,3 +1640,24 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 .ruvyqo-help-corner{position:absolute!important;top:0!important;right:0!important;margin:0!important;z-index:3}
 .coupon-hidden-select{display:none!important}
 @media(max-width:480px){#tab-ai .finance-assistant-messages{min-height:340px;max-height:64vh}#tab-ai .finance-assistant-message{max-width:96%}}
+
+
+/* Light-theme completion: nested controls and cards */
+:root[data-theme="light"] #modalTransaction #txEnvelopeWrap{background:#f5f8f5!important;border-color:rgba(63,91,73,.2)!important}
+:root[data-theme="light"] #modalTransaction .envelope-picker-trigger{background:#fff!important;border-color:rgba(63,91,73,.18)!important;color:#26352c!important}
+:root[data-theme="light"] #modalTransaction .envelope-picker-current,:root[data-theme="light"] #modalTransaction .envelope-picker-chevron{color:#426b53!important}
+:root[data-theme="light"] #modalTransaction .envelope-picker-options{background:linear-gradient(145deg,#fff,#f1f6f1)!important;border-color:rgba(63,91,73,.2)!important;box-shadow:0 12px 28px rgba(30,50,38,.12)!important}
+:root[data-theme="light"] #modalTransaction .envelope-picker-option{background:#f7faf7!important;color:#34463a!important;border-color:rgba(63,91,73,.12)!important}
+:root[data-theme="light"] #modalTransaction .envelope-picker-option.active{background:#e8f3ec!important;border-color:rgba(33,131,95,.25)!important;color:#286b4d!important}
+:root[data-theme="light"] #modalTransaction .ai-transaction-draft{background:#f5f8f5!important;border-color:rgba(63,91,73,.16)!important}
+:root[data-theme="light"] #modalTransaction .ai-transaction-status{color:#68766e!important}
+:root[data-theme="light"] .coupon-choice{background:linear-gradient(135deg,#fff,#f1f6f1)!important;border-color:rgba(63,91,73,.16)!important;color:#26352c!important}
+:root[data-theme="light"] .coupon-choice.selected{background:linear-gradient(135deg,#edf7ef,#e5f2e9)!important;border-color:rgba(33,131,95,.38)!important}
+:root[data-theme="light"] .coupon-choice-copy strong,:root[data-theme="light"] .coupon-discount{color:#26352c!important}
+:root[data-theme="light"] .coupon-stock{color:#68766e!important}
+:root[data-theme="light"] .pricing-hero,:root[data-theme="light"] .pricing-kicker,:root[data-theme="light"] .pricing-group-head p,:root[data-theme="light"] .price-option-top{color:#52645a!important}
+:root[data-theme="light"] .price-option{background:linear-gradient(145deg,#fff,#f2f6f2)!important;border-color:rgba(63,91,73,.16)!important;color:#26352c!important}
+:root[data-theme="light"] .price-main,:root[data-theme="light"] .price-option h3,:root[data-theme="light"] .pricing-benefit p{color:#26352c!important}
+:root[data-theme="light"] .price-stars,:root[data-theme="light"] .price-note,:root[data-theme="light"] .pricing-secure-note{color:#68766e!important}
+:root[data-theme="light"] .modal-header h3,:root[data-theme="light"] .modal-close{color:#26352c!important}
+:root[data-theme="light"] .help-note,:root[data-theme="light"] .finance-assistant-privacy{color:#68766e!important}

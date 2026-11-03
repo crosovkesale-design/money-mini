@@ -1936,3 +1936,46 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 @media(max-height:650px) and (max-width:600px){
   #tab-ai #financeAssistantMessages{height:58vh!important;min-height:340px!important}
 }
+
+/* RUVYQO light theme — final contrast fixes for remaining legacy surfaces */
+:root[data-theme="light"] .advantages-feature-grid>*,
+:root[data-theme="light"] .budget-mode-switch{
+  background:#fff!important;
+  border-color:rgba(63,91,73,.16)!important;
+  color:#34463a!important;
+  box-shadow:0 5px 16px rgba(30,50,38,.045)!important;
+}
+:root[data-theme="light"] .advantages-feature-grid>* :is(h3,h4,h5,strong,b,p,span,small){
+  color:#34463a!important;
+}
+:root[data-theme="light"] .budget-mode-btn{
+  color:#68766e!important;
+}
+:root[data-theme="light"] .budget-mode-btn.active{
+  background:#3c8c69!important;
+  color:#fff!important;
+}
+:root[data-theme="light"] #modalTransaction #txAmountInput,
+:root[data-theme="light"] #modalTransaction #txEnvelopeSelect,
+:root[data-theme="light"] #modalTransaction #txEnvelopeSelect option{
+  background:#fff!important;
+  color:#26352c!important;
+  border-color:rgba(63,91,73,.2)!important;
+}
+:root[data-theme="light"] #modalTransaction #txEnvelopeSelect option:checked{
+  background:#eaf4ed!important;
+  color:#286b4d!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-form textarea,
+:root[data-theme="light"] #tab-ai .finance-assistant-form input{
+  background:#fff!important;
+  color:#26352c!important;
+  border-color:rgba(63,91,73,.2)!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-form textarea::placeholder,
+:root[data-theme="light"] #tab-ai .finance-assistant-form input::placeholder{
+  color:#87938b!important;
+}
+:root[data-theme="light"] .tab-content :is(.advantages-page,.advantages-feature-grid){
+  color:#34463a!important;
+}

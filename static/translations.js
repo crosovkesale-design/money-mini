@@ -254,6 +254,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "Осталось {days} дн.",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "Пока нет доступных ИИ-запросов. Купи пакет ниже.",
     "Не удалось загрузить баланс ИИ-запросов.": "Не удалось загрузить баланс ИИ-запросов.",
+    open_telegram_required: "Открой RUVYQO через Telegram, чтобы оплатить.",
+    payment_pending_confirmation: "Платёж получен. Проверяем активацию подписки.",
+    payment_failed_retry: "Оплата не прошла. Попробуй ещё раз.",
+    invoice_create_failed: "Не удалось создать счёт.",
   },
 
   uk: {
@@ -511,6 +515,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "Залишилося {days} дн.",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "Поки немає доступних ШІ-запитів. Придбай пакет нижче.",
     "Не удалось загрузить баланс ИИ-запросов.": "Не вдалося завантажити баланс ШІ-запитів.",
+    open_telegram_required: "Відкрий RUVYQO через Telegram, щоб оплатити.",
+    payment_pending_confirmation: "Платіж отримано. Перевіряємо активацію підписки.",
+    payment_failed_retry: "Оплата не пройшла. Спробуй ще раз.",
+    invoice_create_failed: "Не вдалося створити рахунок.",
   },
 
   en: {
@@ -768,6 +776,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "{days} days left",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "No AI requests available. Buy a pack below.",
     "Не удалось загрузить баланс ИИ-запросов.": "Could not load the AI request balance.",
+    open_telegram_required: "Open RUVYQO in Telegram to make a payment.",
+    payment_pending_confirmation: "Payment received. Checking your subscription activation.",
+    payment_failed_retry: "Payment failed. Please try again.",
+    invoice_create_failed: "Could not create the invoice.",
   },
 
   de: {
@@ -1025,6 +1037,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "Noch {days} Tage",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "Keine KI-Anfragen verfügbar. Kaufe unten ein Paket.",
     "Не удалось загрузить баланс ИИ-запросов.": "KI-Anfragekontingent konnte nicht geladen werden.",
+    open_telegram_required: "Öffne RUVYQO in Telegram, um zu bezahlen.",
+    payment_pending_confirmation: "Zahlung erhalten. Die Aktivierung deines Abonnements wird geprüft.",
+    payment_failed_retry: "Zahlung fehlgeschlagen. Bitte versuche es erneut.",
+    invoice_create_failed: "Rechnung konnte nicht erstellt werden.",
   },
 
   es: {
@@ -1282,6 +1298,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "Quedan {days} días",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "No hay consultas de IA disponibles. Compra un paquete abajo.",
     "Не удалось загрузить баланс ИИ-запросов.": "No se pudo cargar el saldo de consultas de IA.",
+    open_telegram_required: "Abre RUVYQO en Telegram para realizar el pago.",
+    payment_pending_confirmation: "Pago recibido. Estamos comprobando la activación de tu suscripción.",
+    payment_failed_retry: "El pago ha fallado. Inténtalo de nuevo.",
+    invoice_create_failed: "No se pudo crear la factura.",
   },
 
   fr: {
@@ -1539,6 +1559,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "Encore {days} jours",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "Aucune requête IA disponible. Achète un pack ci-dessous.",
     "Не удалось загрузить баланс ИИ-запросов.": "Impossible de charger le solde des requêtes IA.",
+    open_telegram_required: "Ouvre RUVYQO dans Telegram pour effectuer le paiement.",
+    payment_pending_confirmation: "Paiement reçu. Vérification de l’activation de ton abonnement.",
+    payment_failed_retry: "Le paiement a échoué. Réessaie.",
+    invoice_create_failed: "Impossible de créer la facture.",
   },
 
   it: {
@@ -1796,6 +1820,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "Ancora {days} giorni",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "Nessuna richiesta IA disponibile. Acquista un pacchetto qui sotto.",
     "Не удалось загрузить баланс ИИ-запросов.": "Impossibile caricare il saldo delle richieste IA.",
+    open_telegram_required: "Apri RUVYQO su Telegram per effettuare il pagamento.",
+    payment_pending_confirmation: "Pagamento ricevuto. Verifichiamo l’attivazione dell’abbonamento.",
+    payment_failed_retry: "Pagamento non riuscito. Riprova.",
+    invoice_create_failed: "Impossibile creare la fattura.",
   },
 
   pl: {
@@ -2085,6 +2113,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "还剩 {days} 天",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "暂无可用 AI 请求，请在下方购买请求包。",
     "Не удалось загрузить баланс ИИ-запросов.": "无法加载 AI 请求余额。",
+    open_telegram_required: "Otwórz RUVYQO w Telegramie, aby dokonać płatności.",
+    payment_pending_confirmation: "Płatność otrzymana. Sprawdzamy aktywację subskrypcji.",
+    payment_failed_retry: "Płatność nie powiodła się. Spróbuj ponownie.",
+    invoice_create_failed: "Nie udało się utworzyć rachunku.",
   },
 
   tr: {
@@ -2342,6 +2374,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "{days} gün kaldı",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "Kullanılabilir yapay zekâ isteği yok. Aşağıdan paket satın al.",
     "Не удалось загрузить баланс ИИ-запросов.": "Yapay zekâ istek bakiyesi yüklenemedi.",
+    open_telegram_required: "Ödeme yapmak için RUVYQO'yu Telegram'da aç.",
+    payment_pending_confirmation: "Ödeme alındı. Aboneliğinin etkinleştirilmesi kontrol ediliyor.",
+    payment_failed_retry: "Ödeme başarısız oldu. Lütfen tekrar dene.",
+    invoice_create_failed: "Fatura oluşturulamadı.",
   },
 
   zh: {
@@ -2598,6 +2634,10 @@ const TRANSLATIONS = {
     "deadline_days_left": "还剩 {days} 天",
     "Пока нет доступных ИИ-запросов. Купи пакет ниже.": "暂无可用 AI 请求，请在下方购买请求包。",
     "Не удалось загрузить баланс ИИ-запросов.": "无法加载 AI 请求余额。",
+    open_telegram_required: "请在 Telegram 中打开 RUVYQO 进行付款。",
+    payment_pending_confirmation: "已收到付款。正在检查订阅是否已激活。",
+    payment_failed_retry: "付款失败，请重试。",
+    invoice_create_failed: "无法创建账单。",
   }
 }
 

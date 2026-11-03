@@ -1169,3 +1169,32 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 #tab-settings .family-card>.help-inline-button:focus-visible{
   outline:2px solid #c9ad76!important;outline-offset:3px;
 }
+
+
+/* RUVYQO — settings language, currency and promo cards */
+#tab-settings>.card:first-child{padding:18px;background:radial-gradient(circle at 100% 0%,rgba(201,173,118,.075),transparent 38%),linear-gradient(145deg,#17201e 0%,#101719 58%,#11101a 100%)}
+#tab-settings>.card:first-child>h5{display:flex;align-items:center;gap:9px;margin:0 0 16px;color:#f0f4ef;font-size:16px;font-weight:850;letter-spacing:-.02em}
+#tab-settings>.card:first-child>h5:before{content:"";width:3px;height:19px;border-radius:3px;background:linear-gradient(180deg,#e5d09f,#70c9a7);box-shadow:0 0 12px rgba(201,173,118,.2)}
+#tab-settings .settings-choice-card{position:relative;display:grid;gap:9px;margin:0 0 10px;padding:12px;border:1px solid rgba(190,211,204,.13);border-radius:7px 15px 7px 15px;background:linear-gradient(110deg,rgba(201,173,118,.065),rgba(125,216,189,.025) 58%,rgba(0,0,0,.12));transition:border-color .18s ease,background .18s ease,transform .18s ease}
+#tab-settings .settings-choice-card:focus-within{border-color:rgba(201,173,118,.42);background:linear-gradient(110deg,rgba(201,173,118,.095),rgba(125,216,189,.04))}
+#tab-settings .settings-choice-heading{display:flex;align-items:center;gap:10px;min-width:0}
+#tab-settings .settings-choice-icon{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border:1px solid rgba(201,173,118,.22);border-radius:5px 11px 5px 11px;background:linear-gradient(145deg,rgba(201,173,118,.16),rgba(125,216,189,.06));color:#d9c18e;font-size:14px}
+#tab-settings .settings-choice-heading .lbl{margin:0;color:#d9e2dc;font-size:10px;font-weight:850;letter-spacing:.13em}
+#tab-settings .settings-choice-control{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:45px;padding:10px 12px;border:1px solid rgba(190,211,204,.12);border-radius:5px 11px 5px 11px;background:rgba(5,11,13,.55);color:#f0f4ef;text-align:left;font-size:13px;font-weight:750;transition:border-color .18s ease,background .18s ease}
+#tab-settings .settings-choice-control>span{min-width:0;overflow-wrap:anywhere}
+#tab-settings .settings-choice-control>i{flex:0 0 auto;color:#c9ad76;font-size:11px;transition:transform .18s ease}
+#tab-settings .settings-choice-control:hover{border-color:rgba(201,173,118,.42);background:rgba(201,173,118,.07)}
+#tab-settings .settings-choice-control:hover>i{transform:translateX(2px)}
+#tab-settings .promo-redeem-card{position:relative;overflow:hidden;padding:18px;border-color:rgba(201,173,118,.25);background:radial-gradient(circle at 100% 0%,rgba(201,173,118,.16),transparent 43%),radial-gradient(circle at 0% 100%,rgba(110,231,183,.07),transparent 40%),linear-gradient(145deg,#1b211d,#101719 65%,#11101a)}
+#tab-settings .promo-redeem-card:before{content:"";position:absolute;right:-37px;top:-48px;width:126px;height:126px;border:1px solid rgba(201,173,118,.14);border-radius:50%;box-shadow:0 0 0 13px rgba(201,173,118,.025),0 0 0 27px rgba(201,173,118,.018);pointer-events:none}
+#tab-settings .promo-redeem-heading{position:relative;z-index:1;display:flex;align-items:center;gap:12px;margin-bottom:15px}
+#tab-settings .promo-redeem-icon{display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px;border:1px solid rgba(201,173,118,.3);border-radius:6px 14px 6px 14px;background:linear-gradient(145deg,rgba(201,173,118,.2),rgba(110,231,183,.06));color:#ead6aa;font-size:20px;box-shadow:0 7px 20px rgba(0,0,0,.18)}
+#tab-settings .promo-redeem-heading h5{margin:0 0 3px;color:#f0f4ef;font-size:16px;font-weight:850;letter-spacing:-.02em}
+#tab-settings .promo-redeem-heading p{margin:0;color:#aebbb4;font-size:11px;line-height:1.45}
+#tab-settings .promo-redeem-row{position:relative;z-index:1;align-items:stretch;gap:8px}
+#tab-settings .promo-code-input{min-width:0;min-height:46px;flex:1;padding:11px 13px;border:1px solid rgba(190,211,204,.18);border-radius:5px 12px 5px 12px;background:rgba(4,10,12,.7);color:#f4f0e7;font-size:13px;font-weight:700;letter-spacing:.045em;text-transform:uppercase}
+#tab-settings .promo-code-input:focus{border-color:rgba(201,173,118,.65);box-shadow:0 0 0 3px rgba(201,173,118,.08);outline:none}
+#tab-settings .promo-code-input::placeholder{color:#77847d;font-weight:500;letter-spacing:0}
+#tab-settings #promoCodeRedeemBtn{min-height:46px;padding:10px 14px;border-radius:5px 12px 5px 12px;white-space:nowrap;font-size:11px;font-weight:850}
+#tab-settings .promo-code-status{position:relative;z-index:1;margin:11px 0 0;padding:9px 11px;border:1px solid rgba(125,216,189,.12);border-radius:4px 10px 4px 10px;background:rgba(125,216,189,.045);color:#a9b9b1;font-size:10px;line-height:1.5}
+@media(max-width:390px){#tab-settings .settings-choice-card{padding:10px}#tab-settings .promo-redeem-row{display:grid;grid-template-columns:minmax(0,1fr)}#tab-settings #promoCodeRedeemBtn{width:100%}}

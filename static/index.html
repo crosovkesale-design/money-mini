@@ -63,7 +63,7 @@
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-light-pass-shop-v1">
+<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-financial-ai-creation-v1">
 </head>
 <body>
 <div class="container">
@@ -82,6 +82,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <button type="button" data-menu-tab="ai" onclick="switchTab('ai')"><i class="fa-solid fa-wand-magic-sparkles"></i><span id="menuLabelAI">ИИ-помощник</span></button>
     <button type="button" data-menu-tab="envelopes" onclick="switchTab('envelopes')"><i class="fa-solid fa-envelope"></i><span id="menuLabelEnvelopes">Конверты</span></button>
     <button type="button" data-menu-tab="banks" onclick="switchTab('banks')"><i class="fa-solid fa-vault"></i><span id="menuLabelBanks">Копилки и цели</span></button>
+    <button type="button" data-menu-tab="financial" onclick="switchTab('financial')"><i class="fa-solid fa-chart-line"></i><span id="menuLabelFinancial">Финансовая картина</span></button>
     <button type="button" data-menu-tab="referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span id="menuLabelReferrals">Рефералы</span></button>
     <button type="button" data-menu-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span id="menuLabelSettings">Настройки</span></button>
   </nav>
@@ -384,6 +385,19 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   </div>
 
   <div id="tab-banks" class="tab-content" style="display:none">
+
+    <div class="row-between">
+      <h4 id="banksSectionTitle">Копилки и цели</h4><button type="button" class="help-inline-button" onclick="openHelp('savings')" aria-label="Справка по копилкам">?</button>
+      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')">+</button>
+    </div>
+    <div id="banksList"></div>
+  </div>
+
+  <div id="tab-financial" class="tab-content" style="display:none">
+    <div class="financial-page-heading">
+      <div><span class="eyebrow">RUVYQO · PERSONAL FINANCE</span><h2 data-i18n="fin_overview">Финансовая картина</h2><p class="muted" data-i18n="fin_overview_desc">Личные деньги, активы и долги</p></div>
+      <span class="financial-page-icon"><i class="fa-solid fa-chart-line"></i></span>
+    </div>
     <section class="card financial-overview-card">
       <div class="row-between financial-overview-heading">
         <div><h4 data-i18n="fin_overview">💰 Финансовая картина</h4><p class="muted" data-i18n="fin_overview_desc">Личные деньги, активы и долги</p></div>
@@ -399,11 +413,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <p id="financialOverviewNote" class="financial-note" data-i18n="fin_note">Баланс и копилки берутся из личного бюджета автоматически. Добавляй сюда другие счета, наличные вне приложения, имущество и долги — не дублируй деньги, уже учтённые в балансе или копилках.</p>
       <div id="financialItemsList" class="financial-items-list"></div>
     </section>
-    <div class="row-between">
-      <h4 id="banksSectionTitle">Копилки и цели</h4><button type="button" class="help-inline-button" onclick="openHelp('savings')" aria-label="Справка по копилкам">?</button>
-      <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')">+</button>
-    </div>
-    <div id="banksList"></div>
   </div>
 
   <div id="tab-referrals" class="tab-content" style="display:none">

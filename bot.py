@@ -1885,57 +1885,72 @@ if bot:
             payment_path = f"/payments/stars/{charge_key}"
             existing_payment = await fb.get(payment_path)
 
-            if existing_payment:
+            if isinstance(existing_payment, dict) and existing_payment.get("status") == "paid":
                 # Повторное событие не продлевает подписку повторно. Незавершённое
                 # списание купона можно безопасно повторить по ID этого платежа.
-                if isinstance(existing_payment, dict) and existing_payment.get("status") == "paid":
-                    if percent and existing_payment.get("couponConsumed") is False:
-                        try:
-                            await consume_coupon(uid, str(percent), charge_key)
-                            await fb.patch(payment_path, {"couponConsumed": True})
-                        except Exception:
-                            log.exception("Could not retry Stars coupon consumption %s", charge_key)
+                if percent and existing_payment.get("couponConsumed") is False:
                     try:
-                        await award_referral_coupon(uid, payment_path)
+                        await consume_coupon(uid, str(percent), charge_key)
+                        await fb.patch(payment_path, {"couponConsumed": True})
                     except Exception:
-                        log.exception("Could not retry Stars referral reward %s", charge_key)
+                        log.exception("Could not retry Stars coupon consumption %s", charge_key)
+                try:
+                    await award_referral_coupon(uid, payment_path)
+                except Exception:
+                    log.exception("Could not retry Stars referral reward %s", charge_key)
                 await message.answer(
                     "✅ Этот платёж уже обработан. "
                     "Проверь статус подписки командой /status."
                 )
                 return
 
-            user = await get_user(uid) or {}
             now = now_ms()
+            if not existing_payment:
+                # Сохраняем событие как processing. Если приложение прервётся,
+                # повторное уведомление продолжит активацию, а не потеряет оплату.
+                await fb.put(payment_path, {
+                    "uid": uid,
+                    "plan": plan,
+                    "currency": "XTR",
+                    "amount": payment.total_amount,
+                    "telegramChargeId": charge_id,
+                    "paidAt": now,
+                    "status": "processing",
+                    "couponType": str(percent) if percent else "",
+                    "discount": percent,
+                    "couponConsumed": not bool(percent),
+                })
 
-            sub_end = int(user.get("subEnd") or 0)
-            if 0 < sub_end < 10**11:
-                sub_end *= 1000
+            activation = {}
 
-            new_end = max(sub_end, now) + int(
-                tariff["days"]
-            ) * 86400000
+            def activate_stars_subscription(raw):
+                user = dict(raw) if isinstance(raw, dict) else {}
+                processed = dict(user.get("starsSubscriptionInvoices") or {})
+                if charge_key in processed:
+                    activation["newEnd"] = int(processed[charge_key])
+                    activation["already"] = True
+                    return user
+                sub_end = int(user.get("subEnd") or 0)
+                if 0 < sub_end < 10**11:
+                    sub_end *= 1000
+                new_end = max(sub_end, now) + int(tariff["days"]) * 86400000
+                processed[charge_key] = new_end
+                user.update({
+                    "tariff": plan,
+                    "subStart": now,
+                    "subEnd": new_end,
+                    "status": "active",
+                    "reminderSent": 0,
+                    "starsSubscriptionInvoices": processed,
+                })
+                activation["newEnd"] = new_end
+                activation["already"] = False
+                return user
 
-            # Сначала фиксируем платёж, затем обновляем подписку.
-            await fb.put(payment_path, {
-                "uid": uid,
-                "plan": plan,
-                "currency": "XTR",
-                "amount": payment.total_amount,
-                "telegramChargeId": charge_id,
-                "paidAt": now,
+            await fb.transaction(f"/users/{uid}", activate_stars_subscription)
+            await fb.patch(payment_path, {
                 "status": "paid",
-                "couponType": str(percent) if percent else "",
-                "discount": percent,
-                "couponConsumed": not bool(percent),
-            })
-
-            await fb.patch(f"/users/{uid}", {
-                "tariff": plan,
-                "subStart": now,
-                "subEnd": new_end,
-                "status": "active",
-                "reminderSent": 0,
+                "subEnd": int(activation["newEnd"]),
             })
             if percent:
                 await consume_coupon(uid, str(percent), charge_key)
@@ -1979,7 +1994,7 @@ if bot:
                 await query.answer(ok=False, error_message="Некорректный купон. Создай новый счёт.")
                 return
             base_stars = STARS_PRICES.get(plan)
-            if base_stars is None or query.currency != "XTR":
+            if base_stars is None or plan not in TARIFFS or query.currency != "XTR":
                 await query.answer(ok=False, error_message="Не удалось проверить тариф. Создай новый счёт.")
                 return
             expected_stars = int(round(base_stars * (100 - percent) / 100))

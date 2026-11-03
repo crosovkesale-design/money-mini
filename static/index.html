@@ -63,7 +63,7 @@
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-settings-ai-light-v3">
+<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-analytics-period-panel-v1">
 </head>
 <body>
 <div class="container">
@@ -340,16 +340,26 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-analytics" class="tab-content" style="display:none">
     <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4><button type="button" class="help-inline-button" onclick="openHelp('analytics')" aria-label="Справка по аналитике">?</button>
-    <div class="analytics-period-control">
-      <label id="analyticsPeriodLabel" for="analyticsMonthsRange">Период диаграммы</label>
-      <select id="analyticsMonthsRange" class="custom-input" onchange="setAnalyticsMonthsRange(this.value)">
-        <option value="1">1 месяц</option>
-        <option value="3">3 месяца</option>
-        <option value="6">6 месяцев</option>
-        <option value="12">12 месяцев</option>
-        <option value="all">Всё время</option>
+    <section class="analytics-period-panel" aria-label="Период аналитики">
+      <div class="analytics-period-heading">
+        <span class="analytics-period-icon"><i class="fa-solid fa-calendar-days"></i></span>
+        <div class="analytics-period-copy">
+          <label id="analyticsPeriodLabel" for="analyticsMonthsRange">Период диаграммы</label>
+          <small id="analyticsPeriodHint">Выбери, за какое время показать статистику</small>
+        </div>
+        <span class="analytics-period-current" id="analyticsPeriodCurrent">6 мес.</span>
+      </div>
+      <div class="analytics-period-options" role="group" aria-label="Выбор периода">
+        <button type="button" data-analytics-range="1" onclick="setAnalyticsMonthsRange('1')"><b>1</b><span>месяц</span></button>
+        <button type="button" data-analytics-range="3" onclick="setAnalyticsMonthsRange('3')"><b>3</b><span>месяца</span></button>
+        <button type="button" data-analytics-range="6" onclick="setAnalyticsMonthsRange('6')"><b>6</b><span>месяцев</span></button>
+        <button type="button" data-analytics-range="12" onclick="setAnalyticsMonthsRange('12')"><b>12</b><span>месяцев</span></button>
+        <button type="button" data-analytics-range="all" onclick="setAnalyticsMonthsRange('all')"><i class="fa-solid fa-infinity"></i><span>Всё время</span></button>
+      </div>
+      <select id="analyticsMonthsRange" class="analytics-period-native" aria-hidden="true" tabindex="-1" onchange="setAnalyticsMonthsRange(this.value)">
+        <option value="1">1 месяц</option><option value="3">3 месяца</option><option value="6">6 месяцев</option><option value="12">12 месяцев</option><option value="all">Всё время</option>
       </select>
-    </div>
+    </section>
     <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
     <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
     <div id="proInsightsCard" class="pro-insights-card"></div>

@@ -984,7 +984,7 @@ if bot:
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         text = (
-            "✨ <b>РУВИКО · ЦЕНТР КОМАНД</b>\n"
+            "✨ <b>RUVYQO · ЦЕНТР КОМАНД</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "🏠 <b>/start</b> — открыть главное меню и приложение\n"
             "📊 <b>/stats</b> — общая статистика проекта\n"
@@ -1050,7 +1050,7 @@ if bot:
              InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "📊 <b>РУВИКО · СТАТИСТИКА</b>\n"
+            "📊 <b>RUVYQO · СТАТИСТИКА</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Всего пользователей: <b>{total:,}</b>\n"
             f"🎁 На пробном периоде: <b>{trial:,}</b>\n"
@@ -1105,7 +1105,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "💎 <b>ТАРИФЫ РУВИКО</b>\n"
+            "💎 <b>ТАРИФЫ RUVYQO</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Выбери план под свои задачи и управляй финансами удобнее.\n\n"
             "✨ <b>Basic</b>\n"
@@ -1289,7 +1289,7 @@ if bot:
                 active_paid += 1
         back_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]])
         await cb.message.answer(
-            "📊 <b>Семейный бюджет · статистика</b>\n"
+            "📊 <b>RUVYQO · статистика</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Пользователей: <b>{total:,}</b>\n"
             f"🎁 Активный пробный период: <b>{trial:,}</b>\n"
@@ -1348,7 +1348,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await cb.message.edit_text(
-            "💎 <b>ТАРИФЫ РУВИКО</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
+            "💎 <b>ТАРИФЫ RUVYQO</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
             reply_markup=kb, parse_mode="HTML"
         )
         await cb.answer()
@@ -1474,7 +1474,7 @@ if bot:
 
                 await bot.send_message(
                     target,
-                    f"📝 <b>Новый отзыв Семейный бюджет</b>\n\n"
+                    f"📝 <b>Новый отзыв RUVYQO</b>\n\n"
                     f"{safe_text}\n\n"
                     f"— {safe_name}",
                     parse_mode="HTML",
@@ -1520,7 +1520,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "🆘 <b>ПОДДЕРЖКА РУВИКО</b>\n"
+            "🆘 <b>ПОДДЕРЖКА RUVYQO</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Опиши вопрос или проблему одним сообщением. Если можешь, добавь скриншот и напиши, что делал перед ошибкой.\n\n"
             "💬 Сообщение будет передано команде поддержки. Мы ответим, как только сможем.",
@@ -2730,7 +2730,7 @@ async def api_finance_assistant(request: Request, uid: str = Depends(current_uid
     system_prompt = (
         "Ты — финансовый помощник приложения RUVYQO. Язык интерфейса пользователя: " + str(body.get("language") or "ru") + ". "
         "Отвечай на языке последнего сообщения пользователя; если язык сообщения неоднозначен, используй язык интерфейса. "
-        "Не переключай язык без явной просьбы пользователя. Будь дружелюбным и конкретным. Используй только переданные цифры; не выдумывай операции, доходы или долги. "
+        "Не переключай язык без явной просьбы пользователя. Будь дружелюбным, инициативным, внимательным и живым собеседником, а не сухим отчётом. Начинай с прямого ответа, объясняй простыми словами и предлагай 1–3 конкретных следующих шага. Если уместно, замечай закономерности в переданных операциях: повторяющиеся траты, рост категории, остаток бюджета и возможности экономии. Задавай один короткий уточняющий вопрос, если это действительно улучшит ответ. Учитывай предыдущие сообщения и не повторяй советы. Используй только переданные цифры; не выдумывай операции, доходы или долги. "
         "Если данных мало — прямо скажи об этом и предложи, какие записи добавить. "
         "Сначала короткий вывод, затем 2–4 практических шага, когда это уместно. "
         "Не обещай гарантированную доходность и не советуй брать кредиты или покупать конкретные инвестиции. "
@@ -3028,7 +3028,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
 
     # Заголовок отчёта
     ws.merge_cells("A1:H1")
-    ws["A1"] = "СЕМЕЙНЫЙ БЮДЖЕТ — ИСТОРИЯ ФИНАНСОВ"
+    ws["A1"] = "RUVYQO — ИСТОРИЯ ФИНАНСОВ"
     ws["A1"].font = Font(
         name="Arial", size=16, bold=True, color="FFFFFF"
     )
@@ -3146,7 +3146,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
     summary = wb.create_sheet("Итоги")
     summary.sheet_view.showGridLines = False
     summary.merge_cells("A1:B1")
-    summary["A1"] = "СЕМЕЙНЫЙ БЮДЖЕТ — ФИНАНСОВЫЙ ИТОГ"
+    summary["A1"] = "RUVYQO — ФИНАНСОВЫЙ ИТОГ"
     summary["A1"].font = Font(
         size=16, bold=True, color="FFFFFF"
     )
@@ -3259,7 +3259,7 @@ async def api_export(request: Request, uid: str = Depends(current_uid)):
         await bot.send_document(
             chat_id=int(uid),
             document=document,
-            caption="📊 Твой финансовый отчёт «Семейный бюджет»"
+            caption="📊 Твой финансовый отчёт RUVYQO"
         )
     except Exception:
         log.exception("Excel export failed")
@@ -3825,7 +3825,7 @@ async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     stars = int(round(base_stars * (100 - percent) / 100))
     payload = {"uid": uid, "plan": plan, "couponType": str(percent) if percent else ""}
     link = await bot.create_invoice_link(
-        title="Семейный бюджет", description=("Подписка со скидкой " + str(percent) + "%") if percent else "Оплата подписки",
+        title="RUVYQO", description=("Подписка со скидкой " + str(percent) + "%") if percent else "Оплата подписки",
         payload=json.dumps(payload),
         currency="XTR", prices=[LabeledPrice(label="Подписка", amount=stars)]
     )

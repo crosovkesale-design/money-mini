@@ -38,7 +38,7 @@ jobs:
           end = source.index("\n};", start)
           body = source[start:end]
           languages = ("ru", "uk", "en", "de", "es", "fr", "it", "pl", "tr", "zh")
-          blocks = list(re.finditer(r'^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \{, body, re.M))
+          blocks = list(re.finditer(r'^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \{$', body, re.M))
           found = {match.group(1) for match in blocks}
           if found != set(languages) or len(blocks) != len(languages):
               raise SystemExit(f"Expected exactly 10 locale blocks; found {sorted(found)}")
@@ -46,7 +46,7 @@ jobs:
           for index, match in enumerate(blocks):
               block_end = blocks[index + 1].start() if index + 1 < len(blocks) else len(body)
               locale = body[match.start():block_end]
-              key_sets[match.group(1)] = set(re.findall(r"^    (\"(?:[^\"\\\\]|\\\\.)*\"|[A-Za-z_$][\\w$]*)\\s*:", locale, re.M))
+              key_sets[match.group(1)] = set(re.findall(r'^    ("(?:[^"\\]|\\.)*"|[A-Za-z_$][\w$]*)\s*:', locale, re.M))
           reference = key_sets["ru"]
           mismatches = {lang: sorted(reference ^ keys) for lang, keys in key_sets.items() if keys != reference}
           if mismatches:

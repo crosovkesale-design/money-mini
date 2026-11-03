@@ -2267,11 +2267,8 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 #tab-pay .price-current,#tab-pay .price-stars-current{
   display:inline-block;color:#6ee7b7;font-weight:900
 }
-body.light-theme #tab-pay .coupon-clear-button,
-.light-theme #tab-pay .coupon-clear-button{
+:root[data-theme="light"] #tab-pay .coupon-clear-button{
   border-color:rgba(31,125,87,.3);background:rgba(31,125,87,.07);color:#176b4a
 }
-body.light-theme #tab-pay .price-old,body.light-theme #tab-pay .price-stars-old,
-.light-theme #tab-pay .price-old,.light-theme #tab-pay .price-stars-old{color:#777!important}
-body.light-theme #tab-pay .price-current,body.light-theme #tab-pay .price-stars-current,
-.light-theme #tab-pay .price-current,.light-theme #tab-pay .price-stars-current{color:#168052}
+:root[data-theme="light"] #tab-pay .price-old,:root[data-theme="light"] #tab-pay .price-stars-old{color:#777!important}
+:root[data-theme="light"] #tab-pay .price-current,:root[data-theme="light"] #tab-pay .price-stars-current{color:#168052!important}

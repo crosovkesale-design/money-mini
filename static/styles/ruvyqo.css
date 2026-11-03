@@ -1661,3 +1661,73 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 :root[data-theme="light"] .price-stars,:root[data-theme="light"] .price-note,:root[data-theme="light"] .pricing-secure-note{color:#68766e!important}
 :root[data-theme="light"] .modal-header h3,:root[data-theme="light"] .modal-close{color:#26352c!important}
 :root[data-theme="light"] .help-note,:root[data-theme="light"] .finance-assistant-privacy{color:#68766e!important}
+
+
+/* RUVYQO finishing pass: consistent coupon state, date picker and AI composer */
+.coupon-choice.selected{
+  border-color:rgba(201,173,118,.72)!important;
+  background:linear-gradient(135deg,rgba(201,173,118,.17),rgba(201,173,118,.06))!important;
+  box-shadow:inset 0 0 0 1px rgba(201,173,118,.12),0 8px 20px rgba(0,0,0,.10);
+}
+.coupon-choice.selected .coupon-check{opacity:1;transform:scale(1)}
+.coupon-choice .coupon-check{opacity:.35;transition:opacity .18s ease,transform .18s ease}
+.coupon-selection-status{
+  display:flex;align-items:flex-start;gap:9px;margin-top:11px;padding:11px 12px;
+  border:1px solid var(--line);border-radius:5px 12px 5px 12px;
+  background:rgba(255,255,255,.035);color:var(--muted);font-size:11px;line-height:1.55;
+}
+.coupon-selection-status>i{flex:0 0 auto;margin-top:2px;color:var(--gold-hi)}
+.coupon-selection-status.is-selected{border-color:rgba(110,231,183,.28);background:rgba(110,231,183,.07);color:var(--text)}
+.finance-assistant-form{display:flex;align-items:stretch;gap:9px;margin-top:12px}
+.finance-assistant-form textarea{
+  flex:1 1 auto;min-width:0;width:100%;min-height:58px;max-height:150px;
+  padding:13px 14px;border:1px solid var(--line);border-radius:6px 14px 6px 14px;
+  background:var(--panel-2);color:var(--text);line-height:1.45;resize:vertical;
+}
+.finance-assistant-form button{flex:0 0 auto;align-self:stretch;min-width:94px}
+#tab-ai .finance-assistant-card{display:flex;flex-direction:column;gap:12px}
+#tab-ai .finance-assistant-messages{
+  min-height:clamp(360px,52vh,620px);max-height:68vh;padding:16px;
+  overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;
+}
+#tab-ai .finance-assistant-message{white-space:pre-wrap;overflow-wrap:anywhere}
+#tab-ai .finance-assistant-message.is-loading{opacity:.78}
+#tab-ai .finance-assistant-suggestions button{white-space:normal;line-height:1.4}
+#receiptDatePicker .ruviko-calendar{
+  background:linear-gradient(145deg,#18272b,#11191d);border-color:rgba(125,216,189,.22);
+}
+#receiptDatePicker .ruviko-calendar-head strong{color:#f3f8f6}
+#receiptDatePicker .ruviko-calendar-head button{background:#223138;color:#a8e8d2}
+#receiptDatePicker .ruviko-calendar-weekdays span{color:#8ea39d}
+#receiptDatePicker .ruviko-calendar-day{background:rgba(255,255,255,.045);color:#e8f0ed}
+#receiptDatePicker .ruviko-calendar-day.is-selected{background:linear-gradient(135deg,#78d7b8,#48ad91);color:#10231d}
+#receiptDatePicker .ruviko-calendar-today{background:rgba(125,216,189,.08);color:#9be8ce}
+#receiptDateTrigger{color:var(--text)}
+:root[data-theme="light"] .coupon-selection-status{background:#f5f8f5;border-color:rgba(63,91,73,.16);color:#68766e}
+:root[data-theme="light"] .coupon-selection-status.is-selected{background:#eaf4ed;border-color:rgba(33,131,95,.25);color:#315a40}
+:root[data-theme="light"] .coupon-selection-status>i{color:#286b4d}
+:root[data-theme="light"] .coupon-choice.selected{
+  background:linear-gradient(135deg,#edf7ef,#e5f2e9)!important;
+  border-color:rgba(33,131,95,.45)!important;box-shadow:0 8px 20px rgba(33,131,95,.09);
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-form textarea{background:#fff!important;border-color:rgba(63,91,73,.2)!important;color:#26352c!important}
+:root[data-theme="light"] #tab-ai .finance-assistant-form textarea::placeholder{color:#87938b!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar{
+  background:linear-gradient(145deg,#fff,#f0f5f0)!important;border-color:rgba(63,91,73,.2)!important;
+  box-shadow:0 14px 32px rgba(30,50,38,.12)!important;
+}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-head strong{color:#26352c!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-head button{background:#edf4ee!important;border-color:rgba(63,91,73,.15)!important;color:#286b4d!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-weekdays span{color:#68766e!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-day{background:#f4f7f4!important;color:#26352c!important;border-color:transparent!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-day.is-today{border-color:#3c8c69!important;color:#286b4d!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-day.is-selected{background:#3c8c69!important;color:#fff!important}
+:root[data-theme="light"] #receiptDatePicker .ruviko-calendar-today{background:#eaf4ed!important;border-color:rgba(33,131,95,.2)!important;color:#286b4d!important}
+:root[data-theme="light"] #receiptDateTrigger{background:#fff!important;border-color:rgba(63,91,73,.2)!important;color:#26352c!important}
+:root[data-theme="light"] #receiptDateTrigger .ruviko-date-trigger-icon{background:#eaf4ed!important;color:#286b4d!important}
+:root[data-theme="light"] #receiptDateTrigger .ruviko-date-trigger-value{color:#26352c!important}
+@media(max-width:480px){
+  #tab-ai .finance-assistant-messages{min-height:clamp(320px,48vh,520px);max-height:64vh}
+  .finance-assistant-form{align-items:stretch}
+  .finance-assistant-form button{min-width:82px;padding-inline:11px}
+}

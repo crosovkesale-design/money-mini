@@ -54,11 +54,11 @@
   
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Рувико — Твои финансы под контролем</title>
+<title>RUVYQO — Твои финансы под контролем</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js?v=20261101-ruviko-stability-v1" defer></script>
-<script src="./app.js?v=20261101-ruviko-all-calendars-v1" defer></script>
+<script src="./app.js?v=20261103-ruvyqo-purple-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -69,13 +69,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <div class="container">
 <div class="app-topbar" id="appTopbar">
   <button class="menu-trigger" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
-  <div class="app-topbar-title"><b>Рувико</b><small id="currentSectionLabel">Главная</small></div>
+  <div class="app-topbar-title"><b>RUVYQO</b><small id="currentSectionLabel">Главная</small></div>
   <button type="button" class="topbar-help" onclick="openHelp()" aria-label="Справка">?</button>
   <button type="button" class="topbar-tariffs" onclick="window.location.href='?screen=pay'">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
 </div>
 <div class="app-menu-backdrop" id="appMenuBackdrop" onclick="closeAppMenu()"></div>
 <aside class="app-drawer" id="appDrawer" aria-hidden="true">
-  <div class="drawer-head"><div><b>Рувико</b><small id="drawerSubtitle">Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню">×</button></div>
+  <div class="drawer-head"><div><b>RUVYQO</b><small id="drawerSubtitle">Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню">×</button></div>
   <nav class="drawer-nav" aria-label="Разделы приложения">
     <button type="button" class="active" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span id="menuLabelBudget">Главная</span></button>
     <button type="button" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span id="menuLabelAnalytics">Аналитика</span></button>
@@ -85,7 +85,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <button type="button" data-menu-tab="referrals" onclick="switchTab('referrals')"><i class="fa-solid fa-gift"></i><span id="menuLabelReferrals">Рефералы</span></button>
     <button type="button" data-menu-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-sliders"></i><span id="menuLabelSettings">Настройки</span></button>
   </nav>
-  <div class="drawer-foot">Рувико · <span id="drawerTagline">Your money. Your control.</span></div>
+  <div class="drawer-foot">RUVYQO · <span id="drawerTagline">Your money. Your control.</span></div>
 </aside>
 
 
@@ -351,7 +351,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div id="tab-ai" class="tab-content" style="display:none">
     <section class="card finance-assistant-card" id="financeAssistantCard">
           <div class="finance-assistant-heading">
-            <div><h4 data-i18n="ai_assistant_title">✨ Финансовый ИИ-помощник</h4><p data-i18n="ai_assistant_desc">Ответы на основе твоих записей в Рувико</p></div>
+            <div><h4 data-i18n="ai_assistant_title">✨ Финансовый ИИ-помощник</h4><p data-i18n="ai_assistant_desc">Ответы на основе твоих записей в RUVYQO</p></div>
             <span class="pro-mini-tag" data-i18n="ai_pro_tag">30 запросов/мес. в PRO</span>
           </div>
           <div class="ai-credit-panel">
@@ -411,7 +411,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-referrals" class="tab-content" style="display:none">
     <section class="referral-hero card">
-      <div class="referral-hero-top"><div><div class="eyebrow">Рувико · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><button type="button" class="help-inline-button" onclick="openHelp('referrals')" aria-label="Справка по рефералам">?</button><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
+      <div class="referral-hero-top"><div><div class="eyebrow">RUVYQO · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><button type="button" class="help-inline-button" onclick="openHelp('referrals')" aria-label="Справка по рефералам">?</button><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
       <label class="lbl" for="referralLinkInput">Твоя реферальная ссылка</label>
       <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button><button class="btn btn-outline btn-sm" type="button" onclick="shareReferralLink()">Поделиться</button></div>
       <div class="referral-stats-grid">
@@ -754,7 +754,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <div class="app-dialog-overlay" id="appDialogOverlay" aria-hidden="true">
   <section class="app-dialog-card" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle">
     <div class="app-dialog-icon is-info" id="appDialogIcon"><i class="fa-solid fa-circle-info"></i></div>
-    <h3 id="appDialogTitle">Рувико</h3>
+    <h3 id="appDialogTitle">RUVYQO</h3>
     <p id="appDialogMessage"></p>
     <div class="app-dialog-actions" id="appDialogActions"></div>
   </section>

@@ -1432,13 +1432,17 @@ function updateCouponSelector(){
   const stock20 = document.getElementById('coupon20Stock');
   if(choice10){
     choice10.disabled = count10 <= 0;
-    choice10.classList.toggle('selected', select.value === '10');
-    choice10.setAttribute('aria-pressed', String(select.value === '10'));
+    const selected10 = select.value === '10';
+    choice10.classList.toggle('selected', selected10);
+    choice10.classList.toggle('active', selected10);
+    choice10.setAttribute('aria-pressed', String(selected10));
   }
   if(choice20){
     choice20.disabled = count20 <= 0;
-    choice20.classList.toggle('selected', select.value === '20');
-    choice20.setAttribute('aria-pressed', String(select.value === '20'));
+    const selected20 = select.value === '20';
+    choice20.classList.toggle('selected', selected20);
+    choice20.classList.toggle('active', selected20);
+    choice20.setAttribute('aria-pressed', String(selected20));
   }
   if(stock10) stock10.textContent = count10 > 0 ? t('Доступно купонов: ') + count10 : t('Пока нет купонов');
   if(stock20) stock20.textContent = count20 > 0 ? t('Доступно купонов: ') + count20 : t('Пока нет купонов');
@@ -2679,10 +2683,8 @@ function setAnalyticsMonthsRange(value){
 }
 
 function renderCharts(){
-  if(typeof Chart === 'undefined') return;
   const expensesCanvas=document.getElementById('expensesChart');
   const monthsCanvas=document.getElementById('monthsChart');
-  if(!expensesCanvas||!monthsCanvas)return;
 
   const budget=getVisibleBudget();
   const history=Array.isArray(budget.history)?budget.history:[];
@@ -2717,6 +2719,9 @@ function renderCharts(){
       }
     });
   }
+
+  // Keep the period picker responsive even if the chart library or canvas is unavailable.
+  if(typeof Chart === 'undefined' || !expensesCanvas || !monthsCanvas) return;
   if(chart1){chart1.destroy();chart1=null;}
   if(chart2){chart2.destroy();chart2=null;}
 

@@ -1232,3 +1232,242 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 @media(max-width:380px){
   .help-inline-button,.info-dot,.topbar-help{width:27px!important;height:27px!important;min-width:27px!important;font-size:16px!important}
 }
+
+
+/* RUVYQO — functional light theme */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f3f5f2;--bg-soft:#e9eeea;--panel:#ffffff;--panel-2:#f5f7f4;
+  --panel-3:#edf1ec;--text:#202923;--muted:#68766e;
+  --line:rgba(63,91,73,.18);--gold:#9b783d;--gold-hi:#80612e;
+  --green:#21835f;--red:#c44e5d;--blue:#80612e;
+  --shadow:0 12px 30px rgba(30,50,38,.09);
+}
+:root[data-theme="light"] body{
+  background:radial-gradient(ellipse at 85% -10%,rgba(201,173,118,.14),transparent 36%),linear-gradient(180deg,#f7f9f6,#edf2ee 72%);
+  color:var(--text);
+}
+:root[data-theme="light"] .app-topbar{background:rgba(248,250,247,.94);border-bottom-color:rgba(63,91,73,.15);box-shadow:0 8px 24px rgba(30,50,38,.07)}
+:root[data-theme="light"] .app-topbar-title b,:root[data-theme="light"] .tab-content h2,:root[data-theme="light"] .tab-content h3{color:#202923}
+:root[data-theme="light"] .app-topbar-title small,:root[data-theme="light"] .muted,:root[data-theme="light"] .lbl{color:#68766e}
+:root[data-theme="light"] .card,:root[data-theme="light"] .chart-card,:root[data-theme="light"] .family-card,
+:root[data-theme="light"] .reward-card,:root[data-theme="light"] .pricing-group,:root[data-theme="light"] .coupon-panel,
+:root[data-theme="light"] .promo-redeem-card,:root[data-theme="light"] .financial-overview-card,
+:root[data-theme="light"] .history-filter-panel,:root[data-theme="light"] .pro-insights-card,
+:root[data-theme="light"] .battlepass-card,:root[data-theme="light"] .referral-hero,
+:root[data-theme="light"] .ai-credit-panel,:root[data-theme="light"] .modal-content,
+:root[data-theme="light"] .app-dialog-card{
+  color:#202923;border-color:rgba(63,91,73,.16);
+  background:linear-gradient(145deg,#fff,#f2f6f2);
+  box-shadow:0 12px 30px rgba(30,50,38,.08);
+}
+:root[data-theme="light"] .container{color:#202923}
+:root[data-theme="light"] .card h3,:root[data-theme="light"] .card h4,:root[data-theme="light"] .card h5,
+:root[data-theme="light"] .card h6,:root[data-theme="light"] .referral-hero h2,
+:root[data-theme="light"] .battlepass-card h3{color:#202923}
+:root[data-theme="light"] .custom-input,:root[data-theme="light"] input,:root[data-theme="light"] select,
+:root[data-theme="light"] textarea,:root[data-theme="light"] .select-fake{
+  background:#fff;border-color:rgba(63,91,73,.2);color:#202923;
+}
+:root[data-theme="light"] input::placeholder,:root[data-theme="light"] textarea::placeholder{color:#87938b}
+:root[data-theme="light"] .btn-outline{background:#fff;border-color:rgba(63,91,73,.22);color:#42614f}
+:root[data-theme="light"] .btn-accent,:root[data-theme="light"] .pay-button{color:#fff}
+:root[data-theme="light"] .seg{background:#e8eee9;border-color:rgba(63,91,73,.16)}
+:root[data-theme="light"] .seg-btn{color:#65736a}
+:root[data-theme="light"] .seg-btn.active{background:#3c8c69;color:#fff}
+:root[data-theme="light"] .drawer-head,:root[data-theme="light"] .drawer-foot{color:#65736a;border-color:rgba(63,91,73,.15)}
+:root[data-theme="light"] .app-drawer{background:#f7faf7;border-right-color:rgba(63,91,73,.16)}
+:root[data-theme="light"] .drawer-head b{color:#25352b}
+:root[data-theme="light"] .drawer-nav button{color:#43554a}
+:root[data-theme="light"] .drawer-nav button.active{background:rgba(61,140,105,.1);border-color:rgba(61,140,105,.2);color:#286b4d}
+:root[data-theme="light"] .drawer-nav button i{color:#438c68}
+:root[data-theme="light"] .balance-card{background:radial-gradient(circle at 95% 5%,rgba(201,173,118,.24),transparent 34%),linear-gradient(135deg,#fff8e9,#f1eadb 65%,#e9f2ed);color:#26352c;border-color:rgba(155,120,61,.3)}
+:root[data-theme="light"] .balance-title{color:#80612e}
+:root[data-theme="light"] .balance-val{color:#26352c}
+:root[data-theme="light"] .stat-item,:root[data-theme="light"] .weekly-summary-grid>div,
+:root[data-theme="light"] .financial-metric,:root[data-theme="light"] .financial-net-worth{
+  background:#fff;border-color:rgba(63,91,73,.13);color:#26352c;
+}
+:root[data-theme="light"] .stat-label,:root[data-theme="light"] .weekly-summary-grid small{color:#68766e}
+:root[data-theme="light"] .weekly-summary-card{background:linear-gradient(100deg,#f5f0e5,#edf4ef);color:#26352c}
+:root[data-theme="light"] .weekly-summary-head b,:root[data-theme="light"] .weekly-summary-grid strong{color:#26352c}
+:root[data-theme="light"] #historyContainer>*,:root[data-theme="light"] #envelopesList>*,
+:root[data-theme="light"] #banksList>*{background:linear-gradient(110deg,#fff,#f1f5f1);border-color:rgba(63,91,73,.14);color:#26352c}
+:root[data-theme="light"] .family-status,:root[data-theme="light"] .family-code-box,
+:root[data-theme="light"] .family-members-panel,:root[data-theme="light"] .family-detail-row{
+  background:#f4f8f4;border-color:rgba(63,91,73,.16);color:#34463a;
+}
+:root[data-theme="light"] .family-detail-row b,:root[data-theme="light"] .family-members-panel h6{color:#26352c}
+:root[data-theme="light"] .settings-choice-card{background:linear-gradient(110deg,#fff,#f1f6f1);border-color:rgba(63,91,73,.16)}
+:root[data-theme="light"] .settings-choice-heading .lbl{color:#52645a}
+:root[data-theme="light"] .settings-choice-control{background:#fff;border-color:rgba(63,91,73,.18);color:#26352c}
+:root[data-theme="light"] .promo-redeem-card{background:radial-gradient(circle at 100% 0%,rgba(201,173,118,.17),transparent 43%),linear-gradient(145deg,#fffdf7,#edf4ef)!important;border-color:rgba(155,120,61,.24)!important}
+:root[data-theme="light"] .promo-redeem-heading h5{color:#26352c!important}
+:root[data-theme="light"] .promo-redeem-heading p{color:#68766e!important}
+:root[data-theme="light"] .promo-code-input{background:#fff!important;border-color:rgba(63,91,73,.22)!important;color:#26352c!important}
+:root[data-theme="light"] .promo-code-status{background:#eaf5ee;border-color:rgba(33,131,95,.16);color:#52645a}
+:root[data-theme="light"] .reward-card{background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.17),transparent 43%),linear-gradient(145deg,#fffdf7,#edf4ef)!important;border-color:rgba(155,120,61,.25)!important}
+:root[data-theme="light"] .reward-card>h5,:root[data-theme="light"] .reward-summary strong{color:#26352c!important}
+:root[data-theme="light"] .reward-summary>div,:root[data-theme="light"] .reward-milestones span{background:#fff!important;border-color:rgba(63,91,73,.14)!important;color:#52645a!important}
+:root[data-theme="light"] .reward-summary small,:root[data-theme="light"] .reward-summary span{color:#68766e!important}
+:root[data-theme="light"] .reward-shop{background:linear-gradient(145deg,#f2f8f3,#fff)!important;border-color:rgba(33,131,95,.2)!important}
+:root[data-theme="light"] .reward-shop h6,:root[data-theme="light"] .reward-shop-row>span{color:#26352c!important}
+:root[data-theme="light"] .reward-shop>p{color:#68766e!important}
+:root[data-theme="light"] .reward-shop-row{background:#fff!important;border-color:rgba(63,91,73,.13)!important}
+:root[data-theme="light"] .reward-shop-row small{color:#32805e!important}
+:root[data-theme="light"] .battlepass-card{position:relative;overflow:hidden;border-color:rgba(155,120,61,.25)!important;background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.18),transparent 42%),linear-gradient(145deg,#fffdf7,#eef4ef)!important}
+:root[data-theme="light"] .battlepass-card .eyebrow{color:#8c6c36}
+:root[data-theme="light"] .battlepass-card .muted{color:#68766e}
+:root[data-theme="light"] .battlepass-season{background:#f4ead5;color:#80612e;border-color:rgba(155,120,61,.24)}
+:root[data-theme="light"] .battlepass-progress-label{color:#52645a}
+:root[data-theme="light"] .battlepass-progress-track{background:#dfe8e1}
+:root[data-theme="light"] .battlepass-tasks>*,:root[data-theme="light"] .battlepass-grid>*{
+  background:#fff!important;border-color:rgba(63,91,73,.14)!important;color:#34463a!important;box-shadow:0 4px 12px rgba(30,50,38,.04);
+}
+:root[data-theme="light"] .battlepass-pass-switch{background:#e8eee9;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] .battlepass-switch{color:#65736a}
+:root[data-theme="light"] .battlepass-switch.active{background:#3c8c69;color:#fff}
+:root[data-theme="light"] .battlepass-track-note{background:#f3f6f2;color:#68766e;border-color:rgba(63,91,73,.13)}
+:root[data-theme="light"] .crypto-coupon-shop{background:radial-gradient(circle at 100% 0%,rgba(201,173,118,.18),transparent 43%),linear-gradient(145deg,#fffdf7,#eef5ef)!important;border-color:rgba(155,120,61,.25)!important}
+:root[data-theme="light"] .crypto-coupon-shop .eyebrow{color:#80612e}
+:root[data-theme="light"] .crypto-coupon-shop h3{color:#26352c}
+:root[data-theme="light"] .crypto-coupon-shop>p{color:#68766e}
+:root[data-theme="light"] .crypto-coupon-shop .reward-shop-row{background:#fff!important;border-color:rgba(63,91,73,.14)!important}
+:root[data-theme="light"] .crypto-coupon-shop .reward-shop-row>span{color:#26352c!important}
+:root[data-theme="light"] .referral-stat{background:#fff;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] .referral-stat span,:root[data-theme="light"] .referral-stat small{color:#68766e}
+:root[data-theme="light"] .referral-stat strong{color:#26352c}
+:root[data-theme="light"] .modal,:root[data-theme="light"] .app-dialog-overlay{background:rgba(31,43,35,.35)}
+:root[data-theme="light"] .modal-content,:root[data-theme="light"] .app-dialog-card{background:#fff;color:#26352c}
+:root[data-theme="light"] .picker-list>*{background:#fff;border-color:rgba(63,91,73,.15);color:#26352c}
+:root[data-theme="light"] .help-body{color:#46574c}
+:root[data-theme="light"] .topbar-help,:root[data-theme="light"] .help-inline-button,:root[data-theme="light"] .info-dot{color:#80612e!important;border-color:rgba(155,120,61,.55)!important;background:radial-gradient(circle at 35% 25%,rgba(201,173,118,.2),rgba(201,173,118,.06) 68%,#fff)!important}
+:root[data-theme="light"] .coupon-panel{background:radial-gradient(circle at 100% 0%,rgba(201,173,118,.16),transparent 42%),linear-gradient(145deg,#fffdf7,#f0f5f0)!important}
+:root[data-theme="light"] .coupon-choice{background:#fff!important;border-color:rgba(63,91,73,.17)!important}
+:root[data-theme="light"] .coupon-choice-copy strong{color:#26352c!important}
+:root[data-theme="light"] .coupon-choice.active{background:#f5eddb!important;border-color:rgba(155,120,61,.58)!important}
+:root[data-theme="light"] .coupon-none{color:#80612e;background:#fff;border-color:rgba(155,120,61,.3)}
+:root[data-theme="light"] .pricing-hero,:root[data-theme="light"] .pricing-group,:root[data-theme="light"] .pricing-group-pro{
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.16),transparent 42%),linear-gradient(145deg,#fffdf7,#eef4ef)!important;
+  border-color:rgba(155,120,61,.23)!important;
+}
+:root[data-theme="light"] .pricing-hero h2,:root[data-theme="light"] .pricing-group-head h3,
+:root[data-theme="light"] .price-main,:root[data-theme="light"] .pricing-benefit,:root[data-theme="light"] .pricing-benefit b{color:#26352c!important}
+:root[data-theme="light"] .pricing-hero>p,:root[data-theme="light"] .pricing-group-head p,
+:root[data-theme="light"] .price-stars,:root[data-theme="light"] .price-note,
+:root[data-theme="light"] .pricing-benefit p{color:#68766e!important}
+:root[data-theme="light"] .pricing-benefits,:root[data-theme="light"] .pricing-benefits-pro .pricing-benefit,
+:root[data-theme="light"] .price-option{background:#fff!important;border-color:rgba(63,91,73,.14)!important}
+:root[data-theme="light"] .price-option-top,:root[data-theme="light"] .option-tag{color:#52645a}
+:root[data-theme="light"] .pro-label,:root[data-theme="light"] .option-tag-featured{color:#80612e}
+:root[data-theme="light"] .pricing-secure-note{background:#f4f7f3;color:#68766e}
+:root[data-theme="light"] .weekly-summary-foot{border-color:rgba(63,91,73,.13);color:#68766e}
+:root[data-theme="light"] .month-bar{background:#fff;border-color:rgba(63,91,73,.15);color:#26352c}
+:root[data-theme="light"] .month-bar button{color:#80612e}
+:root[data-theme="light"] .history-type-chip,:root[data-theme="light"] .history-category-chips button,
+:root[data-theme="light"] .option-tag{background:#fff;color:#52645a;border-color:rgba(63,91,73,.15)}
+:root[data-theme="light"] .history-type-chip.active{background:#f4ead5;color:#80612e}
+:root[data-theme="light"] .finance-assistant-heading,:root[data-theme="light"] .finance-assistant-welcome,
+:root[data-theme="light"] .finance-assistant-messages,:root[data-theme="light"] .finance-assistant-suggestions button{
+  background:linear-gradient(145deg,#fffdf7,#eff5f0);border-color:rgba(63,91,73,.15);color:#26352c;
+}
+:root[data-theme="light"] .finance-assistant-heading h4,:root[data-theme="light"] .finance-assistant-heading p{color:#26352c}
+:root[data-theme="light"] .app-menu-backdrop{background:rgba(30,42,34,.3)}
+:root[data-theme="light"] .weekly-summary-badge{background:#f4ead5;color:#80612e}
+:root[data-theme="light"] .trial-copy b{color:#286b4d}
+:root[data-theme="light"] .trial-copy span{color:#68766e}
+:root[data-theme="light"] .trial-tag{color:#286b4d}
+:root[data-theme="light"] .promo-redeem-icon{color:#80612e}
+:root[data-theme="light"] .reward-status{color:#68766e}
+
+/* RUVYQO — premium promo redemption panel */
+#tab-settings .promo-redeem-card{padding:20px;border-radius:9px 23px 9px 23px}
+#tab-settings .promo-redeem-heading{gap:14px;margin-bottom:18px}
+#tab-settings .promo-redeem-icon{width:48px;height:48px;flex-basis:48px;font-size:22px;border-radius:8px 15px 8px 15px}
+#tab-settings .promo-redeem-heading h5{font-size:18px}
+#tab-settings .promo-redeem-heading p{max-width:28em;font-size:12px}
+#tab-settings .promo-code-input{min-height:49px;border-radius:7px 13px 7px 13px}
+#tab-settings #promoCodeRedeemBtn{min-height:49px;padding-inline:17px;font-size:12px;border-radius:7px 13px 7px 13px}
+
+/* RUVYQO — Money Pass premium season panel */
+#tab-referrals .battlepass-card{
+  position:relative;isolation:isolate;overflow:hidden;padding:20px;margin-top:14px;
+  border:1px solid rgba(201,173,118,.32);border-radius:9px 25px 9px 25px;
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.19),transparent 42%),
+    radial-gradient(ellipse at 0% 100%,rgba(110,231,183,.08),transparent 45%),
+    linear-gradient(145deg,#211c15 0%,#121a1b 62%,#100e17 100%);
+  box-shadow:0 18px 42px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.04);
+}
+#tab-referrals .battlepass-card:after{
+  content:"";position:absolute;z-index:-1;right:-62px;top:-76px;width:210px;height:210px;
+  border:1px solid rgba(201,173,118,.16);border-radius:50%;
+  box-shadow:0 0 0 17px rgba(201,173,118,.025),0 0 0 36px rgba(201,173,118,.018);
+  pointer-events:none;
+}
+#tab-referrals .battlepass-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+#tab-referrals .battlepass-head h3{margin:7px 0 5px;color:#f2e8d1;font-size:25px;letter-spacing:-.045em}
+#tab-referrals .battlepass-head p{max-width:36em;margin:0;color:#aeb8b2;font-size:11px;line-height:1.55}
+#tab-referrals .battlepass-season{flex:0 0 auto;padding:7px 10px;border:1px solid rgba(201,173,118,.3);border-radius:6px 13px 6px 13px;background:rgba(201,173,118,.1);color:#ead6aa;font-size:10px;font-weight:850;letter-spacing:.08em}
+#tab-referrals .battlepass-progress{margin:0 0 15px;padding:13px;border:1px solid rgba(201,173,118,.16);border-radius:6px 14px 6px 14px;background:rgba(4,9,10,.3)}
+#tab-referrals .battlepass-progress-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;color:#c4c9c2;font-size:11px}
+#tab-referrals .battlepass-progress-label b{color:#ead6aa;font-size:11px;font-variant-numeric:tabular-nums}
+#tab-referrals .battlepass-progress-track{height:9px;border-radius:20px;background:rgba(255,255,255,.1);overflow:hidden}
+#tab-referrals .battlepass-progress-track>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7bd7b2,#c9ad76);box-shadow:0 0 13px rgba(110,231,183,.22)}
+#tab-referrals .battlepass-tasks{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 15px}
+#tab-referrals .battlepass-tasks>*{min-width:0;padding:11px;border:1px solid rgba(201,173,118,.14);border-radius:5px 12px 5px 12px;background:rgba(5,10,11,.32);color:#e9e7df;font-size:11px;line-height:1.45}
+#tab-referrals .battlepass-pass-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 0 10px;padding:4px;border:1px solid rgba(201,173,118,.17);border-radius:8px;background:rgba(0,0,0,.22)}
+#tab-referrals .battlepass-switch{min-height:39px;padding:8px;border:0;border-radius:5px 10px 5px 10px;background:transparent;color:#aeb8b2;font-size:11px;font-weight:800}
+#tab-referrals .battlepass-switch.active{background:linear-gradient(130deg,#e2cc9b,#a98b51);color:#17130b;box-shadow:0 5px 13px rgba(201,173,118,.15)}
+#tab-referrals .battlepass-track-note{margin:0 0 12px;padding:10px 12px;border:1px solid rgba(110,231,183,.16);border-radius:5px 11px 5px 11px;background:rgba(110,231,183,.055);color:#b7c9bf;font-size:10px;line-height:1.5}
+#tab-referrals .battlepass-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#tab-referrals .battlepass-grid>*{min-width:0;padding:11px 8px;border:1px solid rgba(201,173,118,.15);border-radius:5px 12px 5px 12px;background:linear-gradient(145deg,rgba(201,173,118,.08),rgba(0,0,0,.18));color:#e9e3d6;text-align:center;font-size:10px;line-height:1.4}
+#tab-referrals .battlepass-grid>*:first-child{border-color:rgba(110,231,183,.22)}
+#tab-referrals .battlepass-grid button{cursor:pointer}
+#tab-referrals .crypto-coupon-shop{
+  position:relative;overflow:hidden;padding:19px;border:1px solid rgba(110,231,183,.24);
+  border-radius:8px 22px 8px 22px;
+  background:radial-gradient(circle at 100% 0%,rgba(110,231,183,.12),transparent 43%),linear-gradient(145deg,#17231e,#111719 68%,#11101a);
+  box-shadow:0 15px 35px rgba(0,0,0,.2);
+}
+#tab-referrals .crypto-coupon-shop>.eyebrow{color:#9de2c2}
+#tab-referrals .crypto-coupon-shop h3{margin:7px 0;color:#f0eadc;font-size:19px;letter-spacing:-.025em}
+#tab-referrals .crypto-coupon-shop>p{font-size:11px;line-height:1.55;color:#aeb8b2}
+#tab-referrals .crypto-coupon-shop .reward-shop-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;padding:13px;
+  border:1px solid rgba(110,231,183,.16);border-radius:6px 13px 6px 13px;background:rgba(4,10,10,.34);
+}
+#tab-referrals .crypto-coupon-shop .reward-shop-row>span{display:grid;gap:4px;color:#f0eadc;font-size:12px;font-weight:800}
+#tab-referrals .crypto-coupon-shop .reward-shop-row small{color:#9de2c2;font-size:11px;font-weight:750}
+#tab-referrals .crypto-coupon-shop .reward-shop-row .btn{min-width:88px;min-height:38px}
+#tab-referrals .crypto-coupon-shop #cryptoCouponShopStatus{margin:12px 0 8px;padding:10px 11px;border:1px solid rgba(110,231,183,.13);border-radius:5px 11px 5px 11px;background:rgba(110,231,183,.05)}
+#tab-referrals .crypto-coupon-shop>button:last-child{width:100%;min-height:39px}
+@media(max-width:430px){
+  #tab-referrals .battlepass-card{padding:15px}
+  #tab-referrals .battlepass-head{gap:8px}
+  #tab-referrals .battlepass-head h3{font-size:22px}
+  #tab-referrals .battlepass-tasks{grid-template-columns:1fr}
+  #tab-referrals .battlepass-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #tab-referrals .crypto-coupon-shop{padding:15px}
+}
+
+/* Light-mode refinements for the new pass and crypto shop */
+:root[data-theme="light"] #tab-referrals .battlepass-card{
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.18),transparent 42%),linear-gradient(145deg,#fffdf7,#eef4ef)!important;
+  border-color:rgba(155,120,61,.25)!important;
+}
+:root[data-theme="light"] #tab-referrals .battlepass-head h3{color:#26352c}
+:root[data-theme="light"] #tab-referrals .battlepass-head p{color:#68766e}
+:root[data-theme="light"] #tab-referrals .battlepass-progress{background:#f5f7f3;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] #tab-referrals .battlepass-progress-label{color:#52645a}
+:root[data-theme="light"] #tab-referrals .battlepass-progress-label b{color:#80612e}
+:root[data-theme="light"] #tab-referrals .battlepass-tasks>*{background:#fff!important;color:#34463a!important;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] #tab-referrals .battlepass-pass-switch{background:#e8eee9;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] #tab-referrals .battlepass-switch{color:#65736a}
+:root[data-theme="light"] #tab-referrals .battlepass-switch.active{background:linear-gradient(130deg,#d8bd82,#a98b51);color:#fff}
+:root[data-theme="light"] #tab-referrals .battlepass-track-note{background:#eaf5ee;color:#52645a;border-color:rgba(33,131,95,.16)}
+:root[data-theme="light"] #tab-referrals .battlepass-grid>*{background:#fff!important;color:#34463a!important;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] #tab-referrals .crypto-coupon-shop{background:radial-gradient(circle at 100% 0%,rgba(110,180,140,.12),transparent 43%),linear-gradient(145deg,#fff,#eef5ef)!important;border-color:rgba(33,131,95,.2)!important}
+:root[data-theme="light"] #tab-referrals .crypto-coupon-shop h3{color:#26352c}
+:root[data-theme="light"] #tab-referrals .crypto-coupon-shop>p{color:#68766e}
+:root[data-theme="light"] #tab-referrals .crypto-coupon-shop .reward-shop-row{background:#fff!important;border-color:rgba(63,91,73,.14)}
+:root[data-theme="light"] #tab-referrals .crypto-coupon-shop .reward-shop-row>span{color:#26352c}

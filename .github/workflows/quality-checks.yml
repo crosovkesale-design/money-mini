@@ -24,7 +24,35 @@ jobs:
       - name: Compile Python modules
         run: python -m compileall -q bot.py auth.py
       - name: Check browser JavaScript syntax
-        run: node --check static/app.js
+        run: |
+          node --check static/app.js
+          node --check static/translations.js
+      - name: Check main translation key parity
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          source = Path("static/translations.js").read_text(encoding="utf-8")
+          start = source.index("const TRANSLATIONS = {")
+          end = source.index("\n};", start)
+          body = source[start:end]
+          languages = ("ru", "uk", "en", "de", "es", "fr", "it", "pl", "tr", "zh")
+          blocks = list(re.finditer(r"^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \\{$", body, re.M))
+          found = {match.group(1) for match in blocks}
+          if found != set(languages) or len(blocks) != len(languages):
+              raise SystemExit(f"Expected exactly 10 locale blocks; found {sorted(found)}")
+          key_sets = {}
+          for index, match in enumerate(blocks):
+              block_end = blocks[index + 1].start() if index + 1 < len(blocks) else len(body)
+              locale = body[match.start():block_end]
+              key_sets[match.group(1)] = set(re.findall(r"^    (\"(?:[^\"\\\\]|\\\\.)*\"|[A-Za-z_$][\\w$]*)\\s*:", locale, re.M))
+          reference = key_sets["ru"]
+          mismatches = {lang: sorted(reference ^ keys) for lang, keys in key_sets.items() if keys != reference}
+          if mismatches:
+              raise SystemExit(f"Translation key mismatch: {mismatches}")
+          print(f"All 10 locales contain the same {len(reference)} top-level translation keys")
+          PY
       - name: Validate HTML structure
         run: |
           python - <<'PY'

@@ -719,7 +719,7 @@ async def send_database_backup(chat_id: str):
     await bot.send_document(
         int(chat_id),
         BufferedInputFile(compressed, filename=filename),
-        caption=f"🛡 Резервная копия RUVYQO\nДата: {datetime.now(KYIV).strftime('%d.%m.%Y %H:%M')} (Киев)\nРазмер после сжатия: {len(compressed) // 1024} КБ",
+        caption=f"🛡 Резервная копия RUVYQO\\nДата: {datetime.now(KYIV).strftime('%d.%m.%Y %H:%M')} (Киев)\\nРазмер после сжатия: {len(compressed) // 1024} КБ",
     )
     await fb.patch("/system/backups", {
         "lastSuccessDate": datetime.now(KYIV).strftime("%Y-%m-%d"),

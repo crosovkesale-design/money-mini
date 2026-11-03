@@ -1,0 +1,41 @@
+name: RUVYQO quality checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax:
+    name: Python and JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Compile Python modules
+        run: python -m compileall -q bot.py auth.py
+      - name: Check browser JavaScript syntax
+        run: node --check static/app.js
+      - name: Validate HTML structure
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class DocumentParser(HTMLParser):
+              pass
+
+          parser = DocumentParser(convert_charrefs=True)
+          parser.feed(Path("static/index.html").read_text(encoding="utf-8"))
+          parser.close()
+          print("static/index.html parsed successfully")
+          PY

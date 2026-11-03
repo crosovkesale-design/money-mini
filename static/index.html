@@ -57,13 +57,13 @@
 <title>RUVYQO — Твои финансы под контролем</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="./translations.js?v=20261101-ruviko-stability-v1" defer></script>
-<script src="./app.js?v=20261103-remove-no-coupon-choice-v1" defer></script>
+<script src="./translations.js?v=20261103-family-members-v1" defer></script>
+<script src="./app.js?v=20261103-family-members-v1" defer></script>
 
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-analytics-pro-layout-v1">
+<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-family-members-v1">
 </head>
 <body>
 <div class="container">
@@ -503,6 +503,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <button class="btn btn-accent btn-sm family-share-btn" onclick="shareFamilyInvite()">Пригласить по ссылке</button>
         </div>
         <div id="familyMembersCount" class="family-members-count"></div>
+        <div class="family-members-panel">
+          <h6 data-i18n="src_family_list_title">Состав семьи</h6>
+          <div id="familyMembersList" class="family-members-list" aria-live="polite"></div>
+        </div>
       </div>
 
       <div id="familyEmptyInfo" class="family-empty-info">

@@ -1731,3 +1731,35 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   .finance-assistant-form{align-items:stretch}
   .finance-assistant-form button{min-width:82px;padding-inline:11px}
 }
+
+
+/* Analytics period selector */
+.analytics-period-control{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 12px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:var(--surface);
+}
+.analytics-period-control label{
+  color:var(--text);
+  font-size:13px;
+  font-weight:700;
+}
+.analytics-period-control select{
+  width:auto;
+  min-width:132px;
+  max-width:56%;
+  margin:0;
+  padding:9px 30px 9px 11px;
+  font-size:13px;
+}
+@media(max-width:420px){
+  .analytics-period-control{gap:8px;padding:10px 11px}
+  .analytics-period-control label{font-size:12px}
+  .analytics-period-control select{min-width:118px;font-size:12px}
+}

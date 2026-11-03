@@ -984,7 +984,7 @@ if bot:
     @dp.message(Command("help"))
     async def cmd_help(message: Message):
         text = (
-            "✨ <b>РУВИКО · ЦЕНТР КОМАНД</b>\n"
+            "✨ <b>RUVYQO · ЦЕНТР КОМАНД</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "🏠 <b>/start</b> — открыть главное меню и приложение\n"
             "📊 <b>/stats</b> — общая статистика проекта\n"
@@ -1050,7 +1050,7 @@ if bot:
              InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "📊 <b>РУВИКО · СТАТИСТИКА</b>\n"
+            "📊 <b>RUVYQO · СТАТИСТИКА</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             f"👥 Всего пользователей: <b>{total:,}</b>\n"
             f"🎁 На пробном периоде: <b>{trial:,}</b>\n"
@@ -1105,7 +1105,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await message.answer(
-            "💎 <b>ТАРИФЫ РУВИКО</b>\n"
+            "💎 <b>ТАРИФЫ RUVYQO</b>\n"
             "━━━━━━━━━━━━━━━━━━\n"
             "Выбери план под свои задачи и управляй финансами удобнее.\n\n"
             "✨ <b>Basic</b>\n"
@@ -1348,7 +1348,7 @@ if bot:
             [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="go_start")]
         ])
         await cb.message.edit_text(
-            "💎 <b>ТАРИФЫ РУВИКО</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
+            "💎 <b>ТАРИФЫ RUVYQO</b>\n\nНажми кнопку ниже, чтобы посмотреть доступные планы и способы оплаты.",
             reply_markup=kb, parse_mode="HTML"
         )
         await cb.answer()

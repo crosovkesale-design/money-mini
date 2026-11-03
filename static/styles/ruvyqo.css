@@ -1979,3 +1979,212 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 :root[data-theme="light"] .tab-content :is(.advantages-page,.advantages-feature-grid){
   color:#34463a!important;
 }
+
+
+/* RUVYQO light theme — settings, family, recurring, history and assistant finish */
+:root[data-theme="light"] #tab-settings>.card:first-child{
+  background:linear-gradient(145deg,#fff,#f0f6f1)!important;
+  border-color:rgba(63,91,73,.16)!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-card{
+  background:linear-gradient(125deg,#fff,#f2f7f2)!important;
+  border:1px solid rgba(63,91,73,.17)!important;
+  box-shadow:0 5px 16px rgba(35,62,45,.045)!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-card:focus-within{
+  border-color:rgba(50,132,94,.42)!important;
+  background:#fff!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-icon{
+  background:#eaf4ed!important;border-color:rgba(50,132,94,.18)!important;color:#327c59!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-heading .lbl{
+  color:#52645a!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-control{
+  background:#fff!important;color:#26352c!important;
+  border:1px solid rgba(63,91,73,.22)!important;
+  box-shadow:inset 0 1px 2px rgba(35,62,45,.025)!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-control>span{color:#26352c!important}
+:root[data-theme="light"] #tab-settings .settings-choice-control>i{color:#39825f!important}
+:root[data-theme="light"] #tab-settings .settings-choice-control:hover{
+  background:#f5faf6!important;border-color:rgba(50,132,94,.42)!important;
+}
+:root[data-theme="light"] #tab-settings .recurring-card,
+:root[data-theme="light"] #tab-settings .family-card{
+  background:radial-gradient(ellipse at 92% 0%,rgba(201,173,118,.12),transparent 42%),linear-gradient(145deg,#fff,#eef5ef 78%)!important;
+  border:1px solid rgba(63,91,73,.17)!important;
+  box-shadow:0 12px 28px rgba(35,62,45,.075)!important;
+}
+:root[data-theme="light"] #tab-settings .recurring-card>h5,
+:root[data-theme="light"] #tab-settings .family-card>h5{color:#26352c!important}
+:root[data-theme="light"] #tab-settings .recurring-card>h5:before{
+  background:#f4ead5!important;border-color:rgba(155,120,61,.24)!important;color:#80612e!important;
+}
+:root[data-theme="light"] #tab-settings .family-card>h5:before{
+  background:#e8f4eb!important;border-color:rgba(50,132,94,.2)!important;color:#327c59!important;
+}
+:root[data-theme="light"] #tab-settings .recurring-item,
+:root[data-theme="light"] #tab-settings .family-detail-row,
+:root[data-theme="light"] #tab-settings .family-code-box,
+:root[data-theme="light"] #tab-settings .family-status,
+:root[data-theme="light"] #tab-settings .family-members-panel,
+:root[data-theme="light"] #tab-settings .family-form{
+  background:#fff!important;border-color:rgba(63,91,73,.15)!important;color:#34463a!important;
+}
+:root[data-theme="light"] #tab-settings .recurring-item b,
+:root[data-theme="light"] #tab-settings .family-detail-row b,
+:root[data-theme="light"] #tab-settings .family-code-main code{color:#26352c!important}
+:root[data-theme="light"] #tab-settings .recurring-item small,
+:root[data-theme="light"] #tab-settings .family-detail-row span,
+:root[data-theme="light"] #tab-settings .family-code-main>span{color:#68766e!important}
+:root[data-theme="light"] #tab-settings .recurring-item small:first-of-type,
+:root[data-theme="light"] #tab-settings .family-members-count{color:#80612e!important}
+:root[data-theme="light"] #tab-settings .family-status,
+:root[data-theme="light"] #tab-settings .family-empty-info{color:#52645a!important}
+:root[data-theme="light"] #tab-settings .family-empty-info{
+  background:#f8faf7!important;border-color:rgba(155,120,61,.28)!important;
+}
+:root[data-theme="light"] #tab-settings .family-members-panel h6{color:#327c59!important}
+:root[data-theme="light"] #tab-settings .family-member-row{
+  background:#f7faf7!important;border-color:rgba(63,91,73,.13)!important;color:#34463a!important;
+}
+:root[data-theme="light"] #tab-settings .family-feedback{color:#28734f!important}
+:root[data-theme="light"] #modalAddRecurring .modal-content{
+  background:linear-gradient(145deg,#fff,#eef5ef)!important;border-color:rgba(63,91,73,.2)!important;
+}
+:root[data-theme="light"] #modalAddRecurring .modal-header h3{color:#26352c!important}
+:root[data-theme="light"] #modalAddRecurring :is(input,select,textarea){
+  background:#fff!important;color:#26352c!important;border-color:rgba(63,91,73,.2)!important;
+}
+:root[data-theme="light"] #modalAddRecurring .muted{
+  background:#f4f7f3!important;color:#52645a!important;border-color:#b99555!important;
+}
+:root[data-theme="light"] #historyContainer>.history-item{
+  background:linear-gradient(120deg,#fff,#f2f7f3)!important;
+  border:1px solid rgba(63,91,73,.15)!important;
+  box-shadow:0 5px 15px rgba(35,62,45,.055)!important;
+}
+:root[data-theme="light"] #historyContainer .history-title{color:#26352c!important}
+:root[data-theme="light"] #historyContainer .history-sub,
+:root[data-theme="light"] #historyContainer .history-comment{color:#68766e!important}
+:root[data-theme="light"] #historyContainer .history-icon{
+  background:#edf4ee!important;border-color:rgba(63,91,73,.13)!important;
+}
+:root[data-theme="light"] #historyContainer .history-expense .history-icon{
+  background:#fff0ef!important;border-color:rgba(198,78,93,.2)!important;color:#bd4c59!important;
+}
+:root[data-theme="light"] #historyContainer .history-income .history-icon{
+  background:#eaf5ee!important;border-color:rgba(39,132,93,.2)!important;color:#27845d!important;
+}
+:root[data-theme="light"] #historyContainer .history-kind{background:#edf2ee!important;color:#52645a!important}
+:root[data-theme="light"] #historyContainer .history-expense .history-kind{background:#fff0ef!important;color:#b94d59!important}
+:root[data-theme="light"] #historyContainer .history-income .history-kind{background:#eaf5ee!important;color:#27845d!important}
+:root[data-theme="light"] #historyContainer .history-amount.exp{color:#c64e5d!important}
+:root[data-theme="light"] #historyContainer .history-amount.inc{color:#27845d!important}
+:root[data-theme="light"] #historyContainer .history-actions{border-color:rgba(63,91,73,.12)!important}
+:root[data-theme="light"] #historyContainer .history-actions .card-action{
+  background:#fff!important;border-color:rgba(63,91,73,.16)!important;color:#52645a!important;
+}
+:root[data-theme="light"] #modalPicker .modal-content{
+  background:linear-gradient(145deg,#fff,#f0f6f1)!important;
+  border:1px solid rgba(63,91,73,.2)!important;
+  box-shadow:0 22px 60px rgba(30,50,38,.18)!important;
+}
+:root[data-theme="light"] #modalPicker .modal-header h3{color:#26352c!important}
+:root[data-theme="light"] #modalPicker .picker-list>*{
+  background:#fff!important;border:1px solid rgba(63,91,73,.16)!important;color:#26352c!important;
+}
+:root[data-theme="light"] #modalPicker .picker-list>*:hover{
+  background:#edf6ef!important;border-color:rgba(39,132,93,.32)!important;
+}
+
+/* Financial assistant — a real full-size chat workspace */
+#tab-ai .finance-assistant-card{
+  gap:13px!important;width:100%!important;max-width:none!important;
+}
+#tab-ai .finance-assistant-heading{
+  position:relative;overflow:hidden;min-height:100px;padding:21px 22px 20px 76px!important;
+  border:1px solid rgba(201,173,118,.27)!important;
+  background:radial-gradient(circle at 0 50%,rgba(201,173,118,.18),transparent 30%),linear-gradient(135deg,#211d16,#121b1c 72%,#171326)!important;
+}
+#tab-ai .finance-assistant-heading:before{
+  content:"✦";position:absolute;left:20px;top:50%;transform:translateY(-50%);
+  display:grid;place-items:center;width:42px;height:42px;border:1px solid rgba(201,173,118,.38);
+  border-radius:13px 5px 13px 5px;background:rgba(201,173,118,.12);color:#ead6aa;font-size:22px;
+  box-shadow:0 0 28px rgba(201,173,118,.12);
+}
+#tab-ai .finance-assistant-heading h4{font-size:clamp(21px,5vw,27px)!important}
+#tab-ai .finance-assistant-heading .pro-mini-tag{flex:0 0 auto;max-width:120px;white-space:normal;text-align:center;line-height:1.35}
+#tab-ai #financeAssistantMessages{
+  height:clamp(440px,68vh,760px)!important;min-height:440px!important;max-height:760px!important;
+  padding:18px!important;border:1px solid rgba(201,173,118,.2)!important;border-radius:10px 22px 10px 10px!important;
+  background:radial-gradient(circle at 0 0,rgba(110,231,183,.055),transparent 38%),linear-gradient(155deg,#101719,#100d18)!important;
+}
+#tab-ai #financeAssistantMessages .finance-assistant-welcome,
+#tab-ai #financeAssistantMessages .finance-assistant-message{
+  max-width:min(94%,760px)!important;padding:15px 17px!important;font-size:14px!important;line-height:1.72!important;
+  border-radius:7px 17px 17px 17px!important;
+}
+#tab-ai #financeAssistantMessages .finance-assistant-message.is-user{
+  background:linear-gradient(135deg,#92784b,#66512f)!important;border-color:rgba(234,214,170,.3)!important;color:#fff!important;
+  border-radius:17px 7px 17px 17px!important;
+}
+#tab-ai #financeAssistantMessages .finance-assistant-message.is-assistant,
+#tab-ai #financeAssistantMessages .finance-assistant-welcome{
+  background:linear-gradient(145deg,#1d2928,#191625)!important;border-color:rgba(110,231,183,.2)!important;color:#edf4ef!important;
+}
+#tab-ai .finance-assistant-suggestions button{
+  min-height:48px!important;padding:11px 13px!important;font-size:11px!important;
+}
+#tab-ai .finance-assistant-form{
+  align-items:stretch!important;padding:8px;border:1px solid rgba(201,173,118,.2);
+  border-radius:9px 17px 9px 9px;background:rgba(16,22,22,.78);
+}
+#tab-ai .finance-assistant-form textarea{
+  min-height:58px!important;max-height:170px!important;padding:13px!important;border:0!important;
+  background:transparent!important;color:#f1eee5!important;outline:none!important;box-shadow:none!important;
+}
+#tab-ai .finance-assistant-form button{min-width:112px!important;align-self:stretch!important}
+:root[data-theme="light"] #tab-ai .finance-assistant-heading{
+  background:radial-gradient(circle at 0 50%,rgba(201,173,118,.18),transparent 30%),linear-gradient(135deg,#fffdf7,#edf5ef)!important;
+  border-color:rgba(155,120,61,.24)!important;box-shadow:0 12px 28px rgba(30,50,38,.07)!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-heading:before{
+  background:#f5eddb!important;border-color:rgba(155,120,61,.28)!important;color:#80612e!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-heading h4{color:#26352c!important}
+:root[data-theme="light"] #tab-ai .finance-assistant-heading p{color:#68766e!important}
+:root[data-theme="light"] #tab-ai #financeAssistantMessages{
+  background:linear-gradient(155deg,#f7faf7,#edf4ee)!important;border-color:rgba(63,91,73,.17)!important;
+  box-shadow:inset 0 1px 3px rgba(30,50,38,.025)!important;
+}
+:root[data-theme="light"] #tab-ai #financeAssistantMessages .finance-assistant-message.is-user{
+  background:linear-gradient(135deg,#397f5d,#286748)!important;color:#fff!important;border-color:rgba(39,132,93,.24)!important;
+}
+:root[data-theme="light"] #tab-ai #financeAssistantMessages .finance-assistant-message.is-assistant,
+:root[data-theme="light"] #tab-ai #financeAssistantMessages .finance-assistant-welcome{
+  background:#fff!important;color:#26352c!important;border-color:rgba(63,91,73,.15)!important;
+  box-shadow:0 4px 13px rgba(30,50,38,.045)!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-form{
+  background:#fff!important;border-color:rgba(63,91,73,.2)!important;box-shadow:0 6px 18px rgba(30,50,38,.055)!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-form textarea{
+  background:transparent!important;color:#26352c!important;
+}
+:root[data-theme="light"] #tab-ai .finance-assistant-form textarea::placeholder{color:#87938b!important}
+:root[data-theme="light"] #tab-ai .finance-assistant-suggestions button{
+  background:#fff!important;color:#34463a!important;border-color:rgba(63,91,73,.16)!important;
+}
+:root[data-theme="light"] #tab-ai .ai-credit-panel{
+  background:linear-gradient(135deg,#fff,#eef6ef)!important;border-color:rgba(63,91,73,.17)!important;
+}
+:root[data-theme="light"] #tab-ai .ai-credit-panel p{color:#52645a!important}
+@media(max-width:600px){
+  #tab-ai .finance-assistant-heading{padding:16px 14px 16px 62px!important}
+  #tab-ai .finance-assistant-heading:before{left:13px;width:36px;height:36px}
+  #tab-ai #financeAssistantMessages{height:64vh!important;min-height:390px!important;max-height:700px!important;padding:12px!important}
+  #tab-ai .finance-assistant-form button{min-width:82px!important;padding-inline:10px!important}
+}

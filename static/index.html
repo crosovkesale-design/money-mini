@@ -68,15 +68,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <body>
 <div class="container">
 <div class="app-topbar" id="appTopbar">
-  <button class="menu-trigger" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
+  <button class="menu-trigger" type="button" aria-label="Открыть меню" data-i18n-aria-label="menu_open_label" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
   <div class="app-topbar-title"><b>RUVYQO</b><small id="currentSectionLabel">Главная</small></div>
   <button type="button" class="topbar-tariffs" onclick="window.location.href='?screen=pay'">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
-  <button type="button" class="topbar-help" onclick="openHelp()" aria-label="Справка">?</button>
+  <button type="button" class="topbar-help" onclick="openHelp()" aria-label="Справка" data-i18n-aria-label="help">?</button>
 </div>
 <div class="app-menu-backdrop" id="appMenuBackdrop" onclick="closeAppMenu()"></div>
 <aside class="app-drawer" id="appDrawer" aria-hidden="true">
-  <div class="drawer-head"><div><b>RUVYQO</b><small id="drawerSubtitle">Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню">×</button></div>
-  <nav class="drawer-nav" aria-label="Разделы приложения">
+  <div class="drawer-head"><div><b>RUVYQO</b><small id="drawerSubtitle">Навигация</small></div><button type="button" onclick="closeAppMenu()" aria-label="Закрыть меню" data-i18n-aria-label="menu_close_label">×</button></div>
+  <nav class="drawer-nav" aria-label="Разделы приложения" data-i18n-aria-label="app_sections_label">
     <button type="button" class="active" data-menu-tab="budget" onclick="switchTab('budget')"><i class="fa-solid fa-wallet"></i><span id="menuLabelBudget">Главная</span></button>
     <button type="button" data-menu-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i><span id="menuLabelAnalytics">Аналитика</span></button>
     <button type="button" data-menu-tab="ai" onclick="switchTab('ai')"><i class="fa-solid fa-wand-magic-sparkles"></i><span id="menuLabelAI">ИИ-помощник</span></button>
@@ -94,7 +94,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <section class="pricing-page">
       <div class="pricing-hero">
         <div class="pricing-kicker" data-i18n="pricing_kicker"><span class="pricing-kicker-dot"></span> RUVYQO · ТАРИФЫ</div>
-        <h2><span data-i18n="pricing_title">Выбери свой тариф</span> <button type="button" class="info-dot" aria-label="Справка" onclick="openHelp('advantages')">?</button></h2>
+        <h2><span data-i18n="pricing_title">Выбери свой тариф</span> <button type="button" class="info-dot" aria-label="Справка" data-i18n-aria-label="help" onclick="openHelp('advantages')">?</button></h2>
         <p data-i18n="pricing_subtitle">Удобный срок подписки и оплата привычным способом.</p>
       </div>
 
@@ -113,7 +113,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="coupon-heading-copy">
             <span class="coupon-eyebrow" data-i18n="coupon_eyebrow">ТВОИ БОНУСЫ</span>
             <h3 data-i18n="coupon_title">Купоны и скидки</h3>
-            <p data-i18n="coupon_desc">Экономь на подписке за активность</p><button type="button" class="info-dot" aria-label="Как работают купоны" onclick="openHelp('coupons')">?</button>
+            <p data-i18n="coupon_desc">Экономь на подписке за активность</p><button type="button" class="info-dot" aria-label="Как работают купоны" data-i18n-aria-label="coupon_help_label" onclick="openHelp('coupons')">?</button>
           </div>
           <div class="coupon-spark">✦</div>
         </div>
@@ -121,12 +121,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="coupon-choice-list">
           <button type="button" class="coupon-choice coupon-choice-10" id="couponChoice10" onclick="selectCoupon('10')">
             <span class="coupon-choice-icon"><i class="fa-solid fa-user-plus"></i></span>
-            <span class="coupon-choice-copy"><strong>Купон 10%</strong><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
+            <span class="coupon-choice-copy"><strong data-i18n="coupon_10">Купон −10%</strong><span class="coupon-stock" id="coupon10Stock" data-i18n="loading_label">Загрузка…</span></span>
             <span class="coupon-discount">−10%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
           <button type="button" class="coupon-choice coupon-choice-20" id="couponChoice20" onclick="selectCoupon('20')">
             <span class="coupon-choice-icon"><i class="fa-solid fa-star"></i></span>
-            <span class="coupon-choice-copy"><strong>Купон 20%</strong><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
+            <span class="coupon-choice-copy"><strong data-i18n="coupon_20">Купон −20%</strong><span class="coupon-stock" id="coupon20Stock" data-i18n="loading_label">Загрузка…</span></span>
             <span class="coupon-discount">−20%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
         </div>
@@ -139,12 +139,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="pricing-group-head">
           <div class="pricing-plan-icon basic-icon">◈</div>
           <div>
-            <h3>Basic <button type="button" class="info-dot" aria-label="Что входит в Basic" onclick="openHelp('basic')">?</button></h3>
+            <h3>Basic <button type="button" class="info-dot" aria-label="Что входит в Basic" data-i18n-aria-label="basic_help_label" onclick="openHelp('basic')">?</button></h3>
             <p data-i18n="basic_desc">Для личного бюджета: учёт доходов и расходов, история, конверты, цели и регулярные платежи</p>
           </div>
         </div>
 
-        <div class="pricing-benefits" aria-label="Преимущества Basic">
+        <div class="pricing-benefits" aria-label="Преимущества Basic" data-i18n-aria-label="basic_benefits_label">
           <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b1">Доходы и расходы в одном месте</p></div>
           <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b2">История операций и категории</p></div>
           <div class="pricing-benefit"><span>✓</span><p data-i18n="basic_b3">Конверты, банки и финансовые цели</p></div>
@@ -209,13 +209,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <div class="pricing-group-head pricing-group-head-pro">
           <div class="pricing-plan-icon pro-icon">♛</div>
           <div class="pro-title-copy">
-            <h3>PRO <button type="button" class="info-dot info-dot-pro" aria-label="Что входит в PRO" onclick="openHelp('pro')">?</button></h3>
+            <h3>PRO <button type="button" class="info-dot info-dot-pro" aria-label="Что входит в PRO" data-i18n-aria-label="pro_help_label" onclick="openHelp('pro')">?</button></h3>
             <p data-i18n="pro_desc">Все возможности Basic плюс текстовый ввод операций, семейный бюджет и расширенная аналитика</p>
           </div>
           <span class="pro-label">PREMIUM</span>
         </div>
 
-        <div class="pricing-benefits pricing-benefits-pro" aria-label="Дополнительные возможности PRO">
+        <div class="pricing-benefits pricing-benefits-pro" aria-label="Дополнительные возможности PRO" data-i18n-aria-label="pro_benefits_label">
           <div class="pricing-benefit pro-benefit"><span>✦</span><div><b data-i18n="pro_all_basic">Всё из Basic</b><p>Весь набор Basic для ежедневного учёта денег</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>✧</span><div><b data-i18n="pro_categories">Свои категории</b><p data-i18n="pro_categories_desc">Создавай категории доходов и расходов под себя</p></div></div>
           <div class="pricing-benefit pro-benefit"><span>◈</span><div><b data-i18n="pro_wallpaper">Персональные обои</b><p data-i18n="pro_wallpaper_desc">Настраивай фон интерфейса на свой вкус</p></div></div>
@@ -265,7 +265,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <p data-i18n="why_desc">RUVYQO помогает видеть свои деньги целиком и принимать решения увереннее — прямо в Telegram.</p>
       </div>
       <div class="pricing-difference advantages-feature-grid">
-        <div class="pricing-difference-title" data-i18n="why_features">Что делает «Семейный бюджет» удобным?</div>
+        <div class="pricing-difference-title" data-i18n="why_features">Что делает RUVYQO удобным?</div>
         <div class="pricing-difference-grid">
           <div><b>⚡ Всегда под рукой</b><span>Работает внутри Telegram — не нужно устанавливать отдельное приложение.</span></div>
           <div><b>📊 Финансы в одном месте</b><span>Доходы, расходы, история операций и аналитика собраны вместе.</span></div>
@@ -276,14 +276,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
       </div>
       <div class="advantages-cta">
-        <div><b>Попробуй «Семейный бюджет» в деле</b><span>Выбери подходящий тариф или начни с пробного периода.</span></div>
+        <div><b data-i18n="try_app_title">Попробуй RUVYQO в деле</b><span>Выбери подходящий тариф или начни с пробного периода.</span></div>
         <button type="button" class="btn btn-accent" onclick="switchTab('pay')">💎 Посмотреть тарифы</button>
       </div>
     </section>
   </div>
 
     <div id="tab-budget" class="tab-content">
-    <div class="balance-card">    <div id="budgetModeSwitch" class="budget-mode-switch" style="display:none" role="group" aria-label="Режим бюджета">
+    <div class="balance-card">    <div id="budgetModeSwitch" class="budget-mode-switch" style="display:none" role="group" aria-label="Режим бюджета" data-i18n-aria-label="budget_mode_label">
       <button id="budgetModePersonal" class="budget-mode-btn active" onclick="setBudgetMode('personal')">Личный</button>
       <button id="budgetModeFamily" class="budget-mode-btn" onclick="setBudgetMode('family')">Семейный</button>
     </div>
@@ -307,7 +307,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       <div id="forecastBody" style="font-size:12px"></div>
     </div>
     <section class="card weekly-summary-card" id="weeklySummaryCard">
-      <div class="weekly-summary-head"><div><b id="weeklyTitle">📊 Неделя в цифрах</b><small id="weeklyPeriod">Последние 7 дней</small></div><span class="weekly-summary-badge">7 ДНЕЙ</span></div>
+      <div class="weekly-summary-head"><div><b id="weeklyTitle">📊 Неделя в цифрах</b><small id="weeklyPeriod">Последние 7 дней</small></div><span class="weekly-summary-badge" data-i18n="week_badge_7_days">7 ДНЕЙ</span></div>
       <div class="weekly-summary-grid"><div><small id="weeklyIncomeLabel">Доходы</small><strong id="weeklyIncome">+0</strong></div><div><small id="weeklyExpenseLabel">Расходы</small><strong id="weeklyExpense">−0</strong></div></div>
       <div class="weekly-summary-foot"><span id="weeklyTopLabel">Главная категория расходов</span><b id="weeklyTopCategory">Пока нет данных</b></div>
     </section>
@@ -339,8 +339,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   </div>
 
   <div id="tab-analytics" class="tab-content" style="display:none">
-    <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4><button type="button" class="help-inline-button" onclick="openHelp('analytics')" aria-label="Справка по аналитике">?</button>
-    <section class="analytics-period-panel" aria-label="Период аналитики">
+    <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4><button type="button" class="help-inline-button" onclick="openHelp('analytics')" aria-label="Справка по аналитике" data-i18n-aria-label="analytics_help_label">?</button>
+    <section class="analytics-period-panel" aria-label="Период аналитики" data-i18n-aria-label="analytics_period_label">
       <div class="analytics-period-heading">
         <span class="analytics-period-icon"><i class="fa-solid fa-calendar-days"></i></span>
         <div class="analytics-period-copy">
@@ -349,7 +349,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         </div>
         <span class="analytics-period-current" id="analyticsPeriodCurrent">6 мес.</span>
       </div>
-      <div class="analytics-period-options" role="group" aria-label="Выбор периода">
+      <div class="analytics-period-options" role="group" aria-label="Выбор периода" data-i18n-aria-label="period_picker_label">
         <button type="button" data-analytics-range="1" onclick="setAnalyticsMonthsRange('1')"><b>1</b><span>месяц</span></button>
         <button type="button" data-analytics-range="3" onclick="setAnalyticsMonthsRange('3')"><b>3</b><span>месяца</span></button>
         <button type="button" data-analytics-range="6" onclick="setAnalyticsMonthsRange('6')"><b>6</b><span>месяцев</span></button>
@@ -389,7 +389,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="finance-assistant-welcome" data-i18n="ai_welcome">Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.</div>
           </div>
           <form class="finance-assistant-form" onsubmit="event.preventDefault();sendFinanceQuestion();">
-            <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" data-i18n-placeholder="ai_question_placeholder" aria-label="Вопрос финансовому помощнику"></textarea>
+            <textarea id="financeAssistantInput" rows="2" maxlength="1200" placeholder="Например: почему в этом месяце расходы выросли?" data-i18n-placeholder="ai_question_placeholder" aria-label="Вопрос финансовому помощнику" data-i18n-aria-label="ai_question_label"></textarea>
             <button id="financeAssistantSend" class="btn btn-accent" type="submit" data-i18n="ai_send">Отправить</button>
           </form>
           <p class="finance-assistant-privacy" data-i18n="ai_privacy">Для ответа отправляется только краткая сводка бюджета и последние операции. Переписка не сохраняется на сервере.</p>
@@ -398,7 +398,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-envelopes" class="tab-content" style="display:none">
     <div class="row-between">
-      <h4 data-i18n="envelopes">Конверты</h4><button type="button" class="help-inline-button" onclick="openHelp('envelopes')" aria-label="Справка по конвертам">?</button>
+      <h4 data-i18n="envelopes">Конверты</h4><button type="button" class="help-inline-button" onclick="openHelp('envelopes')" aria-label="Справка по конвертам" data-i18n-aria-label="envelopes_help_label">?</button>
       <button class="btn btn-accent btn-sm" onclick="openModal('modalAddEnvelope')">+</button>
     </div>
     <div id="envelopesList"></div>
@@ -407,7 +407,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div id="tab-banks" class="tab-content" style="display:none">
 
     <div class="row-between">
-      <h4 id="banksSectionTitle">Копилки и цели</h4><button type="button" class="help-inline-button" onclick="openHelp('savings')" aria-label="Справка по копилкам">?</button>
+      <h4 id="banksSectionTitle">Копилки и цели</h4><button type="button" class="help-inline-button" onclick="openHelp('savings')" aria-label="Справка по копилкам" data-i18n-aria-label="savings_help_label">?</button>
       <button class="btn btn-accent btn-sm" onclick="openModal('modalAddBank')">+</button>
     </div>
     <div id="banksList"></div>
@@ -437,9 +437,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-referrals" class="tab-content" style="display:none">
     <section class="referral-hero card">
-      <div class="referral-hero-top"><div><div class="eyebrow">RUVYQO · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><button type="button" class="help-inline-button" onclick="openHelp('referrals')" aria-label="Справка по рефералам">?</button><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
+      <div class="referral-hero-top"><div><div class="eyebrow">RUVYQO · COMMUNITY</div><h2 data-i18n="referrals_title">Рефералы</h2><button type="button" class="help-inline-button" onclick="openHelp('referrals')" aria-label="Справка по рефералам" data-i18n-aria-label="referrals_help_label">?</button><p class="muted">Приглашай друзей, получай купоны и открывай награды сезона.</p></div><div class="referral-hero-icon">🎁</div></div>
       <label class="lbl" for="referralLinkInput">Твоя реферальная ссылка</label>
-      <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button><button class="btn btn-outline btn-sm" type="button" onclick="shareReferralLink()">Поделиться</button></div>
+      <div class="referral-link-row"><input id="referralLinkInput" class="custom-input" type="text" readonly data-i18n-placeholder="loading_referral_link" placeholder="Загружаем ссылку…"><button class="btn btn-accent btn-sm" type="button" onclick="copyReferralLink()">Копировать</button><button class="btn btn-outline btn-sm" type="button" onclick="shareReferralLink()" data-i18n="share_label">Поделиться</button></div>
       <div class="referral-stats-grid">
         <div class="referral-stat"><span>Приглашено</span><strong id="referralCountValue">0</strong><small>всего пользователей</small></div>
         <div class="referral-stat"><span>Платные рефералы</span><strong id="referralPaidCountValue">0</strong><small>с оплатой подписки</small></div>
@@ -488,7 +488,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
     <div class="card promo-redeem-card">
       <div class="promo-redeem-heading"><span class="promo-redeem-icon">🎟️</span><div><h5>Промокод</h5><p>Введи код и получи награды: купоны или монетки</p></div></div>
-      <div class="promo-redeem-row"><input id="promoCodeInput" class="promo-code-input" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Например, FAMILY2026" aria-label="Промокод"><button id="promoCodeRedeemBtn" class="btn btn-accent btn-sm" type="button" onclick="redeemPromoCode()">Активировать</button></div>
+      <div class="promo-redeem-row"><input id="promoCodeInput" class="promo-code-input" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="Например, FAMILY2026" aria-label="Промокод" data-i18n-aria-label="promo_code_label"><button id="promoCodeRedeemBtn" class="btn btn-accent btn-sm" type="button" onclick="redeemPromoCode()">Активировать</button></div>
       <p id="promoCodeStatus" class="promo-code-status" aria-live="polite">Один промокод можно активировать только один раз.</p>
     </div>
 
@@ -519,21 +519,21 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     </div>
 
     <div class="card recurring-card">
-      <h5 data-i18n="recurring">Автоплатежи</h5><button type="button" class="help-inline-button" onclick="openHelp('recurring')" aria-label="Справка по автоплатежам">?</button>
+      <h5 data-i18n="recurring">Автоплатежи</h5><button type="button" class="help-inline-button" onclick="openHelp('recurring')" aria-label="Справка по автоплатежам" data-i18n-aria-label="recurring_help_label">?</button>
       <div id="recurringList" class="muted" style="margin-bottom:8px" data-i18n="no_rules">Правил нет</div>
       <button class="btn btn-accent btn-sm" style="width:100%" onclick="openModal('modalAddRecurring')" data-i18n="add_rule">Добавить</button>
     </div>
 
     <div class="card family-card">
-      <h5 data-i18n="family">Семья</h5><button type="button" class="help-inline-button" onclick="openHelp('family')" aria-label="Справка по семье">?</button>
+      <h5 data-i18n="family">Семья</h5><button type="button" class="help-inline-button" onclick="openHelp('family')" aria-label="Справка по семье" data-i18n-aria-label="family_help_label">?</button>
       <div id="familyStatus" class="family-status" aria-live="polite">Проверяем семейную группу…</div>
 
       <div id="familyCurrentInfo" class="family-current-info" style="display:none">
         <div class="family-detail-row"><span data-i18n="item_name">Название</span><b id="familyNameText">Моя семья</b></div>
         <div class="family-code-box">
           <div class="family-code-main"><span>Код приглашения</span><code id="familyCodeText"></code></div>
-          <button class="btn btn-outline btn-sm family-copy-btn" onclick="copyFamilyCode()">Копировать код</button>
-          <button class="btn btn-accent btn-sm family-share-btn" onclick="shareFamilyInvite()">Пригласить по ссылке</button>
+          <button class="btn btn-outline btn-sm family-copy-btn" onclick="copyFamilyCode()" data-i18n="copy_code_label">Копировать код</button>
+          <button class="btn btn-accent btn-sm family-share-btn" onclick="shareFamilyInvite()" data-i18n="invite_by_link_label">Пригласить по ссылке</button>
         </div>
         <div id="familyMembersCount" class="family-members-count"></div>
         <div class="family-members-panel">
@@ -601,7 +601,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   <div class="modal-content">
     <div class="modal-header"><h3 id="txModalTitle"></h3><span class="modal-close" onclick="closeModal('modalTransaction')">×</span></div>
     <div class="row-between" style="margin-bottom:4px">
-      <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label><button type="button" class="help-inline-button" onclick="openHelp('categories')" aria-label="Справка по категориям">?</button>
+      <label class="lbl" style="margin:0" data-i18n="category_lbl">Категория</label><button type="button" class="help-inline-button" onclick="openHelp('categories')" aria-label="Справка по категориям" data-i18n-aria-label="categories_help_label">?</button>
       <button id="customCategoryOpenBtn" class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px;display:flex;align-items:center;gap:5px" onclick="openCustomCategoryModal()"><span data-i18n="custom_cat">Своя</span><span id="customCategoryProTag" class="pro-mini-tag">PRO</span></button>
     </div>
     <div id="txEnvelopeWrap" style="display:none;margin:10px 0 14px;padding:12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)">
@@ -611,7 +611,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <span class="envelope-picker-current"><span class="envelope-picker-symbol">✉</span><span id="txEnvelopeCurrentLabel">Без конверта</span></span>
           <span class="envelope-picker-chevron">⌄</span>
         </button>
-        <div id="txEnvelopeOptions" class="envelope-picker-options" role="listbox" aria-label="Выбор конверта" hidden></div>
+        <div id="txEnvelopeOptions" class="envelope-picker-options" role="listbox" aria-label="Выбор конверта" data-i18n-aria-label="envelope_picker_label" hidden></div>
     </div>
     <div id="categoryGrid" class="icon-grid"></div>
     <div class="ai-transaction-draft">
@@ -622,9 +622,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       </div>
       <p id="aiTransactionStatus" class="ai-transaction-status">ИИ заполнит поля как черновик — проверь их перед сохранением.</p>
     </div>
-    <input type="number" id="txAmountInput" class="custom-input" data-i18n="amount_lbl" placeholder="Сумма">
-    <input type="text" id="txCommentInput" class="custom-input" data-i18n="comment_lbl" placeholder="Комментарий">
-    <div class="row-between"><span class="lbl">Чеки</span><button type="button" class="help-inline-button" onclick="openHelp('receipts')" aria-label="Справка по чекам">?</button></div><div class="receipt-action-row">
+    <input type="number" id="txAmountInput" class="custom-input" data-i18n-placeholder="amount_lbl" placeholder="Сумма">
+    <input type="text" id="txCommentInput" class="custom-input" data-i18n-placeholder="comment_lbl" placeholder="Комментарий">
+    <div class="row-between"><span class="lbl" data-i18n="receipts_label">Чеки</span><button type="button" class="help-inline-button" onclick="openHelp('receipts')" aria-label="Справка по чекам" data-i18n-aria-label="receipts_help_label">?</button></div><div class="receipt-action-row">
       <button type="button" class="btn btn-outline receipt-action" onclick="openReceiptEntry()"><i class="fa-solid fa-receipt"></i><span>Ввести чек вручную</span><small>Basic</small></button>
       <button type="button" class="btn btn-outline receipt-action receipt-photo-action" onclick="openReceiptPhoto()"><i class="fa-solid fa-camera"></i><span>Чек по фото</span><small>1 ИИ-запрос</small></button>
     </div>
@@ -638,7 +638,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="modal-header"><h3><i class="fa-solid fa-receipt"></i> Чек из магазина</h3><span class="modal-close" onclick="closeModal('modalReceiptEntry')">×</span></div>
     <p class="receipt-modal-hint">Basic: внеси данные чека вручную. Каждая строка товара — название; цена; количество.</p>
     <label class="lbl" for="receiptStoreInput">Магазин</label>
-    <input type="text" id="receiptStoreInput" class="custom-input" maxlength="80" placeholder="Например, АТБ">
+    <input type="text" id="receiptStoreInput" class="custom-input" maxlength="80" data-i18n-placeholder="store_placeholder" placeholder="Например, АТБ">
     <label class="lbl" for="receiptDateInput">Дата покупки</label>
     <input type="date" id="receiptDateInput" class="custom-input" hidden>
     <div class="ruviko-date-picker" id="receiptDatePicker">
@@ -647,11 +647,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         <span class="ruviko-date-trigger-value" id="receiptDateLabel">Выбрать дату</span>
         <i class="fa-solid fa-chevron-down ruviko-date-chevron"></i>
       </button>
-      <div class="ruviko-calendar" id="receiptCalendar" role="dialog" aria-label="Календарь" hidden>
+      <div class="ruviko-calendar" id="receiptCalendar" role="dialog" aria-label="Календарь" data-i18n-aria-label="calendar_label" hidden>
         <div class="ruviko-calendar-head">
-          <button type="button" id="receiptCalendarPrev" aria-label="Предыдущий месяц"><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" id="receiptCalendarPrev" aria-label="Предыдущий месяц" data-i18n-aria-label="previous_month_label"><i class="fa-solid fa-chevron-left"></i></button>
           <strong id="receiptCalendarMonth"></strong>
-          <button type="button" id="receiptCalendarNext" aria-label="Следующий месяц"><i class="fa-solid fa-chevron-right"></i></button>
+          <button type="button" id="receiptCalendarNext" aria-label="Следующий месяц" data-i18n-aria-label="next_month_label"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
         <div class="ruviko-calendar-weekdays" id="receiptCalendarWeekdays"></div>
         <div class="ruviko-calendar-days" id="receiptCalendarDays"></div>
@@ -661,7 +661,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <label class="lbl" for="receiptItemsInput">Товары</label>
     <textarea id="receiptItemsInput" class="custom-input receipt-items-input" rows="5" placeholder="Молоко; 42.50; 1&#10;Хлеб; 28; 2&#10;Яблоки; 35; 1.5"></textarea>
     <label class="lbl" for="receiptTotalInput">Итого по чеку</label>
-    <input type="number" id="receiptTotalInput" class="custom-input" min="0" step="0.01" placeholder="Сумма чека">
+    <input type="number" id="receiptTotalInput" class="custom-input" min="0" step="0.01" data-i18n-placeholder="receipt_total_placeholder" placeholder="Сумма чека">
     <div id="receiptEntryError" class="receipt-entry-error" role="alert"></div>
     <button type="button" class="btn btn-accent" style="width:100%" onclick="saveReceiptDraft()"><i class="fa-solid fa-check"></i> Добавить чек к операции</button>
   </div>
@@ -671,8 +671,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <div class="modal" id="modalAddCategory">
   <div class="modal-content">
     <div class="modal-header"><h3 data-i18n="custom_cat">Своя</h3><span class="modal-close" onclick="closeModal('modalAddCategory')">×</span></div>
-    <input type="text" id="catCustomName" class="custom-input" placeholder="Название">
-    <input type="text" id="catCustomEmoji" class="custom-input" placeholder="Эмодзи" value="🐶" maxlength="2">
+    <input type="text" id="catCustomName" class="custom-input" data-i18n-placeholder="name_placeholder" placeholder="Название">
+    <input type="text" id="catCustomEmoji" class="custom-input" data-i18n-placeholder="emoji_placeholder" placeholder="Эмодзи" value="🐶" maxlength="2">
     <button class="btn btn-accent" style="width:100%" onclick="saveCustomCategory()" data-i18n="save">Сохранить</button>
   </div>
 </div>
@@ -682,7 +682,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <div class="modal-header"><h3>Изменить операцию</h3><span class="modal-close" onclick="closeModal('modalEditTransaction');editingTxId=null">×</span></div>
     <label class="lbl" for="editTxType">Тип операции</label>
     <input type="hidden" id="editTxType" value="expense">
-    <div class="edit-type-switch" role="group" aria-label="Тип операции">
+    <div class="edit-type-switch" role="group" aria-label="Тип операции" data-i18n-aria-label="operation_type_label">
       <button type="button" class="edit-type-option is-expense" id="editTxExpenseBtn" onclick="setEditTxType('expense')"><i class="fa-solid fa-arrow-down"></i><span data-i18n="btn_expense">Расход</span></button>
       <button type="button" class="edit-type-option is-income" id="editTxIncomeBtn" onclick="setEditTxType('income')"><i class="fa-solid fa-arrow-up"></i><span data-i18n="btn_income">Доход</span></button>
     </div>
@@ -693,7 +693,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <label class="lbl" for="editTxCategory" data-i18n="category_lbl">Категория</label>
     <input type="text" id="editTxCategory" class="custom-input" maxlength="64">
     <label class="lbl" for="editTxDate">Дата</label>
-    <div class="edit-date-field"><i class="fa-regular fa-calendar-days"></i><input type="date" id="editTxDate" class="custom-input" aria-label="Дата операции"><span class="edit-date-hint">Выбери дату</span></div>
+    <div class="edit-date-field"><i class="fa-regular fa-calendar-days"></i><input type="date" id="editTxDate" class="custom-input" aria-label="Дата операции" data-i18n-aria-label="operation_date_label"><span class="edit-date-hint" data-i18n="choose_date_label">Выбери дату</span></div>
     <label class="lbl" for="editTxEnvelope">Конверт (для расходов)</label>
     <div class="edit-envelope-field"><i class="fa-solid fa-envelope-open-text"></i><select id="editTxEnvelope" class="custom-input"><option value="">Без конверта</option></select><i class="fa-solid fa-chevron-down edit-envelope-chevron"></i></div>
     <div id="editTxError" class="receipt-entry-error" role="alert"></div>
@@ -750,7 +750,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     <label class="lbl" for="recName" data-i18n="payment_name">Название платежа</label>
     <input type="text" id="recName" class="custom-input" maxlength="100" placeholder="Например, аренда или интернет" data-i18n-placeholder="payment_name">
     <label class="lbl" for="recAmount" data-i18n="item_amount">Сумма</label>
-    <input type="number" id="recAmount" class="custom-input" min="0.01" step="0.01" placeholder="Сумма">
+    <input type="number" id="recAmount" class="custom-input" min="0.01" step="0.01" data-i18n-placeholder="item_amount" placeholder="Сумма">
     <label class="lbl" for="recDay" data-i18n="payment_day">День месяца</label>
     <input type="number" id="recDay" class="custom-input" min="1" max="31" step="1" placeholder="От 1 до 31" data-i18n-placeholder="payment_day_hint">
     <p class="muted" style="font-size:12px" data-i18n="payment_reminder_note">🔔 Бот пришлёт напоминание в Telegram в день платежа, примерно в 09:00 по Киеву.</p>
@@ -760,18 +760,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
 <div class="modal" id="modalLeaveFamily">
   <div class="modal-content family-exit-modal">
-    <div class="modal-header"><h3>Выйти из семьи?</h3><span class="modal-close" onclick="closeModal('modalLeaveFamily')">×</span></div>
-    <p id="leaveFamilyModalText" class="family-exit-warning">Личные записи останутся у тебя. Общие данные семьи сохранятся для остальных участников.</p>
+    <div class="modal-header"><h3 data-i18n="leave_family_title">Выйти из семьи?</h3><span class="modal-close" onclick="closeModal('modalLeaveFamily')">×</span></div>
+    <p id="leaveFamilyModalText" class="family-exit-warning" data-i18n="leave_family_description">Личные записи останутся у тебя. Общие данные семьи сохранятся для остальных участников.</p>
     <div class="family-form-actions">
-      <button type="button" class="btn btn-outline" onclick="closeModal('modalLeaveFamily')">Отмена</button>
-      <button type="button" class="btn btn-danger" onclick="leaveFamily()">Выйти из семьи</button>
+      <button type="button" class="btn btn-outline" onclick="closeModal('modalLeaveFamily')" data-i18n="cancel_button">Отмена</button>
+      <button type="button" class="btn btn-danger" onclick="leaveFamily()" data-i18n="leave_family">Выйти из семьи</button>
     </div>
   </div>
 </div>
 
 <div class="modal" id="modalHelp">
   <div class="modal-content help-content">
-    <div class="modal-header"><h3 id="helpModalTitle">Семейный бюджет — справка</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
+    <div class="modal-header"><h3 id="helpModalTitle" data-i18n="app_help_title">RUVYQO — справка</h3><span class="modal-close" onclick="closeModal('modalHelp')">×</span></div>
     <div id="helpModalBody" class="help-body"></div>
     <button class="btn btn-accent" style="width:100%;margin-top:16px" onclick="closeModal('modalHelp')" data-i18n="ok">Понятно</button>
   </div>

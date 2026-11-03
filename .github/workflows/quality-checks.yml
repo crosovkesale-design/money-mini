@@ -38,7 +38,7 @@ jobs:
           end = source.index("\n};", start)
           body = source[start:end]
           languages = ("ru", "uk", "en", "de", "es", "fr", "it", "pl", "tr", "zh")
-          blocks = list(re.finditer(r"^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \\{$", body, re.M))
+          blocks = list(re.finditer(r"^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \{$", body, re.M))
           if [m.group(1) for m in blocks] != list(languages):
               raise SystemExit("The main translation dictionary must contain exactly 10 ordered locale blocks")
 
@@ -46,7 +46,7 @@ jobs:
           for index, match in enumerate(blocks):
               block_end = blocks[index + 1].start() if index + 1 < len(blocks) else len(body)
               locale = body[match.start():block_end]
-              keys = re.findall(r'^    (?:"((?:[^"\\\\]|\\\\.)*)"|([A-Za-z_$][\\w$]*))\\s*:', locale, re.M)
+              keys = re.findall(r'^    (?:"((?:[^"\\]|\\.)*)"|([A-Za-z_$][\w$]*))\s*:', locale, re.M)
               flat = [quoted or plain for quoted, plain in keys]
               if len(flat) != len(set(flat)):
                   raise SystemExit(f"Duplicate translation key in {match.group(1)}")
@@ -75,7 +75,7 @@ jobs:
               Path("static/translations.js").read_text(encoding="utf-8")
               + Path("static/app.js").read_text(encoding="utf-8")
           )
-          keys = set(re.findall(r'^\\s{4}(?:"([^"]+)"|([A-Za-z_$][\\w$]*))\\s*:', sources, re.M))
+          keys = set(re.findall(r'^\s{4}(?:"([^"]+)"|([A-Za-z_$][\w$]*))\s*:', sources, re.M))
           available = {a or b for a, b in keys}
           used = set(re.findall(r'data-i18n(?:-placeholder)?="([^"]+)"', html))
           missing = sorted(used - available)

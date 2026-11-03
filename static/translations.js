@@ -174,7 +174,7 @@ const TRANSLATIONS = {
     "Пополнить копилку": "Пополнить копилку",
     "Пополнить": "Пополнить",
     "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.",
-    help_adv_title: "Чем удобен «Семейный бюджет»",
+    help_adv_title: "Чем удобен RUVYQO",
     help_adv_telegram: "В Telegram",
     help_adv_all: "Всё в одном месте",
     help_adv_flex: "Гибкость",
@@ -431,7 +431,7 @@ const TRANSLATIONS = {
     "Пополнить копилку": "Поповнити скарбничку",
     "Пополнить": "Поповнити",
     "Привет! Я помогу разобраться с расходами, найти возможности для экономии и оценить бюджет. Задай вопрос ниже.": "Вітаю! Я допоможу розібратися з витратами, знайти можливості для заощадження й оцінити бюджет. Постав запитання нижче.",
-    help_adv_title: "Чим зручний «Сімейний бюджет»",
+    help_adv_title: "Чим зручний RUVYQO",
     help_adv_telegram: "У Telegram",
     help_adv_all: "Усе в одному місці",
     help_adv_flex: "Гнучкість",
@@ -2602,16 +2602,16 @@ const TRANSLATIONS = {
 }
 
 const APP_TITLE_I18N = {
-  ru:'Семейный бюджет',
-  uk:'Сімейний бюджет',
+  ru:'RUVYQO',
+  uk:'RUVYQO',
   en:'RUVYQO',
-  de:'Familienbudget',
-  es:'Presupuesto familiar',
-  fr:'Budget familial',
-  it:'Bilancio familiare',
-  pl:'Budżet rodzinny',
-  tr:'Aile Bütçesi',
-  zh:'家庭预算'
+  de:'RUVYQO',
+  es:'RUVYQO',
+  fr:'RUVYQO',
+  it:'RUVYQO',
+  pl:'RUVYQO',
+  tr:'RUVYQO',
+  zh:'RUVYQO'
 };
 for (const [lang, value] of Object.entries(APP_TITLE_I18N)) {
   if (TRANSLATIONS[lang]) TRANSLATIONS[lang]['app_title'] = value;

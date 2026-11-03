@@ -1892,3 +1892,47 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 :root[data-theme="light"] .tab-content [style*="background: rgba(0,0,0"]{
   background:#fff!important;color:#34463a!important;border-color:rgba(63,91,73,.16)!important;
 }
+
+
+/* AI assistant chat — enlarge the conversation viewport, never clip message text */
+#tab-ai #financeAssistantCard{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;
+  overflow:visible!important;
+}
+#tab-ai #financeAssistantMessages{
+  display:flex!important;flex:0 0 auto!important;flex-direction:column!important;
+  width:100%!important;height:68vh!important;min-height:460px!important;
+  max-height:780px!important;overflow-y:auto!important;overflow-x:hidden!important;
+  padding:18px!important;gap:14px!important;align-items:stretch!important;
+  scroll-behavior:smooth;overscroll-behavior:contain;
+}
+#tab-ai #financeAssistantMessages .finance-assistant-welcome,
+#tab-ai #financeAssistantMessages .finance-assistant-message{
+  display:block!important;position:relative!important;flex:0 0 auto!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  width:fit-content!important;max-width:min(94%,720px)!important;
+  overflow:visible!important;text-overflow:clip!important;
+  white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:normal!important;
+  -webkit-line-clamp:unset!important;line-clamp:unset!important;
+  padding:14px 16px!important;font-size:14px!important;line-height:1.7!important;
+}
+#tab-ai #financeAssistantMessages .finance-assistant-message.is-user{align-self:flex-end!important}
+#tab-ai #financeAssistantMessages .finance-assistant-message.is-assistant,
+#tab-ai #financeAssistantMessages .finance-assistant-welcome{align-self:flex-start!important}
+#tab-ai .finance-assistant-suggestions{margin:8px 0 4px!important}
+#tab-ai .finance-assistant-form{flex:0 0 auto!important;width:100%!important}
+#tab-ai .finance-assistant-privacy{flex:0 0 auto!important}
+@media(max-width:600px){
+  #tab-ai #financeAssistantMessages{
+    height:62vh!important;min-height:420px!important;max-height:680px!important;
+    padding:13px!important;gap:12px!important;
+  }
+  #tab-ai #financeAssistantMessages .finance-assistant-welcome,
+  #tab-ai #financeAssistantMessages .finance-assistant-message{
+    max-width:97%!important;padding:13px 14px!important;font-size:14px!important;line-height:1.7!important;
+  }
+}
+@media(max-height:650px) and (max-width:600px){
+  #tab-ai #financeAssistantMessages{height:58vh!important;min-height:340px!important}
+}

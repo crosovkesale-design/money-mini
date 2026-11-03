@@ -1763,3 +1763,132 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   .analytics-period-control label{font-size:12px}
   .analytics-period-control select{min-width:118px;font-size:12px}
 }
+
+
+/* RUVYQO light-theme audit — shared screens and overlooked nested surfaces */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f4f7f3;--bg-soft:#edf3ee;--panel:#ffffff;--panel-2:#f5f8f5;
+  --panel-3:#f3eee3;--text:#26352c;--muted:#68766e;
+  --line:rgba(63,91,73,.16);--gold:#9b783d;--gold-hi:#80612e;
+  --green:#27845d;--red:#c64e5d;--blue:#547d9b;
+  --shadow:0 14px 32px rgba(30,50,38,.09);
+}
+:root[data-theme="light"] html,
+:root[data-theme="light"] body{
+  background:#f4f7f3!important;color:#26352c!important;
+}
+:root[data-theme="light"] body{
+  background:radial-gradient(ellipse at 80% -10%,rgba(201,173,118,.12),transparent 34%),linear-gradient(180deg,#f8faf7,#edf3ee 72%)!important;
+}
+:root[data-theme="light"] .bank-import-launch,
+:root[data-theme="light"] .bank-import-modal,
+:root[data-theme="light"] #modalEditTransaction .edit-type-switch,
+:root[data-theme="light"] #tab-pay .pricing-benefits,
+:root[data-theme="light"] #tab-pay .pricing-benefits-pro .pricing-benefit,
+:root[data-theme="light"] #tab-settings .reward-status,
+:root[data-theme="light"] #tab-settings .reward-shop-row,
+:root[data-theme="light"] #tab-settings .family-members-panel,
+:root[data-theme="light"] #tab-settings .settings-choice-control,
+:root[data-theme="light"] #tab-settings .promo-code-input,
+:root[data-theme="light"] #tab-referrals .battlepass-progress,
+:root[data-theme="light"] #tab-referrals .battlepass-tasks>*,
+:root[data-theme="light"] #tab-referrals .battlepass-pass-switch,
+:root[data-theme="light"] #tab-referrals .crypto-coupon-shop .reward-shop-row,
+:root[data-theme="light"] #tab-analytics .pro-insight-metric{
+  background:#fff!important;color:#26352c!important;
+  border-color:rgba(63,91,73,.16)!important;
+}
+:root[data-theme="light"] .bank-import-launch,
+:root[data-theme="light"] .bank-import-modal{
+  box-shadow:0 12px 28px rgba(30,50,38,.09)!important;
+}
+:root[data-theme="light"] .bank-import-launch :is(h3,h4,strong,b,p,span),
+:root[data-theme="light"] #modalEditTransaction .edit-type-switch :is(button,span),
+:root[data-theme="light"] #tab-pay .pricing-benefits :is(li,p,span,b,strong),
+:root[data-theme="light"] #tab-settings .family-members-panel :is(h5,h6,p,span,b,strong),
+:root[data-theme="light"] #tab-settings .reward-status :is(span,b,strong),
+:root[data-theme="light"] #tab-referrals .battlepass-progress :is(span,b,strong),
+:root[data-theme="light"] #tab-analytics .pro-insight-metric :is(span,b,strong,small){
+  color:#34463a!important;
+}
+:root[data-theme="light"] .bank-import-modal .modal-content,
+:root[data-theme="light"] .bank-import-modal .app-dialog-card{
+  background:#fff!important;color:#26352c!important;border-color:rgba(63,91,73,.17)!important;
+}
+:root[data-theme="light"] .ruviko-calendar{
+  background:linear-gradient(145deg,#fff,#f0f5f0)!important;
+  border-color:rgba(63,91,73,.2)!important;
+  box-shadow:0 14px 32px rgba(30,50,38,.12)!important;
+}
+:root[data-theme="light"] .ruviko-calendar-head strong{color:#26352c!important}
+:root[data-theme="light"] .ruviko-calendar-head button{
+  background:#edf4ee!important;border-color:rgba(63,91,73,.15)!important;color:#286b4d!important;
+}
+:root[data-theme="light"] .ruviko-calendar-weekdays span{color:#68766e!important}
+:root[data-theme="light"] .ruviko-calendar-day{
+  background:#f4f7f4!important;color:#26352c!important;border-color:transparent!important;
+}
+:root[data-theme="light"] .ruviko-calendar-day.is-today{
+  background:#eaf4ed!important;border-color:#3c8c69!important;color:#286b4d!important;
+}
+:root[data-theme="light"] .ruviko-calendar-day.is-selected{
+  background:#3c8c69!important;color:#fff!important;
+}
+:root[data-theme="light"] .ruviko-calendar-today{
+  background:#eaf4ed!important;color:#286b4d!important;border-color:rgba(33,131,95,.2)!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-control,
+:root[data-theme="light"] #tab-settings .promo-code-input,
+:root[data-theme="light"] #modalEditTransaction :is(input,select,textarea),
+:root[data-theme="light"] #tab-pay :is(input,select,textarea){
+  background:#fff!important;color:#26352c!important;border-color:rgba(63,91,73,.2)!important;
+}
+:root[data-theme="light"] #tab-settings .settings-choice-control :is(span,b,strong),
+:root[data-theme="light"] #tab-settings .promo-code-input::placeholder,
+:root[data-theme="light"] #modalEditTransaction :is(input,select,textarea)::placeholder,
+:root[data-theme="light"] #tab-pay :is(input,select,textarea)::placeholder{
+  color:#68766e!important;
+}
+:root[data-theme="light"] #tab-settings .reward-shop-row small,
+:root[data-theme="light"] #tab-settings .reward-status,
+:root[data-theme="light"] #tab-settings .family-members-panel p,
+:root[data-theme="light"] #tab-referrals .battlepass-track-note{
+  color:#68766e!important;
+}
+:root[data-theme="light"] #tab-referrals .battlepass-track-note{
+  background:#eaf4ed!important;border-color:rgba(33,131,95,.16)!important;
+}
+:root[data-theme="light"] #tab-referrals .battlepass-progress-track{
+  background:#dfe8e1!important;
+}
+:root[data-theme="light"] #tab-referrals .battlepass-tasks>* *,
+:root[data-theme="light"] #tab-referrals .battlepass-grid>* *{
+  color:#34463a;
+}
+:root[data-theme="light"] #tab-referrals .battlepass-tasks>* .muted,
+:root[data-theme="light"] #tab-referrals .battlepass-grid>* .muted{
+  color:#68766e!important;
+}
+:root[data-theme="light"] .analytics-period-control{
+  background:#fff!important;border-color:rgba(63,91,73,.16)!important;
+}
+:root[data-theme="light"] .analytics-period-control label{color:#26352c!important}
+:root[data-theme="light"] .analytics-period-control select{
+  background:#fff!important;color:#26352c!important;border-color:rgba(63,91,73,.2)!important;
+}
+:root[data-theme="light"] .tab-content :is(.empty-state,.empty-card,.notice-card,.help-note){
+  color:#68766e;
+}
+:root[data-theme="light"] .tab-content :is(.empty-state,.empty-card,.notice-card){
+  background:#fff!important;border-color:rgba(63,91,73,.15)!important;
+}
+/* Dynamic inline dark surfaces are generated by transaction, import and picker flows. */
+:root[data-theme="light"] .tab-content [style*="background:#0"],
+:root[data-theme="light"] .tab-content [style*="background: #0"],
+:root[data-theme="light"] .tab-content [style*="background:#1"],
+:root[data-theme="light"] .tab-content [style*="background: #1"],
+:root[data-theme="light"] .tab-content [style*="background:rgba(0,0,0"],
+:root[data-theme="light"] .tab-content [style*="background: rgba(0,0,0"]{
+  background:#fff!important;color:#34463a!important;border-color:rgba(63,91,73,.16)!important;
+}

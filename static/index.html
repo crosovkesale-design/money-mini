@@ -58,7 +58,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js?v=20261101-ruviko-stability-v1" defer></script>
-<script src="./app.js?v=20261103-ruvyqo-purple-v1" defer></script>
+<script src="./app.js?v=20261103-coupon-10-only-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -117,7 +117,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           <div class="coupon-spark">✦</div>
         </div>
         <select id="couponTypeSelect" class="coupon-hidden-select" aria-label="Выбор купона" onchange="updateCouponSelector()">
-          <option value="" data-i18n="coupon_none">Без купона</option><option value="10">Скидка 10%</option><option value="20">Скидка 20%</option>
+          <option value="" data-i18n="coupon_none">Без купона</option><option value="10">Скидка 10%</option>
         </select>
         <div class="coupon-choice-list">
           <button type="button" class="coupon-choice coupon-choice-10" id="couponChoice10" onclick="selectCoupon('10')">
@@ -125,16 +125,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <span class="coupon-choice-copy"><strong data-i18n="coupon_friend">Пригласи друга</strong><small data-i18n="coupon_friend_desc">Скидка за нового пользователя</small><span class="coupon-stock" id="coupon10Stock">Загрузка…</span></span>
             <span class="coupon-discount">−10%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
-          <button type="button" class="coupon-choice coupon-choice-20" id="couponChoice20" onclick="selectCoupon('20')">
-            <span class="coupon-choice-icon"><i class="fa-solid fa-star"></i></span>
-            <span class="coupon-choice-copy"><strong data-i18n="coupon_review">Поделись отзывом</strong><small data-i18n="coupon_review_desc">Бонус за опубликованный отзыв</small><span class="coupon-stock" id="coupon20Stock">Загрузка…</span></span>
-            <span class="coupon-discount">−20%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
-          </button>
         </div>
         <button type="button" class="coupon-none" id="couponChoiceNone" onclick="selectCoupon('')">
           <span><i class="fa-solid fa-ban"></i> <span data-i18n="coupon_continue">Продолжить без купона</span><i class="fa-solid fa-chevron-right"></i>
         </button>
-        <div class="coupon-footer" id="couponAvailabilityText"><i class="fa-solid fa-shield-halved"></i><span data-i18n="coupon_note">Купон применяется к одной покупке и списывается после оплаты.</span></div>
       </section>
 
       <section class="pricing-group">

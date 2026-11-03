@@ -2403,6 +2403,7 @@ function renderFamilyStatus(family){
   const emptyInfo = document.getElementById('familyEmptyInfo');
   const actions = document.getElementById('familyActionButtons');
   const leaveBtn = document.getElementById('familyLeaveBtn');
+  const membersListNode = document.getElementById('familyMembersList');
 
   if(!family){
     if(status) status.textContent = t('src_family_empty');
@@ -2425,7 +2426,6 @@ function renderFamilyStatus(family){
   const nameNode = document.getElementById('familyNameText');
   const codeNode = document.getElementById('familyCodeText');
   const countNode = document.getElementById('familyMembersCount');
-  const membersListNode = document.getElementById('familyMembersList');
   if(nameNode) nameNode.textContent = family.name || 'Моя семья';
   if(codeNode) codeNode.textContent = family.id || '';
   if(countNode){

@@ -2691,6 +2691,25 @@ function renderCharts(){
     Array.from(periodSelect.options).forEach(option=>{if(labels[option.value])option.textContent=labels[option.value];});
     const periodLabel=document.getElementById('analyticsPeriodLabel');
     if(periodLabel)periodLabel.textContent=periodText.label;
+    const periodHint=document.getElementById('analyticsPeriodHint');
+    if(periodHint)periodHint.textContent=({ru:'Выбери, за какое время показать статистику',uk:'Обери, за який час показати статистику',en:'Choose how much history to include',de:'Wähle den Zeitraum für deine Statistiken',es:'Elige el periodo de tus estadísticas',fr:'Choisis la période de tes statistiques',it:'Scegli il periodo delle statistiche',pl:'Wybierz zakres statystyk',tr:'İstatistiklerin gösterileceği dönemi seç',zh:'选择统计数据的时间范围'}[lang]||'Choose how much history to include');
+    const periodShort=({ru:{1:'1 мес.',3:'3 мес.',6:'6 мес.',12:'12 мес.',all:'Всё время'},uk:{1:'1 міс.',3:'3 міс.',6:'6 міс.',12:'12 міс.',all:'Увесь час'},en:{1:'1 mo.',3:'3 mo.',6:'6 mo.',12:'12 mo.',all:'All time'},de:{1:'1 Mon.',3:'3 Mon.',6:'6 Mon.',12:'12 Mon.',all:'Gesamt'},es:{1:'1 mes',3:'3 mes.',6:'6 mes.',12:'12 mes.',all:'Todo'},fr:{1:'1 mois',3:'3 mois',6:'6 mois',12:'12 mois',all:'Tout'},it:{1:'1 mese',3:'3 mesi',6:'6 mesi',12:'12 mesi',all:'Tutto'},pl:{1:'1 mies.',3:'3 mies.',6:'6 mies.',12:'12 mies.',all:'Całość'},tr:{1:'1 ay',3:'3 ay',6:'6 ay',12:'12 ay',all:'Tümü'},zh:{1:'1个月',3:'3个月',6:'6个月',12:'12个月',all:'全部'}}[lang]||{1:'1 mo.',3:'3 mo.',6:'6 mo.',12:'12 mo.',all:'All time'});
+    const current=document.getElementById('analyticsPeriodCurrent');
+    if(current)current.textContent=periodShort[analyticsMonthsRange]||periodShort['6'];
+    document.querySelectorAll('[data-analytics-range]').forEach(button=>{
+      const active=button.dataset.analyticsRange===analyticsMonthsRange;
+      button.classList.toggle('active',active);
+      button.setAttribute('aria-pressed',active?'true':'false');
+      const value=button.dataset.analyticsRange;
+      const span=button.querySelector('span');
+      const b=button.querySelector('b');
+      if(value==='all'){if(span)span.textContent=periodText.all;}
+      else if(b&&span){
+        b.textContent=value;
+        const units=({ru:{1:'месяц',3:'месяца',6:'месяцев',12:'месяцев'},uk:{1:'місяць',3:'місяці',6:'місяців',12:'місяців'},en:{1:'month',3:'months',6:'months',12:'months'},de:{1:'Monat',3:'Monate',6:'Monate',12:'Monate'},es:{1:'mes',3:'meses',6:'meses',12:'meses'},fr:{1:'mois',3:'mois',6:'mois',12:'mois'},it:{1:'mese',3:'mesi',6:'mesi',12:'mesi'},pl:{1:'miesiąc',3:'miesiące',6:'miesięcy',12:'miesięcy'},tr:{1:'ay',3:'ay',6:'ay',12:'ay'},zh:{1:'个月',3:'个月',6:'个月',12:'个月'}}[lang]||{1:'month',3:'months',6:'months',12:'months'});
+        span.textContent=units[value]||periodText.period;
+      }
+    });
   }
   if(chart1){chart1.destroy();chart1=null;}
   if(chart2){chart2.destroy();chart2=null;}

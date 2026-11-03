@@ -24,6 +24,20 @@ const HISTORY_FILTER_I18N = {
  tr:{all:"Tümü",expense:"Giderler",income:"Gelirler",categories:"Kategoriler",reset:"Temizle",search:"İşlem ve kategori ara..."},
  zh:{all:"全部",expense:"支出",income:"收入",categories:"类别",reset:"清除",search:"搜索交易和类别..."}
 };
+const ANALYTICS_PERIOD_I18N = {
+ ru:{label:"Период диаграммы",one:"1 месяц",three:"3 месяца",six:"6 месяцев",twelve:"12 месяцев",all:"Всё время",period:"за период"},
+ uk:{label:"Період діаграми",one:"1 місяць",three:"3 місяці",six:"6 місяців",twelve:"12 місяців",all:"Увесь час",period:"за період"},
+ en:{label:"Chart period",one:"1 month",three:"3 months",six:"6 months",twelve:"12 months",all:"All time",period:"for selected period"},
+ de:{label:"Diagrammzeitraum",one:"1 Monat",three:"3 Monate",six:"6 Monate",twelve:"12 Monate",all:"Gesamter Zeitraum",period:"für den Zeitraum"},
+ es:{label:"Periodo del gráfico",one:"1 mes",three:"3 meses",six:"6 meses",twelve:"12 meses",all:"Todo el tiempo",period:"para el periodo"},
+ fr:{label:"Période du graphique",one:"1 mois",three:"3 mois",six:"6 mois",twelve:"12 mois",all:"Toute la période",period:"pour la période"},
+ it:{label:"Periodo del grafico",one:"1 mese",three:"3 mesi",six:"6 mesi",twelve:"12 mesi",all:"Tutto il periodo",period:"per il periodo"},
+ pl:{label:"Zakres wykresu",one:"1 miesiąc",three:"3 miesiące",six:"6 miesięcy",twelve:"12 miesięcy",all:"Cały okres",period:"za okres"},
+ tr:{label:"Grafik dönemi",one:"1 ay",three:"3 ay",six:"6 ay",twelve:"12 ay",all:"Tüm zamanlar",period:"seçilen dönem"},
+ zh:{label:"图表时间范围",one:"1个月",three:"3个月",six:"6个月",twelve:"12个月",all:"全部时间",period:"所选期间"}
+};
+let analyticsMonthsRange = String(appData.analyticsMonthsRange || '6');
+
 const CURRENCIES = [{id:'UAH',sym:'₴',label:'Hryvnia'},{id:'RUB',sym:'₽',label:'Ruble'},{id:'USD',sym:'$',label:'US Dollar'},{id:'EUR',sym:'€',label:'Euro'},{id:'PLN',sym:'zł',label:'Polish Zloty'},{id:'GBP',sym:'£',label:'Pound Sterling'},{id:'TRY',sym:'₺',label:'Turkish Lira'},{id:'CHF',sym:'₣',label:'Swiss Franc'},{id:'CZK',sym:'Kč',label:'Czech Koruna'},{id:'JPY',sym:'¥',label:'Japanese Yen'},{id:'CNY',sym:'元',label:'Chinese Yuan'}];
 
 // Keep each Telegram account's financial data in its own browser storage namespace.
@@ -2648,6 +2662,14 @@ async function leaveFamily(){
 
 let chart1, chart2;
 
+function setAnalyticsMonthsRange(value){
+  const allowed=['1','3','6','12','all'];
+  analyticsMonthsRange=allowed.includes(String(value))?String(value):'6';
+  appData.analyticsMonthsRange=analyticsMonthsRange;
+  saveData();
+  renderCharts();
+}
+
 function renderCharts(){
   if(typeof Chart === 'undefined') return;
   const expensesCanvas=document.getElementById('expensesChart');
@@ -2658,49 +2680,63 @@ function renderCharts(){
   const history=Array.isArray(budget.history)?budget.history:[];
   const textColor=getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#f5f7ff';
   const gridColor=getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'rgba(150,160,190,.2)';
+  const lang=String(appData.lang||'ru').toLowerCase().split('-')[0];
+  const periodText=ANALYTICS_PERIOD_I18N[lang]||ANALYTICS_PERIOD_I18N.ru;
+  const periodSelect=document.getElementById('analyticsMonthsRange');
+  if(periodSelect){
+    periodSelect.value=analyticsMonthsRange;
+    const labels={1:periodText.one,3:periodText.three,6:periodText.six,12:periodText.twelve,all:periodText.all};
+    Array.from(periodSelect.options).forEach(option=>{if(labels[option.value])option.textContent=labels[option.value];});
+    const periodLabel=document.getElementById('analyticsPeriodLabel');
+    if(periodLabel)periodLabel.textContent=periodText.label;
+  }
   if(chart1){chart1.destroy();chart1=null;}
   if(chart2){chart2.destroy();chart2=null;}
 
   const now=new Date();
-  const currentMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const categories={};
-  for(const tx of history){
-    if(!tx||tx.type!=='expense')continue;
-    const amount=Number(tx.amount);
-    if(!Number.isFinite(amount)||amount<=0||analyticsDateKey(tx).slice(0,7)!==currentMonth)continue;
-    const key=String(tx.category||'Разное').trim()||'Разное';
-    categories[key]=(categories[key]||0)+amount;
+  const currentMonth=new Date(now.getFullYear(),now.getMonth(),1);
+  let startMonth;
+  if(analyticsMonthsRange==='all'){
+    const dates=history.map(analyticsDateKey).filter(Boolean).sort();
+    startMonth=dates.length?new Date(Number(dates[0].slice(0,4)),Number(dates[0].slice(5,7))-1,1):currentMonth;
+  }else{
+    const count=Math.max(1,Number(analyticsMonthsRange)||6);
+    startMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-count+1,1);
   }
-  const palette=['#8b7cff','#36d9ff','#36d6a0','#ff6685','#ffc96b','#ff9f6e','#9b8cff','#53b7ff','#d17cff','#72d6bd'];
-  chart1=new Chart(expensesCanvas.getContext('2d'),{
-    type:'doughnut',
-    data:{labels:Object.keys(categories).map(tCat),datasets:[{data:Object.values(categories),backgroundColor:Object.keys(categories).map((_,i)=>palette[i%palette.length]),borderColor:getComputedStyle(document.documentElement).getPropertyValue('--surface-strong').trim()||'#13192e',borderWidth:3,hoverOffset:7}]},
-    options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:textColor,padding:14,usePointStyle:true}},title:{display:true,text:t('expense')+' — '+now.toLocaleDateString(appData.lang||'ru',{month:'long',year:'numeric'}),color:textColor,padding:{bottom:16}}}}
-  });
-
   const monthKeys=[],monthLabels=[];
-  for(let offset=5;offset>=0;offset--){
-    const d=new Date(now.getFullYear(),now.getMonth()-offset,1);
+  for(let d=new Date(startMonth);d<=currentMonth;d=new Date(d.getFullYear(),d.getMonth()+1,1)){
     monthKeys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
-    monthLabels.push(d.toLocaleDateString(appData.lang||'ru',{month:'short'}));
+    monthLabels.push(d.toLocaleDateString(appData.lang||'ru',{month:'short',year:monthKeys.length===1||d.getMonth()===0?'2-digit':undefined}));
   }
   const incomes=Object.fromEntries(monthKeys.map(key=>[key,0]));
   const expenses=Object.fromEntries(monthKeys.map(key=>[key,0]));
+  const categories={};
   for(const tx of history){
     if(!tx||(tx.type!=='income'&&tx.type!=='expense'))continue;
     const amount=Number(tx.amount);
     if(!Number.isFinite(amount)||amount<=0)continue;
     const key=analyticsDateKey(tx).slice(0,7);
     if(!Object.prototype.hasOwnProperty.call(incomes,key))continue;
-    if(tx.type==='income')incomes[key]+=amount;else expenses[key]+=amount;
+    if(tx.type==='income')incomes[key]+=amount;
+    else{
+      expenses[key]+=amount;
+      const category=String(tx.category||'Разное').trim()||'Разное';
+      categories[category]=(categories[category]||0)+amount;
+    }
   }
+  const palette=['#8b7cff','#36d9ff','#36d6a0','#ff6685','#ffc96b','#ff9f6e','#9b8cff','#53b7ff','#d17cff','#72d6bd'];
+  chart1=new Chart(expensesCanvas.getContext('2d'),{
+    type:'doughnut',
+    data:{labels:Object.keys(categories).map(tCat),datasets:[{data:Object.values(categories),backgroundColor:Object.keys(categories).map((_,i)=>palette[i%palette.length]),borderColor:getComputedStyle(document.documentElement).getPropertyValue('--surface-strong').trim()||'#13192e',borderWidth:3,hoverOffset:7}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:textColor,padding:14,usePointStyle:true}},title:{display:true,text:t('expense')+' — '+periodText.period,color:textColor,padding:{bottom:16}}}}
+  });
   chart2=new Chart(monthsCanvas.getContext('2d'),{
     type:'line',
     data:{labels:monthLabels,datasets:[
       {label:t('income'),data:monthKeys.map(key=>incomes[key]),borderColor:'#36d6a0',backgroundColor:'rgba(54,214,160,.13)',fill:true,tension:.35,pointRadius:3},
       {label:t('expense'),data:monthKeys.map(key=>expenses[key]),borderColor:'#ff6685',backgroundColor:'rgba(255,102,133,.10)',fill:true,tension:.35,pointRadius:3}
     ]},
-    options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:textColor,usePointStyle:true}},title:{display:true,text:t('income')+' / '+t('expense')+' — '+t('за 6 месяцев'),color:textColor}},scales:{x:{ticks:{color:textColor},grid:{color:gridColor}},y:{beginAtZero:true,ticks:{color:textColor},grid:{color:gridColor}}}}
+    options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:textColor,usePointStyle:true}},title:{display:true,text:t('income')+' / '+t('expense')+' — '+(periodText.period),color:textColor}},scales:{x:{ticks:{color:textColor},grid:{color:gridColor}},y:{beginAtZero:true,ticks:{color:textColor},grid:{color:gridColor}}}}
   });
 }
 

@@ -304,7 +304,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Сумма чека",
     store_placeholder: "Например, АТБ",
     emoji_placeholder: "Эмодзи",
-    loading_referral_link: "Загружаем ссылку…",},
+    loading_referral_link: "Загружаем ссылку…",
+    app_help_title: "RUVYQO — справка",},
 
   uk: {
     balance: 'Поточний баланс',
@@ -611,7 +612,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Сума чека",
     store_placeholder: "Наприклад, АТБ",
     emoji_placeholder: "Емодзі",
-    loading_referral_link: "Завантажуємо посилання…",},
+    loading_referral_link: "Завантажуємо посилання…",
+    app_help_title: "RUVYQO — довідка",},
 
   en: {
     balance: 'Current balance',
@@ -918,7 +920,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Receipt total",
     store_placeholder: "For example, ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Loading link…",},
+    loading_referral_link: "Loading link…",
+    app_help_title: "RUVYQO — help",},
 
   de: {
     balance: 'Aktueller Kontostand',
@@ -1225,7 +1228,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Belegsumme",
     store_placeholder: "Zum Beispiel ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Link wird geladen…",},
+    loading_referral_link: "Link wird geladen…",
+    app_help_title: "RUVYQO — Hilfe",},
 
   es: {
     balance: 'Saldo actual',
@@ -1532,7 +1536,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Total del recibo",
     store_placeholder: "Por ejemplo, ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Cargando enlace…",},
+    loading_referral_link: "Cargando enlace…",
+    app_help_title: "RUVYQO — ayuda",},
 
   fr: {
     balance: 'Solde actuel',
@@ -1839,7 +1844,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Total du reçu",
     store_placeholder: "Par exemple, ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Chargement du lien…",},
+    loading_referral_link: "Chargement du lien…",
+    app_help_title: "RUVYQO — aide",},
 
   it: {
     balance: 'Saldo attuale',
@@ -2146,7 +2152,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Totale scontrino",
     store_placeholder: "Ad esempio, ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Caricamento del link…",},
+    loading_referral_link: "Caricamento del link…",
+    app_help_title: "RUVYQO — guida",},
 
   pl: {
     balance: 'Aktualne saldo',
@@ -2453,7 +2460,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Suma paragonu",
     store_placeholder: "Na przykład ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Ładowanie linku…",},
+    loading_referral_link: "Ładowanie linku…",
+    app_help_title: "RUVYQO — pomoc",},
 
   tr: {
     balance: 'Güncel bakiye',
@@ -2760,7 +2768,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "Fiş toplamı",
     store_placeholder: "Örneğin ATB",
     emoji_placeholder: "Emoji",
-    loading_referral_link: "Bağlantı yükleniyor…",},
+    loading_referral_link: "Bağlantı yükleniyor…",
+    app_help_title: "RUVYQO — yardım",},
 
   zh: {
     balance: '当前余额',
@@ -3066,7 +3075,8 @@ const TRANSLATIONS = {
     receipt_total_placeholder: "收据总额",
     store_placeholder: "例如：ATB",
     emoji_placeholder: "表情符号",
-    loading_referral_link: "正在加载链接…",}
+    loading_referral_link: "正在加载链接…",
+    app_help_title: "RUVYQO — 帮助",}
 }
 
 const APP_TITLE_I18N = {

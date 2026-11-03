@@ -57,21 +57,21 @@
 <title>RUVYQO — Твои финансы под контролем</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="./translations.js?v=20261103-ruvyqo-polish-v2" defer></script>
-<script src="./app.js?v=20261103-ruvyqo-polish-v2" defer></script>
+<script src="./translations.js?v=20261103-ruvyqo-polish-v3" defer></script>
+<script src="./app.js?v=20261103-ruvyqo-polish-v3" defer></script>
 
 <link rel="stylesheet"
 
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-ruvyqo-polish-v2">
+<link rel="stylesheet" href="./styles/ruvyqo.css?v=20261103-ruvyqo-polish-v3">
 </head>
 <body>
 <div class="container">
 <div class="app-topbar" id="appTopbar">
   <button class="menu-trigger" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleAppMenu()"><i class="fa-solid fa-bars"></i></button>
   <div class="app-topbar-title"><b>RUVYQO</b><small id="currentSectionLabel">Главная</small></div>
-  <button type="button" class="topbar-help" onclick="openHelp()" aria-label="Справка">?</button>
   <button type="button" class="topbar-tariffs" onclick="window.location.href='?screen=pay'">💎 <span data-i18n="tariffs_button">Тарифы</span></button>
+  <button type="button" class="topbar-help" onclick="openHelp()" aria-label="Справка">?</button>
 </div>
 <div class="app-menu-backdrop" id="appMenuBackdrop" onclick="closeAppMenu()"></div>
 <aside class="app-drawer" id="appDrawer" aria-hidden="true">

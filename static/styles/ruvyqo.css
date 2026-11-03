@@ -860,3 +860,195 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 .family-member-copy small{color:var(--muted);font-size:10px}
 .family-member-owner-mark{color:var(--gold-hi);font-size:13px}
 .family-members-empty{padding:9px;color:var(--muted);font-size:11px}
+
+
+/* Daily rewards — premium RUVYQO pass */
+#tab-settings .reward-card{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  padding:19px;
+  border:1px solid rgba(201,173,118,.32);
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.19),transparent 43%),
+    radial-gradient(ellipse at 0% 100%,rgba(76,190,145,.08),transparent 48%),
+    linear-gradient(145deg,#201b14 0%,#11151a 58%,#0d1116 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 14px 34px rgba(0,0,0,.2);
+}
+#tab-settings .reward-card:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:-54px;
+  right:-44px;
+  width:160px;
+  height:160px;
+  border:1px solid rgba(201,173,118,.12);
+  border-radius:50%;
+  box-shadow:0 0 0 18px rgba(201,173,118,.025),0 0 0 38px rgba(201,173,118,.018);
+  pointer-events:none;
+}
+#tab-settings .reward-card>h5{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0 0 16px;
+  color:#f1e4c8;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+#tab-settings .reward-summary{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin:0 0 12px;
+}
+#tab-settings .reward-summary>div{
+  position:relative;
+  display:grid;
+  align-content:start;
+  gap:3px;
+  min-width:0;
+  min-height:92px;
+  padding:13px;
+  border:1px solid rgba(201,173,118,.19);
+  border-radius:5px 15px 5px 15px;
+  background:linear-gradient(145deg,rgba(201,173,118,.105),rgba(255,255,255,.025));
+}
+#tab-settings .reward-summary>div:nth-child(2){
+  border-color:rgba(110,231,183,.18);
+  background:linear-gradient(145deg,rgba(110,231,183,.09),rgba(255,255,255,.02));
+}
+#tab-settings .reward-summary strong{
+  color:#f0d9a5;
+  font-size:27px;
+  line-height:1.05;
+  font-weight:850;
+  font-variant-numeric:tabular-nums;
+}
+#tab-settings .reward-summary>div:nth-child(2) strong{color:#8de4bd}
+#tab-settings .reward-summary span{
+  color:#e9e2d4;
+  font-size:11px;
+  font-weight:750;
+}
+#tab-settings .reward-summary small{
+  color:#99958c;
+  font-size:9px;
+  line-height:1.35;
+}
+#tab-settings .reward-status{
+  margin:0 0 12px;
+  padding:10px 12px;
+  border:1px solid rgba(201,173,118,.15);
+  border-radius:4px 11px 4px 11px;
+  background:rgba(0,0,0,.19);
+  color:#c8c1b4;
+  font-size:11px;
+  line-height:1.5;
+}
+#tab-settings #dailyRewardClaimBtn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:47px;
+  margin:0;
+  border:1px solid rgba(245,225,183,.5);
+  border-radius:5px 14px 5px 14px;
+  background:linear-gradient(110deg,#e8d2a2 0%,#c5a66d 52%,#a98b56 100%);
+  color:#17140e;
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:.01em;
+  box-shadow:0 7px 19px rgba(201,173,118,.18),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:filter .18s ease,transform .18s ease,opacity .18s ease;
+}
+#tab-settings #dailyRewardClaimBtn:not(:disabled):active{transform:translateY(1px);filter:brightness(.96)}
+#tab-settings #dailyRewardClaimBtn:disabled{
+  border-color:rgba(110,231,183,.22);
+  background:linear-gradient(110deg,#1b4a3b,#16372f);
+  color:#a5e6c8;
+  box-shadow:none;
+  opacity:1;
+}
+#tab-settings .reward-milestones{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin:12px 0 16px;
+}
+#tab-settings .reward-milestones span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:35px;
+  padding:6px 4px;
+  border:1px solid rgba(201,173,118,.14);
+  border-radius:4px 10px 4px 10px;
+  background:rgba(201,173,118,.055);
+  color:#d9c69f;
+  font-size:9px;
+  font-weight:750;
+  text-align:center;
+  line-height:1.35;
+}
+#tab-settings .reward-shop{
+  gap:8px;
+  padding:13px;
+  border:1px solid rgba(110,231,183,.17);
+  border-radius:5px 14px 5px 14px;
+  background:linear-gradient(145deg,rgba(110,231,183,.065),rgba(0,0,0,.13));
+}
+#tab-settings .reward-shop h6{
+  margin:0;
+  color:#e5e9e2;
+  font-size:12px;
+  font-weight:800;
+}
+#tab-settings .reward-shop>p{
+  margin:0 0 3px;
+  color:#999f9b;
+  font-size:10px;
+  line-height:1.45;
+}
+#tab-settings .reward-shop-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 10px;
+  border:1px solid rgba(255,255,255,.075);
+  border-radius:4px 10px 4px 10px;
+  background:rgba(5,10,10,.34);
+}
+#tab-settings .reward-shop-row>span{
+  display:grid;
+  gap:3px;
+  color:#e7e3d9;
+  font-size:11px;
+  font-weight:750;
+}
+#tab-settings .reward-shop-row small{
+  color:#8fd9b6;
+  font-size:9px;
+  font-weight:650;
+}
+#tab-settings .reward-shop-row .btn{
+  flex:0 0 auto;
+  min-width:74px;
+  min-height:34px;
+  border-color:rgba(110,231,183,.24);
+  border-radius:4px 10px 4px 10px;
+  background:rgba(110,231,183,.09);
+  color:#a5e6c8;
+  font-size:10px;
+  font-weight:800;
+}
+@media(max-width:380px){
+  #tab-settings .reward-card{padding:15px}
+  #tab-settings .reward-summary>div{min-height:84px;padding:11px}
+  #tab-settings .reward-summary strong{font-size:24px}
+  #tab-settings .reward-milestones{gap:4px}
+  #tab-settings .reward-milestones span{font-size:8px}
+}

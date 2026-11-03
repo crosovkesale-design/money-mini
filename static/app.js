@@ -1393,17 +1393,23 @@ async function claimBattlePassReward(track,tier){
 }
 
 const COUPON_STATUS_I18N = {
- ru:{selected10:"Скидка 10% выбрана. Купон спишется только после подтверждения оплаты.",selected20:"Скидка 20% выбрана. Купон спишется только после подтверждения оплаты.",none:"Выбери доступный купон или продолжай без скидки. Купон списывается только после оплаты."},
- uk:{selected10:"Знижку 10% вибрано. Купон спишеться лише після підтвердження оплати.",selected20:"Знижку 20% вибрано. Купон спишеться лише після підтвердження оплати.",none:"Обери доступний купон або продовжуй без знижки. Купон списується лише після оплати."},
- en:{selected10:"10% discount selected. The coupon is used only after payment is confirmed.",selected20:"20% discount selected. The coupon is used only after payment is confirmed.",none:"Choose an available coupon or continue without a discount. A coupon is used only after payment."},
- de:{selected10:"10 % Rabatt ausgewählt. Der Gutschein wird erst nach bestätigter Zahlung verwendet.",selected20:"20 % Rabatt ausgewählt. Der Gutschein wird erst nach bestätigter Zahlung verwendet.",none:"Wähle einen verfügbaren Gutschein oder fahre ohne Rabatt fort. Er wird erst nach der Zahlung verwendet."},
- es:{selected10:"Descuento del 10 % seleccionado. El cupón solo se usa cuando se confirma el pago.",selected20:"Descuento del 20 % seleccionado. El cupón solo se usa cuando se confirma el pago.",none:"Elige un cupón disponible o continúa sin descuento. Solo se utiliza tras confirmar el pago."},
- fr:{selected10:"Réduction de 10 % sélectionnée. Le coupon est utilisé uniquement après confirmation du paiement.",selected20:"Réduction de 20 % sélectionnée. Le coupon est utilisé uniquement après confirmation du paiement.",none:"Choisis un coupon disponible ou continue sans réduction. Il n’est utilisé qu’après le paiement."},
- it:{selected10:"Sconto del 10% selezionato. Il coupon viene utilizzato solo dopo la conferma del pagamento.",selected20:"Sconto del 20% selezionato. Il coupon viene utilizzato solo dopo la conferma del pagamento.",none:"Scegli un coupon disponibile o continua senza sconto. Viene utilizzato solo dopo il pagamento."},
- pl:{selected10:"Wybrano rabat 10%. Kupon zostanie wykorzystany dopiero po potwierdzeniu płatności.",selected20:"Wybrano rabat 20%. Kupon zostanie wykorzystany dopiero po potwierdzeniu płatności.",none:"Wybierz dostępny kupon lub kontynuuj bez rabatu. Kupon jest wykorzystywany dopiero po płatności."},
- tr:{selected10:"%10 indirim seçildi. Kupon yalnızca ödeme onaylandıktan sonra kullanılır.",selected20:"%20 indirim seçildi. Kupon yalnızca ödeme onaylandıktan sonra kullanılır.",none:"Kullanılabilir bir kupon seç veya indirimsiz devam et. Kupon yalnızca ödeme sonrası kullanılır."},
- zh:{selected10:"已选择 10% 折扣。优惠券仅在付款确认后使用。",selected20:"已选择 20% 折扣。优惠券仅在付款确认后使用。",none:"选择可用优惠券，或不使用折扣继续。优惠券仅在付款确认后使用。"}
+ ru:{selected10:"Скидка 10% выбрана. Купон спишется только после подтверждения оплаты.",selected20:"Скидка 20% выбрана. Купон спишется только после подтверждения оплаты.",none:"Выбери купон по желанию или продолжай по обычной цене. Без выбора скидка не применяется.",clear:"Отменить купон"},
+ uk:{selected10:"Знижку 10% вибрано. Купон спишеться лише після підтвердження оплати.",selected20:"Знижку 20% вибрано. Купон спишеться лише після підтвердження оплати.",none:"Обери купон за бажанням або продовжуй за звичайною ціною. Без вибору знижка не діє.",clear:"Скасувати купон"},
+ en:{selected10:"10% discount selected. The coupon is used only after payment is confirmed.",selected20:"20% discount selected. The coupon is used only after payment is confirmed.",none:"Choose a coupon if you want, or continue at the regular price. No discount is applied by default.",clear:"Remove coupon"},
+ de:{selected10:"10 % Rabatt ausgewählt. Der Gutschein wird erst nach bestätigter Zahlung verwendet.",selected20:"20 % Rabatt ausgewählt. Der Gutschein wird erst nach bestätigter Zahlung verwendet.",none:"Wähle optional einen Gutschein oder fahre zum regulären Preis fort.",clear:"Gutschein entfernen"},
+ es:{selected10:"Descuento del 10 % seleccionado. El cupón solo se usa cuando se confirma el pago.",selected20:"Descuento del 20 % seleccionado. El cupón solo se usa cuando se confirma el pago.",none:"Elige un cupón si quieres o continúa con el precio normal. No se aplica ningún descuento automáticamente.",clear:"Quitar cupón"},
+ fr:{selected10:"Réduction de 10 % sélectionnée. Le coupon est utilisé uniquement après confirmation du paiement.",selected20:"Réduction de 20 % sélectionnée. Le coupon est utilisé uniquement après confirmation du paiement.",none:"Choisis un coupon si tu le souhaites ou continue au prix normal.",clear:"Retirer le coupon"},
+ it:{selected10:"Sconto del 10% selezionato. Il coupon viene utilizzato solo dopo la conferma del pagamento.",selected20:"Sconto del 20% selezionato. Il coupon viene utilizzato solo dopo la conferma del pagamento.",none:"Scegli un coupon se vuoi oppure continua al prezzo normale.",clear:"Rimuovi coupon"},
+ pl:{selected10:"Wybrano rabat 10%. Kupon zostanie wykorzystany dopiero po potwierdzeniu płatności.",selected20:"Wybrano rabat 20%. Kupon zostanie wykorzystany dopiero po potwierdzeniu płatności.",none:"Wybierz kupon, jeśli chcesz, lub kontynuuj w zwykłej cenie.",clear:"Anuluj kupon"},
+ tr:{selected10:"%10 indirim seçildi. Kupon yalnızca ödeme onaylandıktan sonra kullanılır.",selected20:"%20 indirim seçildi. Kupon yalnızca ödeme onaylandıktan sonra kullanılır.",none:"İstersen kupon seç veya normal fiyatla devam et. Varsayılan olarak indirim uygulanmaz.",clear:"Kuponu kaldır"},
+ zh:{selected10:"已选择 10% 折扣。优惠券仅在付款确认后使用。",selected20:"已选择 20% 折扣。优惠券仅在付款确认后使用。",none:"可选择优惠券，也可以按原价继续。默认不会自动应用折扣。",clear:"取消优惠券"}
 };
+function clearCoupon(){
+  const select = document.getElementById('couponTypeSelect');
+  if(!select) return;
+  select.value = '';
+  updateCouponSelector();
+}
 function selectCoupon(value){
   const select = document.getElementById('couponTypeSelect');
   if(!select) return;
@@ -1440,7 +1446,7 @@ function updateCouponSelector(){
     const language = String(appData.lang || 'ru').toLowerCase().split('-')[0];
     const copy = COUPON_STATUS_I18N[language] || COUPON_STATUS_I18N.ru;
     const key = select.value === '10' ? 'selected10' : select.value === '20' ? 'selected20' : 'none';
-    info.innerHTML = '<i class="fa-solid '+(select.value ? 'fa-circle-check' : 'fa-shield-halved')+'"></i><span></span>';
+    info.innerHTML = '<i class="fa-solid '+(select.value ? 'fa-circle-check' : 'fa-shield-halved')+'"></i><span></span>'+(select.value ? '<button type="button" class="coupon-clear-button" onclick="clearCoupon()">'+copy.clear+'</button>' : '');
     info.querySelector('span').textContent = copy[key];
     info.classList.toggle('is-selected', Boolean(select.value));
   }

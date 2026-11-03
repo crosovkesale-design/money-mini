@@ -75,7 +75,7 @@ jobs:
               Path("static/translations.js").read_text(encoding="utf-8")
               + Path("static/app.js").read_text(encoding="utf-8")
           )
-          keys = set(re.findall(r'^\s{4}(?:"([^"]+)"|([A-Za-z_$][\w$]*))\s*:', sources, re.M))
+          keys = set(re.findall(r'(?:"([^"]+)"|([A-Za-z_$][\w$]*))\s*:', sources))
           available = {a or b for a, b in keys}
           used = set(re.findall(r'data-i18n(?:-placeholder)?="([^"]+)"', html))
           missing = sorted(used - available)

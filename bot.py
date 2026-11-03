@@ -1886,9 +1886,15 @@ if bot:
             existing_payment = await fb.get(payment_path)
 
             if existing_payment:
-                # Повторное событие не продлевает подписку повторно, но позволяет
-                # восстановить бонус рефереру, если предыдущая попытка завершилась ошибкой.
+                # Повторное событие не продлевает подписку повторно. Незавершённое
+                # списание купона можно безопасно повторить по ID этого платежа.
                 if isinstance(existing_payment, dict) and existing_payment.get("status") == "paid":
+                    if percent and existing_payment.get("couponConsumed") is False:
+                        try:
+                            await consume_coupon(uid, str(percent), charge_key)
+                            await fb.patch(payment_path, {"couponConsumed": True})
+                        except Exception:
+                            log.exception("Could not retry Stars coupon consumption %s", charge_key)
                     try:
                         await award_referral_coupon(uid, payment_path)
                     except Exception:
@@ -1919,6 +1925,9 @@ if bot:
                 "telegramChargeId": charge_id,
                 "paidAt": now,
                 "status": "paid",
+                "couponType": str(percent) if percent else "",
+                "discount": percent,
+                "couponConsumed": not bool(percent),
             })
 
             await fb.patch(f"/users/{uid}", {
@@ -1929,8 +1938,8 @@ if bot:
                 "reminderSent": 0,
             })
             if percent:
-                await consume_coupon(uid, str(percent))
-                await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
+                await consume_coupon(uid, str(percent), charge_key)
+                await fb.patch(payment_path, {"couponConsumed": True})
 
             try:
                 await award_referral_coupon(uid, payment_path)
@@ -1955,7 +1964,37 @@ if bot:
             
     @dp.pre_checkout_query()
     async def pre_checkout(query: PreCheckoutQuery):
-        await query.answer(ok=True)
+        # Validate the invoice before Telegram captures Stars. This prevents stale
+        # or malformed invoices from charging users after their coupon was spent.
+        try:
+            payload = json.loads(query.invoice_payload or "{}")
+            uid = str(query.from_user.id)
+            plan = str(payload.get("plan") or "")
+            coupon_raw = str(payload.get("couponType") or "")
+            percent = coupon_percent(coupon_raw)
+            if str(payload.get("uid") or "") != uid:
+                await query.answer(ok=False, error_message="Этот счёт создан для другого пользователя.")
+                return
+            if coupon_raw and percent not in (10, 20):
+                await query.answer(ok=False, error_message="Некорректный купон. Создай новый счёт.")
+                return
+            base_stars = STARS_PRICES.get(plan)
+            if base_stars is None or query.currency != "XTR":
+                await query.answer(ok=False, error_message="Не удалось проверить тариф. Создай новый счёт.")
+                return
+            expected_stars = int(round(base_stars * (100 - percent) / 100))
+            if int(query.total_amount or 0) != expected_stars:
+                await query.answer(ok=False, error_message="Сумма счёта не совпадает с тарифом.")
+                return
+            if percent:
+                user = await get_user(uid) or {}
+                if available_coupons(user, str(percent)) <= 0:
+                    await query.answer(ok=False, error_message="Этот купон уже недоступен. Создай счёт без скидки.")
+                    return
+            await query.answer(ok=True)
+        except Exception:
+            log.exception("Stars pre-checkout validation failed")
+            await query.answer(ok=False, error_message="Не удалось проверить оплату. Попробуй создать счёт ещё раз.")
 
 # ---------- FASTAPI ----------
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")

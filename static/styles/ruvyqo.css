@@ -1198,3 +1198,37 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 #tab-settings #promoCodeRedeemBtn{min-height:46px;padding:10px 14px;border-radius:5px 12px 5px 12px;white-space:nowrap;font-size:11px;font-weight:850}
 #tab-settings .promo-code-status{position:relative;z-index:1;margin:11px 0 0;padding:9px 11px;border:1px solid rgba(125,216,189,.12);border-radius:4px 10px 4px 10px;background:rgba(125,216,189,.045);color:#a9b9b1;font-size:10px;line-height:1.5}
 @media(max-width:390px){#tab-settings .settings-choice-card{padding:10px}#tab-settings .promo-redeem-row{display:grid;grid-template-columns:minmax(0,1fr)}#tab-settings #promoCodeRedeemBtn{width:100%}}
+
+
+/* RUVYQO — one premium question-mark style across the entire app */
+.help-inline-button,.info-dot,.topbar-help{
+  display:inline-grid!important;place-items:center!important;
+  width:29px!important;height:29px!important;min-width:29px!important;
+  padding:0!important;
+  border:1px solid rgba(201,173,118,.58)!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle at 35% 25%,rgba(201,173,118,.19),rgba(201,173,118,.045) 68%,rgba(8,13,15,.35))!important;
+  color:#e5cc96!important;
+  font-family:Georgia,serif!important;font-size:17px!important;font-weight:700!important;line-height:1!important;
+  box-shadow:0 0 0 3px rgba(201,173,118,.045),0 3px 12px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.12)!important;
+  opacity:1!important;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease!important;
+}
+.help-inline-button:before,.info-dot:before,.topbar-help:before{
+  content:none!important;display:none!important;
+}
+.help-inline-button:hover,.info-dot:hover,.topbar-help:hover{
+  transform:rotate(12deg) scale(1.06);
+  border-color:rgba(201,173,118,.9)!important;
+  box-shadow:0 0 0 4px rgba(201,173,118,.08),0 0 15px rgba(201,173,118,.2)!important;
+}
+.help-inline-button:focus-visible,.info-dot:focus-visible,.topbar-help:focus-visible{
+  outline:2px solid #c9ad76!important;outline-offset:3px;
+}
+#tab-settings .recurring-card>.help-inline-button,
+#tab-settings .family-card>.help-inline-button{
+  position:absolute;top:17px;right:17px;
+}
+@media(max-width:380px){
+  .help-inline-button,.info-dot,.topbar-help{width:27px!important;height:27px!important;min-width:27px!important;font-size:16px!important}
+}

@@ -1052,3 +1052,92 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   #tab-settings .reward-milestones{gap:4px}
   #tab-settings .reward-milestones span{font-size:8px}
 }
+
+
+/* RUVYQO premium recurring payments and family panels */
+#tab-settings .recurring-card,
+#tab-settings .family-card{
+  position:relative;overflow:hidden;
+  border:1px solid rgba(201,173,118,.2);
+  border-radius:7px 21px 7px 21px;
+  background:
+    radial-gradient(ellipse at 92% 0%,rgba(201,173,118,.12),transparent 42%),
+    radial-gradient(ellipse at 0% 100%,rgba(110,231,183,.07),transparent 38%),
+    linear-gradient(145deg,#1b1a17 0%,#11181a 58%,#101416 100%);
+  box-shadow:0 14px 34px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035);
+}
+#tab-settings .recurring-card>h5,
+#tab-settings .family-card>h5{
+  display:inline-flex;align-items:center;gap:9px;
+  margin:0 30px 15px 0;color:#f2ead9;font-size:16px;font-weight:850;letter-spacing:-.025em;
+}
+#tab-settings .recurring-card>h5:before{
+  content:"↻";display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;
+  border:1px solid rgba(201,173,118,.28);border-radius:6px 12px 6px 12px;
+  background:linear-gradient(145deg,rgba(201,173,118,.2),rgba(201,173,118,.045));
+  color:#e4c98f;font-size:20px;
+}
+#tab-settings .family-card>h5:before{
+  content:"♧";display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;
+  border:1px solid rgba(110,231,183,.25);border-radius:6px 12px 6px 12px;
+  background:linear-gradient(145deg,rgba(110,231,183,.17),rgba(110,231,183,.035));
+  color:#9ce3c1;font-size:20px;
+}
+#tab-settings .recurring-card>.help-inline-button,
+#tab-settings .family-card>.help-inline-button{top:17px;right:17px}
+#tab-settings #recurringList{display:grid;gap:9px;margin:0 0 13px!important}
+#tab-settings .recurring-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;
+  padding:12px;border:1px solid rgba(201,173,118,.15);border-radius:5px 13px 5px 13px;
+  background:linear-gradient(110deg,rgba(201,173,118,.075),rgba(255,255,255,.018));
+}
+#tab-settings .recurring-item>span{display:grid;gap:5px;min-width:0}
+#tab-settings .recurring-item b{color:#f1e9d9;font-size:13px;overflow-wrap:anywhere}
+#tab-settings .recurring-item small{color:#aeb7b2;font-size:10px;line-height:1.4}
+#tab-settings .recurring-item small:first-of-type{color:#d8c79f;font-weight:700}
+#tab-settings .recurring-item .financial-item-delete{
+  flex:0 0 32px;width:32px;height:32px;border:1px solid rgba(255,110,110,.2);
+  border-radius:5px 10px 5px 10px;background:rgba(255,90,90,.07);color:#ffaaaa;
+}
+#tab-settings .recurring-card>.btn{min-height:42px;border-radius:5px 13px 5px 13px;font-weight:850;letter-spacing:.01em}
+#tab-settings .family-card .family-status{
+  margin:0 0 12px;padding:12px 13px;border:1px solid rgba(110,231,183,.16);
+  border-radius:5px 13px 5px 13px;background:rgba(110,231,183,.045);
+  color:#c5d5cc;font-size:12px;line-height:1.5;
+}
+#tab-settings .family-current-info{display:grid;gap:12px}
+#tab-settings .family-detail-row{align-items:center;padding:11px 12px;border:1px solid rgba(201,173,118,.13);border-radius:5px 12px 5px 12px;background:rgba(255,255,255,.025)}
+#tab-settings .family-detail-row span{color:#9eaaa4;font-size:11px}
+#tab-settings .family-detail-row b{color:#f1e9d9;font-size:13px;text-align:right;overflow-wrap:anywhere}
+#tab-settings .family-code-box{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;
+  padding:13px;border:1px solid rgba(110,231,183,.2);
+  border-radius:5px 14px 5px 14px;
+  background:linear-gradient(120deg,rgba(110,231,183,.075),rgba(255,255,255,.018));
+}
+#tab-settings .family-code-main{display:grid;gap:5px;min-width:0}
+#tab-settings .family-code-main>span{color:#9eaaa4;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800}
+#tab-settings .family-code-main code{color:#a8edcb;font-size:17px;font-weight:900;letter-spacing:.09em;overflow-wrap:anywhere}
+#tab-settings .family-copy-btn{grid-column:2;grid-row:1;align-self:end}
+#tab-settings .family-share-btn{grid-column:1/-1;width:100%;min-height:40px}
+#tab-settings .family-members-count{color:#d7c79f;font-size:11px;font-weight:750}
+#tab-settings .family-members-panel{margin-top:0;padding:13px;border:1px solid rgba(201,173,118,.13);border-radius:5px 14px 5px 14px;background:rgba(0,0,0,.13)}
+#tab-settings .family-members-panel h6{color:#c9ad76}
+#tab-settings .family-member-row{border-color:rgba(255,255,255,.08);background:linear-gradient(110deg,rgba(201,173,118,.065),rgba(255,255,255,.015))}
+#tab-settings .family-empty-info{margin:0 0 12px;padding:15px;border:1px dashed rgba(201,173,118,.25);border-radius:5px 14px 5px 14px;background:rgba(201,173,118,.035);color:#bdc5bf;font-size:12px;line-height:1.55}
+#tab-settings .family-action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+#tab-settings .family-action-buttons .btn{min-height:42px;padding:9px 8px;border-radius:5px 12px 5px 12px;font-size:11px;font-weight:800}
+#tab-settings .family-form{margin-top:12px;padding:13px;border:1px solid rgba(110,231,183,.17);border-radius:5px 14px 5px 14px;background:rgba(110,231,183,.035)}
+#tab-settings .family-feedback{margin-top:9px;color:#a8edcb;font-size:11px;line-height:1.45}
+#modalAddRecurring .modal-content{
+  border:1px solid rgba(201,173,118,.25);
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.13),transparent 42%),linear-gradient(145deg,#1c1a16,#101719);
+}
+#modalAddRecurring .modal-header h3{color:#f2ead9}
+#modalAddRecurring .muted{padding:10px 11px;border-left:2px solid #c9ad76;background:rgba(201,173,118,.055);border-radius:3px 9px 9px 3px;line-height:1.5}
+@media(max-width:390px){
+  #tab-settings .family-action-buttons{grid-template-columns:1fr}
+  #tab-settings .family-code-box{grid-template-columns:minmax(0,1fr)}
+  #tab-settings .family-copy-btn{grid-column:1;grid-row:auto;width:100%}
+  #tab-settings .family-share-btn{grid-column:1}
+}

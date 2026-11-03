@@ -36,7 +36,6 @@ const ANALYTICS_PERIOD_I18N = {
  tr:{label:"Grafik dönemi",one:"1 ay",three:"3 ay",six:"6 ay",twelve:"12 ay",all:"Tüm zamanlar",period:"seçilen dönem"},
  zh:{label:"图表时间范围",one:"1个月",three:"3个月",six:"6个月",twelve:"12个月",all:"全部时间",period:"所选期间"}
 };
-let analyticsMonthsRange = String(appData.analyticsMonthsRange || '6');
 
 const CURRENCIES = [{id:'UAH',sym:'₴',label:'Hryvnia'},{id:'RUB',sym:'₽',label:'Ruble'},{id:'USD',sym:'$',label:'US Dollar'},{id:'EUR',sym:'€',label:'Euro'},{id:'PLN',sym:'zł',label:'Polish Zloty'},{id:'GBP',sym:'£',label:'Pound Sterling'},{id:'TRY',sym:'₺',label:'Turkish Lira'},{id:'CHF',sym:'₣',label:'Swiss Franc'},{id:'CZK',sym:'Kč',label:'Czech Koruna'},{id:'JPY',sym:'¥',label:'Japanese Yen'},{id:'CNY',sym:'元',label:'Chinese Yuan'}];
 
@@ -74,6 +73,9 @@ try {
 } catch (storageError) {
   console.warn('Browser storage is unavailable; RUVYQO is running with temporary default data:', storageError);
 }
+
+// Initialize analytics settings only after appData has been loaded from storage.
+let analyticsMonthsRange = String(appData.analyticsMonthsRange || '6');
 
 let historyTypeFilter = 'all';
 let historyCategoryFilter = '';

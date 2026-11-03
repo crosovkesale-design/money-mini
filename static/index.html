@@ -340,6 +340,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
   <div id="tab-analytics" class="tab-content" style="display:none">
     <h4 style="margin-bottom:12px" data-i18n="analytics">Аналитика</h4><button type="button" class="help-inline-button" onclick="openHelp('analytics')" aria-label="Справка по аналитике">?</button>
+    <div class="analytics-period-control">
+      <label id="analyticsPeriodLabel" for="analyticsMonthsRange">Период диаграммы</label>
+      <select id="analyticsMonthsRange" class="custom-input" onchange="setAnalyticsMonthsRange(this.value)">
+        <option value="1">1 месяц</option>
+        <option value="3">3 месяца</option>
+        <option value="6">6 месяцев</option>
+        <option value="12">12 месяцев</option>
+        <option value="all">Всё время</option>
+      </select>
+    </div>
     <div class="card chart-card"><canvas id="monthsChart"></canvas></div>
     <div class="card chart-card"><canvas id="expensesChart"></canvas></div>
     <div id="proInsightsCard" class="pro-insights-card"></div>

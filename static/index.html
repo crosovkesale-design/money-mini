@@ -58,7 +58,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./translations.js?v=20261101-ruviko-stability-v1" defer></script>
-<script src="./app.js?v=20261103-coupon-options-footer-v3" defer></script>
+<script src="./app.js?v=20261103-remove-no-coupon-choice-v1" defer></script>
 
 <link rel="stylesheet"
 
@@ -131,9 +131,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <span class="coupon-discount">−20%</span><span class="coupon-check"><i class="fa-solid fa-check"></i></span>
           </button>
         </div>
-        <button type="button" class="coupon-none" id="couponChoiceNone" onclick="selectCoupon('')">
-          <span><i class="fa-solid fa-ban"></i> <span data-i18n="coupon_continue">Продолжить без купона</span><i class="fa-solid fa-chevron-right"></i>
-        </button>
         <div class="coupon-footer" id="couponAvailabilityText"><i class="fa-solid fa-shield-halved"></i><span>Выбери купон или продолжай без него.</span></div>
       </section>
 

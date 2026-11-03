@@ -1388,7 +1388,6 @@ function updateCouponSelector(){
 
   const choice10 = document.getElementById('couponChoice10');
   const choice20 = document.getElementById('couponChoice20');
-  const choiceNone = document.getElementById('couponChoiceNone');
   const stock10 = document.getElementById('coupon10Stock');
   const stock20 = document.getElementById('coupon20Stock');
   if(choice10){
@@ -1400,10 +1399,6 @@ function updateCouponSelector(){
     choice20.disabled = count20 <= 0;
     choice20.classList.toggle('selected', select.value === '20');
     choice20.setAttribute('aria-pressed', String(select.value === '20'));
-  }
-  if(choiceNone){
-    choiceNone.classList.toggle('selected', !select.value);
-    choiceNone.setAttribute('aria-pressed', String(!select.value));
   }
   if(stock10) stock10.textContent = count10 > 0 ? t('Доступно купонов: ') + count10 : t('Пока нет купонов');
   if(stock20) stock20.textContent = count20 > 0 ? t('Доступно купонов: ') + count20 : t('Пока нет купонов');

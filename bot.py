@@ -4083,6 +4083,14 @@ async def cryptopay_webhook(request: Request):
         if existing.get("kind") == "coupon_purchase":
             await add_crypto_coupon(uid, int(existing.get("couponPercent") or purchased_coupon_percent), invoice_id)
             return {"ok": True, "already_processed": True, "coupon_purchase": True}
+        # Repair a coupon deduction if a previous webhook run activated the plan
+        # but was interrupted before the coupon ledger update completed.
+        if existing.get("couponConsumed") is False and percent:
+            try:
+                await consume_coupon(uid, str(percent), invoice_id)
+                await fb.patch(payment_path, {"couponConsumed": True})
+            except Exception:
+                log.exception("Could not retry crypto coupon consumption for invoice %s", invoice_id)
         # Repair a partially completed AI-pack credit if the webhook was interrupted.
         if existing.get("kind") == "ai_pack" and not existing.get("creditsAdded") and ai_pack:
             credits_added = await add_ai_credits(uid, int(ai_pack["credits"]), invoice_id)
@@ -4174,13 +4182,16 @@ async def cryptopay_webhook(request: Request):
         "paidAt": now,
         "newEnd": new_end,
         "status": "processing",
+        "couponType": str(percent) if percent else "",
+        "discount": percent,
+        "couponConsumed": not bool(percent),
     })
     await fb.patch(payment_path, {"status": "paid"})
 
     if percent:
         try:
             await consume_coupon(uid, str(percent), invoice_id)
-            await fb.patch(payment_path, {"couponType": str(percent), "discount": percent})
+            await fb.patch(payment_path, {"couponConsumed": True})
         except Exception:
             log.exception("Could not mark used crypto coupon for invoice %s", invoice_id)
 

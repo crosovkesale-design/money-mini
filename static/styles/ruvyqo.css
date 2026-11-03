@@ -1610,3 +1610,33 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 :root[data-theme="light"] #tab-financial .financial-metric strong{color:#26352c}
 :root[data-theme="light"] #tab-financial .financial-item-row{background:#fff;border-color:rgba(63,91,73,.14)}
 :root[data-theme="light"] #tab-financial .financial-empty{border-color:rgba(155,120,61,.24);color:#68766e}
+
+
+/* RUVYQO polish pass — Nov 03 */
+:root[data-theme="light"] .finance-assistant-heading,:root[data-theme="light"] .finance-assistant-welcome,:root[data-theme="light"] .finance-assistant-messages,:root[data-theme="light"] .finance-assistant-suggestions button,:root[data-theme="light"] .ai-credit-panel,:root[data-theme="light"] .coupon-choice,:root[data-theme="light"] .ruviko-universal-popup{color:#24332a!important}
+:root[data-theme="light"] .finance-assistant-heading{background:linear-gradient(135deg,#fff,#eef5ef)!important;border-color:rgba(63,91,73,.18)!important}
+:root[data-theme="light"] .finance-assistant-welcome,:root[data-theme="light"] .finance-assistant-messages{background:#fff!important;border-color:rgba(63,91,73,.16)!important}
+:root[data-theme="light"] .finance-assistant-suggestions button{background:#f5f8f5!important;color:#34463a!important;border-color:rgba(63,91,73,.17)!important}
+:root[data-theme="light"] .finance-assistant-message.is-user{background:#e8f3ec!important;color:#234d37!important}
+:root[data-theme="light"] .finance-assistant-message.is-assistant{background:#f4f6f3!important;color:#26352c!important}
+:root[data-theme="light"] .ruviko-universal-popup{background:linear-gradient(145deg,#fff,#f0f5f0)!important;border-color:rgba(63,91,73,.2)!important}
+:root[data-theme="light"] .ruviko-universal-head button{background:#edf4ee!important;color:#286b4d!important}
+:root[data-theme="light"] .ruviko-universal-week span{color:#68766e!important}
+:root[data-theme="light"] .ruviko-universal-day{background:#f4f7f4!important;color:#26352c!important}
+:root[data-theme="light"] .ruviko-universal-day.is-selected{background:#3c8c69!important;color:#fff!important}
+:root[data-theme="light"] .ruviko-universal-today{background:#eaf4ed!important;color:#286b4d!important}
+:root[data-theme="light"] .ruviko-universal-trigger{background:#fff!important;border-color:rgba(63,91,73,.2)!important;color:#26352c!important}
+:root[data-theme="light"] .ruviko-universal-icon{background:#eaf4ed!important;color:#286b4d!important}
+#tab-ai .finance-assistant-card{width:100%;max-width:none}
+#tab-ai .finance-assistant-messages{min-height:390px;max-height:min(62vh,680px);overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:11px;scroll-behavior:smooth}
+#tab-ai .finance-assistant-welcome{line-height:1.65;font-size:14px}
+#tab-ai .finance-assistant-message{max-width:92%;width:fit-content;padding:12px 15px;border-radius:15px;line-height:1.6;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+#tab-ai .finance-assistant-message.is-user{align-self:flex-end;background:linear-gradient(135deg,#6b55ad,#493b7c);color:#fff;border-bottom-right-radius:5px}
+#tab-ai .finance-assistant-message.is-assistant{align-self:flex-start;background:linear-gradient(145deg,#211b30,#171322);color:#f1edf9;border:1px solid rgba(180,153,235,.15);border-bottom-left-radius:5px}
+#tab-ai .finance-assistant-form textarea{min-height:58px;max-height:140px;resize:vertical}
+#tab-ai .finance-assistant-suggestions{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+#tab-ai .finance-assistant-suggestions button{min-height:48px}
+.ruvyqo-help-anchor{position:relative!important;padding-right:40px!important;min-height:32px}
+.ruvyqo-help-corner{position:absolute!important;top:0!important;right:0!important;margin:0!important;z-index:3}
+.coupon-hidden-select{display:none!important}
+@media(max-width:480px){#tab-ai .finance-assistant-messages{min-height:340px;max-height:64vh}#tab-ai .finance-assistant-message{max-width:96%}}

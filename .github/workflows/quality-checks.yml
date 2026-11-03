@@ -8,7 +8,7 @@ on:
 
 jobs:
   syntax:
-    name: Python and JavaScript syntax
+    name: Syntax and localization checks
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -23,11 +23,11 @@ jobs:
           node-version: "20"
       - name: Compile Python modules
         run: python -m compileall -q bot.py auth.py
-      - name: Check browser JavaScript syntax
+      - name: Check JavaScript syntax
         run: |
           node --check static/app.js
           node --check static/translations.js
-      - name: Check main translation key parity
+      - name: Check all main locale keys
         run: |
           python - <<'PY'
           import re
@@ -38,49 +38,50 @@ jobs:
           end = source.index("\n};", start)
           body = source[start:end]
           languages = ("ru", "uk", "en", "de", "es", "fr", "it", "pl", "tr", "zh")
-          blocks = list(re.finditer(r'^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \{$', body, re.M))
-          found = {match.group(1) for match in blocks}
-          if found != set(languages) or len(blocks) != len(languages):
-              raise SystemExit(f"Expected exactly 10 locale blocks; found {sorted(found)}")
+          blocks = list(re.finditer(r"^  (ru|uk|en|de|es|fr|it|pl|tr|zh): \\{$", body, re.M))
+          if [m.group(1) for m in blocks] != list(languages):
+              raise SystemExit("The main translation dictionary must contain exactly 10 ordered locale blocks")
+
           key_sets = {}
           for index, match in enumerate(blocks):
               block_end = blocks[index + 1].start() if index + 1 < len(blocks) else len(body)
               locale = body[match.start():block_end]
-              key_sets[match.group(1)] = set(re.findall(r'^    ("(?:[^"\\]|\\.)*"|[A-Za-z_$][\w$]*)\s*:', locale, re.M))
+              keys = re.findall(r'^    (?:"((?:[^"\\\\]|\\\\.)*)"|([A-Za-z_$][\\w$]*))\\s*:', locale, re.M)
+              flat = [quoted or plain for quoted, plain in keys]
+              if len(flat) != len(set(flat)):
+                  raise SystemExit(f"Duplicate translation key in {match.group(1)}")
+              key_sets[match.group(1)] = set(flat)
+
           reference = key_sets["ru"]
           mismatches = {lang: sorted(reference ^ keys) for lang, keys in key_sets.items() if keys != reference}
           if mismatches:
               raise SystemExit(f"Translation key mismatch: {mismatches}")
-          print(f"All 10 locales contain the same {len(reference)} top-level translation keys")
+
+          required = {"open_telegram_required", "payment_pending_confirmation", "payment_failed_retry", "invoice_create_failed"}
+          for lang, keys in key_sets.items():
+              if not required.issubset(keys):
+                  raise SystemExit(f"Missing payment feedback translations in {lang}")
+
+          print(f"All 10 locales contain the same {len(reference)} unique main translation keys")
           PY
-      - name: Validate HTML structure
+      - name: Check HTML translation references
         run: |
           python - <<'PY'
-          from html.parser import HTMLParser
+          import re
           from pathlib import Path
 
-          class DocumentParser(HTMLParser):
-              pass
-
-          parser = DocumentParser(convert_charrefs=True)
-          parser.feed(Path("static/index.html").read_text(encoding="utf-8"))
-          parser.close()
-          print("static/index.html parsed successfully")
-          PY
-, body, re.M))
-          found = {match.group(1) for match in blocks}
-          if found != set(languages) or len(blocks) != len(languages):
-              raise SystemExit(f"Expected exactly 10 locale blocks; found {sorted(found)}")
-          key_sets = {}
-          for index, match in enumerate(blocks):
-              block_end = blocks[index + 1].start() if index + 1 < len(blocks) else len(body)
-              locale = body[match.start():block_end]
-              key_sets[match.group(1)] = set(re.findall(r"^    (\"(?:[^\"\\\\]|\\\\.)*\"|[A-Za-z_$][\\w$]*)\\s*:", locale, re.M))
-          reference = key_sets["ru"]
-          mismatches = {lang: sorted(reference ^ keys) for lang, keys in key_sets.items() if keys != reference}
-          if mismatches:
-              raise SystemExit(f"Translation key mismatch: {mismatches}")
-          print(f"All 10 locales contain the same {len(reference)} top-level translation keys")
+          html = Path("static/index.html").read_text(encoding="utf-8")
+          sources = (
+              Path("static/translations.js").read_text(encoding="utf-8")
+              + Path("static/app.js").read_text(encoding="utf-8")
+          )
+          keys = set(re.findall(r'^\\s{4}(?:"([^"]+)"|([A-Za-z_$][\\w$]*))\\s*:', sources, re.M))
+          available = {a or b for a, b in keys}
+          used = set(re.findall(r'data-i18n(?:-placeholder)?="([^"]+)"', html))
+          missing = sorted(used - available)
+          if missing:
+              raise SystemExit(f"HTML references without translation entries: {missing}")
+          print(f"All {len(used)} HTML translation references have dictionary entries")
           PY
       - name: Validate HTML structure
         run: |

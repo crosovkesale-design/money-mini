@@ -1770,9 +1770,9 @@ function openTransactionModal(type) {
 
   grid.innerHTML = cats.map((c, i) => `
     <div class="icon-item ${i === 0 ? 'active' : ''}"
-         data-name="${c.name}" data-icon="${c.icon}">
-      <span class="emoji">${c.icon}</span>
-      <span class="name">${tCat(c.name)}</span>
+         data-name="${bankEscape(c.name)}" data-icon="${bankEscape(c.icon)}">
+      <span class="emoji">${bankEscape(c.icon)}</span>
+      <span class="name">${bankEscape(tCat(c.name))}</span>
     </div>
   `).join('');
 
@@ -2954,14 +2954,14 @@ function renderAll(){
       ? filtered.map(tx => `
         <article class="history-item ${tx.type === 'expense' ? 'history-expense' : 'history-income'}">
           <div class="history-left">
-            <div class="history-icon">${tx.icon || (tx.type === 'expense' ? '↗' : '↙')}</div>
+            <div class="history-icon">${bankEscape(tx.icon || (tx.type === 'expense' ? '↗' : '↙'))}</div>
             <div class="history-info">
-              <div class="history-title">${tx.title || tCat(tx.category || 'Разное')} ${tx.receipt ? '🧾' : ''}</div>
+              <div class="history-title">${bankEscape(tx.title || tCat(tx.category || 'Разное'))} ${tx.receipt ? '🧾' : ''}</div>
               <div class="history-sub">
                 <span class="history-kind">${tx.type === 'expense' ? t('btn_expense') : t('btn_income')}</span>
-                <span class="history-meta">${visibleBudget.isFamily ? (formatTransactionDate(tx.date,tx.ts) + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || '')}</span>
+                <span class="history-meta">${bankEscape(visibleBudget.isFamily ? (formatTransactionDate(tx.date,tx.ts) + (tx.memberName ? ' · ' + tx.memberName : '')) : (tx.date || ''))}</span>
               </div>
-              ${tx.comment ? '<div class="history-comment">'+String(tx.comment).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>' : ''}
+              ${tx.comment ? '<div class="history-comment">'+bankEscape(tx.comment)+'</div>' : ''}
             </div>
           </div>
           <div class="history-amount ${tx.type === 'expense' ? 'exp' : 'inc'}">
@@ -2986,8 +2986,8 @@ function renderAll(){
       const remaining=Number(e.target||0)-spent;
       const pct=Number(e.target)>0?Math.min(100,Math.max(0,spent/Number(e.target)*100)):0;
       return `<div class="card envelope-card">
-        <div class="envelope-card-top"><b>📩 ${e.name}</b><span class="envelope-spent">${fmtMoney(spent)} / ${fmtMoney(e.target)}</span></div>
-        <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openEnvelopeEditor('${e.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteEnvelope('${e.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>
+        <div class="envelope-card-top"><b>📩 ${bankEscape(e.name)}</b><span class="envelope-spent">${fmtMoney(spent)} / ${fmtMoney(e.target)}</span></div>
+        <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openEnvelopeEditor(${bankEscape(JSON.stringify(String(e.id)))})"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteEnvelope(${bankEscape(JSON.stringify(String(e.id)))})"><i class="fa-solid fa-trash"></i> Удалить</button></div>
         <div class="progress-track"><div class="progress-fill ${pct>=100?'over-limit':''}" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>${remaining>=0?'Осталось':'Превышение'}: ${fmtMoney(Math.abs(remaining))}</span><span>${Math.round(pct)}%</span></div>
       </div>`;
@@ -3022,7 +3022,7 @@ function renderAll(){
               : t('deadline_days_left').replace('{days}',String(daysLeft));
       }
       return `<div class="card bank-card">
-        <div class="bank-card-top"><b>🏦 ${b.name}</b><span class="bank-saved">${fmtMoney(saved)}</span></div>
+        <div class="bank-card-top"><b>🏦 ${bankEscape(b.name)}</b><span class="bank-saved">${fmtMoney(saved)}</span></div>
         <div class="progress-track"><div class="progress-fill bank-progress" style="width:${pct}%"></div></div>
         <div class="envelope-card-bottom"><span>Цель: ${fmtMoney(target)}</span><span>${Math.round(pct)}%</span></div>
         ${goalStatusHtml}
@@ -3030,8 +3030,8 @@ function renderAll(){
         ${b.deadline ? '<div class="muted" style="font-size:12px;margin:6px 0 10px">' + t('Дедлайн:') + ' ' + new Date(b.deadline + 'T00:00:00').toLocaleDateString(appData.lang || 'ru-RU') + ' · ' + deadlineText + '</div>' : ''}
         ${contributorTotalsHtml}
         ${contributionHistoryHtml}
-        <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openBankEditor('${b.id}')"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteBank('${b.id}')"><i class="fa-solid fa-trash"></i> Удалить</button></div>
-        <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank('${b.id}')">＋ Пополнить</button>
+        <div class="manage-card-actions"><button class="btn btn-outline btn-sm" onclick="openBankEditor(${bankEscape(JSON.stringify(String(b.id)))})"><i class="fa-solid fa-pen"></i> Изменить</button><button class="btn btn-outline btn-sm danger" onclick="deleteBank(${bankEscape(JSON.stringify(String(b.id)))})"><i class="fa-solid fa-trash"></i> Удалить</button></div>
+        <button class="btn btn-outline btn-sm bank-add-btn" onclick="contributeToBank(${bankEscape(JSON.stringify(String(b.id)))})">＋ Пополнить</button>
       </div>`;
     }).join('') || '<div class="muted">'+t('no_savings_banks')+'</div>';
   }
@@ -3041,7 +3041,7 @@ function renderAll(){
     ensureRecurringIds();
     recurring.innerHTML = appData.recurring.length
       ? appData.recurring.map(r =>
-          `<div class="recurring-item"><span><b>${bankEscape(r.name)}</b><small>${fmtMoney(r.amount)} · ${t('due_day').replace('{day}',r.day)}</small><small class="recurring-reminder-note">${t('payment_reminder_label')}</small></span><button type="button" class="financial-item-delete" aria-label="${t('delete_entry')}" onclick="deleteRecurring('${String(r.id)}')">×</button></div>`
+          `<div class="recurring-item"><span><b>${bankEscape(r.name)}</b><small>${fmtMoney(r.amount)} · ${bankEscape(t('due_day').replace('{day}',String(r.day)))}</small><small class="recurring-reminder-note">${t('payment_reminder_label')}</small></span><button type="button" class="financial-item-delete" aria-label="${t('delete_entry')}" onclick="deleteRecurring(${bankEscape(JSON.stringify(String(r.id)))})">×</button></div>`
         ).join('')
       : t('no_rules');
   }
@@ -3107,8 +3107,8 @@ function renderFinancialOverview(){
       '<span class="financial-item-icon">'+(isDebt?'↘':'↗')+'</span>'+
       '<span class="financial-item-name"><b>'+bankEscape(item.name|| (isDebt?t('debt'):t('asset')))+'</b><small>'+(isDebt?t('debt'):t('asset'))+'</small></span>'+
       '<strong>'+(isDebt?'−':'＋')+fmtMoney(Number(item.amount)||0)+'</strong>'+
-      '<button class="financial-item-edit" type="button" aria-label="'+t('edit_entry')+' '+bankEscape(item.name||'')+'" onclick="openEditFinancialItem(\''+String(item.id)+'\')">✎</button>'+
-      '<button class="financial-item-delete" type="button" aria-label="'+t('delete_entry')+' '+bankEscape(item.name||'')+'" onclick="deleteFinancialItem(\''+String(item.id)+'\')">×</button>'+
+      '<button class="financial-item-edit" type="button" aria-label="'+t('edit_entry')+' '+bankEscape(item.name||'')+'" onclick="openEditFinancialItem('+bankEscape(JSON.stringify(String(item.id)))+')">✎</button>'+
+      '<button class="financial-item-delete" type="button" aria-label="'+t('delete_entry')+' '+bankEscape(item.name||'')+'" onclick="deleteFinancialItem('+bankEscape(JSON.stringify(String(item.id)))+')">×</button>'+
       '</div>';
   }).join('');
 }

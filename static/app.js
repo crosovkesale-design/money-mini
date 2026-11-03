@@ -746,7 +746,10 @@ function switchTab(name){
   applyAppShellTranslations();
   closeAppMenu();
   if(name === 'analytics') renderCharts();
-  renderAll();
+  // Pricing/advantages are static UI: rebuilding every finance section here
+  // needlessly regenerates the full transaction history and category filters.
+  if(name === 'pay') updatePricingDisplay();
+  else if(name !== 'advantages') renderAll();
 }
 
 function openModal(id){ document.getElementById(id).classList.add('active'); }

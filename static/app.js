@@ -70,7 +70,7 @@ try {
         if (!LANGS.some(item => item.id === appData.lang)) appData.lang = defaultAppData.lang;
         if (!CURRENCIES.some(item => item.id === appData.currency)) appData.currency = defaultAppData.currency;
         if (!['dark', 'light'].includes(appData.theme)) appData.theme = defaultAppData.theme;
-        if (!/^\\d{4}-\\d{2}$/.test(String(appData.currentMonth || ''))) appData.currentMonth = defaultAppData.currentMonth;
+        if (!/^\d{4}-\d{2}$/.test(String(appData.currentMonth || ''))) appData.currentMonth = defaultAppData.currentMonth;
       } else {
         throw new Error('Saved app data is not a valid object');
       }

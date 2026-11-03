@@ -194,7 +194,7 @@ const TRANSLATIONS = {
     "annual_monthly_note": "≈ $7.08 в месяц при годовой оплате",
     "yearly_savings": "Твоя экономия за год",
     "yearly_savings_amount": "$59 или 4 500 ⭐",
-    "why_us": "СЕМЕЙНЫЙ БЮДЖЕТ • ПОЧЕМУ МЫ",
+    "why_us": "RUVYQO • ПОЧЕМУ МЫ",
     "tariffs_button": "Тарифы",
     "search_placeholder": "Поиск...",
     "ai_assistant_title": "✨ Финансовый ИИ-помощник",

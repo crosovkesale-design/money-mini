@@ -802,3 +802,49 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 #tab-pay .pricing-benefits-pro .pricing-benefit{border-color:rgba(201,173,118,.14)}
 #tab-pay .pricing-benefits-pro .pricing-benefit>span{background:rgba(110,231,183,.12);color:#6ee7b7}
 #tab-pay .pricing-secure-note{border-color:rgba(201,173,118,.16)}
+
+
+/* Analytics PRO card: keep the lock panel and its copy inside the card */
+#tab-analytics #proInsightsCard{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+#tab-analytics #proInsightsCard .pro-insights-lock{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  padding:16px;
+}
+#tab-analytics #proInsightsCard .pro-insights-lock > div:last-child{
+  flex:1 1 0;
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#tab-analytics #proInsightsCard .pro-insights-lock b,
+#tab-analytics #proInsightsCard .pro-insights-lock p{
+  display:block;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.5;
+}
+#tab-analytics #proInsightsCard .pro-insights-lock .btn{
+  max-width:100%;
+  white-space:normal;
+}
+#tab-analytics #proInsightsCard .pro-insights-lock-icon{
+  flex:0 0 38px;
+}
+@media(max-width:430px){
+  #tab-analytics #proInsightsCard .pro-insights-lock{gap:10px;padding:13px}
+  #tab-analytics #proInsightsCard .pro-insights-lock-icon{flex-basis:32px}
+}

@@ -2482,7 +2482,7 @@ const TRANSLATIONS = {
     back_budget: '← 返回预算',
     why_title: '轻松掌控预算',
     why_desc: 'RUVYQO 帮助你全面了解财务状况，并直接在 Telegram 中做出更明智的决定。',
-    pricing_kicker: "家庭预算 · 套餐",
+    pricing_kicker: "RUVYQO · 套餐",
     coupon_eyebrow: "你的奖励",
     coupon_friend_desc: "邀请新用户可获折扣",
     coupon_review_desc: "发布评价即可获得奖励",
@@ -2574,7 +2574,7 @@ const TRANSLATIONS = {
     "annual_monthly_note": "按年付费，平均每月约 $7.08",
     "yearly_savings": "全年可节省",
     "yearly_savings_amount": "$59 或 4,500 ⭐",
-    "why_us": "家庭预算 · 为什么选择我们",
+    "why_us": "RUVYQO · 为什么选择我们",
     "tariffs_button": "订阅方案",
     "search_placeholder": "搜索...",
     "ai_assistant_title": "✨ AI 财务助手",
@@ -3197,7 +3197,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Купоны действуют на одну оплату подписки, скидки не суммируются.",
     coupon_10:"Купон −10%", coupon_20:"Купон −20%", buy:"Купить", create_family_hint:"Создай новую группу или вступи в семью по коду приглашения.",
 
-  },
+  
+    src_family_list_title: "Состав семьи",},
   uk: {
     pricing_nav:"Тарифи", referrals_title:"Реферали", daily_rewards_title:"🔥 Щоденні нагороди",
     family_balance_title:"Спільний баланс сім’ї", personal_balance_title:"Особистий бюджет",
@@ -3213,7 +3214,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Купони діють на одну оплату підписки, знижки не сумуються.",
     coupon_10:"Купон −10%", coupon_20:"Купон −20%", buy:"Купити", create_family_hint:"Створи нову групу або приєднайся до сім’ї за кодом запрошення.",
 
-  },
+  
+    src_family_list_title: "Склад сім’ї",},
   en: {
     pricing_nav:"Plans", referrals_title:"Referrals", daily_rewards_title:"🔥 Daily rewards",
     family_balance_title:"Family balance", personal_balance_title:"Personal budget",
@@ -3229,7 +3231,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Coupons apply to one subscription payment and discounts cannot be combined.",
     coupon_10:"10% coupon", coupon_20:"20% coupon", buy:"Buy", create_family_hint:"Create a new group or join a family with an invitation code.",
 
-  },
+  
+    src_family_list_title: "Family members",},
   de: {
     pricing_nav:"Tarife", referrals_title:"Empfehlungen", daily_rewards_title:"🔥 Tägliche Belohnungen",
     family_balance_title:"Familienguthaben", personal_balance_title:"Persönliches Budget",
@@ -3245,7 +3248,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Gutscheine gelten für eine Abonnementzahlung; Rabatte sind nicht kombinierbar.",
     coupon_10:"10-%-Gutschein", coupon_20:"20-%-Gutschein", buy:"Kaufen", create_family_hint:"Erstelle eine Gruppe oder tritt einer Familie mit Einladungscode bei.",
 
-  },
+  
+    src_family_list_title: "Familienmitglieder",},
   es: {
     pricing_nav:"Planes", referrals_title:"Referidos", daily_rewards_title:"🔥 Recompensas diarias",
     family_balance_title:"Saldo familiar", personal_balance_title:"Presupuesto personal",
@@ -3261,7 +3265,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Los cupones se aplican a un pago de suscripción y los descuentos no se acumulan.",
     coupon_10:"Cupón del 10%", coupon_20:"Cupón del 20%", buy:"Comprar", create_family_hint:"Crea un grupo o únete a una familia con un código de invitación.",
 
-  },
+  
+    src_family_list_title: "Miembros de la familia",},
   fr: {
     pricing_nav:"Offres", referrals_title:"Parrainages", daily_rewards_title:"🔥 Récompenses quotidiennes",
     family_balance_title:"Solde familial", personal_balance_title:"Budget personnel",
@@ -3277,7 +3282,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Les coupons s’appliquent à un seul paiement d’abonnement et les réductions ne se cumulent pas.",
     coupon_10:"Coupon de 10 %", coupon_20:"Coupon de 20 %", buy:"Acheter", create_family_hint:"Créez un groupe ou rejoignez une famille avec un code d’invitation.",
 
-  },
+  
+    src_family_list_title: "Membres de la famille",},
   it: {
     pricing_nav:"Piani", referrals_title:"Inviti", daily_rewards_title:"🔥 Ricompense giornaliere",
     family_balance_title:"Saldo familiare", personal_balance_title:"Budget personale",
@@ -3293,7 +3299,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"I coupon valgono per un pagamento dell’abbonamento e gli sconti non sono cumulabili.",
     coupon_10:"Coupon 10%", coupon_20:"Coupon 20%", buy:"Acquista", create_family_hint:"Crea un gruppo o unisciti a una famiglia con un codice invito.",
 
-  },
+  
+    src_family_list_title: "Membri della famiglia",},
   pl: {
     pricing_nav:"Plany", referrals_title:"Polecenia", daily_rewards_title:"🔥 Codzienne nagrody",
     family_balance_title:"Saldo rodziny", personal_balance_title:"Budżet osobisty",
@@ -3309,7 +3316,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Kupony dotyczą jednej płatności za subskrypcję i nie łączą się ze zniżkami.",
     coupon_10:"Kupon 10%", coupon_20:"Kupon 20%", buy:"Kup", create_family_hint:"Utwórz grupę lub dołącz do rodziny za pomocą kodu zaproszenia.",
 
-  },
+  
+    src_family_list_title: "Członkowie rodziny",},
   tr: {
     pricing_nav:"Planlar", referrals_title:"Davetler", daily_rewards_title:"🔥 Günlük ödüller",
     family_balance_title:"Aile bakiyesi", personal_balance_title:"Kişisel bütçe",
@@ -3325,7 +3333,8 @@ const EXTRA_UI_TRANSLATIONS = {
     coupon_shop_note:"Kuponlar tek bir abonelik ödemesinde geçerlidir; indirimler birleştirilemez.",
     coupon_10:"%10 kupon", coupon_20:"%20 kupon", buy:"Satın al", create_family_hint:"Yeni bir grup oluştur veya davet koduyla bir aileye katıl.",
 
-  },
+  
+    src_family_list_title: "Aile üyeleri",},
   zh: {
     pricing_nav:"套餐", referrals_title:"邀请好友", daily_rewards_title:"🔥 每日奖励",
     family_balance_title:"家庭余额", personal_balance_title:"个人预算",
@@ -3372,7 +3381,8 @@ const EXTRA_UI_TRANSLATIONS = {
     "goal_placeholder": "目标金额",
     "deadline_label": "储蓄截止日期",
     "date_format_hint": "日期格式：YYYY.MM.DD",
-  }
+  
+    src_family_list_title: "家庭成员",}
 };
 for (const [lang, entries] of Object.entries(EXTRA_UI_TRANSLATIONS)) {
   if (TRANSLATIONS[lang]) Object.assign(TRANSLATIONS[lang], entries);

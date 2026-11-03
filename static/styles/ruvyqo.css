@@ -848,3 +848,15 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   #tab-analytics #proInsightsCard .pro-insights-lock{gap:10px;padding:13px}
   #tab-analytics #proInsightsCard .pro-insights-lock-icon{flex-basis:32px}
 }
+
+/* RUVYQO family member roster */
+.family-members-panel{margin-top:14px;padding-top:13px;border-top:1px solid #ffffff12}
+.family-members-panel h6{margin:0 0 9px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.family-members-list{display:grid;gap:7px}
+.family-member-row{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 11px;border:1px solid #ffffff12;border-radius:5px 13px 5px 13px;background:linear-gradient(110deg,#c9ad760d,#ffffff03)}
+.family-member-avatar{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid #c9ad7640;border-radius:5px 12px 5px 12px;background:#c9ad7615;color:var(--gold-hi);font-size:14px;font-weight:850;text-transform:uppercase}
+.family-member-copy{display:grid;gap:3px;min-width:0;flex:1}
+.family-member-copy b{overflow-wrap:anywhere;color:var(--text);font-size:12px}
+.family-member-copy small{color:var(--muted);font-size:10px}
+.family-member-owner-mark{color:var(--gold-hi);font-size:13px}
+.family-members-empty{padding:9px;color:var(--muted);font-size:11px}

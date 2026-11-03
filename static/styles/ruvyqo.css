@@ -749,3 +749,56 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   #tab-pay .trial-banner{align-items:flex-start}
   #tab-pay .trial-icon{flex-basis:36px;width:36px;height:36px}
 }
+
+
+/* Pricing accents restored to the original gold-and-green RUVYQO palette */
+#tab-pay .pricing-hero{
+  border-color:rgba(201,173,118,.32);
+  background:
+    radial-gradient(ellipse at 92% 0%,rgba(201,173,118,.18),transparent 48%),
+    linear-gradient(145deg,#211c15 0%,#15120f 58%,#0d0b09 100%);
+}
+#tab-pay .pricing-kicker{color:#ead6aa}
+#tab-pay .pricing-kicker-dot{background:#c9ad76;box-shadow:0 0 12px rgba(201,173,118,.75)}
+#tab-pay .trial-banner{border-color:rgba(110,231,183,.28);background:linear-gradient(105deg,rgba(110,231,183,.1),rgba(110,231,183,.025))}
+#tab-pay .coupon-panel{background:linear-gradient(145deg,#211c15,#110f0c)}
+#tab-pay .coupon-spark,#tab-pay .coupon-discount{color:#ead6aa}
+#tab-pay .coupon-choice.active{border-color:rgba(201,173,118,.76);background:rgba(201,173,118,.11);box-shadow:inset 0 0 0 1px rgba(201,173,118,.12)}
+#tab-pay .coupon-choice-icon{background:rgba(201,173,118,.12);color:#ead6aa}
+#tab-pay .coupon-check{background:#c9ad76;color:#17120a}
+#tab-pay .coupon-none{border-color:rgba(201,173,118,.28);color:#ead6aa}
+#tab-pay .coupon-footer i{color:#c9ad76}
+#tab-pay .pricing-group{border-color:rgba(201,173,118,.2);background:linear-gradient(150deg,#1b1812 0%,#12100d 68%,#0e0c0a 100%)}
+#tab-pay .pricing-plan-icon{border-color:rgba(201,173,118,.3);background:rgba(201,173,118,.12);color:#ead6aa}
+#tab-pay .pricing-benefit>span{background:rgba(110,231,183,.12);color:#6ee7b7}
+#tab-pay .price-option{border-color:rgba(201,173,118,.18);background:linear-gradient(150deg,rgba(8,7,5,.78),rgba(34,28,18,.72))}
+#tab-pay .option-tag{border-color:rgba(201,173,118,.24);color:#d8c08d}
+#tab-pay .price-main{color:#ead6aa}
+#tab-pay .pay-button{
+  border-color:rgba(234,214,170,.32);
+  background:linear-gradient(135deg,#ead6aa,#b99558);
+  color:#17120a;
+  box-shadow:0 6px 16px rgba(201,173,118,.16);
+}
+#tab-pay .pay-button.pay-crypto{
+  border-color:rgba(110,231,183,.3);
+  background:rgba(110,231,183,.1);
+  color:#86efc3;
+  box-shadow:none;
+}
+#tab-pay .price-option-featured{
+  border-color:rgba(201,173,118,.68);
+  background:linear-gradient(145deg,rgba(201,173,118,.15),rgba(19,16,11,.94));
+  box-shadow:inset 0 0 0 1px rgba(234,214,170,.08),0 9px 25px rgba(0,0,0,.18);
+}
+#tab-pay .option-tag-featured{border-color:rgba(234,214,170,.42);background:rgba(201,173,118,.15);color:#ead6aa}
+#tab-pay .pricing-group-pro{
+  border-color:rgba(201,173,118,.38);
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.15),transparent 38%),linear-gradient(150deg,#211b12,#100e0b 72%);
+}
+#tab-pay .pro-eyebrow{color:#ead6aa}
+#tab-pay .pro-icon{border-color:rgba(234,214,170,.38);background:linear-gradient(145deg,rgba(234,214,170,.18),rgba(201,173,118,.1));color:#ead6aa}
+#tab-pay .pro-label{border-color:rgba(234,214,170,.3);color:#ead6aa}
+#tab-pay .pricing-benefits-pro .pricing-benefit{border-color:rgba(201,173,118,.14)}
+#tab-pay .pricing-benefits-pro .pricing-benefit>span{background:rgba(110,231,183,.12);color:#6ee7b7}
+#tab-pay .pricing-secure-note{border-color:rgba(201,173,118,.16)}

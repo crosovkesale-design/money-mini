@@ -2248,3 +2248,30 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 :root[data-theme="light"] .analytics-period-options button.active b,
 :root[data-theme="light"] .analytics-period-options button.active span{color:#80612e!important}
 @media(max-width:350px){.analytics-period-panel{padding:12px}.analytics-period-options{gap:5px}.analytics-period-options button{min-height:51px}}
+
+
+/* RUVYQO pricing coupon: explicit opt-in and one-tap removal */
+#tab-pay .coupon-selection-status{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#tab-pay .coupon-selection-status>span{flex:1;min-width:160px}
+#tab-pay .coupon-clear-button{
+  flex:0 0 auto;padding:7px 10px;border:1px solid rgba(201,173,118,.38);
+  border-radius:8px 3px 8px 3px;background:rgba(201,173,118,.09);
+  color:#ead6aa;font-size:10px;font-weight:800;cursor:pointer
+}
+#tab-pay .coupon-clear-button:active{transform:scale(.97)}
+#tab-pay .price-old,#tab-pay .price-stars-old{
+  display:inline-block;margin-right:8px;color:#9b91a4!important;
+  font-size:.72em;font-weight:650;text-decoration:line-through;
+  text-decoration-thickness:1.5px;opacity:.85
+}
+#tab-pay .price-current,#tab-pay .price-stars-current{
+  display:inline-block;color:#6ee7b7;font-weight:900
+}
+body.light-theme #tab-pay .coupon-clear-button,
+.light-theme #tab-pay .coupon-clear-button{
+  border-color:rgba(31,125,87,.3);background:rgba(31,125,87,.07);color:#176b4a
+}
+body.light-theme #tab-pay .price-old,body.light-theme #tab-pay .price-stars-old,
+.light-theme #tab-pay .price-old,.light-theme #tab-pay .price-stars-old{color:#777!important}
+body.light-theme #tab-pay .price-current,body.light-theme #tab-pay .price-stars-current,
+.light-theme #tab-pay .price-current,.light-theme #tab-pay .price-stars-current{color:#168052}

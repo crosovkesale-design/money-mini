@@ -623,7 +623,7 @@ const TRANSLATIONS = {
     back_budget: '← Back to budget',
     why_title: 'Stay in control of your budget, without the hassle',
     why_desc: 'RUVYQO helps you see your finances clearly and make confident decisions right in Telegram.',
-    pricing_kicker: "РУВИКО · PLANS",
+    pricing_kicker: "RUVYQO · PLANS",
     coupon_eyebrow: "YOUR REWARDS",
     coupon_friend_desc: "Discount for a new user",
     coupon_review_desc: "Bonus for a published review",

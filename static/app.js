@@ -3079,15 +3079,9 @@ function initApp(){
   }
 
   const params = new URLSearchParams(window.location.search);
-  if(params.get('screen') === 'pay'){
-    document.querySelectorAll('.tab-content').forEach(el => {
-      el.style.display = 'none';
-    });
-    document.querySelectorAll('.nav-item').forEach(el => {
-      el.classList.remove('active');
-    });
-    document.getElementById('tab-pay').style.display = 'block';
-  }
+  // Always start on the main Budget screen after a normal app launch/restart.
+  // Keep the dedicated pricing deep link working for payment flows.
+  switchTab(params.get('screen') === 'pay' ? 'pay' : 'budget');
 
   loadPlanStatus();
   refreshRewardStatus();

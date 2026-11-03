@@ -57,7 +57,20 @@ try {
     try {
       const parsedAppData = JSON.parse(storedAppData);
       if (parsedAppData && typeof parsedAppData === 'object' && !Array.isArray(parsedAppData)) {
-        appData = parsedAppData;
+        // Merge new defaults into older saved profiles instead of replacing them.
+        // This keeps existing financial history while adding fields introduced by updates.
+        appData = { ...defaultAppData, ...parsedAppData };
+        ['history', 'envelopes', 'banks', 'recurring', 'customCategories'].forEach(key => {
+          if (!Array.isArray(appData[key])) appData[key] = [];
+        });
+        ['balance', 'monthIncome', 'monthExpense'].forEach(key => {
+          const value = Number(appData[key]);
+          appData[key] = Number.isFinite(value) ? value : defaultAppData[key];
+        });
+        if (!LANGS.some(item => item.id === appData.lang)) appData.lang = defaultAppData.lang;
+        if (!CURRENCIES.some(item => item.id === appData.currency)) appData.currency = defaultAppData.currency;
+        if (!['dark', 'light'].includes(appData.theme)) appData.theme = defaultAppData.theme;
+        if (!/^\\d{4}-\\d{2}$/.test(String(appData.currentMonth || ''))) appData.currentMonth = defaultAppData.currentMonth;
       } else {
         throw new Error('Saved app data is not a valid object');
       }
@@ -75,7 +88,10 @@ try {
 }
 
 // Initialize analytics settings only after appData has been loaded from storage.
-let analyticsMonthsRange = String(appData.analyticsMonthsRange || '6');
+let analyticsMonthsRange = ['1', '3', '6', '12', 'all'].includes(String(appData.analyticsMonthsRange || '6'))
+  ? String(appData.analyticsMonthsRange || '6')
+  : '6';
+appData.analyticsMonthsRange = analyticsMonthsRange;
 
 let historyTypeFilter = 'all';
 let historyCategoryFilter = '';

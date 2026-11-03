@@ -3891,8 +3891,10 @@ async def api_pay_stars(request: Request, uid: str = Depends(current_uid)):
     base_stars = STARS_PRICES.get(plan)
     if not bot or base_stars is None:
         raise HTTPException(400, "Неизвестный тариф")
-    coupon_type = str(body.get("couponType") or "")
+    coupon_type = str(body.get("couponType") or "").strip()
     percent = coupon_percent(coupon_type)
+    if coupon_type and percent not in (10, 20):
+        raise HTTPException(400, "Некорректный купон")
     user = await get_user(uid) or {}
     if percent and available_coupons(user, str(percent)) <= 0:
         raise HTTPException(400, f"Нет доступных купонов {percent}%")
@@ -3982,8 +3984,10 @@ async def api_pay_crypto(
     if not tariff:
         raise HTTPException(400, "Неизвестный тариф")
 
-    coupon_type = str(body.get("couponType") or "")
+    coupon_type = str(body.get("couponType") or "").strip()
     percent = coupon_percent(coupon_type)
+    if coupon_type and percent not in (10, 20):
+        raise HTTPException(400, "Некорректный купон")
     user = await get_user(uid) or {}
     if percent and available_coupons(user, str(percent)) <= 0:
         raise HTTPException(400, f"Нет доступных купонов {percent}%")

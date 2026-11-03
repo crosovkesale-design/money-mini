@@ -742,6 +742,8 @@ function switchTab(name){
   const tab = document.getElementById('tab-' + name);
   if(!tab) return;
   tab.style.display = 'block';
+  // Remember the last opened section separately for each Telegram user.
+  try { localStorage.setItem('ruvyqo_last_tab_' + telegramUserId, name); } catch (e) {}
   document.querySelectorAll('[data-menu-tab]').forEach(item=>item.classList.toggle('active',item.dataset.menuTab===name));
   applyAppShellTranslations();
   closeAppMenu();
@@ -3079,14 +3081,12 @@ function initApp(){
   }
 
   const params = new URLSearchParams(window.location.search);
-  if(params.get('screen') === 'pay'){
-    document.querySelectorAll('.tab-content').forEach(el => {
-      el.style.display = 'none';
-    });
-    document.querySelectorAll('.nav-item').forEach(el => {
-      el.classList.remove('active');
-    });
-    document.getElementById('tab-pay').style.display = 'block';
+  let savedTab = '';
+  try { savedTab = localStorage.getItem('ruvyqo_last_tab_' + telegramUserId) || ''; } catch (e) {}
+  // A payment deep link takes priority; otherwise restore the last visited tab.
+  const initialTab = params.get('screen') === 'pay' ? 'pay' : savedTab;
+  if(initialTab && document.getElementById('tab-' + initialTab)){
+    switchTab(initialTab);
   }
 
   loadPlanStatus();

@@ -1990,33 +1990,57 @@ async function saveTxEdits(){
   }catch(e){if(error)error.textContent=e.message||'Не удалось сохранить операцию.';}
 }
 
-async function deleteTx(id){
-  if(budgetMode==='family' && currentFamily){
-    const tx = familyTransactions.find(item => String(item.id) === String(id));
-    if(!tx) return;
-    if(!await showAppConfirm('Удалить эту семейную операцию?')) return;
-    try{
-      await familyRequest('/api/family/transactions/' + encodeURIComponent(String(id)), 'DELETE');
-      familyTransactions = familyTransactions.filter(item => String(item.id) !== String(id));
-      renderAll();
-      familyFeedback('Операция удалена.');
-    }catch(error){
-      familyFeedback(error.message || 'Не удалось удалить операцию.', true);
-    }
+async function deleteTx(id, renderedIndex=null){
+  const familyMode=budgetMode==='family'&&!!currentFamily;
+  const source=familyMode?(Array.isArray(familyTransactions)?familyTransactions:[]):(Array.isArray(appData.history)?appData.history:[]);
+  const requestedId=String(id==null?'':id);
+  let index=source.findIndex(item=>String(item&&item.id)==requestedId);
+  const fallbackIndex=Number(renderedIndex);
+  if(index<0&&Number.isInteger(fallbackIndex)&&fallbackIndex>=0&&fallbackIndex<source.length){
+    const candidate=source[fallbackIndex];
+    if(candidate&&(requestedId===''||requestedId==='undefined'||String(candidate.id)==requestedId||candidate.id==null))index=fallbackIndex;
+  }
+  if(index<0){
+    await showAppDialog('Не удалось найти эту операцию. Обнови историю и попробуй ещё раз.');
+    if(familyMode)await loadFamilyTransactions();else renderAll();
     return;
   }
-  const tx = appData.history.find(x => String(x.id) === String(id));
-  if(!tx) return;
-  if(!await showAppConfirm('Удалить эту операцию?')) return;
-  if(tx.type === 'expense'){ appData.balance += Number(tx.amount||0); }
-  else { appData.balance -= Number(tx.amount||0); }
-  if(isTransactionInCurrentMonth(tx)){
-    if(tx.type === 'expense') appData.monthExpense -= Number(tx.amount||0);
-    else appData.monthIncome -= Number(tx.amount||0);
+  const tx=source[index];
+  const transactionId=tx&&tx.id!=null?tx.id:id;
+  if(familyMode){
+    if(transactionId==null||String(transactionId)===''||String(transactionId)==='undefined'){
+      familyFeedback('У операции отсутствует идентификатор. Обнови историю и попробуй снова.',true);
+      return;
+    }
+    if(!await showAppConfirm('Удалить эту семейную операцию?'))return;
+    try{
+      await familyRequest('/api/family/transactions/'+encodeURIComponent(String(transactionId)),'DELETE');
+      familyTransactions=familyTransactions.filter((item,itemIndex)=>itemIndex!==index);
+      renderAll();
+      familyFeedback('Операция удалена.');
+    }catch(error){familyFeedback(error.message||'Не удалось удалить операцию.',true);}
+    return;
   }
-  appData.history = appData.history.filter(x => String(x.id) !== String(id));
-  saveData(); logClientActivity('transaction_deleted',tx); renderAll();
+  if(!await showAppConfirm('Удалить эту операцию?'))return;
+  try{
+    const amount=Math.max(0,Number(tx.amount)||0);
+    if(tx.type==='expense')appData.balance=Number(appData.balance||0)+amount;
+    else appData.balance=Number(appData.balance||0)-amount;
+    if(isTransactionInCurrentMonth(tx)){
+      if(tx.type==='expense')appData.monthExpense=Math.max(0,Number(appData.monthExpense||0)-amount);
+      else appData.monthIncome=Math.max(0,Number(appData.monthIncome||0)-amount);
+    }
+    appData.history.splice(index,1);
+    saveData();
+    logClientActivity('transaction_deleted',tx);
+    renderAll();
+    await showAppDialog('Операция успешно удалена.');
+  }catch(error){
+    await showAppDialog(error&&error.message?error.message:'Не удалось удалить операцию. Попробуй ещё раз.');
+    console.error('RUVYQO transaction delete failed:',error);
+  }
 }
+window.deleteTx=deleteTx;
 
 function openEnvelopeEditor(id){
   const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;

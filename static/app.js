@@ -576,16 +576,16 @@ function _localizeDialogMessage(message){
   return _translateAutoText(source) || source;
 }
 const APP_DIALOG_I18N = {
-  ru:{ok:'Понятно',cancel:'Отмена',confirm:'Подтвердить',title:'RUVYQO',question:'Подтверждение'},
-  uk:{ok:'Зрозуміло',cancel:'Скасувати',confirm:'Підтвердити',title:'RUVYQO',question:'Підтвердження'},
-  en:{ok:'Got it',cancel:'Cancel',confirm:'Confirm',title:'RUVYQO',question:'Confirmation'},
-  de:{ok:'Verstanden',cancel:'Abbrechen',confirm:'Bestätigen',title:'RUVYQO',question:'Bestätigung'},
-  es:{ok:'Entendido',cancel:'Cancelar',confirm:'Confirmar',title:'RUVYQO',question:'Confirmación'},
-  fr:{ok:'Compris',cancel:'Annuler',confirm:'Confirmer',title:'RUVYQO',question:'Confirmation'},
-  it:{ok:'Ho capito',cancel:'Annulla',confirm:'Conferma',title:'RUVYQO',question:'Conferma'},
-  pl:{ok:'Rozumiem',cancel:'Anuluj',confirm:'Potwierdź',title:'RUVYQO',question:'Potwierdzenie'},
-  tr:{ok:'Anladım',cancel:'İptal',confirm:'Onayla',title:'RUVYQO',question:'Onay'},
-  zh:{ok:'知道了',cancel:'取消',confirm:'确认',title:'RUVYQO',question:'确认'}
+  ru:{ok:'Понятно',cancel:'Отмена',confirm:'Подтвердить',title:'RUVYQO',question:'Подтверждение',deleteTitle:'Удалить операцию?',deleteConfirm:'Удалить',deleteMessage:'Операция будет удалена из истории. Это действие нельзя отменить.',deletePending:'Удаляем операцию…',deleteDone:'Операция удалена',deleteFailed:'Не удалось удалить операцию'},
+  uk:{ok:'Зрозуміло',cancel:'Скасувати',confirm:'Підтвердити',title:'RUVYQO',question:'Підтвердження',deleteTitle:'Видалити операцію?',deleteConfirm:'Видалити',deleteMessage:'Операцію буде видалено з історії. Цю дію не можна скасувати.',deletePending:'Видаляємо операцію…',deleteDone:'Операцію видалено',deleteFailed:'Не вдалося видалити операцію'},
+  en:{ok:'Got it',cancel:'Cancel',confirm:'Confirm',title:'RUVYQO',question:'Confirmation',deleteTitle:'Delete transaction?',deleteConfirm:'Delete',deleteMessage:'This transaction will be removed from your history. This cannot be undone.',deletePending:'Deleting transaction…',deleteDone:'Transaction deleted',deleteFailed:'Could not delete transaction'},
+  de:{ok:'Verstanden',cancel:'Abbrechen',confirm:'Bestätigen',title:'RUVYQO',question:'Bestätigung',deleteTitle:'Buchung löschen?',deleteConfirm:'Löschen',deleteMessage:'Diese Buchung wird aus dem Verlauf entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden.',deletePending:'Buchung wird gelöscht…',deleteDone:'Buchung gelöscht',deleteFailed:'Buchung konnte nicht gelöscht werden'},
+  es:{ok:'Entendido',cancel:'Cancelar',confirm:'Confirmar',title:'RUVYQO',question:'Confirmación',deleteTitle:'¿Eliminar operación?',deleteConfirm:'Eliminar',deleteMessage:'La operación se quitará del historial. Esta acción no se puede deshacer.',deletePending:'Eliminando operación…',deleteDone:'Operación eliminada',deleteFailed:'No se pudo eliminar la operación'},
+  fr:{ok:'Compris',cancel:'Annuler',confirm:'Confirmer',title:'RUVYQO',question:'Confirmation',deleteTitle:'Supprimer l’opération ?',deleteConfirm:'Supprimer',deleteMessage:'Cette opération sera retirée de l’historique. Cette action est irréversible.',deletePending:'Suppression en cours…',deleteDone:'Opération supprimée',deleteFailed:'Impossible de supprimer l’opération'},
+  it:{ok:'Ho capito',cancel:'Annulla',confirm:'Conferma',title:'RUVYQO',question:'Conferma',deleteTitle:'Eliminare l’operazione?',deleteConfirm:'Elimina',deleteMessage:'L’operazione verrà rimossa dalla cronologia. Questa azione non può essere annullata.',deletePending:'Eliminazione in corso…',deleteDone:'Operazione eliminata',deleteFailed:'Impossibile eliminare l’operazione'},
+  pl:{ok:'Rozumiem',cancel:'Anuluj',confirm:'Potwierdź',title:'RUVYQO',question:'Potwierdzenie',deleteTitle:'Usunąć operację?',deleteConfirm:'Usuń',deleteMessage:'Operacja zostanie usunięta z historii. Tej czynności nie można cofnąć.',deletePending:'Usuwanie operacji…',deleteDone:'Operacja usunięta',deleteFailed:'Nie udało się usunąć operacji'},
+  tr:{ok:'Anladım',cancel:'İptal',confirm:'Onayla',title:'RUVYQO',question:'Onay',deleteTitle:'İşlem silinsin mi?',deleteConfirm:'Sil',deleteMessage:'Bu işlem geçmişten kaldırılacak. Bu işlem geri alınamaz.',deletePending:'İşlem siliniyor…',deleteDone:'İşlem silindi',deleteFailed:'İşlem silinemedi'},
+  zh:{ok:'知道了',cancel:'取消',confirm:'确认',title:'RUVYQO',question:'确认',deleteTitle:'删除这笔交易？',deleteConfirm:'删除',deleteMessage:'此交易将从历史记录中移除，且无法撤销。',deletePending:'正在删除…',deleteDone:'交易已删除',deleteFailed:'无法删除交易'}
 };
 function appDialogLabels(){
   const lang=String(appData?.lang||'ru').toLowerCase().split('-')[0];
@@ -594,18 +594,33 @@ function appDialogLabels(){
 function showAppDialog(message, options={}){
   const labels=appDialogLabels();
   const overlay=document.getElementById('appDialogOverlay');
-  if(!overlay)return Promise.resolve();
+  if(!overlay)return Promise.resolve(false);
+  const card=overlay.querySelector('.app-dialog-card');
   const title=document.getElementById('appDialogTitle');
   const body=document.getElementById('appDialogMessage');
   const icon=document.getElementById('appDialogIcon');
+  const meta=document.getElementById('appDialogMeta');
   const actions=document.getElementById('appDialogActions');
   const isConfirm=options.confirm===true;
-  const text=String(_localizeDialogMessage(message)||'');
+  const isDelete=options.deleteTransaction===true;
+  const text=String(isDelete?labels.deleteMessage:(_localizeDialogMessage(message)||''));
   const isError=/ошиб|error|failed|не удалось|неверн|invalid|erreur|fehler/i.test(text);
-  title.textContent=isConfirm?labels.question:labels.title;
+  card?.classList.toggle('is-delete-confirm',isDelete);
+  title.textContent=isDelete?labels.deleteTitle:(isConfirm?labels.question:labels.title);
   body.textContent=text;
-  icon.className='app-dialog-icon '+(isError?'is-error':isConfirm?'is-question':'is-info');
-  icon.innerHTML=isError?'<i class="fa-solid fa-triangle-exclamation"></i>':isConfirm?'<i class="fa-solid fa-circle-question"></i>':'<i class="fa-solid fa-circle-info"></i>';
+  icon.className='app-dialog-icon '+(isDelete?'is-delete':isError?'is-error':isConfirm?'is-question':'is-info');
+  icon.innerHTML=isDelete?'<i class="fa-solid fa-trash-can"></i>':isError?'<i class="fa-solid fa-triangle-exclamation"></i>':isConfirm?'<i class="fa-solid fa-circle-question"></i>':'<i class="fa-solid fa-circle-info"></i>';
+  if(meta){
+    meta.replaceChildren();
+    meta.hidden=!isDelete;
+    if(isDelete&&options.deleteMeta){
+      const item=options.deleteMeta;
+      const name=document.createElement('strong');name.className='delete-meta-name';name.textContent=item.name||'Операция';
+      const detail=document.createElement('span');detail.className='delete-meta-detail';detail.textContent=[item.category,item.date,item.scope].filter(Boolean).join(' · ');
+      const amount=document.createElement('b');amount.className='delete-meta-amount';amount.textContent=item.amount||'';
+      meta.append(name,detail,amount);
+    }
+  }
   actions.innerHTML='';
   return new Promise(resolve=>{
     let settled=false;
@@ -617,16 +632,18 @@ function showAppDialog(message, options={}){
       document.body.classList.remove('app-dialog-open');
       document.removeEventListener('keydown',onKey);
       actions.innerHTML='';
+      if(meta){meta.replaceChildren();meta.hidden=true;}
+      card?.classList.remove('is-delete-confirm');
       resolve(value);
       if(typeof options.onClose==='function')options.onClose();
     };
-    const onKey=event=>{if(event.key==='Escape'&&!isConfirm)finish(false);};
+    const onKey=event=>{if(event.key==='Escape')finish(false);};
     if(isConfirm){
       const cancel=document.createElement('button');
       cancel.type='button';cancel.className='app-dialog-btn app-dialog-cancel';cancel.textContent=labels.cancel;
       cancel.addEventListener('click',()=>finish(false));
       const confirm=document.createElement('button');
-      confirm.type='button';confirm.className='app-dialog-btn app-dialog-confirm';confirm.textContent=labels.confirm;
+      confirm.type='button';confirm.className='app-dialog-btn '+(isDelete?'app-dialog-delete':'app-dialog-confirm');confirm.textContent=isDelete?labels.deleteConfirm:labels.confirm;
       confirm.addEventListener('click',()=>finish(true));
       actions.append(cancel,confirm);
     }else{
@@ -635,7 +652,7 @@ function showAppDialog(message, options={}){
       ok.addEventListener('click',()=>finish(true));
       actions.append(ok);
     }
-    overlay.onclick=event=>{if(event.target===overlay&&!isConfirm)finish(false);};
+    overlay.onclick=event=>{if(event.target===overlay)finish(false);};
     document.addEventListener('keydown',onKey);
     overlay.classList.add('is-visible','active');
     overlay.setAttribute('aria-hidden','false');
@@ -644,6 +661,23 @@ function showAppDialog(message, options={}){
   });
 }
 function showAppConfirm(message){return showAppDialog(message,{confirm:true});}
+function showDeleteTransactionConfirm(tx,familyMode){
+  const labels=appDialogLabels();
+  const name=String(tx?.title||tx?.note||tx?.category||(tx?.type==='income'?'Доход':'Расход'));
+  const date=String(tx?.date||'');
+  const category=String(tx?.category||'');
+  const amount=(tx?.type==='income'?'+':'−')+fmtMoney(tx?.amount||0);
+  return showAppDialog('',{confirm:true,deleteTransaction:true,deleteMeta:{name,category,date,scope:familyMode?'Семейный бюджет':'Личный бюджет',amount}});
+}
+function showActionToast(message,isError=false){
+  const node=document.getElementById('appActionToast');
+  if(!node)return;
+  node.textContent=String(message||'');
+  node.classList.toggle('is-error',Boolean(isError));
+  node.classList.add('is-visible');
+  clearTimeout(window.__ruvyqoToastTimer);
+  window.__ruvyqoToastTimer=setTimeout(()=>node.classList.remove('is-visible'),2600);
+}
 window.alert=function(message){showAppDialog(message);};
 
 function _translateHardcodedNode(node){
@@ -2001,42 +2035,60 @@ async function deleteTx(id, renderedIndex=null){
     if(candidate&&(requestedId===''||requestedId==='undefined'||String(candidate.id)==requestedId||candidate.id==null))index=fallbackIndex;
   }
   if(index<0){
-    await showAppDialog('Не удалось найти эту операцию. Обнови историю и попробуй ещё раз.');
+    showActionToast('Не удалось найти операцию. Обнови историю.',true);
     if(familyMode)await loadFamilyTransactions();else renderAll();
     return;
   }
   const tx=source[index];
   const transactionId=tx&&tx.id!=null?tx.id:id;
-  if(familyMode){
-    if(transactionId==null||String(transactionId)===''||String(transactionId)==='undefined'){
-      familyFeedback('У операции отсутствует идентификатор. Обнови историю и попробуй снова.',true);
-      return;
-    }
-    if(!await showAppConfirm('Удалить эту семейную операцию?'))return;
-    try{
-      await familyRequest('/api/family/transactions/'+encodeURIComponent(String(transactionId)),'DELETE');
-      familyTransactions=familyTransactions.filter((item,itemIndex)=>itemIndex!==index);
-      renderAll();
-      familyFeedback('Операция удалена.');
-    }catch(error){familyFeedback(error.message||'Не удалось удалить операцию.',true);}
+  if(familyMode&&(transactionId==null||String(transactionId)===''||String(transactionId)==='undefined')){
+    showActionToast('У операции отсутствует идентификатор.',true);
     return;
   }
-  if(!await showAppConfirm('Удалить эту операцию?'))return;
+  if(!await showDeleteTransactionConfirm(tx,familyMode))return;
+  if(familyMode){
+    const previous=familyTransactions.slice();
+    familyTransactions.splice(index,1);
+    renderAll();
+    showActionToast(appDialogLabels().deletePending);
+    try{
+      await familyRequest('/api/family/transactions/'+encodeURIComponent(String(transactionId)),'DELETE');
+      showActionToast(appDialogLabels().deleteDone);
+    }catch(error){
+      if(!familyTransactions.some(item=>String(item?.id)===String(transactionId))){
+        familyTransactions.splice(Math.min(index,familyTransactions.length),0,previous[index]);
+      }
+      renderAll();
+      showActionToast(error.message||appDialogLabels().deleteFailed,true);
+      console.error('RUVYQO family transaction delete failed:',error);
+    }
+    return;
+  }
+  const previousHistory=appData.history.slice();
+  const previousBalance=Number(appData.balance||0);
+  const previousMonthIncome=Number(appData.monthIncome||0);
+  const previousMonthExpense=Number(appData.monthExpense||0);
   try{
     const amount=Math.max(0,Number(tx.amount)||0);
-    if(tx.type==='expense')appData.balance=Number(appData.balance||0)+amount;
-    else appData.balance=Number(appData.balance||0)-amount;
+    if(tx.type==='expense')appData.balance=previousBalance+amount;
+    else appData.balance=previousBalance-amount;
     if(isTransactionInCurrentMonth(tx)){
-      if(tx.type==='expense')appData.monthExpense=Math.max(0,Number(appData.monthExpense||0)-amount);
-      else appData.monthIncome=Math.max(0,Number(appData.monthIncome||0)-amount);
+      if(tx.type==='expense')appData.monthExpense=Math.max(0,previousMonthExpense-amount);
+      else appData.monthIncome=Math.max(0,previousMonthIncome-amount);
     }
     appData.history.splice(index,1);
     saveData();
-    logClientActivity('transaction_deleted',tx);
     renderAll();
-    await showAppDialog('Операция успешно удалена.');
+    logClientActivity('transaction_deleted',tx);
+    showActionToast(appDialogLabels().deleteDone);
   }catch(error){
-    await showAppDialog(error&&error.message?error.message:'Не удалось удалить операцию. Попробуй ещё раз.');
+    appData.history=previousHistory;
+    appData.balance=previousBalance;
+    appData.monthIncome=previousMonthIncome;
+    appData.monthExpense=previousMonthExpense;
+    try{saveData();}catch(_){}
+    renderAll();
+    showActionToast(error&&error.message?error.message:appDialogLabels().deleteFailed,true);
     console.error('RUVYQO transaction delete failed:',error);
   }
 }

@@ -612,7 +612,7 @@ function showAppDialog(message, options={}){
     const finish=value=>{
       if(settled)return;
       settled=true;
-      overlay.classList.remove('is-visible');
+      overlay.classList.remove('is-visible','active');
       overlay.setAttribute('aria-hidden','true');
       document.body.classList.remove('app-dialog-open');
       document.removeEventListener('keydown',onKey);
@@ -637,7 +637,7 @@ function showAppDialog(message, options={}){
     }
     overlay.onclick=event=>{if(event.target===overlay&&!isConfirm)finish(false);};
     document.addEventListener('keydown',onKey);
-    overlay.classList.add('is-visible');
+    overlay.classList.add('is-visible','active');
     overlay.setAttribute('aria-hidden','false');
     document.body.classList.add('app-dialog-open');
     const first=actions.querySelector('button');if(first)first.focus();

@@ -2383,3 +2383,106 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
   .history-category-chips{gap:5px!important}
   .history-category-chips button{padding:6px 8px!important}
 }
+
+
+/* RUVYQO transaction deletion confirmation */
+.app-dialog-card.is-delete-confirm{
+  width:min(100%,420px)!important;
+  padding:26px 22px 22px!important;
+  border:1px solid rgba(168,116,255,.32)!important;
+  border-radius:22px 7px 22px 7px!important;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(131,72,218,.22),transparent 54%),
+    linear-gradient(155deg,#171222 0%,#100d18 58%,#0b0b12 100%)!important;
+  box-shadow:0 24px 80px rgba(0,0,0,.58),0 0 34px rgba(137,83,225,.13),inset 0 1px 0 rgba(255,255,255,.045)!important;
+  text-align:center;
+}
+.app-dialog-card.is-delete-confirm #appDialogTitle{
+  margin:12px 0 8px!important;
+  color:#f5efff!important;
+  font-size:21px!important;
+  font-weight:800!important;
+  letter-spacing:-.35px;
+}
+.app-dialog-card.is-delete-confirm #appDialogMessage{
+  max-width:320px;
+  margin:0 auto 17px!important;
+  color:#aaa0b9!important;
+  font-size:13px!important;
+  line-height:1.55!important;
+}
+.app-dialog-icon.is-delete{
+  width:58px!important;height:58px!important;
+  display:grid!important;place-items:center!important;
+  margin:0 auto!important;
+  border:1px solid rgba(255,105,129,.34)!important;
+  border-radius:18px 6px 18px 6px!important;
+  background:linear-gradient(145deg,rgba(255,83,118,.18),rgba(130,54,191,.12))!important;
+  color:#ff829a!important;
+  box-shadow:0 0 28px rgba(255,78,118,.12),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  font-size:22px!important;
+}
+.delete-transaction-meta{
+  display:grid;
+  gap:7px;
+  margin:0 0 18px;
+  padding:14px 15px;
+  border:1px solid rgba(174,133,235,.2);
+  border-radius:13px 4px 13px 4px;
+  background:linear-gradient(135deg,rgba(145,91,216,.12),rgba(255,255,255,.025));
+  text-align:left;
+}
+.delete-transaction-meta[hidden]{display:none!important}
+.delete-meta-name{overflow-wrap:anywhere;color:#f1eaff;font-size:14px;font-weight:750}
+.delete-meta-detail{overflow-wrap:anywhere;color:#9c91aa;font-size:11px;line-height:1.4}
+.delete-meta-amount{color:#ff9bab;font-size:20px;font-weight:850;letter-spacing:-.4px}
+.app-dialog-card.is-delete-confirm .app-dialog-actions{display:grid!important;grid-template-columns:1fr 1.15fr;gap:9px!important;margin-top:0!important}
+.app-dialog-card.is-delete-confirm .app-dialog-btn{
+  min-height:46px!important;
+  border-radius:12px 4px 12px 4px!important;
+  font-size:13px!important;font-weight:750!important;
+  transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;
+}
+.app-dialog-card.is-delete-confirm .app-dialog-btn:active{transform:scale(.97)}
+.app-dialog-card.is-delete-confirm .app-dialog-cancel{
+  border:1px solid rgba(190,174,213,.2)!important;
+  background:rgba(255,255,255,.045)!important;
+  color:#d9d0e4!important;
+}
+.app-dialog-card.is-delete-confirm .app-dialog-delete{
+  border:1px solid rgba(255,104,132,.5)!important;
+  background:linear-gradient(135deg,#e64f73,#a92e62)!important;
+  color:#fff!important;
+  box-shadow:0 7px 20px rgba(213,52,103,.22)!important;
+}
+.app-action-toast{
+  position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));z-index:1200;
+  width:max-content;max-width:calc(100% - 32px);
+  padding:12px 17px;border:1px solid rgba(169,127,235,.28);
+  border-radius:12px 4px 12px 4px;
+  background:rgba(22,17,31,.96);color:#f1eaff;
+  box-shadow:0 12px 36px rgba(0,0,0,.38),0 0 22px rgba(133,83,211,.12);
+  font-size:13px;font-weight:650;text-align:center;
+  opacity:0;pointer-events:none;transform:translate(-50%,14px);
+  transition:opacity .2s ease,transform .2s ease;
+}
+.app-action-toast.is-visible{opacity:1;transform:translate(-50%,0)}
+.app-action-toast.is-error{border-color:rgba(255,105,129,.45);color:#ffb3c0}
+:root[data-theme="light"] .app-dialog-card.is-delete-confirm{
+  border-color:rgba(130,82,190,.2)!important;
+  background:radial-gradient(ellipse at 50% 0%,rgba(171,133,226,.15),transparent 54%),linear-gradient(155deg,#fff 0%,#f7f4fb 100%)!important;
+  box-shadow:0 22px 65px rgba(45,35,65,.18),0 0 28px rgba(137,83,225,.08)!important;
+}
+:root[data-theme="light"] .app-dialog-card.is-delete-confirm #appDialogTitle{color:#282035!important}
+:root[data-theme="light"] .app-dialog-card.is-delete-confirm #appDialogMessage{color:#71677d!important}
+:root[data-theme="light"] .app-dialog-icon.is-delete{background:linear-gradient(145deg,#fff0f3,#f5edff)!important}
+:root[data-theme="light"] .delete-transaction-meta{border-color:rgba(130,82,190,.15);background:linear-gradient(135deg,#f5effc,#fff5f6)}
+:root[data-theme="light"] .delete-meta-name{color:#30263d}
+:root[data-theme="light"] .delete-meta-detail{color:#786e83}
+:root[data-theme="light"] .app-dialog-card.is-delete-confirm .app-dialog-cancel{border-color:rgba(70,55,90,.15)!important;background:#fff!important;color:#51465e!important}
+:root[data-theme="light"] .app-action-toast{border-color:rgba(130,82,190,.2);background:rgba(255,255,255,.97);color:#30263d;box-shadow:0 12px 34px rgba(45,35,65,.16)}
+@media(max-width:380px){
+  .app-dialog-card.is-delete-confirm{padding:22px 16px 17px!important}
+  .app-dialog-card.is-delete-confirm #appDialogTitle{font-size:19px!important}
+  .delete-transaction-meta{padding:12px}
+}

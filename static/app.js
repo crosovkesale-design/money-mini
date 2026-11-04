@@ -2963,6 +2963,8 @@ function renderAll(){
   const filterLang=String(appData?.lang||'ru').toLowerCase().split('-')[0],filterText=HISTORY_FILTER_I18N[filterLang]||HISTORY_FILTER_I18N.en;
   const setFilterText=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
   setFilterText('histTypeAllLabel',filterText.all);setFilterText('histTypeExpenseLabel',filterText.expense);setFilterText('histTypeIncomeLabel',filterText.income);setFilterText('histCategoryHeading',filterText.categories);setFilterText('histClearCategory',filterText.reset);
+  const clearCategoryButton=document.getElementById('histClearCategory');
+  if(clearCategoryButton)clearCategoryButton.classList.toggle('is-active',!!historyCategoryFilter);
   const historySearchInput=document.getElementById('histSearch');if(historySearchInput)historySearchInput.placeholder=filterText.search;
   const typeButtons=document.querySelectorAll('#histTypeFilters [data-type]');
   typeButtons.forEach(button=>button.classList.toggle('active',button.dataset.type===historyTypeFilter));
@@ -3012,7 +3014,7 @@ function renderAll(){
           <div class="history-actions">
             ${tx.receipt ? '<button class="card-action" aria-label="Изменить чек" title="Изменить чек" onclick="editReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-receipt"></i></button><button class="card-action danger" aria-label="Удалить чек" title="Удалить чек" onclick="deleteReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-trash"></i></button>' : ''}
             <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-pen"></i></button>
-            <button class="card-action danger" aria-label="Удалить операцию" title="Удалить операцию" onclick="deleteTx(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="card-action danger" aria-label="Удалить операцию" title="Удалить операцию" onclick="event.stopPropagation();window.deleteTx(${bankEscape(JSON.stringify(String(tx.id)))},allHistory.indexOf(tx))"><i class="fa-solid fa-trash"></i></button>
           </div>
         </article>
       `).join('')

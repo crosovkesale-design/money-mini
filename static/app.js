@@ -2042,6 +2042,26 @@ async function deleteTx(id, renderedIndex=null){
 }
 window.deleteTx=deleteTx;
 
+// Delegated history actions: avoid fragile inline onclick handlers in Telegram WebView.
+if(!window.__ruvyqoHistoryDeleteBound){
+  window.__ruvyqoHistoryDeleteBound=true;
+  document.addEventListener('click',event=>{
+    const button=event.target&&event.target.closest?event.target.closest('#historyContainer [data-action="delete-transaction"]'):null;
+    if(!button)return;
+    event.preventDefault();
+    event.stopPropagation();
+    const id=button.getAttribute('data-tx-id')||'';
+    if(typeof window.deleteTx!=='function'){
+      console.error('RUVYQO: delete handler is unavailable');
+      return;
+    }
+    Promise.resolve(window.deleteTx(id)).catch(error=>{
+      console.error('RUVYQO delegated delete failed:',error);
+      showAppDialog(error&&error.message?error.message:'Не удалось удалить операцию.');
+    });
+  },true);
+}
+
 function openEnvelopeEditor(id){
   const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;
   const item=list.find(x=>String(x.id)===String(id)); if(!item)return;
@@ -3014,7 +3034,7 @@ function renderAll(){
           <div class="history-actions">
             ${tx.receipt ? '<button class="card-action" aria-label="Изменить чек" title="Изменить чек" onclick="editReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-receipt"></i></button><button class="card-action danger" aria-label="Удалить чек" title="Удалить чек" onclick="deleteReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-trash"></i></button>' : ''}
             <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-pen"></i></button>
-            <button type="button" class="card-action danger" aria-label="Удалить операцию" title="Удалить операцию" onclick="event.stopPropagation();window.deleteTx(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="card-action danger" data-action="delete-transaction" data-tx-id="${bankEscape(String(tx.id ?? ''))}" aria-label="Удалить операцию" title="Удалить операцию"><i class="fa-solid fa-trash"></i></button>
           </div>
         </article>
       `).join('')

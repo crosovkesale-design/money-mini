@@ -2042,7 +2042,7 @@ async function deleteTx(id, renderedIndex=null){
 }
 window.deleteTx=deleteTx;
 
-// History delete is invoked directly by the button's inline handler.
+// Delete buttons are bound directly after each history render.
 
 function openEnvelopeEditor(id){
   const list=budgetMode==='family'&&currentFamily?familyEnvelopes:appData.envelopes;
@@ -3016,11 +3016,23 @@ function renderAll(){
           <div class="history-actions">
             ${tx.receipt ? '<button class="card-action" aria-label="Изменить чек" title="Изменить чек" onclick="editReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-receipt"></i></button><button class="card-action danger" aria-label="Удалить чек" title="Удалить чек" onclick="deleteReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-trash"></i></button>' : ''}
             <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-pen"></i></button>
-            <button type="button" class="card-action danger" data-tx-id="${bankEscape(String(tx.id ?? ''))}" data-tx-index="${allHistory.indexOf(tx)}" onclick="window.deleteTx(this.dataset.txId, Number(this.dataset.txIndex))" aria-label="Удалить операцию" title="Удалить операцию"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="card-action danger" data-action="delete-transaction" data-tx-id="${bankEscape(String(tx.id ?? ''))}" data-tx-index="${allHistory.indexOf(tx)}" aria-label="Удалить операцию" title="Удалить операцию"><i class="fa-solid fa-trash"></i></button>
           </div>
         </article>
       `).join('')
       : `<div class="muted" style="text-align:center">${t('no_rules')}</div>`;
+    hist.querySelectorAll('[data-action="delete-transaction"]').forEach(button=>{
+      button.addEventListener('click',event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        const id=button.getAttribute('data-tx-id')||'';
+        const index=Number(button.getAttribute('data-tx-index'));
+        Promise.resolve(deleteTx(id,index)).catch(error=>{
+          console.error('RUVYQO history delete click failed:',error);
+          showAppDialog(error&&error.message?error.message:'Не удалось удалить операцию.');
+        });
+      });
+    });
   }
 
   const envelopes = document.getElementById('envelopesList');

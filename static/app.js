@@ -3014,7 +3014,7 @@ function renderAll(){
           <div class="history-actions">
             ${tx.receipt ? '<button class="card-action" aria-label="Изменить чек" title="Изменить чек" onclick="editReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-receipt"></i></button><button class="card-action danger" aria-label="Удалить чек" title="Удалить чек" onclick="deleteReceipt('+bankEscape(JSON.stringify(String(tx.id)))+')"><i class="fa-solid fa-trash"></i></button>' : ''}
             <button class="card-action" aria-label="Изменить операцию" title="Изменить операцию" onclick="openTxEditor(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-pen"></i></button>
-            <button type="button" class="card-action danger" aria-label="Удалить операцию" title="Удалить операцию" onclick="event.stopPropagation();window.deleteTx(${bankEscape(JSON.stringify(String(tx.id)))},${allHistory.indexOf(tx)})"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="card-action danger" aria-label="Удалить операцию" title="Удалить операцию" onclick="event.stopPropagation();window.deleteTx(${bankEscape(JSON.stringify(String(tx.id)))})"><i class="fa-solid fa-trash"></i></button>
           </div>
         </article>
       `).join('')

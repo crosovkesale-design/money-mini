@@ -2272,3 +2272,114 @@ input::placeholder,textarea::placeholder{color:#a59bb8}
 }
 :root[data-theme="light"] #tab-pay .price-old,:root[data-theme="light"] #tab-pay .price-stars-old{color:#777!important}
 :root[data-theme="light"] #tab-pay .price-current,:root[data-theme="light"] #tab-pay .price-stars-current{color:#168052!important}
+
+
+/* RUVYQO — refined expense-history category filters */
+.history-filter-panel{
+  position:relative;isolation:isolate;display:grid;gap:12px;overflow:hidden;
+  padding:15px!important;border:1px solid rgba(201,173,118,.23)!important;
+  border-radius:9px 19px 9px 19px!important;
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.13),transparent 46%),
+    linear-gradient(145deg,#1c2826 0%,#121b1e 66%,#171421 100%)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.15)!important;
+}
+.history-filter-panel:before{
+  content:"";position:absolute;z-index:-1;right:-34px;top:-48px;width:132px;height:132px;
+  border:1px solid rgba(201,173,118,.11);border-radius:50%;
+  box-shadow:0 0 0 15px rgba(201,173,118,.025),0 0 0 31px rgba(201,173,118,.018);
+  pointer-events:none;
+}
+.history-type-filters{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px!important;
+  padding:4px;border:1px solid rgba(190,211,204,.11);border-radius:12px;
+  background:rgba(4,10,11,.35);
+}
+.history-type-chip{
+  display:flex;align-items:center;justify-content:center;min-width:0;min-height:38px;
+  padding:8px 5px!important;border:1px solid transparent!important;border-radius:8px!important;
+  background:transparent!important;color:#aab8b3!important;font-size:11px!important;font-weight:750;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+.history-type-chip.active{
+  border-color:rgba(201,173,118,.42)!important;
+  background:linear-gradient(135deg,rgba(201,173,118,.2),rgba(110,231,183,.08))!important;
+  color:#f0dfb9!important;box-shadow:0 3px 10px rgba(0,0,0,.13);
+}
+.history-category-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:34px;padding:2px 1px 0;
+}
+#histCategoryHeading{
+  color:#e9eee9;font-size:12px;font-weight:850;letter-spacing:.045em;
+}
+#histClearCategory{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:31px;padding:6px 11px!important;border:1px solid rgba(201,173,118,.25)!important;
+  border-radius:8px 4px 8px 4px!important;background:rgba(201,173,118,.075)!important;
+  color:#cbb88e!important;font-size:10px!important;font-weight:800!important;
+  line-height:1;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+#histClearCategory:before{content:"↺";font-size:15px;line-height:10px}
+#histClearCategory.is-active{
+  border-color:rgba(201,173,118,.55)!important;background:rgba(201,173,118,.16)!important;
+  color:#f0dcae!important;
+}
+#histClearCategory:active{transform:scale(.96)}
+.history-category-chips{display:flex;flex-wrap:wrap;gap:7px!important}
+.history-category-chips button{
+  display:inline-flex;align-items:center;gap:7px;min-height:31px;
+  padding:6px 10px!important;border:1px solid rgba(190,211,204,.13)!important;
+  border-radius:7px 13px 7px 13px!important;background:rgba(4,10,11,.27)!important;
+  color:#aebbb5!important;font-size:10px!important;font-weight:700!important;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+.history-category-chips button span{
+  display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;
+  border-radius:20px;background:rgba(255,255,255,.075);color:#879991;font-size:9px;font-weight:800;
+}
+.history-category-chips button.active{
+  border-color:rgba(110,231,183,.46)!important;
+  background:linear-gradient(135deg,rgba(110,231,183,.14),rgba(201,173,118,.1))!important;
+  color:#d6f5e7!important;box-shadow:inset 0 0 0 1px rgba(110,231,183,.07);
+}
+.history-category-chips button.active span{background:rgba(110,231,183,.16);color:#a8f0d1}
+.history-category-chips button:active{transform:scale(.97)}
+:root[data-theme="light"] .history-filter-panel{
+  border-color:rgba(63,91,73,.17)!important;
+  background:radial-gradient(ellipse at 100% 0%,rgba(201,173,118,.15),transparent 46%),
+    linear-gradient(145deg,#fffdf8 0%,#eff6f0 68%,#f6f3fb 100%)!important;
+  box-shadow:0 10px 25px rgba(35,62,45,.07)!important;
+}
+:root[data-theme="light"] .history-filter-panel:before{border-color:rgba(155,120,61,.12)}
+:root[data-theme="light"] .history-type-filters{
+  border-color:rgba(63,91,73,.12);background:rgba(63,91,73,.045);
+}
+:root[data-theme="light"] .history-type-chip{color:#68766e!important}
+:root[data-theme="light"] .history-type-chip.active{
+  border-color:rgba(155,120,61,.4)!important;
+  background:linear-gradient(135deg,#f7efdf,#eaf4ed)!important;color:#765b2d!important;
+  box-shadow:0 3px 9px rgba(35,62,45,.055);
+}
+:root[data-theme="light"] #histCategoryHeading{color:#26352c}
+:root[data-theme="light"] #histClearCategory{
+  border-color:rgba(155,120,61,.27)!important;background:#f7f0e2!important;color:#80612e!important;
+}
+:root[data-theme="light"] #histClearCategory.is-active{
+  border-color:rgba(155,120,61,.5)!important;background:#f2e6cb!important;color:#684b1e!important;
+}
+:root[data-theme="light"] .history-category-chips button{
+  border-color:rgba(63,91,73,.14)!important;background:#fff!important;color:#52645a!important;
+  box-shadow:0 2px 7px rgba(35,62,45,.035);
+}
+:root[data-theme="light"] .history-category-chips button span{background:#edf2ee;color:#718077}
+:root[data-theme="light"] .history-category-chips button.active{
+  border-color:rgba(39,132,93,.4)!important;background:linear-gradient(135deg,#eaf5ee,#f8f1e3)!important;
+  color:#216b4a!important;
+}
+:root[data-theme="light"] .history-category-chips button.active span{background:#d8eee0;color:#216b4a}
+@media(max-width:360px){
+  .history-filter-panel{padding:12px!important}
+  .history-type-chip{font-size:10px!important}
+  .history-category-chips{gap:5px!important}
+  .history-category-chips button{padding:6px 8px!important}
+}
